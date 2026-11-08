@@ -19,13 +19,15 @@ These are inefficient areas that we skip if you are missing quest chains or if y
 ]]
 
 H[L"What are command the line options?"] = L[[
-|cff909090/rxp|r - Open general addon settings
-|cff909090/rxp import|r - Open Import Guide interface
-|cff909090/rxp debug|r - enable debugging output
-|cff909090/rxp splits|r - Toggle Level Splits on or off, if enabled
-|cff909090/rxp show||hide||toggle|r - Toggle all enabled frames on or off
-|cff909090/rxp bug||feedback|r - Open Feedback Form
-|cff909090/rxp help|r - This output
+|cff909090/oxp|r - Open general addon settings
+|cff909090/oxp import|r - Open Import Guide interface
+|cff909090/oxp debug|r - enable debugging output
+|cff909090/oxp splits|r - Toggle Level Splits on or off, if enabled
+|cff909090/oxp show||hide||toggle|r - Toggle all enabled frames on or off
+|cff909090/oxp bug||feedback|r - Open Feedback Form
+|cff909090/oxp where|r - Smart start: jump to the right guide step for your character
+|cff909090/oxp catchup|r - List quest chains Smart start skipped and where to get them
+|cff909090/oxp help|r - This output
 ]]
 
 addon.help = H

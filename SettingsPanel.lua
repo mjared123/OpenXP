@@ -116,6 +116,10 @@ function addon.settings.ChatCommand(input)
         addon.comms.OpenBugReport()
     elseif input == "preview" then
         addon.settings:EnableFramePreviews()
+    elseif input == "where" or input == "smartstart" then
+        addon.smartStart.Run()
+    elseif input == "catchup" then
+        addon.smartStart.ShowCatchUp()
     elseif input == "help" then
         addon.comms.PrettyPrint(_G.HELP .. "\n" ..
                                     addon.help[L"What are command the line options?"])
@@ -127,6 +131,7 @@ end
 local settingsDBDefaults = {
     profile = {
         enableTracker = true,
+        smartStartOnLogin = true,
         enableLevelUpAnnounceSolo = false,
         enableLevelUpAnnounceGroup = false,
         enableFlyStepAnnouncements = true,
@@ -307,6 +312,8 @@ function addon.settings:InitializeSettings()
     self:MigrateProfile()
     self:LoadTextColors()
 
+    self:RegisterChatCommand("oxp", self.ChatCommand)
+    self:RegisterChatCommand("openxp", self.ChatCommand)
     self:RegisterChatCommand("rxp", self.ChatCommand)
     self:RegisterChatCommand("rxpg", self.ChatCommand)
     self:RegisterChatCommand("rxpguides", self.ChatCommand)
@@ -593,11 +600,11 @@ function addon.settings:CreateAceOptionsPanel()
         args = {
             discordButton = {
                 order = 1.0,
-                name = L("Join Discord"), -- TODO locale
+                name = L("Report an issue"), -- OpenXP: GitHub issues instead of RestedXP's Discord
                 type = "execute",
                 width = "normal",
                 func = function()
-                    addon.url = "https://discord.gg/restedxp"
+                    addon.url = "https://github.com/mjared123/OpenXP/issues"
                     _G.StaticPopup_Show("RXP_Link")
                     addon.url = nil
                 end

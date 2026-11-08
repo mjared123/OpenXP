@@ -1814,6 +1814,11 @@ function addon:PLAYER_ENTERING_WORLD(_, isInitialLogin)
         C_Timer.After(20, function()
             addon.settings:CheckAddonCompatibility()
         end)
+
+        -- OpenXP: put players who installed mid-leveling on the right step
+        C_Timer.After(delay + 3, function()
+            if addon.smartStart then addon.smartStart.OnLogin() end
+        end)
     end
 
     addon.ui.v2.configurator:Open(true)

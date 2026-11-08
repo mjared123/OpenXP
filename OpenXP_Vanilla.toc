@@ -47,6 +47,7 @@ InventoryManager.lua
 map.lua
 functions.lua
 GuideLoader.lua
+SmartStart.lua
 
 Guides/GuideList-classic.xml
 
