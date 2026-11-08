@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><filter id="grit" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="4"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0.22"/></feComponentTransfer><feComposite in2="SourceGraphic" operator="in"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+<filter id="paint"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="5"/></filter>
+<radialGradient id="vig" cx="50%" cy="45%" r="72%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".8"/></radialGradient>
+<linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbe3a0"/><stop offset=".35" stop-color="#c8922e"/><stop offset=".7" stop-color="#7a4e12"/><stop offset="1" stop-color="#3a2206"/></linearGradient>
+<radialGradient id="bg1" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#3e5a6e"/><stop offset="1" stop-color="#0d151c"/></radialGradient>
+<linearGradient id="leather" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9a4a22"/><stop offset=".5" stop-color="#6a2a10"/><stop offset="1" stop-color="#2a0e04"/></linearGradient>
+<linearGradient id="pages" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d8c79a"/><stop offset="1" stop-color="#8a7448"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#d6f5ff"/><stop offset=".4" stop-color="#4ec3ff" stop-opacity=".8"/><stop offset="1" stop-color="#1a6aff" stop-opacity="0"/></radialGradient></defs>
+<g filter="url(#grit)"><rect width="256" height="256" fill="url(#bg1)"/>
+<g filter="url(#paint)" transform="rotate(-12 128 128)">
+ <path d="M58 44 L196 40 L204 210 L66 216 Z" fill="url(#pages)"/>
+ <path d="M50 36 L190 32 L196 204 L56 210 Z" fill="url(#leather)" stroke="#1a0802" stroke-width="5"/>
+ <path d="M50 36 L66 36 L72 210 L56 210Z" fill="#1a0802" opacity=".55"/>
+ <rect x="66" y="48" width="114" height="146" fill="none" stroke="url(#brass)" stroke-width="6"/>
+ <path d="M190 104 h22 v34 h-22" fill="url(#brass)" stroke="#2a1604" stroke-width="4"/>
+ <circle cx="124" cy="120" r="56" fill="url(#glow)"/>
+ <path d="M124 76 L152 112 H136 V158 H112 V112 H96 Z" fill="#e8fbff" stroke="#3a9ad8" stroke-width="4" stroke-linejoin="round"/>
+ <g fill="url(#brass)" stroke="#2a1604" stroke-width="3"><path d="M64 46 l20 0 -20 20z"/><path d="M182 44 l0 20 -20 -20z"/><path d="M68 196 l20 0 -20 -20z"/><path d="M186 192 l0 -20 -20 20z"/></g>
+</g><rect width="256" height="256" fill="url(#vig)"/><rect x="3" y="3" width="250" height="250" fill="none" stroke="#0b0805" stroke-width="6"/><rect x="8" y="8" width="240" height="240" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="3"/></g></svg>

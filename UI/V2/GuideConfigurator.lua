@@ -487,7 +487,7 @@ function addon.ui.v2.configurator:RegisterRXPV2GuideConfigurator()
         titletext:SetText(addon.title or addonName)
 
         local topLeftIcon = frame:CreateTexture(nil, "OVERLAY")
-        topLeftIcon:SetTexture(addon.ui.v2:GetTexture("rxp-icon-logo"))
+        topLeftIcon:SetTexture("Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
         topLeftIcon:SetSize(40, 40)
         topLeftIcon:SetPoint("TOPLEFT", frame, -12, 12)
 

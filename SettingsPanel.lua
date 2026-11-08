@@ -3633,7 +3633,7 @@ function addon.settings:CreateAceOptionsPanel()
     f.icon = f:CreateTexture()
     -- Theme load order, leave default settings branding unthemed
     f.icon:SetTexture("Interface/AddOns/" .. addonName ..
-                          "/Textures/rxp_logo-64")
+                          "/Textures/openxp_logo-64")
     f.icon:SetPoint("TOPRIGHT", -5, -5)
 
 end
@@ -3660,10 +3660,7 @@ function addon.settings:UpdateMinimapButton()
                                                   "UIDropDownMenuTemplate")
     end
 
-    local icon = addon.GetV1Texture("rxp_logo-64")
-    if addon.v2:IsGuideWindowEnabled() then
-        icon = addon.ui.v2:GetTexture("rxp-minimap-icon")
-    end
+    local icon = "Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64"
 
     local minimapButton = LibDataBroker:NewDataObject(addonName, {
         type = "data source",
@@ -4241,7 +4238,7 @@ function addon.settings:SetupMapButton()
     self.worldMapButton:SetSize(36, 36)
     self.worldMapButton:SetPoint("TOPRIGHT", _G.WorldMapFrame, "TOPRIGHT", -10,
                                  -26)
-    self.worldMapButton:SetNormalTexture(addon.GetV1Texture("rxp_logo-64"))
+    self.worldMapButton:SetNormalTexture("Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
     self.worldMapButton:SetHighlightTexture(
         "Interface/MINIMAP/UI-Minimap-ZoomButton-Highlight", "ADD")
 

@@ -781,7 +781,7 @@ local function createRewardChoiceIcons()
         questRewardChoiceIcons["ratio"] = _G.QuestInfoRewardsFrame:CreateTexture()
         questRewardChoiceIcons["ratio"]:SetTexture(addon.v2:IsGuideWindowEnabled() and
                                                          addon.ui.v2:GetTexture("rxp-reward-upgrade") or
-                                                         "Interface/AddOns/" .. addonName .. "/Textures/rxp_logo-64")
+                                                         "Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
         questRewardChoiceIcons["ratio"]:SetSize(20, 20)
         questRewardChoiceIcons["ratio"]:SetDrawLayer("OVERLAY", 1)
     end
@@ -816,7 +816,7 @@ local function createLogRewardChoiceIcons()
         questLogRewardChoiceIcons["ratio"] = _G.QuestLogDetailScrollFrame:CreateTexture()
         questLogRewardChoiceIcons["ratio"]:SetTexture(addon.v2:IsGuideWindowEnabled() and
                                                             addon.ui.v2:GetTexture("rxp-reward-upgrade") or
-                                                            "Interface/AddOns/" .. addonName .. "/Textures/rxp_logo-64")
+                                                            "Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
         questLogRewardChoiceIcons["ratio"]:SetSize(20, 20)
         questLogRewardChoiceIcons["ratio"]:SetDrawLayer("OVERLAY", 1)
     end
