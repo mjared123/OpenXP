@@ -6,7 +6,7 @@ Stranglethorn again. Same section format as alliance_21_30.py.
 
 GROUP = "RestedXP Forever Guide (A)"
 OUTPUT = "Guides/openxp/Alliance-30-40.lua"
-NEXT = None
+NEXT = "40-41 Badlands"
 
 # Left out on purpose:
 # 338-342 Green Hills of Stranglethorn: the pages are rare drops from any mob

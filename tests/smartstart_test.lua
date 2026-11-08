@@ -70,7 +70,8 @@ end
 
 local guides = {}
 for _, file in ipairs({"forever/Alliance-1-13_Human.lua", "forever/Alliance-11-20.lua",
-                       "openxp/Alliance-21-30.lua", "openxp/Alliance-30-40.lua"}) do
+                       "openxp/Alliance-21-30.lua", "openxp/Alliance-30-40.lua",
+                       "openxp/Alliance-40-50.lua", "openxp/Alliance-50-60.lua"}) do
     for _, g in ipairs(parseGuides(readfile(ROOT .. "/Guides/" .. file))) do
         table.insert(guides, g)
     end
@@ -193,14 +194,20 @@ local names = {}
 for _, gg in ipairs(guides) do names[gg.name] = true end
 for _, n in ipairs({"21-23 Stonetalon/Ashenvale", "23-24 Stonetalon Mountains", "24-26 Wetlands",
                     "26-28 Redridge Mountains", "28-30 Duskwood", "30-32 Hillsbrad Foothills",
-                    "39-40 Stranglethorn Vale"}) do
+                    "39-40 Stranglethorn Vale", "40-41 Badlands", "50-51 Un'Goro Crater",
+                    "58-60 Silithus"}) do
     check(names[n], "21-30 section parsed: " .. n)
 end
+
+-- Level 55 in the Western Plaguelands lands in that section.
+reset(); state.level = 56; state.zone = "Western Plaguelands"
+g = SS.PickGuide(guides, 56, "Western Plaguelands")
+check(g and g.name == "56-57 Western Plaguelands", "level 56 in WPL picks 56-57 Western Plaguelands, got " .. tostring(g and g.name))
 
 -- 7. Every quest an OpenXP file completes or turns in with a plain id is
 -- accepted earlier in that file (carried quests use skip-if-missing ids),
 -- and every #next names a section that exists.
-for _, file in ipairs({"Alliance-21-30.lua", "Alliance-30-40.lua"}) do
+for _, file in ipairs({"Alliance-21-30.lua", "Alliance-30-40.lua", "Alliance-40-50.lua", "Alliance-50-60.lua"}) do
     local text = readfile(ROOT .. "/Guides/openxp/" .. file)
     for nxt in text:gmatch("#next ([^\n]+)") do
         check(names[nxt:gsub("^.*\\", "")], file .. " #next points at a missing section: " .. nxt)

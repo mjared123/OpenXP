@@ -950,6 +950,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 39-40 Stranglethorn Vale
+#next 40-41 Badlands
 
 step
     #completewith next

@@ -319,6 +319,8 @@ class Builder:
                 continue
             if q.specialFlags & 3 or q.reqSkill or q.reqRep:
                 continue
+            if q.zone in EVENT_SORTS:
+                continue  # holiday and world-event quests
             if q.name.startswith("[") or "<" in q.name:
                 continue  # placeholder / unused quests in the data
             carried = qid in self.accepted_before
@@ -558,6 +560,9 @@ def render_section(builder, section, cands, actions, group, nxt):
     lines.append("]])")
     return "\n".join(lines)
 
+
+# Quest sorts for holidays, world events and PvP, never part of a route.
+EVENT_SORTS = {-22, -284, -364, -366, -369, -370, -376, -1002, -1003, -1005, -1006, -25, -41}
 
 CLASS_GUIDE = r"Warrior|Paladin|Hunter|Rogue|Priest|Mage|Warlock|Druid|Shaman"
 

@@ -14,7 +14,10 @@ local CHANGELOG = {
         version = "0.4.0",
         date = "November 2026",
         changes = {
-            "New Alliance 30-40 route: Hillsbrad and Alterac, Arathi, Stranglethorn, Dustwallow, Thousand Needles and Desolace",
+            "Alliance guides now go all the way to 60",
+            "30-40: Hillsbrad and Alterac, Arathi, Stranglethorn, Dustwallow, Thousand Needles and Desolace",
+            "40-50: Badlands, Tanaris, Feralas, Hinterlands, Searing Gorge and Azshara",
+            "50-60: Un'Goro, Felwood, Winterspring, Burning Steppes, the Plaguelands and Silithus",
             "21-30 now gives you the Redridge quests if you didn't pick them up earlier",
         },
     },
