@@ -56,6 +56,7 @@ InventoryManager.lua
 map.lua
 functions.lua
 GuideLoader.lua
+SmartStart.lua
 
 Guides/GuideList-Mainline.xml [AllowLoadGameType standard]
 Guides/GuideList-cata.xml [AllowLoadGameType cata]

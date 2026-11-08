@@ -16,3 +16,14 @@ endorsed by RestedXP. Like the original, OpenXP is free and non-commercial, and 
 5. Start the game, enable OpenXP on the character select AddOns screen, and log in.
 
 See [NOTICE.md](NOTICE.md) for attribution and the list of changes from RestedXP Guides.
+
+## Smart start
+
+OpenXP works out where you are even if you install it halfway through leveling. On login it checks your level, zone, quest log and completed quests, then jumps to the right guide section and step. If you skipped a section, quest chains you can no longer start are skipped automatically.
+
+- `/oxp where` runs Smart start again at any time.
+- `/oxp catchup` lists the skipped chains and which guide section picks up the missing quest.
+
+## Tests
+
+`pip install lupa`, then `python3 tests/run_tests.py`. The tests run Smart start against the real Forever guides outside the game.

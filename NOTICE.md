@@ -18,3 +18,5 @@ RestedXP name were written by RestedXP and are kept here with credit.
 - Removed the `lang/` folder of translated guides for now, and turned off the translated-guide switch so every client language loads the English guides.
 - Fixed a texture path that pointed at the `RXPGuides` folder.
 - Dropped RestedXP's packaging and CI files.
+- Added Smart start (`SmartStart.lua`): picks the right guide section and step from the player's level, zone, quest log and completed quests, and skips quest chains whose earlier quests were skipped (`/oxp where`, `/oxp catchup`).
+- Added `/oxp` and `/openxp` slash commands, and pointed bug reports at OpenXP's GitHub issues instead of RestedXP's Discord.

@@ -608,7 +608,7 @@ Arrow data
     f.frame:SetBackdropColor(unpack(addon.colors.background))
 
     local editbox = AceGUI:Create("MultiLineEditBox")
-    editbox:SetLabel(L("Join our support discord at discord.gg/RestedXP and copy paste this form into #bug-report"))
+    editbox:SetLabel("Open an issue at github.com/mjared123/OpenXP/issues and paste this form into it")
     editbox:SetFullWidth(true)
     editbox:SetFullHeight(true)
     editbox:SetText(content)
