@@ -341,7 +341,7 @@ addon.v2.themes['RXP Blue V2'] = {
         texCoords = {0, 1, 0, 63 / 64}
     },
     guideWindow = {
-        logo = addon.ui.v2:GetTexture("rxp-icon-logo"),
+        logo = "Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64",
         settingsIcon = addon.ui.v2:GetTexture("rxp-icon-cog"),
         guideSelectIcon = addon.ui.v2:GetTexture("rxp-icon-scroll")
     },
@@ -350,7 +350,7 @@ addon.v2.themes['RXP Blue V2'] = {
         upgradeEPColor = "|cffff00ff",
         upgradeIcon = addon.ui.v2:GetTexture("rxp-reward-upgrade"),
         valueIcon = addon.ui.v2:GetTexture("rxp-reward-gold"),
-        legacyUpgradeIcon = "Interface/AddOns/" .. addonName .. "/Textures/rxp_logo-64",
+        legacyUpgradeIcon = "Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64",
         legacyValueIcon = "Interface/GossipFrame/VendorGossipIcon.blp"
     },
     navigationArrow = addon.ui.v2:GetTexture("rxp_navigation_arrow-1"),
@@ -421,9 +421,9 @@ function addon.v2:ConvertThemes()
                 converted.version = sourceVersion
                 converted.headerTexture = {path = source.texturePath .. source.headerTexture, texCoords = {0, 1, 0, 1}}
                 converted.guideWindow = {
-                    logo = source.texturePath .. "rxp_logo-64",
+                    logo = "Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64",
                     settingsIcon = source.texturePath .. "rxp_cog-32",
-                    guideSelectIcon = addon.ui.v2:GetTexture("rxp-minimap-icon")
+                    guideSelectIcon = "Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64"
                 }
                 converted.navigationArrow = source.texturePath .. "rxp_navigation_arrow-1"
                 converted.edge.edgeFile = source.bgTextures and source.bgTextures.edge or "Interface/BUTTONS/WHITE8X8"

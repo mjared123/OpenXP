@@ -45,7 +45,7 @@ function addon.UpdateQuestButton(index)
         button:SetWidth(32)
         button:SetHeight(32)
         button:SetPoint("TOPRIGHT", anchor, "TOPRIGHT", 0, 0)
-        button:SetNormalTexture(addon.GetV1Texture("rxp_logo-64"))
+        button:SetNormalTexture("Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
         addon.questLogButton = button
 
         local function tpOnEnter(self)
@@ -157,7 +157,7 @@ function addon.UpdateQuestButton(index)
             showButton = true
         else
             -- Inefficient, but set back to default texture in case of orphans
-            button:SetNormalTexture(addon.GetV1Texture("rxp_logo-64"))
+            button:SetNormalTexture("Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
         end
         button.tooltip = tooltip
     end
@@ -561,7 +561,7 @@ local CLEANUP_DESC  = (Loc and Loc.CLEANUP_ORPHANED_QUESTS_DESC)
     or L"Abandons quests that aren't referenced by your current RestedXP guide."
 
 -- Icon path for button + tooltip
-local ICON_PATH = "Interface\\AddOns\\" .. addonName .. "\\Textures\\rxp_logo-64"
+local ICON_PATH = "Interface\\AddOns\\" .. addonName .. "\\Textures\\openxp_logo-64"
 local ICON_INLINE = "|T" .. ICON_PATH .. ":14|t "
 
 -- ---------- helpers --------------------------------------------------

@@ -75,7 +75,7 @@ function RXPFrame:UpdateVisuals()
     Footer.bg:SetTexture(addon.GetV1Texture("rxp-banner"))
 
     GuideName.bg:SetTexture(addon.GetV1Texture("rxp-banner"))
-    GuideName.icon:SetTexture(addon.GetV1Texture("rxp_logo-64"))
+    GuideName.icon:SetTexture("Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
     GuideName.classIcon:SetTexture(addon.GetV1Texture(class))
     Footer.cog:SetNormalTexture(addon.GetV1Texture("rxp_cog-32"))
     RXPFrame.UpdateScrollBar()
@@ -173,7 +173,7 @@ function addon.SetupGuideWindow()
     Footer:SetBackdropColor(unpack(addon.colors.background))
     Footer.bg:SetTexture(addon.GetV1Texture("rxp-banner"))
 
-    GuideName.icon:SetTexture(addon.GetV1Texture("rxp_logo-64"))
+    GuideName.icon:SetTexture("Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
 
     GuideName.classIcon:SetTexture(addon.GetV1Texture(class))
     Footer.cog:SetNormalTexture(addon.GetV1Texture("rxp_cog-32"))
