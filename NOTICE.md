@@ -20,3 +20,5 @@ RestedXP name were written by RestedXP and are kept here with credit.
 - Dropped RestedXP's packaging and CI files.
 - Added Smart start (`SmartStart.lua`): picks the right guide section and step from the player's level, zone, quest log and completed quests, and skips quest chains whose earlier quests were skipped (`/oxp where`, `/oxp catchup`).
 - Added `/oxp` and `/openxp` slash commands, and pointed bug reports at OpenXP's GitHub issues instead of RestedXP's Discord.
+- New default look: the built-in "RXP Blue" theme is recolored to OpenXP's navy and gold, with recolored textures in `Textures/OpenXP/`, and visible "RestedXP" window titles now say OpenXP. Guide group names that RestedXP wrote still carry their name.
+- Added a welcome / what's new window (`WelcomeFrame.lua`, `/oxp news`).

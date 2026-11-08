@@ -597,7 +597,7 @@ Arrow data
     f:SetLayout("Fill")
     f:EnableResize(true)
     f.statustext:GetParent():Hide()
-    f:SetTitle(L("RestedXP Feedback Form"))
+    f:SetTitle("OpenXP Feedback Form")
 
     f.scrollContainer = AceGUI:Create("ScrollFrame")
     f.scrollContainer:SetLayout("Fill")
@@ -629,7 +629,7 @@ function addon.comms.OpenBrandedExport(title, description, content, width, heigh
     f:SetLayout("Fill")
     f:EnableResize(true)
     f.statustext:GetParent():Hide()
-    f:SetTitle("RestedXP: " .. title)
+    f:SetTitle("OpenXP: " .. title)
 
     f.frame:SetBackdrop(addon.RXPFrame.backdrop.edge)
     f.frame:SetBackdropColor(unpack(addon.colors.background))

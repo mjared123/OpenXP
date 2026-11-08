@@ -271,7 +271,7 @@ function addon.ui.v2:RegisterRXPV2GuideImporter()
         closebutton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 6, 6)
         local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         title:SetPoint("TOP", frame, "TOP", 0, -4)
-        title:SetText(fmt("RestedXP %s - %s", addon.locale.Get("Guide Import"), addon.versionText))
+        title:SetText(fmt("OpenXP %s - %s", addon.locale.Get("Guide Import"), addon.versionText))
 
         local description = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         description:SetPoint("TOPLEFT", frame, "TOPLEFT", 18, -31)

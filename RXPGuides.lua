@@ -1819,6 +1819,11 @@ function addon:PLAYER_ENTERING_WORLD(_, isInitialLogin)
         C_Timer.After(delay + 3, function()
             if addon.smartStart then addon.smartStart.OnLogin() end
         end)
+
+        -- OpenXP: welcome on first load, what's new after an update
+        C_Timer.After(delay + 5, function()
+            if addon.welcome then addon.welcome.CheckOnLogin() end
+        end)
     end
 
     addon.ui.v2.configurator:Open(true)

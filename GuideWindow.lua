@@ -156,7 +156,7 @@ function addon.SetupGuideWindow()
 
     GuideName.text:SetFont(addon.font, 11, "")
     GuideName.text:SetText(L(
-                               "Welcome to RestedXP Guides\nRight click to pick a guide"))
+                               "Welcome to OpenXP\nRight click to pick a guide"))
     GuideName.text:SetTextColor(unpack(addon.activeTheme.textColor))
 
     Footer.text:SetFont(addon.font, 9, "")
@@ -1591,7 +1591,7 @@ addon.emptyGuide = {
     hidewindow = true,
     name = "",
     group = "",
-    displayname = L("Welcome to RestedXP Guides\nRight click to pick a guide"),
+    displayname = L("Welcome to OpenXP\nRight click to pick a guide"),
     steps = {{hidewindow = true, text = ""}}
 }
 

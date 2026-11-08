@@ -6,24 +6,27 @@ local themes = {}
 local UnitName = addon.GetUnitName
 addon.themes = themes
 
+-- OpenXP's default look: deep navy panels, leather-gold borders and the
+-- glowing blue guide arrow from the OpenXP icon. The internal key stays
+-- 'RXP Blue' so existing settings and theme logic keep working.
 themes['RXP Blue'] = {
     name = 'RXP Blue',
-    background = {12 / 255, 12 / 255, 27 / 255, 1},
-    bottomFrameBG = {18 / 255, 18 / 255, 40 / 255, 1},
-    bottomFrameHighlight = {54 / 255, 62 / 255, 109 / 255, 1},
-    displayName = L("RXP Blue"),
-    mapPins = {206 / 210, 123 / 210, 1, 1},
-    tooltip = "|cFFCE7BFF", -- AARRGGBB
-    texturePath = "Interface/AddOns/" .. addonName .. "/Textures/",
+    background = {11 / 255, 15 / 255, 26 / 255, 1},
+    bottomFrameBG = {20 / 255, 24 / 255, 40 / 255, 1},
+    bottomFrameHighlight = {122 / 255, 84 / 255, 30 / 255, 1},
+    displayName = "OpenXP",
+    mapPins = {90 / 255, 184 / 255, 255 / 255, 1},
+    tooltip = "|cFFF2C35C", -- AARRGGBB
+    texturePath = "Interface/AddOns/" .. addonName .. "/Textures/OpenXP/",
     headerTexture = "rxp-banner",
     font = _G.GameFontNormal:GetFont(),
     textColor = {1, 1, 1},
     applicable = function() return not OXPCData.GA end,
-    author = "RestedXP",
+    author = "OpenXP",
     bgTextures = {edge = "Interface/BUTTONS/WHITE8X8", bottom = "Interface/BUTTONS/WHITE8X8"},
     edges = {
-        edge = "Interface/AddOns/" .. addonName .. "/Textures/rxp-borders",
-        guideName = "Interface/AddOns/" .. addonName .. "/Textures/rxp-borders"
+        edge = "Interface/AddOns/" .. addonName .. "/Textures/OpenXP/rxp-borders",
+        guideName = "Interface/AddOns/" .. addonName .. "/Textures/OpenXP/rxp-borders"
     }
 }
 
@@ -329,8 +332,8 @@ addon.v2 = addon.v2 or {}
 addon.v2.themes = {}
 
 addon.v2.themes['RXP Blue V2'] = {
-    author = "RestedXP",
-    displayName = "RXP Blue V2",
+    author = "OpenXP",
+    displayName = "OpenXP",
     name = 'RXP Blue',
     version = 2,
     applicable = function() return addon.v2:IsGuideWindowEnabled() end,
@@ -360,15 +363,15 @@ addon.v2.themes['RXP Blue V2'] = {
         guideName = {26 / 255, 28 / 255, 48 / 255, 1}, -- #1A1C30FF
         guideWindow = {7 / 255, 8 / 255, 19 / 255, 0.95}, -- #070813F2
         scrollbar = {1 / 255, 1 / 255, 11 / 255, 1}, -- #01010BFF
-        guideSelector = {57 / 255, 51 / 255, 95 / 255, 1}, -- #39335FFF
+        guideSelector = {92 / 255, 64 / 255, 26 / 255, 1}, -- OpenXP leather
         inactivePartyTab = {32 / 255, 33 / 255, 49 / 255, 1}, -- #202131FF
         activeStepCheckbox = {5 / 255, 7 / 255, 19 / 255, 1}, -- #050713FF
         activeStepCheckboxChecked = {17 / 255, 132 / 255, 1, 1} -- #118401FF
     },
 
     borderColors = {
-        common = {55 / 255, 62 / 255, 109 / 255, 1}, -- #373E6DFF
-        commonEdge = {184 / 255, 190 / 255, 215 / 255, 1}, -- #B8BED7FF
+        common = {122 / 255, 84 / 255, 30 / 255, 1}, -- OpenXP gold-brown
+        commonEdge = {242 / 255, 195 / 255, 92 / 255, 1}, -- OpenXP gold
         inactivePartyTab = {62 / 255, 66 / 255, 102 / 255, 1}, -- #3E4266FF
         activeStepCheckboxChecked = {17 / 255, 132 / 255, 1, 1} -- #118401FF
     },
@@ -386,7 +389,7 @@ addon.v2.themes['RXP Blue V2'] = {
 
     textColor = {
         common = {210 / 255, 210 / 255, 220 / 255, 1}, -- #D2D2DCFF
-        title = {24 / 255, 210 / 255, 255 / 255, 1}, -- #18D2FFFF
+        title = {242 / 255, 195 / 255, 92 / 255, 1}, -- OpenXP gold
         inactivePartyTab = {0.62, 0.62, 0.72, 1} -- #9E9EB8FF
     }
 }
