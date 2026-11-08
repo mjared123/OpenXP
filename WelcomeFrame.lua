@@ -5,11 +5,19 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.3.0"
+local OPENXP_VERSION = "0.4.0"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.4.0",
+        date = "November 2026",
+        changes = {
+            "New Alliance 30-40 route: Hillsbrad and Alterac, Arathi, Stranglethorn, Dustwallow, Thousand Needles and Desolace",
+            "21-30 now gives you the Redridge quests if you didn't pick them up earlier",
+        },
+    },
     {
         version = "0.3.0",
         date = "November 2026",

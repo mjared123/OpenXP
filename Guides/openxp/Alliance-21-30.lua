@@ -490,9 +490,23 @@ step << Rogue
     .accept 2358 >>Accept Horns of Nez'ra
     .target Arantir
 step
+    .goto Redridge Mountains,25.88,47.27
+    >>Talk to |cRXP_FRIENDLY_Verner Osgood|r
+    .accept 126 >>Accept Howling in the Hills
+    .target Verner Osgood
+step
+    .goto Redridge Mountains,24.63,44.26
+    >>Talk to |cRXP_FRIENDLY_Bailiff Conacher|r
+    .accept 91 >>Accept Solomon's Law
+    .target Bailiff Conacher
+step
+    .goto Redridge Mountains,21.66,46.44
+    >>Click the |cRXP_PICK_Wanted: Lieutenant Fangore|r
+    .accept 180 >>Accept Wanted: Lieutenant Fangore
+step
     .goto Redridge Mountains,22.56,21.38
     >>Kill |cRXP_ENEMY_Yowler|r. Loot them for |cRXP_LOOT_Yowler's Paw|r
-    .complete -126,1 --Howling in the Hills
+    .complete 126,1 --Howling in the Hills
     .mob Yowler
 step
     .goto Redridge Mountains,24.25,12.05
@@ -502,7 +516,7 @@ step
 step
     .goto Redridge Mountains,25.88,47.27
     >>Talk to |cRXP_FRIENDLY_Verner Osgood|r
-    .turnin -126 >>Turn in Howling in the Hills
+    .turnin 126 >>Turn in Howling in the Hills
     .target Verner Osgood
 step
     .goto Redridge Mountains,26.45,57.85
@@ -519,7 +533,7 @@ step << Rogue
 step
     .goto Redridge Mountains,73.77,47.37
     >>Kill |cRXP_ENEMY_Shadowhide Darkweaver|r and |cRXP_ENEMY_Shadowhide Slayer|r and |cRXP_ENEMY_Shadowhide Brute|r. Loot them for |cRXP_LOOT_Shadowhide Pendant|r
-    .complete -91,1 --Solomon's Law
+    .complete 91,1 --Solomon's Law
     .mob Shadowhide Darkweaver
     .mob Shadowhide Slayer
     .mob Shadowhide Brute
@@ -531,7 +545,7 @@ step
 step
     .goto Redridge Mountains,75.09,37.06
     >>Kill |cRXP_ENEMY_Lieutenant Fangore|r. Loot them for |cRXP_LOOT_Fangore's Paw|r
-    .complete -180,1 --Wanted: Lieutenant Fangore
+    .complete 180,1 --Wanted: Lieutenant Fangore
     .mob Lieutenant Fangore
 step
     .goto Redridge Mountains,58.16,49.84
@@ -540,12 +554,12 @@ step
 step
     .goto Redridge Mountains,24.90,44.45
     >>Talk to |cRXP_FRIENDLY_Magistrate Solomon|r
-    .turnin -180 >>Turn in Wanted: Lieutenant Fangore
+    .turnin 180 >>Turn in Wanted: Lieutenant Fangore
     .target Magistrate Solomon
 step
     .goto Redridge Mountains,24.63,44.26
     >>Talk to |cRXP_FRIENDLY_Bailiff Conacher|r
-    .turnin -91 >>Turn in Solomon's Law
+    .turnin 91 >>Turn in Solomon's Law
     .target Bailiff Conacher
 step << Rogue
     .goto Redridge Mountains,22.97,52.32
@@ -562,6 +576,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 28-30 Duskwood
+#next 30-32 Hillsbrad Foothills
 
 step
     #completewith next
@@ -583,6 +598,12 @@ step
     .accept 173 >>Accept Worgen in the Woods
     .target Calor
 step
+    .goto Duskwood,75.34,48.75
+    >>Talk to |cRXP_FRIENDLY_Elaine Carevin|r
+    .accept 164 >>Accept Deliveries to Sven
+    .accept 165 >>Accept The Hermit
+    .target Elaine Carevin
+step
     .goto Duskwood,73.54,46.82
     >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
     .accept 56 >>Accept The Night Watch
@@ -601,19 +622,10 @@ step
     .goto Duskwood,78.96,69.68
     >>Kill |cRXP_ENEMY_Skeletal Mage|r
     >>Kill |cRXP_ENEMY_Skeletal Warrior|r
-    >>Kill |cRXP_ENEMY_Insane Ghoul|r. Loot them for |cRXP_LOOT_Mary's Looking Glass|r
     .complete 56,2 --The Night Watch
     .complete 56,1 --The Night Watch
-    .complete -177,1 --Look To The Stars
     .mob Skeletal Mage
     .mob Skeletal Warrior
-    .mob Insane Ghoul
-step
-    .goto Duskwood,79.80,48.02
-    >>Talk to |cRXP_FRIENDLY_Viktori Prism'Antras|r
-    .turnin -177 >>Turn in Look To The Stars
-    .accept 181 >>Accept Look To The Stars
-    .target Viktori Prism'Antras
 step
     .goto Duskwood,75.75,47.57
     >>Talk to |cRXP_FRIENDLY_Calor|r
@@ -637,98 +649,11 @@ step
     .complete 221,1 --Worgen in the Woods
     .mob Nightbane Dark Runner
 step
-    .goto Duskwood,36.09,80.64
-    >>Kill |cRXP_ENEMY_Zzarc' Vul|r. Loot them for |cRXP_LOOT_Ogre's Monocle|r
-    .complete 181,1 --Look To The Stars
-    .mob Zzarc' Vul
-step
-    .goto Duskwood,18.38,56.37
-    >>Talk to |cRXP_FRIENDLY_Jitters|r
-    .turnin -163 >>Turn in Raven Hill
-    .target Jitters
-step
-    .goto Duskwood,22.93,43.46
-    >>Kill |cRXP_ENEMY_Skeletal Fiend|r
-    .complete 57,1 --The Night Watch
-    .mob Skeletal Fiend
-step
-    .goto Duskwood,24.14,36.05
-    >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Fang|r
-    .complete 101,1 --The Totem of Infliction
-    .mob Flesh Eater
-    .mob Bone Chewer
-    .mob Brain Eater
-step
-    .goto Duskwood,28.11,31.46
-    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
-    .turnin -165 >>Turn in The Hermit
-    .accept 148 >>Accept Supplies from Darkshire
-    .target Abercrombie
-step
-    .goto Duskwood,15.96,34.65
-    >>Kill |cRXP_ENEMY_Skeletal Warrior|r and |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Mage|r. Loot them for |cRXP_LOOT_Skeleton Finger|r
-    .complete 101,3 --The Totem of Infliction
-    .mob Skeletal Warrior
-    .mob Skeletal Horror
-    .mob Skeletal Mage
-step
-    .goto Duskwood,7.78,34.07
-    >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
-    .accept 95 >>Accept Sven's Revenge
-    .turnin -164 >>Turn in Deliveries to Sven
-    .target Sven Yorgen
-step
-    .goto Duskwood,49.85,77.71
-    >>Click the |cRXP_PICK_Mound of loose dirt|r
-    .turnin 95 >>Turn in Sven's Revenge
-    .accept 230 >>Accept Sven's Camp
-step
-    .goto Duskwood,73.54,46.82
-    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
-    .turnin 57 >>Turn in The Night Watch
-    .accept 58 >>Accept The Night Watch
-    .target Commander Althea Ebonlocke
-step
     .goto Duskwood,75.75,47.57
     >>Talk to |cRXP_FRIENDLY_Calor|r
     .turnin 221 >>Turn in Worgen in the Woods
     .accept 222 >>Accept Worgen in the Woods
     .target Calor
-step
-    .goto Duskwood,75.79,45.32
-    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
-    .turnin 148 >>Turn in Supplies from Darkshire
-    .accept 149 >>Accept Ghost Hair Thread
-    .target Madame Eva
-step
-    .goto Duskwood,79.80,48.02
-    >>Talk to |cRXP_FRIENDLY_Viktori Prism'Antras|r
-    .turnin 181 >>Turn in Look To The Stars
-    .target Viktori Prism'Antras
-step
-    .goto Duskwood,81.99,59.09
-    >>Talk to |cRXP_FRIENDLY_Blind Mary|r
-    .turnin 149 >>Turn in Ghost Hair Thread
-    .accept 154 >>Accept Return the Comb
-    .target Blind Mary
-step
-    .goto Duskwood,75.79,45.32
-    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
-    .turnin 154 >>Turn in Return the Comb
-    .accept 157 >>Accept Deliver the Thread
-    .target Madame Eva
-step
-    .goto Duskwood,68.62,20.24
-    >>Kill |cRXP_ENEMY_Venom Web Spider|r and |cRXP_ENEMY_Pygmy Venom Web Spider|r and |cRXP_ENEMY_Green Recluse|r. Loot them for |cRXP_LOOT_Vial of Spider Venom|r
-    .complete 101,2 --The Totem of Infliction
-    .mob Venom Web Spider
-    .mob Pygmy Venom Web Spider
-    .mob Green Recluse
-step
-    .goto Duskwood,75.79,45.32
-    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
-    .turnin 101 >>Turn in The Totem of Infliction
-    .target Madame Eva
 step
     .goto Duskwood,72.93,72.09
     >>Kill |cRXP_ENEMY_Nightbane Vile Fang|r
@@ -750,6 +675,74 @@ step
     >>Talk to |cRXP_FRIENDLY_Jonathan Carevin|r
     .turnin 223 >>Turn in Worgen in the Woods
     .target Jonathan Carevin
+step
+    .goto Duskwood,68.62,20.24
+    >>Kill |cRXP_ENEMY_Venom Web Spider|r and |cRXP_ENEMY_Pygmy Venom Web Spider|r and |cRXP_ENEMY_Green Recluse|r. Loot them for |cRXP_LOOT_Vial of Spider Venom|r
+    .complete 101,2 --The Totem of Infliction
+    .mob Venom Web Spider
+    .mob Pygmy Venom Web Spider
+    .mob Green Recluse
+step
+    .goto Duskwood,28.11,31.46
+    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
+    .turnin 165 >>Turn in The Hermit
+    .accept 148 >>Accept Supplies from Darkshire
+    .target Abercrombie
+step
+    .goto Duskwood,24.14,36.05
+    >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Fang|r
+    .complete 101,1 --The Totem of Infliction
+    .mob Flesh Eater
+    .mob Bone Chewer
+    .mob Brain Eater
+step
+    .goto Duskwood,22.93,43.46
+    >>Kill |cRXP_ENEMY_Skeletal Fiend|r
+    .complete 57,1 --The Night Watch
+    .mob Skeletal Fiend
+step
+    .goto Duskwood,15.96,34.65
+    >>Kill |cRXP_ENEMY_Skeletal Warrior|r and |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Mage|r. Loot them for |cRXP_LOOT_Skeleton Finger|r
+    .complete 101,3 --The Totem of Infliction
+    .mob Skeletal Warrior
+    .mob Skeletal Horror
+    .mob Skeletal Mage
+step
+    .goto Duskwood,7.78,34.07
+    >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
+    .accept 95 >>Accept Sven's Revenge
+    .turnin 164 >>Turn in Deliveries to Sven
+    .target Sven Yorgen
+step
+    .goto Duskwood,49.85,77.71
+    >>Click the |cRXP_PICK_Mound of loose dirt|r
+    .turnin 95 >>Turn in Sven's Revenge
+    .accept 230 >>Accept Sven's Camp
+step
+    .goto Duskwood,73.54,46.82
+    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
+    .turnin 57 >>Turn in The Night Watch
+    .accept 58 >>Accept The Night Watch
+    .target Commander Althea Ebonlocke
+step
+    .goto Duskwood,75.79,45.32
+    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
+    .turnin 101 >>Turn in The Totem of Infliction
+    .turnin 148 >>Turn in Supplies from Darkshire
+    .accept 149 >>Accept Ghost Hair Thread
+    .target Madame Eva
+step
+    .goto Duskwood,81.99,59.09
+    >>Talk to |cRXP_FRIENDLY_Blind Mary|r
+    .turnin 149 >>Turn in Ghost Hair Thread
+    .accept 154 >>Accept Return the Comb
+    .target Blind Mary
+step
+    .goto Duskwood,75.79,45.32
+    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
+    .turnin 154 >>Turn in Return the Comb
+    .accept 157 >>Accept Deliver the Thread
+    .target Madame Eva
 step
     .goto Duskwood,28.11,31.46
     >>Talk to |cRXP_FRIENDLY_Abercrombie|r

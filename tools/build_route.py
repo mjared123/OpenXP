@@ -205,76 +205,99 @@ class Builder:
                 return ("obj", oid, pts[0])
         return None
 
-    def objective_sites(self, q, zone):
-        """List of (index, kind, label, mobs, point) for each objective, or None if
-        an objective can't be done in this zone (dungeon, other zone, elite)."""
+    def objective_sites(self, q, zone, nearby=()):
+        """List of (index, kind, label, mobs, point, place) for each objective,
+        or None if an objective can't be done here (dungeon, far zone, elite).
+
+        Objectives are looked for in the section's zone first, then in its
+        `nearby` zones: (area, map name, (scale, dx, dy)). A nearby point is
+        mapped into the section zone's frame for routing; place keeps the
+        real (map name, x, y) for the .goto, or None for the home zone.
+        """
+        def locate(fn):
+            pts = fn(zone)
+            if pts:
+                return cluster_center(pts), None
+            for area, zname, (k, dx, dy) in nearby:
+                pts = fn(area)
+                if pts:
+                    c = cluster_center(pts)
+                    return (c[0] * k + dx, c[1] * k + dy), (zname, c[0], c[1])
+            return None, None
+
         sites = []
         obj = q.objectives or {}
         idx = 0
         for entry in as_list(li(obj, 1)):  # creatures
             idx += 1
-            nid = entry[0]
-            n = self.npc(nid)
+            n = self.npc(entry[0])
             if not n or (li(n, 6) or 0) in (1, 2, 3):  # elite / rare elite / boss
                 return None
-            pts = spawns_in(n, zone, 7)
-            if not pts:
+            pt, place = locate(lambda z: spawns_in(n, z, 7))
+            if not pt:
                 return None
-            sites.append((idx, "kill", li(n, 1), [li(n, 1)], cluster_center(pts)))
+            sites.append((idx, "kill", li(n, 1), [li(n, 1)], pt, place))
         for entry in as_list(li(obj, 2)):  # objects
             idx += 1
-            oid = entry[0]
-            o = self.db["o"].get(oid)
-            pts = spawns_in(o, zone, 4)
-            if not pts:
+            o = self.db["o"].get(entry[0])
+            pt, place = locate(lambda z: spawns_in(o, z, 4))
+            if not pt:
                 return None
             label = entry[1] if len(entry) > 1 and entry[1] else (li(o, 1) or "object")
-            sites.append((idx, "use", label, [], cluster_center(pts)))
+            sites.append((idx, "use", label, [], pt, place))
         for entry in as_list(li(obj, 3)):  # items
             idx += 1
-            iid = entry[0]
-            item = self.db["i"].get(iid)
+            item = self.db["i"].get(entry[0])
             if not item:
                 return None
-            pts, mobs = [], []
-            for nid in as_list(li(item, 2)):
-                n = self.npc(nid)
-                if n and (li(n, 6) or 0) not in (1, 2, 3):
-                    p = spawns_in(n, zone, 7)
-                    if p:
-                        pts += p
-                        mobs.append(li(n, 1))
-            for oid in as_list(li(item, 3)):
-                pts += spawns_in(self.db["o"].get(oid), zone, 4)
-            if not pts:
+            droppers = [self.npc(nid) for nid in as_list(li(item, 2))]
+            droppers = [n for n in droppers if n and (li(n, 6) or 0) not in (1, 2, 3)]
+            objs = [self.db["o"].get(oid) for oid in as_list(li(item, 3))]
+
+            def item_pts(z):
+                pts = []
+                for n in droppers:
+                    pts += spawns_in(n, z, 7)
+                for o in objs:
+                    pts += spawns_in(o, z, 4)
+                return pts
+            pt, place = locate(item_pts)
+            if not pt:
                 return None
-            sites.append((idx, "loot", li(item, 1), mobs[:3], cluster_center(pts)))
+            area = zone if place is None else next(a for a, zn, _ in nearby if zn == place[0])
+            mobs = [li(n, 1) for n in droppers if spawns_in(n, area, 7)]
+            sites.append((idx, "loot", li(item, 1), mobs[:3], pt, place))
         # reputation (4) objectives are never part of a leveling route
         if li(obj, 4):
             return None
         for entry in as_list(li(obj, 5)):  # kill credit
             idx += 1
-            ids = as_list(entry[0])
-            pts, mobs = [], []
-            for nid in ids:
-                n = self.npc(nid)
-                if n:
-                    p = spawns_in(n, zone, 7)
-                    if p:
-                        pts += p
-                        mobs.append(li(n, 1))
-            if not pts:
+            creditors = [self.npc(nid) for nid in as_list(entry[0])]
+            creditors = [n for n in creditors if n]
+
+            def credit_pts(z):
+                pts = []
+                for n in creditors:
+                    pts += spawns_in(n, z, 7)
+                return pts
+            pt, place = locate(credit_pts)
+            if not pt:
                 return None
+            area = zone if place is None else next(a for a, zn, _ in nearby if zn == place[0])
+            mobs = [li(n, 1) for n in creditors if spawns_in(n, area, 7)]
             label = entry[2] if len(entry) > 2 and entry[2] else (mobs[0] if mobs else "target")
-            sites.append((idx, "credit", label, mobs[:3], cluster_center(pts)))
+            sites.append((idx, "credit", label, mobs[:3], pt, place))
         if q.triggerEnd:
             text = li(q.triggerEnd, 1)
             locs = li(q.triggerEnd, 2) or {}
-            pts = [tuple(p) for p in as_list(locs.get(zone) if isinstance(locs, dict) else None) if p]
-            if not pts:
+
+            def trig_pts(z):
+                return [tuple(p) for p in as_list(locs.get(z) if isinstance(locs, dict) else None) if p]
+            pt, place = locate(trig_pts)
+            if not pt:
                 return None
             idx += 1
-            sites.append((idx, "explore", text, [], pts[0]))
+            sites.append((idx, "explore", text, [], pt, place))
         return sites
 
     def candidates(self, section, later_areas=()):
@@ -319,7 +342,7 @@ class Builder:
             if qid in self.objectives_done or (carried and qid in self.carried_ready):
                 sites = []
             else:
-                sites = self.objective_sites(q, zone)
+                sites = self.objective_sites(q, zone, section.get("nearby", ()))
                 if sites is None:
                     continue
             out[qid] = dict(q=q, start=start, finish=finish, sites=sites,
@@ -483,9 +506,14 @@ def render_section(builder, section, cands, actions, group, nxt):
             i = j
             continue
         # Objectives: merge the ones done at the same spot into one step.
+        def place_of(action):
+            qid, oi = action[1]
+            return next(s for s in cands[qid]["sites"] if s[0] == oi)[5]
+        place0 = place_of(actions[i])
         group_objs = [actions[i]]
         j = i + 1
-        while j < len(actions) and actions[j][0] == "obj" and math.dist(actions[j][2], where) < 3.0:
+        while (j < len(actions) and actions[j][0] == "obj" and math.dist(actions[j][2], where) < 3.0
+               and (place_of(actions[j]) or (None,))[0] == (place0 or (None,))[0]):
             group_objs.append(actions[j])
             j += 1
         texts, completes, mobs_all, tags = [], [], [], set()
@@ -494,7 +522,7 @@ def render_section(builder, section, cands, actions, group, nxt):
             site = next(s for s in c["sites"] if s[0] == oi)
             q = c["q"]
             tags.add(q.class_tag())
-            _, okind, label, mobs, _ = site
+            _, okind, label, mobs, _, place = site
             if okind == "kill":
                 t = "Kill |cRXP_ENEMY_%s|r" % label
             elif okind == "loot":
@@ -514,7 +542,10 @@ def render_section(builder, section, cands, actions, group, nxt):
                     mobs_all.append(m)
         tag = tags.pop() if len(tags) == 1 else None
         lines.append("step" + (" << " + tag if tag else ""))
-        lines.append("    .goto %s" % fmt_coord(zname, where))
+        if place0:
+            lines.append("    .goto %s,%.2f,%.2f" % place0)
+        else:
+            lines.append("    .goto %s" % fmt_coord(zname, where))
         for t in texts:
             lines.append("    >>" + t)
         lines.extend(completes)
@@ -528,12 +559,25 @@ def render_section(builder, section, cands, actions, group, nxt):
     return "\n".join(lines)
 
 
-def free_guide_quests():
-    """Quests accepted / turned in by the guides already in Guides/forever."""
+CLASS_GUIDE = r"Warrior|Paladin|Hunter|Rogue|Priest|Mage|Warlock|Druid|Shaman"
+
+
+def free_guide_quests(skip=None):
+    """Quests accepted / turned in by the Alliance guides before this one:
+    the free ones in Guides/forever and OpenXP's earlier level ranges."""
     accepted, turned = set(), set()
-    for path in glob.glob(os.path.join(ROOT, "Guides", "forever", "*.lua")):
-        if "dungeon" in path or not os.path.basename(path).startswith("Alliance"):
+    paths = glob.glob(os.path.join(ROOT, "Guides", "forever", "*.lua"))
+    paths += glob.glob(os.path.join(ROOT, "Guides", "openxp", "*.lua"))
+    for path in paths:
+        base = os.path.basename(path)
+        if "dungeon" in path or not base.startswith("Alliance"):
             continue
+        if re.search(CLASS_GUIDE, base):
+            continue  # class-only routes; most players never ran them
+        if skip and os.path.abspath(path) == os.path.abspath(skip):
+            continue
+        if skip and os.path.dirname(path).endswith(os.path.join("Guides", "openxp")) and base > os.path.basename(skip):
+            continue  # later level ranges
         text = open(path, encoding="utf-8").read()
         accepted |= {int(x) for x in re.findall(r"\.accept\s+(\d+)", text)}
         turned |= {int(x) for x in re.findall(r"\.turnin\s+-?(\d+)", text)}
@@ -551,8 +595,10 @@ def main():
     spec.loader.exec_module(route)
 
     db = load_db(args.questiedb)
-    accepted, turned = free_guide_quests()
+    accepted, turned = free_guide_quests(os.path.join(ROOT, route.OUTPUT))
     builder = Builder(db, done_before=turned, carried=accepted - turned)
+    # Quests a route leaves out on purpose (rare drops, page collections...)
+    builder.used |= set(getattr(route, "SKIP", ()))
 
     sections = route.SECTIONS
     out = [route.HEADER.rstrip(), ""]

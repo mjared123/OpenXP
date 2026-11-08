@@ -70,7 +70,7 @@ end
 
 local guides = {}
 for _, file in ipairs({"forever/Alliance-1-13_Human.lua", "forever/Alliance-11-20.lua",
-                       "openxp/Alliance-21-30.lua"}) do
+                       "openxp/Alliance-21-30.lua", "openxp/Alliance-30-40.lua"}) do
     for _, g in ipairs(parseGuides(readfile(ROOT .. "/Guides/" .. file))) do
         table.insert(guides, g)
     end
@@ -192,21 +192,26 @@ check(g and g.name == "24-26 Wetlands", "level 25 in Wetlands picks 24-26 Wetlan
 local names = {}
 for _, gg in ipairs(guides) do names[gg.name] = true end
 for _, n in ipairs({"21-23 Stonetalon/Ashenvale", "23-24 Stonetalon Mountains", "24-26 Wetlands",
-                    "26-28 Redridge Mountains", "28-30 Duskwood"}) do
+                    "26-28 Redridge Mountains", "28-30 Duskwood", "30-32 Hillsbrad Foothills",
+                    "39-40 Stranglethorn Vale"}) do
     check(names[n], "21-30 section parsed: " .. n)
 end
 
--- 7. Every quest the 21-30 file completes or turns in with a plain id is
--- accepted earlier in that file (carried quests use skip-if-missing ids).
-do
-    local text = readfile(ROOT .. "/Guides/openxp/Alliance-21-30.lua")
+-- 7. Every quest an OpenXP file completes or turns in with a plain id is
+-- accepted earlier in that file (carried quests use skip-if-missing ids),
+-- and every #next names a section that exists.
+for _, file in ipairs({"Alliance-21-30.lua", "Alliance-30-40.lua"}) do
+    local text = readfile(ROOT .. "/Guides/openxp/" .. file)
+    for nxt in text:gmatch("#next ([^\n]+)") do
+        check(names[nxt:gsub("^.*\\", "")], file .. " #next points at a missing section: " .. nxt)
+    end
     local accepted, bad = {}, {}
     for line in text:gmatch("[^\n]+") do
         local tag, id = line:match("^%s+%.(%a+)%s+(%d+)")
         if tag == "accept" then accepted[id] = true
         elseif (tag == "turnin" or tag == "complete") and not accepted[id] then table.insert(bad, id) end
     end
-    check(#bad == 0, "21-30 quests used before accepted: " .. table.concat(bad, ","))
+    check(#bad == 0, file .. " quests used before accepted: " .. table.concat(bad, ","))
 end
 
 print(string.format("%d passed, %d failed", passes, failures))
