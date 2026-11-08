@@ -1,0 +1,7 @@
+#Ignore local import testing
+Guides/Import.lua
+.vscode/settings.json
+.vscode/
+Textures/v2/*.png
+Textures/v2/*.exe
+.github/copilot-instructions.md

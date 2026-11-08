@@ -1,0 +1,82 @@
+## Interface: 11509, 38002, 50504, 120007, 120105, 16001
+## Interface-Mists: 50504
+## Interface-TBC: 20506
+## Interface-Classic: 11509
+## Title: OpenXP
+## Title-zhCN: OpenXP
+## Notes: Free, community-made leveling guides (based on RestedXP Guides, CC BY-NC-SA 4.0)
+## Author: OpenXP contributors (based on RestedXP Guides by RestedXP)
+## Version: @project-version@
+## Category: Quests
+## Category-deDE: Quests
+## Category-esES: Misiones
+## Category-esMX: Misiones
+## Category-frFR: Quêtes
+## Category-itIT: Missioni
+## Category-koKR: 퀘스트
+## Category-ptBR: Missões
+## Category-ruRU: Задания
+## Category-zhCN: 任务
+## Category-zhTW: 任務
+## OptionalDeps: Questie
+## SavedVariables: OXPData, OXPDB, OXPSettings, OXPString
+## SavedVariablesPerCharacter: OXPCData, OXPCTrackingData, OXPCComms, OXPCSettings
+
+libs\embeds_Mainline.xml [AllowLoadGameType standard,camelot]
+libs\embeds.xml [AllowLoadGameType vanilla,tbc,wrath,cata,mists]
+locale\locales.xml
+UI\includes.xml
+
+Locale.lua
+Themes.lua
+Communications.lua
+RXPGuides.lua
+GuideWindow.lua
+Help.lua
+SettingsPanel.lua
+
+DB/mainline.xml [AllowLoadGameType standard]
+DB/mop.xml [AllowLoadGameType mists]
+DB/cata.xml [AllowLoadGameType cata]
+DB/wotlk.xml [AllowLoadGameType wrath]
+DB/tbc.xml [AllowLoadGameType tbc]
+DB/classic.xml [AllowLoadGameType vanilla]
+DB/forever.xml [AllowLoadGameType camelot]
+
+HSBatching.lua
+QuestLog.lua
+ActiveItemFrame.lua
+LevelingTracker.lua
+Timers.lua
+Targeting.lua
+Tips.lua
+InventoryManager.lua
+
+
+map.lua
+functions.lua
+GuideLoader.lua
+
+Guides/GuideList-Mainline.xml [AllowLoadGameType standard]
+Guides/GuideList-cata.xml [AllowLoadGameType cata]
+Guides/GuideList-mop.xml [AllowLoadGameType mists]
+Guides/GuideList-classic.xml [AllowLoadGameType vanilla]
+Guides/GuideList-forever.xml [AllowLoadGameType camelot]
+
+Guides/GuideList-tbc.xml [AllowLoadGameType tbc]
+
+
+
+
+
+
+
+
+Talents.lua [AllowLoadGameType cata,vanilla,camelot,tbc]
+Guides/Talents/cata.xml [AllowLoadGameType cata]
+Guides/Talents/tbc.xml [AllowLoadGameType tbc]
+Guides/Talents/classic.xml [AllowLoadGameType vanilla,camelot]
+
+ItemUpgrades.lua [AllowLoadGameType tbc,vanilla,camelot,cata]
+
+CptStadicsVendorTreasures.lua [AllowLoadGameType vanilla,camelot,tbc,wrath]
