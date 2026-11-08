@@ -5,11 +5,20 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.2.0"
+local OPENXP_VERSION = "0.3.0"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.3.0",
+        date = "November 2026",
+        changes = {
+            "New Alliance 21-30 route: Ashenvale, Stonetalon, Wetlands, Redridge and Duskwood",
+            "The 20-21 guides now carry straight on into 21-30, for Hunters too",
+            "Smart start knows the new sections, so it can place you anywhere from 1 to 30",
+        },
+    },
     {
         version = "0.2.0",
         date = "November 2026",

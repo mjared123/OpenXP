@@ -6124,7 +6124,7 @@ RXPGuides.RegisterGuide([[
 #subgroup Speedrun Guide 1-20
 --#groupid RXP-SRGCE-A1
 #name 19-21 Darkshore/Ashenvale
-#next RestedXP Forever Guide (A)\21-23 Ashenvale/Stonetalon
+#next RestedXP Forever Guide (A)\21-23 Stonetalon/Ashenvale
 
 step
     #optional

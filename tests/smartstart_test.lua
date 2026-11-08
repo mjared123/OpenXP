@@ -69,8 +69,9 @@ local function parseGuides(text)
 end
 
 local guides = {}
-for _, file in ipairs({"Alliance-1-13_Human.lua", "Alliance-11-20.lua"}) do
-    for _, g in ipairs(parseGuides(readfile(ROOT .. "/Guides/forever/" .. file))) do
+for _, file in ipairs({"forever/Alliance-1-13_Human.lua", "forever/Alliance-11-20.lua",
+                       "openxp/Alliance-21-30.lua"}) do
+    for _, g in ipairs(parseGuides(readfile(ROOT .. "/Guides/" .. file))) do
         table.insert(guides, g)
     end
 end
@@ -182,6 +183,31 @@ reset(); state.level = 20; state.zone = ""
 g = SS.PickGuide(guides, 20, "")
 local lo = g and tonumber(g.name:match("^(%d+)"))
 check(g and lo and lo >= 16, "level 20 picks a 16+ section, got " .. tostring(g and g.name))
+
+-- 6. OpenXP 21-30: a level 25 in the Wetlands lands in the Wetlands section,
+-- and the 20-21 guides chain into the 21-30 file.
+reset(); state.level = 25; state.zone = "Wetlands"
+g = SS.PickGuide(guides, 25, "Wetlands")
+check(g and g.name == "24-26 Wetlands", "level 25 in Wetlands picks 24-26 Wetlands, got " .. tostring(g and g.name))
+local names = {}
+for _, gg in ipairs(guides) do names[gg.name] = true end
+for _, n in ipairs({"21-23 Stonetalon/Ashenvale", "23-24 Stonetalon Mountains", "24-26 Wetlands",
+                    "26-28 Redridge Mountains", "28-30 Duskwood"}) do
+    check(names[n], "21-30 section parsed: " .. n)
+end
+
+-- 7. Every quest the 21-30 file completes or turns in with a plain id is
+-- accepted earlier in that file (carried quests use skip-if-missing ids).
+do
+    local text = readfile(ROOT .. "/Guides/openxp/Alliance-21-30.lua")
+    local accepted, bad = {}, {}
+    for line in text:gmatch("[^\n]+") do
+        local tag, id = line:match("^%s+%.(%a+)%s+(%d+)")
+        if tag == "accept" then accepted[id] = true
+        elseif (tag == "turnin" or tag == "complete") and not accepted[id] then table.insert(bad, id) end
+    end
+    check(#bad == 0, "21-30 quests used before accepted: " .. table.concat(bad, ","))
+end
 
 print(string.format("%d passed, %d failed", passes, failures))
 return failures
