@@ -54,4 +54,8 @@ addon.GuideNames =
     ["Speedrun Guide 1-20"] = "Levels 1-20",
     ["Speedrun Guide 1-22"] = "Levels 1-22",
     ["OpenXP 21-60"] = "Levels 21-60",
+    ["RestedXP Alliance 1-20"] = "OpenXP Alliance 1-20",
+    ["RestedXP Horde 1-22"] = "OpenXP Horde 1-22",
+    ["RestedXP Alliance 20-30"] = "OpenXP Alliance 21-60",
+    ["RestedXP Horde 20-30"] = "OpenXP Horde 22-60",
 }

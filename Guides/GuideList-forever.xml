@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..FrameXMLUI.xsd">
-	<Script file="Guides/forever/RestedXP-Skyborne.lua"/>
+    <Script file="Guides/forever/RestedXP-Skyborne.lua"/>
     <Script file="Guides/forever/Alliance-1-10_NightElf.lua"/>
     <Script file="Guides/forever/Alliance-1-13_Human.lua"/>
     <Script file="Guides/forever/Alliance-1-14_DwarfGnome.lua"/>
@@ -12,5 +12,8 @@
     <Script file="Guides/forever/Horde-01-14_Undead.lua"/>
     <Script file="Guides/forever/Horde-1-12_Mulgore.lua"/>
     <Script file="Guides/forever/Horde-12-22_Barrens.lua"/>
-
+    <Script file="Guides/openxp/Horde-22-30.lua"/>
+    <Script file="Guides/openxp/Horde-30-40.lua"/>
+    <Script file="Guides/openxp/Horde-40-50.lua"/>
+    <Script file="Guides/openxp/Horde-50-60.lua"/>
 </Ui>

@@ -2564,7 +2564,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (H)
 #subgroup Speedrun Guide 1-22
 --#groupid RXP-SRGCE-H1
-#next 22-24 Hillsbrad
+#next 22-24 Hillsbrad Foothills
 
 
 step

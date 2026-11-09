@@ -67,16 +67,26 @@ def _load_table(path, var):
     return out
 
 
-def load_db(questiedb):
-    cache = os.path.join(questiedb, ".openxp-cache.pkl")
+# Which game the route is for: "Forever" or "Classic" (Classic Era).
+# Set from the route file's GAME; Forever by default.
+GAME = "Forever"
+# "Alliance" or "Horde"; set from the route file's FACTION.
+FACTION = "Alliance"
+
+
+def load_db(questiedb, game=None):
+    game = game or GAME
+    suffix = "" if game == "Forever" else "-" + game.lower()
+    cache = os.path.join(questiedb, ".openxp-cache%s.pkl" % suffix)
     if os.path.exists(cache):
         return pickle.load(open(cache, "rb"))
-    d = os.path.join(questiedb, "data", "Forever")
+    d = os.path.join(questiedb, "data", game)
+    pre = game.lower()
     db = {
-        "q": _load_table(os.path.join(d, "foreverQuestDB.lua"), "questData"),
-        "n": _load_table(os.path.join(d, "foreverNpcDB.lua"), "npcData"),
-        "o": _load_table(os.path.join(d, "foreverObjectDB.lua"), "objectData"),
-        "i": _load_table(os.path.join(d, "foreverItemDB.lua"), "itemData"),
+        "q": _load_table(os.path.join(d, pre + "QuestDB.lua"), "questData"),
+        "n": _load_table(os.path.join(d, pre + "NpcDB.lua"), "npcData"),
+        "o": _load_table(os.path.join(d, pre + "ObjectDB.lua"), "objectData"),
+        "i": _load_table(os.path.join(d, pre + "ItemDB.lua"), "itemData"),
     }
     pickle.dump(db, open(cache, "wb"))
     return db
@@ -125,6 +135,10 @@ class Quest:
 
     def alliance(self):
         return self.races == 0 or (self.races & ALLIANCE_RACES) != 0
+
+    def for_faction(self):
+        mask = ALLIANCE_RACES if FACTION == "Alliance" else HORDE_RACES
+        return self.races == 0 or (self.races & mask) != 0
 
     def class_tag(self):
         if not self.classes or (self.classes & ALL_CLASSES) == ALL_CLASSES:
@@ -179,7 +193,7 @@ class Builder:
     def friendly(self, nid):
         n = self.npc(nid)
         f = li(n, 13) if n else None
-        return f is None or "A" in f
+        return f is None or ("A" if FACTION == "Alliance" else "H") in f
 
     def starter(self, q, zone):
         sb = q.startedBy
@@ -313,7 +327,7 @@ class Builder:
         out = {}
         for qid, row in self.db["q"].items():
             q = Quest(qid, row)
-            if not q.alliance() or not q.name:
+            if not q.for_faction() or not q.name:
                 continue
             if qid in self.done or qid in self.used:
                 continue
@@ -447,10 +461,10 @@ def render_section(builder, section, cands, actions, group, nxt):
     zname = section["zone"]
     lines = []
     lines.append("RXPGuides.RegisterGuide([[")
-    lines.append("#forever")
+    lines.append("#forever" if GAME == "Forever" else "#classic")
     lines.append("#disabledungeons")
     lines.append("#version 1")
-    lines.append("<< Alliance")
+    lines.append("<< " + FACTION)
     lines.append("#group %s" % group)
     lines.append("#subgroup %s" % section.get("subgroup", "OpenXP 21-60"))
     lines.append("#name %s" % section["name"])
@@ -571,17 +585,23 @@ def free_guide_quests(skip=None):
     """Quests accepted / turned in by the Alliance guides before this one:
     the free ones in Guides/forever and OpenXP's earlier level ranges."""
     accepted, turned = set(), set()
-    paths = glob.glob(os.path.join(ROOT, "Guides", "forever", "*.lua"))
-    paths += glob.glob(os.path.join(ROOT, "Guides", "openxp", "*.lua"))
+    if GAME == "Forever":
+        out_dir = "openxp"
+        paths = glob.glob(os.path.join(ROOT, "Guides", "forever", "*.lua"))
+    else:
+        out_dir = "openxp-classic"
+        paths = [p for p in glob.glob(os.path.join(ROOT, "Guides", "Classic-*.lua"))]
+    paths += glob.glob(os.path.join(ROOT, "Guides", out_dir, "*.lua"))
     for path in paths:
         base = os.path.basename(path)
-        if "dungeon" in path or not base.startswith("Alliance"):
+        name = base[len("Classic-"):] if base.startswith("Classic-") else base
+        if "dungeon" in path or not name.startswith(FACTION):
             continue
         if re.search(CLASS_GUIDE, base):
             continue  # class-only routes; most players never ran them
         if skip and os.path.abspath(path) == os.path.abspath(skip):
             continue
-        if skip and os.path.dirname(path).endswith(os.path.join("Guides", "openxp")) and base > os.path.basename(skip):
+        if skip and os.path.dirname(path).endswith(os.path.join("Guides", out_dir)) and base > os.path.basename(skip):
             continue  # later level ranges
         text = open(path, encoding="utf-8").read()
         accepted |= {int(x) for x in re.findall(r"\.accept\s+(\d+)", text)}
@@ -599,6 +619,9 @@ def main():
     route = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(route)
 
+    global GAME, FACTION
+    GAME = getattr(route, "GAME", "Forever")
+    FACTION = getattr(route, "FACTION", "Alliance")
     db = load_db(args.questiedb)
     accepted, turned = free_guide_quests(os.path.join(ROOT, route.OUTPUT))
     builder = Builder(db, done_before=turned, carried=accepted - turned)
