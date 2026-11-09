@@ -1620,6 +1620,15 @@ function card.DebugStep()
     say("Questie GetQuest(945):", probe and tostring(probe.name) or "nil", "style:", tostring(card.questieStyle))
     say("last card error:", tostring(card.lastError))
     say("auto skip off:", tostring(addon.settings and addon.settings.profile.disableAutoSkip), "isHidden:", tostring(addon.isHidden))
+    local log = addon.QuestLogIDs and addon.QuestLogIDs()
+    if log then
+        local list = {}
+        for id, title in pairs(log) do tinsert(list, id .. "=" .. tostring(title)) end
+        table.sort(list)
+        say("quest log:", table.concat(list, ", "))
+    else
+        say("quest log: unreadable (expand all headers in the quest log)")
+    end
     say("chain walk:", card.detour and ("on, target " .. tostring(card.detour.target)) or "off")
     local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
     for _, step in ipairs(active) do
@@ -1630,7 +1639,10 @@ function card.DebugStep()
                 local line = "   " .. e.tag .. (id and (" q" .. id) or "")
                 if id then
                     local qid = math.abs(id)
-                    line = line .. " inLog=" .. tostring(addon.IsOnQuest and addon.IsOnQuest(qid) or false) ..
+                    local log = addon.QuestLogIDs and addon.QuestLogIDs()
+                    line = line .. " api=" .. tostring(C_QuestLog and C_QuestLog.IsOnQuest and C_QuestLog.IsOnQuest(qid) or false) ..
+                               " questLog=" .. (log and tostring(log[qid] ~= nil) or "unreadable") ..
+                               " inLog=" .. tostring(addon.IsOnQuest and addon.IsOnQuest(qid) or false) ..
                                " done=" .. tostring(addon.IsQuestTurnedIn and addon.IsQuestTurnedIn(qid) or false) ..
                                " blockedBy=" .. tostring((card.QuestBlocked(qid)))
                     local pre = card.Prereqs(qid)

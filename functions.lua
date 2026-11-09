@@ -420,8 +420,37 @@ function addon.IsQuestComplete(id)
 end
 local IsQuestComplete = addon.IsQuestComplete
 
+-- OpenXP: the quests actually listed in the quest log. On WoW Forever
+-- C_QuestLog.IsOnQuest has said yes for quests that aren't in the log
+-- (Mathystra Relics, reported 2026-11-09), so it's checked against the log.
+-- Returns nil when the log can't be read fully (a collapsed header).
+local questLogCache, questLogDirty = nil, true
+local logWatcher = CreateFrame("Frame")
+logWatcher:RegisterEvent("QUEST_LOG_UPDATE")
+logWatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
+logWatcher:SetScript("OnEvent", function() questLogDirty = true end)
+
+function addon.QuestLogIDs()
+    if not questLogDirty then return questLogCache end
+    questLogDirty = false
+    questLogCache = nil
+    if not (GetQuestLogTitle and GetNumQuests) then return end
+    local ids = {}
+    for i = 1, GetNumQuests() do
+        local title, _, _, isHeader, isCollapsed, _, _, questID = GetQuestLogTitle(i)
+        if isHeader and isCollapsed then return end
+        if not isHeader and questID and questID > 0 then ids[questID] = title or true end
+    end
+    questLogCache = ids
+    return ids
+end
+
 local function IsOnQuest(id)
     local quest = C_QuestLog.IsOnQuest(id)
+    if quest then
+        local log = addon.QuestLogIDs()
+        if log and not log[id] then quest = false end
+    end
     local recent = addon.recentAccept[id]
     if quest then
         addon.recentAccept[id] = nil

@@ -5,11 +5,18 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.4"
+local OPENXP_VERSION = "0.9.5"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.5",
+        date = "November 2026",
+        changes = {
+            "Fixed steps for quests that aren't in your quest log (like Mathystra Relics) being treated as if you had them. The guide now checks the quest log itself",
+        },
+    },
     {
         version = "0.9.4",
         date = "November 2026",
