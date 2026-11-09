@@ -139,5 +139,10 @@ try("hidden when the engine hides its window", function()
     assert(not card.frame.shown, "card still shown")
     addon.RXPFrame.shown = true
 end)
+try("font size change applies on the next redraw", function()
+    addon.settings.profile.guideFontSize = 16
+    card.Refresh(true)
+    addon.settings.profile.guideFontSize = 12
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

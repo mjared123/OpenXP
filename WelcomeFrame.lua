@@ -5,11 +5,18 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.8.0"
+local OPENXP_VERSION = "0.8.1"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.8.1",
+        date = "November 2026",
+        changes = {
+            "Guide font size now changes right away, no reload needed",
+        },
+    },
     {
         version = "0.8.0",
         date = "November 2026",

@@ -3087,17 +3087,20 @@ function addon.settings:CreateAceOptionsPanel()
                     },
                     guideFontSize = {
                         name = L("Guide Font Size"), -- TODO locale
-                        desc = L("Change font size of the Guide Window"),
+                        desc = L("Change font size of the guide card. Updates right away"),
                         type = "range",
                         width = optionsWidth,
                         order = 3.2,
                         min = 9,
                         max = 18,
                         step = 1,
-                        confirm = requiresReload,
                         set = function(info, value)
+                            -- OpenXP: the guide card reads this on every
+                            -- redraw, so no reload is needed
                             SetProfileOption(info, value)
-                            _G.ReloadUI()
+                            if addon.card and addon.card.enabled then
+                                addon.card.Refresh(true)
+                            end
                         end
                     },
                     anchorOrientation = {
