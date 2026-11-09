@@ -51,6 +51,7 @@ GuideLoader.lua
 SmartStart.lua
 WelcomeFrame.lua
 OpenXPCard.lua
+OpenXPTooltips.lua
 
 Guides/GuideList-classic.xml
 

@@ -58,4 +58,8 @@ addon.GuideNames =
     ["RestedXP Horde 1-22"] = "OpenXP Horde 1-22",
     ["RestedXP Alliance 20-30"] = "OpenXP Alliance 21-60",
     ["RestedXP Horde 20-30"] = "OpenXP Horde 22-60",
+    [L"RestedXP Speedrun Guide (A)"] = "OpenXP Alliance",
+    [L"RestedXP Speedrun Guide (H)"] = "OpenXP Horde",
+    ["RestedXP Forever Dungeon Guide (A)"] = "OpenXP Dungeons (A)",
+    ["RestedXP Forever Dungeon Guide (H)"] = "OpenXP Dungeons (H)",
 }

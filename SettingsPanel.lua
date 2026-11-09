@@ -210,6 +210,10 @@ local settingsDBDefaults = {
         enableAddonIncompatibilityCheck = true,
         enableVendorTreasure = true,
         enableInventoryManager = true,
+        autoSellJunk = true,
+        openxpTooltips = true,
+        openxpAutoLoot = false,
+        openxpMaxCamera = false,
 
         -- Themes
         activeTheme = 'RXP Blue',
@@ -990,7 +994,7 @@ function addon.settings:CreateAceOptionsPanel()
                     },
                     enableV2MenuTheme = {
                         name = L("Brand Menus"),
-                        desc = L("Apply the V2 style to RestedXP menus"),
+                        desc = L("Apply the V2 style to OpenXP menus"),
                         type = "toggle",
                         width = optionsWidth,
                         order = 5.3,
@@ -2005,7 +2009,7 @@ function addon.settings:CreateAceOptionsPanel()
                         name =
                             L"Always Open Leveling Report With Character Panel",
                         desc =
-                            L"Enables the RestedXP Leveling Report when you open your character panel",
+                            L"Enables the OpenXP Leveling Report when you open your character panel",
                         type = "toggle",
                         width = "full",
                         order = 1.1,
@@ -2237,7 +2241,7 @@ function addon.settings:CreateAceOptionsPanel()
                     },
                     alwaysSendBranded = {
                         name = L("Send announcements without another RXP user in group"),
-                        desc = L("Without this checked we will only send announcements if another RestedXP User is in your group"),
+                        desc = L("Without this checked we will only send announcements if another OpenXP user is in your group"),
                         type = "toggle",
                         width = "full",
                         order = 3.1
@@ -3203,6 +3207,41 @@ function addon.settings:CreateAceOptionsPanel()
                         width = optionsWidth,
                         func = function()
                             if addon.card then addon.card.ResetPosition() end
+                        end
+                    },
+                    extrasHeader = {
+                        name = L("Extras"),
+                        type = "header",
+                        width = "full",
+                        order = 5.5
+                    },
+                    openxpTooltips = {
+                        name = L("Quest tooltips"),
+                        desc = L("Mob tooltips show the quests they count for and your progress. NPC tooltips show which guide step needs them."),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.51,
+                    },
+                    openxpAutoLoot = {
+                        name = L("Auto loot"),
+                        desc = L("Turns on the game's Auto Loot option"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.52,
+                        set = function(info, value)
+                            SetProfileOption(info, value)
+                            if addon.openxpExtras then addon.openxpExtras.Apply() end
+                        end
+                    },
+                    openxpMaxCamera = {
+                        name = L("Max camera distance"),
+                        desc = L("Lets you zoom the camera out as far as the game allows"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.53,
+                        set = function(info, value)
+                            SetProfileOption(info, value)
+                            if addon.openxpExtras then addon.openxpExtras.Apply() end
                         end
                     },
                     resetArrowPosition = {

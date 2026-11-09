@@ -1271,12 +1271,44 @@ local function Visible()
     return true
 end
 
+-- A cheap fingerprint of everything the card draws. Refresh only lays the
+-- card out again when it changes (or every few seconds as a safety net),
+-- so an idle card costs a string build four times a second.
+card.questLogTick = 0
+function card.Signature()
+    local guide = addon.currentGuide
+    local p = Profile() or {}
+    local parts = {
+        guide and guide.name or "", CurrentStep() or 0, card.questLogTick,
+        card.width or 0, card.height or 0, p.windowScale or 1, p.guideFontSize or 0,
+        p.openxpCardCollapsed and 1 or 0, p.lockFrames and 1 or 0,
+        card.detour and (card.detour.index or 0) or -1, card.sizing and 1 or 0,
+    }
+    local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
+    for _, step in ipairs(active) do
+        tinsert(parts, step.index or 0)
+        tinsert(parts, step.completed and 1 or 0)
+        for _, e in ipairs(step.elements or {}) do
+            tinsert(parts, e.text or "")
+            tinsert(parts, (e.completed or e.skip) and 1 or 0)
+        end
+    end
+    return table.concat(parts, "\031")
+end
+
 function card.Refresh(force)
     if not Visible() then
         f:Hide()
+        card.lastSig = nil
         return
     end
     f:Show()
+    local now = GetTime and GetTime() or 0
+    local sig = card.Signature()
+    if not force and sig == card.lastSig and now - (card.lastFull or 0) < 3 then
+        return
+    end
+    card.lastSig, card.lastFull = sig, now
 
     local guide = addon.currentGuide
     local p = Profile()
@@ -1653,6 +1685,12 @@ function card.Enable()
     card.SetupArrow()
     pcall(card.RestoreStep)
     card.Refresh(true)
+    -- Once per character: point out that Questie adds chains and levels
+    C_Timer.After(20, function()
+        if _G.QuestieLoader or not OXPCData or OXPCData.openxpQuestieHint then return end
+        OXPCData.openxpQuestieHint = true
+        print("|cFF66BB6AOpenXP:|r " .. L("Tip: install the free Questie addon and OpenXP will show quest chains, quest levels and \"Do the chain\" on steps you're missing. Everything else works without it."))
+    end)
 end
 
 -- Settings > Reset guide card: default spot and size
@@ -1678,6 +1716,16 @@ if addon.SetupArrow then
         if card.enabled then card.SetupArrow() end
     end
 end
+
+-- Anything quest or level related bumps the counter, so the card redraws
+local watcher = CreateFrame("Frame")
+for _, ev in ipairs({"QUEST_LOG_UPDATE", "QUEST_ACCEPTED", "QUEST_TURNED_IN", "QUEST_REMOVED",
+                     "PLAYER_LEVEL_UP", "PLAYER_XP_UPDATE", "ZONE_CHANGED_NEW_AREA", "BAG_UPDATE_DELAYED"}) do
+    pcall(watcher.RegisterEvent, watcher, ev)
+end
+watcher:SetScript("OnEvent", function()
+    card.questLogTick = (card.questLogTick or 0) + 1
+end)
 
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("PLAYER_ENTERING_WORLD")

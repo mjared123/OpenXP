@@ -49,6 +49,7 @@ GuideLoader.lua
 SmartStart.lua
 WelcomeFrame.lua
 OpenXPCard.lua
+OpenXPTooltips.lua
 CptStadicsVendorTreasures.lua
 
 Guides/GuideList-tbc.xml

@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""Build the release zip for WoW Forever and Classic Era.
+
+Copies the committed tree (git archive), drops dev files and everything that
+only loads on other game versions (Retail, TBC, Wrath, Cata, MoP, SoD), checks
+that every file the Forever/Classic load path references is still there, and
+zips it.
+
+    python3 tools/package.py <out.zip> [git-ref]
+"""
+import os, re, shutil, subprocess, sys, tempfile, zipfile
+
+KEEP_TYPES = {"vanilla", "camelot"}
+DROP = [
+    "tests", "tools", "Scripts", ".vscode", ".editorconfig", ".gitignore", ".pkgmeta",
+    "Textures/OpenXP-source", "OpenXP_TBC.toc",
+    "Guides/Retail", "Guides/tbc", "Guides/cata", "Guides/mop", "Guides/SoD",
+    "Guides/SurvivalGuide", "Guides/Dailies", "Guides/GuideList.xml",
+    "Guides/GuideList-mainline.xml", "Guides/GuideList-cata.xml",
+    "Guides/GuideList-mop.xml", "Guides/GuideList-tbc.xml",
+    "Guides/Talents/cata.xml", "Guides/Talents/tbc.xml",
+    "DB/mainline", "DB/mainline.xml", "DB/mop", "DB/mop.xml", "DB/cata", "DB/cata.xml",
+    "DB/wotlk", "DB/wotlk.xml", "DB/tbc", "DB/tbc.xml",
+]
+
+
+def loads_here(line):
+    m = re.search(r"\[AllowLoadGameType ([^\]]+)\]", line)
+    if not m:
+        return True
+    return bool(KEEP_TYPES & {t.strip() for t in m.group(1).split(",")})
+
+
+def exists(path):
+    """Case-insensitive, like the Windows and Mac clients."""
+    if os.path.exists(path):
+        return True
+    parent, name = os.path.split(path)
+    if not parent or not exists(parent):
+        return False
+    real = _real(parent)
+    return any(n.lower() == name.lower() for n in os.listdir(real))
+
+
+def _real(path):
+    if os.path.exists(path):
+        return path
+    parent, name = os.path.split(path)
+    real = _real(parent)
+    for n in os.listdir(real):
+        if n.lower() == name.lower():
+            return os.path.join(real, n)
+    return path
+
+
+def check(root):
+    missing, seen = [], set()
+
+    def visit(path):
+        path = os.path.normpath(path)
+        if path in seen:
+            return
+        seen.add(path)
+        if not exists(path):
+            missing.append(os.path.relpath(path, root))
+            return
+        path = _real(path)
+        if path.endswith(".xml"):
+            text = open(path, encoding="utf-8", errors="replace").read()
+            text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+            for ref in re.findall(r'<(?:Script|Include)\s+file="([^"]+)"', text):
+                ref = ref.replace("\\", "/")
+                base = os.path.dirname(path)
+                cand = os.path.join(base, ref)
+                if not exists(cand) and exists(os.path.join(root, ref)):
+                    cand = os.path.join(root, ref)
+                visit(cand)
+
+    for toc in ("OpenXP.toc", "OpenXP_Vanilla.toc"):
+        tp = os.path.join(root, toc)
+        if not os.path.exists(tp):
+            continue
+        for line in open(tp, encoding="utf-8"):
+            line = line.strip()
+            if not line or line.startswith("#") or not loads_here(line):
+                continue
+            visit(os.path.join(root, line.split(" [")[0].replace("\\", "/")))
+    return missing, {os.path.normcase(p).lower() for p in seen}
+
+
+def drop_unloaded(root, seen):
+    """Guide and DB scripts no Forever/Classic list loads are dead weight."""
+    dropped = 0
+    for sub in ("Guides", "DB"):
+        for dp, _, files in os.walk(os.path.join(root, sub)):
+            for fn in files:
+                full = os.path.join(dp, fn)
+                if fn.endswith(".lua") and os.path.normpath(full).lower() not in seen:
+                    os.remove(full)
+                    dropped += 1
+    return dropped
+
+
+def main():
+    out = os.path.abspath(sys.argv[1])
+    ref = sys.argv[2] if len(sys.argv) > 2 else "HEAD"
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    tmp = tempfile.mkdtemp()
+    root = os.path.join(tmp, "OpenXP")
+    os.makedirs(root)
+    tar = subprocess.run(["git", "-C", repo, "archive", ref], check=True, capture_output=True).stdout
+    subprocess.run(["tar", "-x", "-C", root], input=tar, check=True)
+    for d in DROP:
+        p = os.path.join(root, d)
+        if os.path.isdir(p):
+            shutil.rmtree(p)
+        elif os.path.exists(p):
+            os.remove(p)
+    missing, seen = check(root)
+    if not missing:
+        print("dropped", drop_unloaded(root, seen), "unused guide/DB scripts")
+        missing, seen = check(root)
+    if missing:
+        print("missing files on the Forever/Classic load path:")
+        for m in missing:
+            print("  ", m)
+        sys.exit(1)
+    if os.path.exists(out):
+        os.remove(out)
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        for dp, _, files in os.walk(root):
+            for fn in sorted(files):
+                full = os.path.join(dp, fn)
+                z.write(full, os.path.relpath(full, tmp))
+    shutil.rmtree(tmp)
+    print("wrote", out, os.path.getsize(out) // 1024, "KB")
+
+
+if __name__ == "__main__":
+    main()

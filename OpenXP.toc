@@ -60,6 +60,7 @@ GuideLoader.lua
 SmartStart.lua
 WelcomeFrame.lua
 OpenXPCard.lua
+OpenXPTooltips.lua
 
 Guides/GuideList-Mainline.xml [AllowLoadGameType standard]
 Guides/GuideList-cata.xml [AllowLoadGameType cata]

@@ -367,5 +367,35 @@ try("skipped-to step survives a reload", function()
     assert(calls.setStep == 42, "not restored")
     addon.GetGuideProgress = function() return 1 end
 end)
+try("mob and NPC tooltips", function()
+    strsplit = function(sep, str)
+        local out = {}
+        for part in (str .. sep):gmatch("(.-)%" .. sep) do out[#out + 1] = part end
+        return unpack(out)
+    end
+    UnitExists = function() return true end
+    UnitIsPlayer = function() return false end
+    UnitCanAttack = function() return true end
+    UnitName = function() return "Nightbane Shadow Weaver" end
+    UnitGUID = function() return "Creature-0-1-2-3-940-0000" end
+    GetNumQuestLogEntries = function() return 2 end
+    GetQuestLogTitle = function(i) if i == 1 then return "Duskwood", 0, nil, true end return "The Night Watch", 25 end
+    GetNumQuestLeaderBoards = function() return 1 end
+    GetQuestLogLeaderBoard = function() return "Nightbane Shadow Weaver slain: 4/8", "monster", false end
+    steps[2].elements[4] = {mobs = {"Nightbane Shadow Weaver"}}
+    assert(loadfile(ROOT .. "/OpenXPTooltips.lua"))("OpenXP", addon)
+    local tips = addon.openxpTooltips
+    local q = tips.QuestLines("Nightbane Shadow Weaver")
+    assert(#q == 1 and q[1].have == 4 and q[1].need == 8, "quest progress not found")
+    local idx, what = tips.GuideStep("Nightbane Shadow Weaver", 940)
+    assert(idx == 2 and what == "Kill", "guide step not found: " .. tostring(idx))
+    local lines = {}
+    local tt = {AddLine = function(_, l) lines[#lines + 1] = l end,
+                AddDoubleLine = function(_, a, b) lines[#lines + 1] = a .. b end, Show = function() end}
+    tips.AddLines(tt, "mouseover")
+    local all = table.concat(lines, "\n")
+    assert(all:find("The Night Watch") and all:find("4/8") and all:find("step 2"), all)
+    steps[2].elements[4] = nil
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

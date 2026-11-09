@@ -558,7 +558,7 @@ end
 local Loc = addon and addon.L or nil
 local CLEANUP_LABEL = (Loc and Loc.CLEANUP_ORPHANED_QUESTS) or L"Cleanup Orphaned Quests"
 local CLEANUP_DESC  = (Loc and Loc.CLEANUP_ORPHANED_QUESTS_DESC)
-    or L"Abandons quests that aren't referenced by your current RestedXP guide."
+    or L"Abandons quests that aren't referenced by your current OpenXP guide."
 
 -- Icon path for button + tooltip
 local ICON_PATH = "Interface\\AddOns\\" .. addonName .. "\\Textures\\openxp_logo-64"

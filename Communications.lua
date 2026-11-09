@@ -16,7 +16,8 @@ local AceGUI = LibStub("AceGUI-3.0")
 
 addon.comms = addon:NewModule("Communications", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0")
 
-addon.comms._commPrefix = "RXPGComms"
+-- Own channel, so OpenXP never trades version numbers with RestedXP users
+addon.comms._commPrefix = "OpenXPComms"
 addon.comms.state = {
     rxpGroupDetected = false,
     updateFound = {guide = false, addon = false},
@@ -294,17 +295,19 @@ function addon.comms:IsNewRelease(theirRelease, name)
         return false
     end
 
-    local myMajor, myMinor, myPatch, mySub = smatch(addon.release, "v(%d+)%.(%d+)%.(%d+)(%a?)")
+    local myMajor, myMinor, myPatch, mySub = smatch(addon.release or "", "v?(%d+)%.(%d+)%.(%d+)(%a?)")
 
-    mySub = mySub and sbyte(mySub) or 0
+    if not myMajor then return false end
+    mySub = mySub and mySub ~= "" and sbyte(mySub) or 0
 
-    local myIntVersion = tonumber(fmt('%d%d%d', myMajor, myMinor, myPatch))
+    local myIntVersion = tonumber(myMajor) * 10000 + tonumber(myMinor) * 100 + tonumber(myPatch)
 
-    local theirMajor, theirMinor, theirPatch, theirSub = smatch(theirRelease, "v(%d+)%.(%d+)%.(%d)(%a?)")
+    local theirMajor, theirMinor, theirPatch, theirSub = smatch(theirRelease or "", "v?(%d+)%.(%d+)%.(%d+)(%a?)")
+    if not theirMajor then return false end
 
-    theirSub = theirSub and sbyte(theirSub) or 0
+    theirSub = theirSub and theirSub ~= "" and sbyte(theirSub) or 0
 
-    local theirIntVersion = tonumber(fmt('%d%d%d', theirMajor, theirMinor, theirPatch))
+    local theirIntVersion = tonumber(theirMajor) * 10000 + tonumber(theirMinor) * 100 + tonumber(theirPatch)
 
     -- Failed to parse version
     if myIntVersion == 0 or theirIntVersion == 0 then return false end
