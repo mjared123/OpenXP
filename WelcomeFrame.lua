@@ -11,6 +11,23 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.0.0",
+        date = "November 2026",
+        changes = {
+            "Horde routes from 22 to 60, so both factions now go 1 to 60",
+            "Classic Era: 21 to 60 routes for Alliance and Horde",
+            "Dungeon guides for both factions: pick up the dungeon quests, run it, turn them in",
+            "Tooltips: mobs show which of your quests they count for and your progress, NPCs show the guide step that needs them",
+            "Click the step counter on the card to see every step and jump to any of them",
+            "Flight timers now show under the card",
+            "Map and minimap pins show the ! and ? quest icons next to the step number",
+            "Gold XP line along the bottom of the card. Hover it for XP per hour and time to level",
+            "New options: auto loot and max camera distance (both off until you turn them on). Sell junk is on by default",
+            "The card only redraws when something changes, and the download is smaller",
+            "If Questie isn't installed you get a one-time tip about what it adds",
+        },
+    },
+    {
         version = "0.9.9",
         date = "November 2026",
         changes = {

@@ -342,6 +342,29 @@ MapPinPool.creationFunc = function(framePool)
         end
 
         self.text:Show()
+
+        -- OpenXP: the game's ! (pick up) and ? (turn in) icon next to the
+        -- step number, so quest stops read at a glance
+        if not self.qicon then self.qicon = self:CreateTexture(nil, "OVERLAY") end
+        local qkind
+        if not icon then
+            for _, e in ipairs(step.elements or {}) do
+                if e.tag == "turnin" then qkind = "turnin"; break end
+                if e.tag == "accept" then qkind = "accept" end
+            end
+        end
+        if qkind then
+            self.qicon:SetTexture(qkind == "accept" and "Interface\\GossipFrame\\AvailableQuestIcon" or
+                                  "Interface\\GossipFrame\\ActiveQuestIcon")
+            local qs = (isMiniMapPin or not step.active) and 11 or 15
+            self.qicon:SetSize(qs, qs)
+            self.qicon:ClearAllPoints()
+            self.qicon:SetPoint("RIGHT", self.text, "LEFT", 0, 0)
+            self.qicon:Show()
+        else
+            self.qicon:Hide()
+        end
+
         if addon.settings.profile.mapCircle and not isMiniMapPin and not icon then
             local size = math.max(self.text:GetWidth(), self.text:GetHeight()) + 8
             self.inner:Show()

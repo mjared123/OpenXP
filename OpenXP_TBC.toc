@@ -3,7 +3,7 @@
 ## IconTexture: Interface\AddOns\OpenXP\Textures\openxp_logo-64
 ## Notes: Free, community-made leveling guides (based on RestedXP Guides, CC BY-NC-SA 4.0)
 ## Author: OpenXP contributors (based on RestedXP Guides by RestedXP)
-## Version: 0.9.9
+## Version: 1.0.0
 ## Category: Quests
 ## Category-deDE: Quests
 ## Category-esES: Misiones

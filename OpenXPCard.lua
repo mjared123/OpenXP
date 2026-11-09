@@ -1133,6 +1133,83 @@ bar.line:SetPoint("TOPRIGHT")
 bar.line:SetHeight(1)
 bar.line:SetColorTexture(1, 1, 1, 0.07)
 
+-- Level progress along the bottom edge: gold for XP, faint blue for rested.
+-- Hover it for XP per hour and time to level this session.
+local xpStrip = CreateFrame("Frame", nil, bar)
+xpStrip:SetPoint("BOTTOMLEFT", 0, 0)
+xpStrip:SetPoint("BOTTOMRIGHT", 0, 0)
+xpStrip:SetHeight(8)
+xpStrip:EnableMouse(true)
+xpStrip.bg = xpStrip:CreateTexture(nil, "ARTWORK")
+xpStrip.bg:SetPoint("BOTTOMLEFT")
+xpStrip.bg:SetPoint("BOTTOMRIGHT")
+xpStrip.bg:SetHeight(3)
+xpStrip.bg:SetColorTexture(1, 1, 1, 0.06)
+xpStrip.rested = xpStrip:CreateTexture(nil, "ARTWORK", nil, 1)
+xpStrip.rested:SetPoint("BOTTOMLEFT")
+xpStrip.rested:SetHeight(3)
+xpStrip.rested:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 0.35)
+xpStrip.fill = xpStrip:CreateTexture(nil, "ARTWORK", nil, 2)
+xpStrip.fill:SetPoint("BOTTOMLEFT")
+xpStrip.fill:SetHeight(3)
+xpStrip.fill:SetColorTexture(C.gold[1], C.gold[2], C.gold[3], 0.9)
+card.xpStrip = xpStrip
+
+local xpSession = {}
+function card.ResetXPSession() xpSession = {} end
+function card.XPStats()
+    local cur, max = UnitXP and UnitXP("player") or 0, UnitXPMax and UnitXPMax("player") or 0
+    local level = UnitLevel and UnitLevel("player") or 0
+    local now = GetTime and GetTime() or 0
+    if not xpSession.start or xpSession.level ~= level and level < (xpSession.level or 0) then
+        xpSession.start, xpSession.gained, xpSession.level, xpSession.last = now, 0, level, cur
+    end
+    if xpSession.level ~= level then
+        -- dinged: the rest of the old level counts too
+        xpSession.gained = xpSession.gained + math.max(0, (xpSession.lastMax or 0) - (xpSession.last or 0)) + cur
+        xpSession.level = level
+    elseif cur > (xpSession.last or 0) then
+        xpSession.gained = xpSession.gained + cur - xpSession.last
+    end
+    xpSession.last, xpSession.lastMax = cur, max
+    local elapsed = now - xpSession.start
+    local perHour = elapsed > 120 and xpSession.gained / elapsed * 3600 or nil
+    local toLevel = perHour and perHour > 0 and (max - cur) / perHour * 60 or nil
+    return {cur = cur, max = max, level = level, rested = GetXPExhaustion and GetXPExhaustion() or 0,
+            perHour = perHour, minutes = toLevel}
+end
+
+function card.UpdateXP()
+    local x = card.XPStats()
+    local maxLevel = addon.player and addon.player.maxlevel or 60
+    if x.max <= 0 or x.level >= maxLevel then xpStrip:Hide(); return end
+    xpStrip:Show()
+    local w = xpStrip:GetWidth() or 0
+    if w <= 0 then w = Width() - 2 end
+    xpStrip.fill:SetWidth(math.max(1, w * x.cur / x.max))
+    local restedTo = math.min(x.max, x.cur + (x.rested or 0))
+    xpStrip.rested:SetWidth(math.max(1, w * restedTo / x.max))
+end
+
+xpStrip:SetScript("OnEnter", function(self)
+    local x = card.XPStats()
+    if x.max <= 0 then return end
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+    GameTooltip:SetText(fmt(L("Level %d: %d%%"), x.level, math.floor(x.cur / x.max * 100)), 1, 1, 1)
+    GameTooltip:AddLine(fmt(L("%d / %d XP, %d to go"), x.cur, x.max, x.max - x.cur), 0.8, 0.8, 0.8)
+    if (x.rested or 0) > 0 then
+        GameTooltip:AddLine(fmt(L("Rested: %d XP"), x.rested), C.blue[1], C.blue[2], C.blue[3])
+    end
+    if x.perHour then
+        GameTooltip:AddLine(fmt(L("This session: %d XP/hour, about %d min to level"),
+                                math.floor(x.perHour), math.ceil(x.minutes or 0)), C.gold[1], C.gold[2], C.gold[3])
+    else
+        GameTooltip:AddLine(L("XP/hour shows after a couple of minutes of play"), 0.6, 0.6, 0.6)
+    end
+    GameTooltip:Show()
+end)
+xpStrip:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
 local function MakeButton(parent, icon, tip, onClick, label)
     local btn = CreateFrame("Button", nil, parent)
     btn:SetSize(label and 116 or 40, 30)
@@ -1324,6 +1401,7 @@ function card.Refresh(force)
     end
     card.lastSig, card.lastFull = sig, now
     if card.FillStepList then pcall(card.FillStepList) end
+    if card.UpdateXP then pcall(card.UpdateXP) end
 
     local guide = addon.currentGuide
     local p = Profile()

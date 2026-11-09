@@ -409,5 +409,21 @@ try("timer bars dock under the card", function()
     addon.RXPFrame.BarContainer.bars = {a = 1}
     card.DockTimers()
 end)
+try("xp strip and time to level", function()
+    local xp, t = 1000, 0
+    UnitXP = function() return xp end
+    UnitXPMax = function() return 4000 end
+    UnitLevel = function() return 20 end
+    GetXPExhaustion = function() return 500 end
+    GetTime = function() return t end
+    card.ResetXPSession()
+    card.UpdateXP()
+    t, xp = 600, 2000
+    local x = card.XPStats()
+    assert(x.perHour and math.floor(x.perHour) == 6000, "xp/hour " .. tostring(x.perHour))
+    assert(math.floor(x.minutes) == 20, "minutes " .. tostring(x.minutes))
+    card.xpStrip:GetScript("OnEnter")(card.xpStrip)
+    GetTime = nil
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails
