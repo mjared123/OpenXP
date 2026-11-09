@@ -5,11 +5,21 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.8.3"
+local OPENXP_VERSION = "0.9.0"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.0",
+        date = "November 2026",
+        changes = {
+            "Every step now checks your quest log. A step for a quest you don't have says so, with Skip this step or Get the quest",
+            "Quest chains: when a step needs earlier quests, the card lists them with their levels and offers Do the chain",
+            "Do the chain walks you through each earlier quest (pick up, objectives, turn in) with the arrow, then drops you back into the guide",
+            "Pickup steps are no longer skipped behind your back; you choose",
+        },
+    },
     {
         version = "0.8.3",
         date = "November 2026",

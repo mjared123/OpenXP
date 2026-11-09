@@ -413,20 +413,6 @@ function card.QuestBlocked(id)
     end
 end
 
--- True when every quest on the step is a pickup you can't get yet
-function card.StepUnavailable(step)
-    if not (step and step.elements) then return end
-    local blocked = 0
-    for _, e in ipairs(step.elements) do
-        local id = QuestIdOf(e)
-        if id then
-            if e.tag ~= "accept" or e.completed or not card.QuestBlocked(id) then return end
-            blocked = blocked + 1
-        end
-    end
-    return blocked > 0
-end
-
 -- The step in this guide where the quest is picked up, nearest one before
 -- `before` first
 function card.FindAcceptStep(guide, questId, before)
@@ -471,6 +457,156 @@ local function TextButton(parent, text, tip, onClick)
     return btn
 end
 
+---------------------------------------------------------------------------
+-- Quest chains: what a step needs first, and a walk through it
+---------------------------------------------------------------------------
+
+local function QuestInfo(id)
+    return addon.openxpQuestInfo and addon.openxpQuestInfo[id]
+end
+
+local function QuestName(id)
+    local info = QuestInfo(id)
+    return (info and info.n) or (addon.GetQuestName and addon.GetQuestName(id)) or fmt("#%d", id)
+end
+
+-- Earlier quests in the chain that you still have to turn in, in order
+function card.MissingChain(id)
+    local out = {}
+    for _, q in ipairs(addon.openxpChains and addon.openxpChains[id] or {}) do
+        if not TurnedIn(q) then tinsert(out, q) end
+    end
+    return out
+end
+
+-- What's wrong with a step, if anything:
+--   {kind = "missing", quest}  turn in / kill step for a quest not in the log
+--   {kind = "chain", quest, chain, needAccept}  quests before this one aren't done
+--   {kind = "locked", quest, by}  a quest you did locks this one out
+function card.StepProblem(step)
+    if not (step and step.elements) then return end
+    for _, e in ipairs(step.elements) do
+        local id = QuestIdOf(e)
+        if id and not e.completed then
+            local needAccept
+            if e.tag == "accept" then
+                needAccept = false
+            elseif (e.tag == "turnin" or e.tag == "complete") and not e.skipIfMissing and
+                not (addon.IsOnQuest and addon.IsOnQuest(id)) and not TurnedIn(id) then
+                needAccept = true
+            end
+            if needAccept ~= nil then
+                local blocker = card.QuestBlocked(id)
+                if blocker then
+                    local pre = addon.openxpPrereqs[id]
+                    local isExcl = false
+                    for _, q in ipairs(pre.excl or {}) do
+                        if math.abs(q) == blocker then isExcl = true end
+                    end
+                    if isExcl then
+                        return {kind = "locked", quest = id, by = blocker}
+                    end
+                    return {kind = "chain", quest = id, chain = card.MissingChain(id),
+                            needAccept = needAccept}
+                elseif needAccept then
+                    return {kind = "missing", quest = id}
+                end
+            end
+        end
+    end
+end
+
+-- Start a walk through the quests a step needs. mode "have" ends once the
+-- target quest is in your log, "available" once it can be picked up.
+function card.StartDetour(target, ids, mode)
+    local guide = addon.currentGuide
+    card.detour = {target = target, ids = ids, mode = mode,
+                   guide = guide and guide.name, step = addon.GetGuideProgress and addon.GetGuideProgress() or nil}
+    local p = Profile()
+    if p then p.openxpDetour = card.detour end
+    card.Refresh(true)
+end
+
+function card.StopDetour()
+    card.detour = nil
+    card.detourTarget = nil
+    local p = Profile()
+    if p then p.openxpDetour = nil end
+    if addon.UpdateGotoSteps then pcall(addon.UpdateGotoSteps) end
+    card.Refresh(true)
+end
+
+local function DetourDone(d)
+    if d.mode == "have" then
+        return (addon.IsOnQuest and addon.IsOnQuest(d.target)) or TurnedIn(d.target)
+    end
+    return not card.QuestBlocked(d.target)
+end
+
+local HBD = LibStub and LibStub("HereBeDragons-2.0", true)
+local function SpotElement(spot, title)
+    if not (spot and HBD and spot[2] and spot[2] > 0) then return end
+    local wx, wy, instance = HBD:GetWorldCoordinatesFromZone(spot[3] / 100, spot[4] / 100, spot[2])
+    if not wx then return end
+    return {wx = wx, wy = wy, instance = instance, title = title or spot[1], arrow = true}
+end
+
+local function ObjectivesOf(id)
+    local list = C_QuestLog and C_QuestLog.GetQuestObjectives and C_QuestLog.GetQuestObjectives(id)
+    return list or {}
+end
+
+-- The quest of the walk you're on now, and the step the card shows for it
+function card.DetourStep()
+    local d = card.detour
+    if not d then return end
+    local index, id
+    for i, q in ipairs(d.ids) do
+        local onIt = addon.IsOnQuest and addon.IsOnQuest(q)
+        if not TurnedIn(q) and not (q == d.target and onIt) then
+            index, id = i, q
+            break
+        end
+    end
+    if not id then return end
+    local info = QuestInfo(id) or {}
+    local name = QuestName(id)
+    local level = info.l and info.l > 0 and fmt(" |cFF9EA3B3(lvl %d)|r", info.l) or ""
+    local elements, target
+    if not (addon.IsOnQuest and addon.IsOnQuest(id)) then
+        local who = info.s and info.s[1] or "?"
+        local where = info.s and info.s[2] == 0 and L("Loot or use %s to start it") or L("Get it from %s")
+        elements = {
+            {textOnly = true, text = fmt(L("Pick up %s"), name) .. level},
+            {tag = "accept", text = fmt(where, who)},
+        }
+        if UnitLevel and info.r and UnitLevel("player") < info.r then
+            tinsert(elements, {textOnly = true, text = fmt(L("|cFFF2C35CYou need level %d for this quest|r"), info.r)})
+        end
+        target = SpotElement(info.s)
+    else
+        local objs = ObjectivesOf(id)
+        local open = false
+        for _, o in ipairs(objs) do if not o.finished then open = true end end
+        if open then
+            elements = {{textOnly = true, text = fmt(L("Do %s"), name) .. level}}
+            for _, o in ipairs(objs) do
+                tinsert(elements, {tag = "complete", text = o.text or "", completed = o.finished})
+            end
+            local spot = info.o and info.o[1]
+            target = SpotElement(spot)
+        else
+            local who = info.f and info.f[1] or "?"
+            elements = {
+                {textOnly = true, text = fmt(L("Turn in %s"), name) .. level},
+                {tag = "turnin", text = fmt(L("Talk to %s"), who)},
+            }
+            target = SpotElement(info.f)
+        end
+    end
+    return {index = nil, detour = true, elements = elements}, index, target
+end
+
 local function GetWarn(b)
     if b.warn then return b.warn end
     local w = CreateFrame("Frame", nil, b)
@@ -478,15 +614,32 @@ local function GetWarn(b)
     w.text:SetPoint("TOPLEFT")
     w.text:SetJustifyH("LEFT")
     w.text:SetTextColor(unpack(C.gold))
+    w.list = w:CreateFontString(nil, "OVERLAY")
+    w.list:SetPoint("TOPLEFT", w.text, "BOTTOMLEFT", 0, -4)
+    w.list:SetJustifyH("LEFT")
+    w.list:SetTextColor(unpack(C.dim))
     w.get = TextButton(w, L("Get the quest"),
-        L("Go back to the step where this quest is picked up. Once you have it the guide brings you back here."),
+        L("Go and pick this quest up. Once you have it the guide brings you back here."),
         function()
             local m = b.missing
-            if not (m and m.accept and addon.currentGuide) then return end
-            card.returnTo = {guide = addon.currentGuide, step = m.step, quest = m.quest}
-            addon.SetStep(m.accept)
+            if not (m and addon.currentGuide) then return end
+            if m.accept then
+                card.returnTo = {guide = addon.currentGuide, step = m.step, quest = m.quest}
+                addon.SetStep(m.accept)
+            else
+                card.StartDetour(m.quest, {m.quest}, "have")
+            end
         end)
-    w.get:SetPoint("TOPLEFT", w.text, "BOTTOMLEFT", 0, -6)
+    w.chain = TextButton(w, L("Do the chain"),
+        L("Walk through the earlier quests in this chain, with the arrow. When they're done the guide picks up here again."),
+        function()
+            local m = b.missing
+            if not m then return end
+            local ids = {}
+            for _, q in ipairs(m.chain or {}) do tinsert(ids, q) end
+            if m.needAccept then tinsert(ids, m.quest) end
+            card.StartDetour(m.quest, ids, m.needAccept and "have" or "available")
+        end)
     w.skip = TextButton(w, L("Skip this step"), L("Move on without this quest"), function()
         local m = b.missing
         if m and addon.currentGuide then addon.SetStep(m.step + 1) end
@@ -577,27 +730,70 @@ local function LayoutBlock(b, step, first)
         end
     end
 
-    local missing, questName = card.MissingQuest(step)
-    if missing and step.index then
+    local problem = step.index and not step.detour and card.StepProblem(step)
+    if problem then
         local w = GetWarn(b)
-        local accept = card.FindAcceptStep(addon.currentGuide, missing, step.index)
-        if accept and card.QuestBlocked(missing) then accept = nil end
-        b.missing = {quest = missing, step = step.index, accept = accept}
+        local id = problem.quest
+        local m = {quest = id, step = step.index, chain = problem.chain, needAccept = problem.needAccept}
+        local text, list, buttons = nil, nil, {}
+        if problem.kind == "missing" then
+            m.accept = card.FindAcceptStep(addon.currentGuide, id, step.index)
+            if not m.accept and not (QuestInfo(id) and QuestInfo(id).s) then
+                buttons = {w.skip}
+            else
+                buttons = {w.get, w.skip}
+            end
+            text = fmt(L("You don't have %s yet"), QuestName(id))
+        elseif problem.kind == "locked" then
+            text = fmt(L("You can't get %s: doing %s locked it out"), QuestName(id), QuestName(problem.by))
+            buttons = {w.skip}
+        else
+            local chain = problem.chain or {}
+            if #chain == 0 then
+                text = fmt(L("You can't pick up %s yet"), QuestName(id))
+                buttons = {w.skip}
+            else
+                text = fmt(#chain == 1 and L("%s is part of a quest chain: 1 quest to do first") or
+                               L("%s is part of a quest chain: %d quests to do first"), QuestName(id), #chain)
+                local rows = {}
+                for i, q in ipairs(chain) do
+                    if i > 5 then
+                        tinsert(rows, fmt(L("+ %d more"), #chain - 5))
+                        break
+                    end
+                    local info = QuestInfo(q)
+                    local onIt = addon.IsOnQuest and addon.IsOnQuest(q)
+                    tinsert(rows, fmt("%d. %s%s%s", i, QuestName(q),
+                                      info and info.l and info.l > 0 and fmt(" (lvl %d)", info.l) or "",
+                                      onIt and L(" - in your log") or ""))
+                end
+                list = table.concat(rows, "\n")
+                buttons = {w.chain, w.skip}
+            end
+        end
+        b.missing = m
         SetFont(w.text, 0)
         w.text:SetWidth(textWidth)
-        w.text:SetText(fmt(L("You don't have %s yet"), questName or L("this quest")))
+        w.text:SetText(text)
+        SetFont(w.list, 0)
+        w.list:SetWidth(textWidth)
+        w.list:SetText(list or "")
+        w.list:SetShown(list ~= nil)
         w:ClearAllPoints()
         w:SetPoint("TOPLEFT", b.title, "TOPLEFT", 0, -(y - 11))
         w:SetPoint("RIGHT", b, "RIGHT", -PAD, 0)
-        w.skip:ClearAllPoints()
-        if accept then
-            w.get:Show()
-            w.skip:SetPoint("LEFT", w.get, "RIGHT", 6, 0)
-        else
-            w.get:Hide()
-            w.skip:SetPoint("TOPLEFT", w.text, "BOTTOMLEFT", 0, -6)
+        w.get:Hide(); w.chain:Hide(); w.skip:Hide()
+        local anchor = list and w.list or w.text
+        for i, btn in ipairs(buttons) do
+            btn:ClearAllPoints()
+            if i == 1 then
+                btn:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -6)
+            else
+                btn:SetPoint("LEFT", buttons[i - 1], "RIGHT", 6, 0)
+            end
+            btn:Show()
         end
-        local h = w.text:GetStringHeight() + 6 + 22
+        local h = w.text:GetStringHeight() + (list and (w.list:GetStringHeight() + 4) or 0) + 6 + 22
         w:SetHeight(h)
         w:Show()
         y = y + h + 8
@@ -713,6 +909,10 @@ bar.next:SetPoint("LEFT", bar.prev, "RIGHT", 2, 0)
 bar.find = MakeButton(bar, "target", L("Jump to the right guide and step for your level, zone and quests"),
                       function() if addon.smartStart then addon.smartStart.Run() end end, L("Find my place"))
 bar.find:SetPoint("LEFT", bar.next, "RIGHT", 6, 0)
+bar.stop = MakeButton(bar, "prev", L("Stop the quest chain and go back to the guide"),
+                      function() card.StopDetour() end, L("Back to guide"))
+bar.stop:SetPoint("LEFT", bar.next, "RIGHT", 6, 0)
+bar.stop:Hide()
 bar.collapse = MakeButton(bar, "up", L("Collapse to one line"), function() card.SetCollapsed(true) end)
 bar.collapse:SetPoint("RIGHT", -20, 0)
 bar.settings = MakeButton(bar, "gear", L("Settings"), function() addon.settings.OpenSettings() end)
@@ -814,6 +1014,17 @@ function card.Refresh(force)
         end
     end
 
+    -- Walking through a quest chain: the card shows that instead
+    local detourStep, detourIndex
+    if card.detour then
+        local target
+        detourStep, detourIndex, target = card.DetourStep()
+        card.detourTarget = target
+        if detourStep then
+            steps = {detourStep}
+        end
+    end
+
     if p and p.openxpCardCollapsed then
         header:Hide(); progressBg:Hide(); progress:Hide(); body:Hide(); upNext:Hide(); bar:Hide()
         mini:Show()
@@ -834,10 +1045,14 @@ function card.Refresh(force)
 
     mini:Hide()
     local wide = Width() >= 360
-    bar.find:SetWidth(wide and 116 or 40)
-    bar.find.label:SetShown(wide)
-    bar.find.icon:ClearAllPoints()
-    if wide then bar.find.icon:SetPoint("LEFT", 10, 0) else bar.find.icon:SetPoint("CENTER") end
+    for _, btn in ipairs({bar.find, bar.stop}) do
+        btn:SetWidth(wide and 116 or 40)
+        btn.label:SetShown(wide)
+        btn.icon:ClearAllPoints()
+        if wide then btn.icon:SetPoint("LEFT", 10, 0) else btn.icon:SetPoint("CENTER") end
+    end
+    bar.find:SetShown(not detourStep)
+    bar.stop:SetShown(detourStep ~= nil)
     header:Show(); progressBg:Show(); progress:Show(); body:Show(); upNext:Show(); bar:Show()
 
     local zone, range = SplitGuideName(guide)
@@ -849,7 +1064,13 @@ function card.Refresh(force)
     if header.zone:GetStringWidth() > Width() - 150 then header.zone:SetWidth(Width() - 150) end
     header.range:SetText(range)
     header.step:SetText(fmt(L("Step %d / %d"), current, total))
+    if detourStep then
+        header.zone:SetText(L("QUEST CHAIN"))
+        header.range:SetText("")
+        header.step:SetText(fmt(L("%d / %d"), detourIndex, #card.detour.ids))
+    end
     local frac = total > 0 and current / total or 0
+    if detourStep then frac = detourIndex / math.max(#card.detour.ids, 1) end
     progress:SetWidth(math.max(1, (Width() - 2) * frac))
 
     local y = 0
@@ -878,7 +1099,21 @@ function card.Refresh(force)
     local want = card.sizing and (f:GetHeight() or 0) or (card.height or 0)
     local extra = math.max(0, math.floor((want - baseHeight) / lineH))
     local count = math.min(MAX_UPNEXT, 1 + extra)
-    local texts = NextStepTexts(guide, lastIndex, count)
+    local texts
+    if detourStep then
+        texts = {}
+        local ids = card.detour.ids
+        for i = detourIndex + 1, #ids do
+            if #texts >= count then break end
+            local info = QuestInfo(ids[i])
+            tinsert(texts, QuestName(ids[i]) .. (info and info.l and info.l > 0 and fmt(" (lvl %d)", info.l) or ""))
+        end
+        if #texts < count then
+            tinsert(texts, fmt(L("Back to the guide: %s"), QuestName(card.detour.target)))
+        end
+    else
+        texts = NextStepTexts(guide, lastIndex, count)
+    end
 
     upNext:ClearAllPoints()
     upNext:SetPoint("TOPLEFT", body, "BOTTOMLEFT", 0, -4)
@@ -926,18 +1161,15 @@ ticker:SetScript("OnUpdate", function(_, dt)
     elapsed = 0
     Tick()
 end)
-local autoSkipped = {}
 function Tick()
     if card.enabled then
-        -- Move past pickup steps for quests you can't get yet; only once per
-        -- step, so going back with the arrow button still works
-        local guide = addon.currentGuide
-        local cur = guide and guide.steps and addon.GetGuideProgress and addon.GetGuideProgress()
-        if cur and guide.steps[cur] then
-            local key = tostring(guide.name) .. ":" .. cur
-            if not autoSkipped[key] and card.StepUnavailable(guide.steps[cur]) then
-                autoSkipped[key] = true
-                addon.SetStep(cur + 1)
+        local d = card.detour
+        if d then
+            if (addon.currentGuide and addon.currentGuide.name ~= d.guide) or DetourDone(d) then
+                card.StopDetour()
+            elseif card.detourTarget and addon.arrowFrame and not addon.arrowFrame:IsShown() then
+                local p = Profile()
+                if not (p and p.disableArrow) then addon.arrowFrame:Show() end
             end
         end
         local r = card.returnTo
@@ -1039,6 +1271,9 @@ local function ArrowSizes(af)
 end
 
 local function ArrowUpdate(self, ...)
+    if card.detour and card.detourTarget then
+        self.element = card.detourTarget
+    end
     addon.DrawArrow(self, ...)
     local af = addon.arrowFrame
     if not af.oxpDist then return end
@@ -1084,6 +1319,7 @@ function card.Enable()
         f:ClearAllPoints()
         f:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
     end
+    if p and p.openxpDetour and p.openxpDetour.ids then card.detour = p.openxpDetour end
     card.width = p and p.openxpCardWidth or nil
     card.height = p and p.openxpCardHeight or nil
     f:SetScale((p and p.windowScale) or 1)

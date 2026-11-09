@@ -173,30 +173,61 @@ try("turn in for a quest not in the log offers skip / get", function()
     log[581] = true
     assert(card.MissingQuest(steps[9]) == nil, "warned with the quest in the log")
 end)
-try("pickup for a quest you can't get yet is skipped once", function()
-    addon.openxpPrereqs = {[4733] = {any = {4681}}, [600] = {excl = {601}}}
-    local done = {}
+try("pickup behind a quest chain offers the chain, then walks it", function()
+    addon.openxpPrereqs = {[4733] = {any = {4681}}, [4681] = {any = {3524}}, [600] = {excl = {601}}}
+    addon.openxpChains = {[4733] = {3524, 4681}, [4681] = {3524}}
+    addon.openxpQuestInfo = {
+        [3524] = {n = "Washed Ashore", l = 13, r = 11, s = {"Gwennyth", 1439, 36.6, 45.6}, f = {"Gwennyth", 1439, 36.6, 45.6}, o = {{"Beached Sea Creature", 1439, 36.4, 50.9}}},
+        [4681] = {n = "Washed Ashore", l = 14, r = 11, s = {"Gwennyth", 1439, 36.6, 45.6}, f = {"Gwennyth", 1439, 36.6, 45.6}, o = {}},
+        [4733] = {n = "Beached Sea Creature", l = 19, r = 13, s = {"Beached Sea Creature", 1439, 31.3, 87.4}, f = {"Gwennyth", 1439, 36.6, 45.6}, o = {}},
+    }
+    local done, log = {}, {}
     addon.IsQuestTurnedIn = function(id) return done[id] end
-    addon.IsOnQuest = function() return false end
-    steps[12] = {index = 12, elements = {el{tag = "accept", questId = 4733, text = "Accept Beached Sea Creature"},
-                                          el{tag = "goto"}}}
+    addon.IsOnQuest = function(id) return log[id] end
+    C_QuestLog = {GetQuestObjectives = function() return {{text = "Sea Turtle Remains: 0/1", finished = false}} end}
+    UnitLevel = function() return 19 end
+    steps[12] = {index = 12, elements = {el{tag = "accept", questId = 4733, text = "Accept Beached Sea Creature"}}}
     addon.currentGuide = {name = "19-21 Darkshore/Ashenvale", steps = steps}
-    assert(card.QuestBlocked(4733) == 4681, "should need Washed Ashore")
-    assert(card.StepUnavailable(steps[12]), "step should be unavailable")
     addon.GetGuideProgress = function() return 12 end
+    addon.RXPFrame.activeSteps = {steps[12]}
+
+    local pr = card.StepProblem(steps[12])
+    assert(pr and pr.kind == "chain" and #pr.chain == 2, "chain not found")
+    card.Refresh(true)
+    local b = card.blocksForTest[1]
+    assert(b.missing and b.warn.chain.shown and b.warn.skip.shown, "chain buttons not shown")
     calls.setStep = nil
     card.TickForTest()
-    assert(calls.setStep == 13, "not skipped")
-    calls.setStep = nil
+    assert(calls.setStep == nil, "pickup step was auto-skipped")
+
+    b.warn.chain:GetScript("OnClick")()
+    assert(card.detour and #card.detour.ids == 2 and card.detour.mode == "available", "chain walk not started")
+    local st, idx = card.DetourStep()
+    assert(idx == 1 and st.elements[2].tag == "accept", "should pick up the first chain quest")
+    log[3524] = true
+    st, idx = card.DetourStep()
+    assert(st.elements[1].text:find("Do Washed Ashore"), "should do the objectives")
+    C_QuestLog = {GetQuestObjectives = function() return {{text = "done", finished = true}} end}
+    st = card.DetourStep()
+    assert(st.elements[2].tag == "turnin", "should turn in")
+    log[3524] = nil; done[3524] = true
+    st, idx = card.DetourStep()
+    assert(idx == 2, "should move on to quest 2")
     card.TickForTest()
-    assert(calls.setStep == nil, "skipped twice")
+    assert(card.detour, "walk ended too early")
     done[4681] = true
-    assert(not card.QuestBlocked(4733), "blocked after the pre-quest")
+    card.TickForTest()
+    assert(not card.detour, "walk did not end once the quest could be picked up")
+    assert(not card.StepProblem(steps[12]), "still a problem after the chain")
+
     done[601] = true
-    assert(card.QuestBlocked(600) == 601, "exclusive quest not honoured")
-    -- a step that also turns something in is never auto-skipped
-    steps[13] = {index = 13, elements = {el{tag = "accept", questId = 600}, el{tag = "turnin", questId = 4681}}}
-    assert(not card.StepUnavailable(steps[13]), "mixed step skipped")
+    steps[13] = {index = 13, elements = {el{tag = "accept", questId = 600}}}
+    assert(card.StepProblem(steps[13]).kind == "locked", "exclusive quest not honoured")
+    -- turn in for a chain quest you never got: the walk ends with picking it up
+    done[4681] = nil
+    steps[14] = {index = 14, elements = {el{tag = "turnin", questId = 4733}}}
+    pr = card.StepProblem(steps[14])
+    assert(pr.kind == "chain" and pr.needAccept, "turn in behind a chain")
     addon.GetGuideProgress = function() return 1 end
 end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
