@@ -397,5 +397,17 @@ try("mob and NPC tooltips", function()
     assert(all:find("The Night Watch") and all:find("4/8") and all:find("step 2"), all)
     steps[2].elements[4] = nil
 end)
+try("step list opens, scrolls and jumps", function()
+    card.ToggleStepList()
+    card.FillStepList()
+    card.JumpTo(3)
+    assert(calls.setStep == 3, "did not jump")
+    card.ToggleStepList()
+end)
+try("timer bars dock under the card", function()
+    addon.RXPFrame.BarContainer = obj("bars")
+    addon.RXPFrame.BarContainer.bars = {a = 1}
+    card.DockTimers()
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

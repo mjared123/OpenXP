@@ -191,6 +191,20 @@ header.step:SetTextColor(unpack(C.dim))
 header.zone:SetJustifyH("LEFT")
 header.zone:SetWordWrap(false)
 
+-- "Step 12 / 82" opens the step list
+header.stepBtn = CreateFrame("Button", nil, header)
+header.stepBtn:SetPoint("TOPRIGHT", 0, 0)
+header.stepBtn:SetPoint("BOTTOMRIGHT", 0, 0)
+header.stepBtn:SetWidth(80)
+header.stepBtn:SetScript("OnClick", function() card.ToggleStepList() end)
+header.stepBtn:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:SetText(L("Show every step in this guide"), 1, 1, 1)
+    GameTooltip:AddLine(L("Click a step to jump to it. Mouse wheel scrolls."), 0.8, 0.8, 0.8, true)
+    GameTooltip:Show()
+end)
+header.stepBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
 local progressBg = f:CreateTexture(nil, "ARTWORK")
 progressBg:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, 0)
 progressBg:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT", 0, 0)
@@ -1309,6 +1323,7 @@ function card.Refresh(force)
         return
     end
     card.lastSig, card.lastFull = sig, now
+    if card.FillStepList then pcall(card.FillStepList) end
 
     local guide = addon.currentGuide
     local p = Profile()
@@ -1706,6 +1721,172 @@ function card.ResetPosition()
     f:SetPoint("RIGHT", UIParent, "RIGHT", -40, 120)
     f:SetWidth(WIDTH)
     card.Refresh(true)
+end
+
+---------------------------------------------------------------------------
+-- Step list: every step of the guide, click one to jump there
+---------------------------------------------------------------------------
+
+local LIST_ROWS = 18
+local list
+
+local function StepSummary(step)
+    for _, e in ipairs(step.elements or {}) do
+        local text = e.text
+        if text and text ~= "" and text ~= " " then
+            if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e) end
+            return (StripCodes(text):gsub("\n.*", ""))
+        end
+    end
+    return step.title or ""
+end
+
+local function VisibleSteps()
+    local out = {}
+    local guide = addon.currentGuide
+    for i, step in ipairs(guide and guide.steps or {}) do
+        if not step.hidewindow then tinsert(out, i) end
+    end
+    return out
+end
+
+function card.BuildStepList()
+    if list then return list end
+    list = CreateFrame("Frame", nil, f, BackdropTemplateMixin and "BackdropTemplate" or nil)
+    list:SetBackdrop({bgFile = WHITE, edgeFile = WHITE, edgeSize = 1,
+                      insets = {left = 1, right = 1, top = 1, bottom = 1}})
+    list:SetBackdropColor(unpack(C.bg))
+    list:SetBackdropBorderColor(unpack(C.border))
+    list:SetFrameStrata("DIALOG")
+    list:SetWidth(300)
+    list:EnableMouse(true)
+    list:EnableMouseWheel(true)
+    list.offset = 0
+    list.title = list:CreateFontString(nil, "OVERLAY")
+    list.title:SetPoint("TOPLEFT", PAD, -9)
+    list.title:SetTextColor(unpack(C.dim))
+    list.close = MakeButton(list, "cross", L("Close"), function() list:Hide() end)
+    list.close:SetPoint("TOPRIGHT", -4, -4)
+    list.rows = {}
+    for r = 1, LIST_ROWS do
+        local row = CreateFrame("Button", nil, list)
+        row:SetHeight(18)
+        row:SetPoint("TOPLEFT", 4, -28 - (r - 1) * 18)
+        row:SetPoint("TOPRIGHT", -4, -28 - (r - 1) * 18)
+        row.hl = row:CreateTexture(nil, "BACKGROUND")
+        row.hl:SetAllPoints()
+        row.hl:SetColorTexture(1, 1, 1, 0)
+        row.num = row:CreateFontString(nil, "OVERLAY")
+        row.num:SetPoint("LEFT", 6, 0)
+        row.num:SetWidth(30)
+        row.num:SetJustifyH("RIGHT")
+        row.text = row:CreateFontString(nil, "OVERLAY")
+        row.text:SetPoint("LEFT", row.num, "RIGHT", 8, 0)
+        row.text:SetPoint("RIGHT", -6, 0)
+        row.text:SetJustifyH("LEFT")
+        row.text:SetWordWrap(false)
+        row:SetScript("OnEnter", function(self) self.hl:SetColorTexture(1, 1, 1, 0.08) end)
+        row:SetScript("OnLeave", function(self)
+            self.hl:SetColorTexture(1, 1, 1, self.current and 0.05 or 0)
+        end)
+        row:SetScript("OnClick", function(self) card.JumpTo(self.index) end)
+        list.rows[r] = row
+    end
+    list:SetHeight(28 + LIST_ROWS * 18 + 8)
+    list:SetScript("OnMouseWheel", function(self, delta)
+        self.offset = math.max(0, math.min((self.count or 0) - LIST_ROWS, self.offset - delta * 3))
+        card.FillStepList()
+    end)
+    list:Hide()
+    return list
+end
+
+-- Jump to a step. Going back clears "done" and skips on the steps after it,
+-- so the engine doesn't bounce straight forward again.
+function card.JumpTo(index)
+    local guide = addon.currentGuide
+    if not (guide and guide.steps and index) then return end
+    if index < CurrentStep() then
+        for i = index, CurrentStep() do
+            local step = guide.steps[i]
+            if step then step.completed = nil end
+            if OXPCData and OXPCData.stepSkip then OXPCData.stepSkip[i] = nil end
+        end
+    end
+    addon.SetStep(index)
+    card.FillStepList()
+    card.Refresh(true)
+end
+
+function card.FillStepList()
+    if not (list and list:IsShown()) then return end
+    local guide = addon.currentGuide
+    local steps = VisibleSteps()
+    list.count = #steps
+    list.title:SetText((StripCodes((guide and (guide.displayname or guide.name)) or ""):gsub("\n", " ")))
+    SetFont(list.title, -1)
+    local cur = CurrentStep()
+    for r, row in ipairs(list.rows) do
+        local i = steps[list.offset + r]
+        local step = i and guide.steps[i]
+        if step then
+            row.index = i
+            row.current = i == cur
+            SetFont(row.num, -1)
+            SetFont(row.text, -1)
+            row.num:SetText(i)
+            row.text:SetText(StepSummary(step))
+            local done = step.completed or (OXPCData and OXPCData.stepSkip and OXPCData.stepSkip[i])
+            local color = row.current and C.blue or done and C.faint or C.text
+            row.text:SetTextColor(unpack(color))
+            row.num:SetTextColor(unpack(row.current and C.blue or C.dim))
+            row.hl:SetColorTexture(1, 1, 1, row.current and 0.05 or 0)
+            row:Show()
+        else
+            row:Hide()
+        end
+    end
+end
+
+function card.ToggleStepList()
+    card.BuildStepList()
+    if list:IsShown() then list:Hide(); return end
+    list:ClearAllPoints()
+    local left = f:GetLeft() or 0
+    if left > 320 then
+        list:SetPoint("TOPRIGHT", f, "TOPLEFT", -4, 0)
+    else
+        list:SetPoint("TOPLEFT", f, "TOPRIGHT", 4, 0)
+    end
+    list:Show()
+    -- open with the current step near the top
+    local steps, cur = VisibleSteps(), CurrentStep()
+    list.offset = 0
+    for n, i in ipairs(steps) do
+        if i >= cur then list.offset = math.max(0, math.min(#steps - LIST_ROWS, n - 4)); break end
+    end
+    card.FillStepList()
+end
+
+-- Timer bars (flight timers, step timers) live in the classic window's
+-- footer, which is parked off screen. Dock them under the card instead.
+function card.DockTimers()
+    local bc = addon.RXPFrame and addon.RXPFrame.BarContainer
+    if not bc then return end
+    local n = 0
+    for _ in pairs(bc.bars or {}) do n = n + 1 end
+    if bc:GetParent() ~= f then bc:SetParent(f) end
+    bc:ClearAllPoints()
+    bc:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -3)
+    bc:SetPoint("TOPRIGHT", f, "BOTTOMRIGHT", 0, -3)
+    bc:SetHeight((bc.height or 16) * math.max(n, 1))
+end
+if addon.SortTimers then
+    local origSortTimers = addon.SortTimers
+    addon.SortTimers = function(...)
+        origSortTimers(...)
+        if card.enabled then pcall(card.DockTimers) end
+    end
 end
 
 -- The engine redraws its arrow on theme reloads; keep ours on top
