@@ -20,7 +20,7 @@ local TEX = "Interface/AddOns/" .. addonName .. "/Textures/Card/"
 local WHITE = "Interface/Buttons/WHITE8X8"
 local FONT = "Fonts\\ARIALN.TTF"
 local WIDTH = 330 -- default; the card can be resized
-local MIN_W, MIN_H, MAX_W, MAX_H = 290, 120, 640, 900
+local MIN_W, MIN_H, MAX_W, MAX_H = 220, 120, 640, 900
 local MAX_UPNEXT = 12
 local PAD = 12
 local MAX_BLOCKS = 4
@@ -1044,16 +1044,24 @@ local function LayoutBlock(b, step, first)
         w:SetPoint("RIGHT", b, "RIGHT", -PAD, 0)
         w.get:Hide(); w.chain:Hide(); w.finish:Hide(); w.skip:Hide()
         local anchor = list and w.list or w.text
+        -- buttons go side by side, and wrap to a new row on a narrow card
+        local rows, x, rowStart = 1, 0, nil
         for i, btn in ipairs(buttons) do
             btn:ClearAllPoints()
+            local bw = btn:GetWidth() or 80
             if i == 1 then
                 btn:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -6)
+                rowStart, x = btn, bw
+            elseif x + 6 + bw > textWidth then
+                btn:SetPoint("TOPLEFT", rowStart, "BOTTOMLEFT", 0, -6)
+                rowStart, x, rows = btn, bw, rows + 1
             else
                 btn:SetPoint("LEFT", buttons[i - 1], "RIGHT", 6, 0)
+                x = x + 6 + bw
             end
             btn:Show()
         end
-        local h = w.text:GetStringHeight() + (list and (w.list:GetStringHeight() + 4) or 0) + 6 + 22
+        local h = w.text:GetStringHeight() + (list and (w.list:GetStringHeight() + 4) or 0) + 6 + 22 + (rows - 1) * 28
         w:SetHeight(h)
         w:Show()
         y = y + h + 8
@@ -1313,8 +1321,16 @@ function card.Refresh(force)
 
     mini:Hide()
     local wide = Width() >= 360
+    -- a narrow card gets slimmer icon buttons so all six still fit
+    local slim = Width() < 300
+    local bw = slim and 30 or 40
+    for _, btn in ipairs({bar.prev, bar.next, bar.menu, bar.settings, bar.collapse}) do
+        btn:SetWidth(bw)
+    end
+    bar.collapse:ClearAllPoints()
+    bar.collapse:SetPoint("RIGHT", slim and -18 or -20, 0)
     for _, btn in ipairs({bar.find, bar.stop}) do
-        btn:SetWidth(wide and 116 or 40)
+        btn:SetWidth(wide and 116 or bw)
         btn.label:SetShown(wide)
         btn.icon:ClearAllPoints()
         if wide then btn.icon:SetPoint("LEFT", 10, 0) else btn.icon:SetPoint("CENTER") end
@@ -1329,8 +1345,10 @@ function card.Refresh(force)
     SetFont(header.step, -1)
     header.zone:SetWidth(0)
     header.zone:SetText(zone:upper())
-    if header.zone:GetStringWidth() > Width() - 150 then header.zone:SetWidth(Width() - 150) end
+    local zoneMax = math.max(50, Width() - 150)
+    if header.zone:GetStringWidth() > zoneMax then header.zone:SetWidth(zoneMax) end
     header.range:SetText(range)
+    header.range:SetShown(Width() >= 300) -- no room for the level range on a narrow card
     header.step:SetText(fmt(L("Step %d / %d"), current, total))
     if detourStep then
         header.zone:SetText(L("QUEST CHAIN"))

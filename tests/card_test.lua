@@ -314,5 +314,11 @@ try("turn in for a quest you have but haven't finished offers Finish it", functi
     assert(not card.StepProblem(steps[19]), "still a problem once complete")
     addon.GetGuideProgress = function() return 1 end
 end)
+try("narrowest card (220) lays out with slim buttons", function()
+    card.width = 220
+    addon.RXPFrame.activeSteps = {steps[1], steps[2]}
+    card.Refresh(true)
+    card.width = nil
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails
