@@ -5,17 +5,26 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.6.0"
+local OPENXP_VERSION = "0.7.0"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "0.7.0",
+        date = "November 2026",
+        changes = {
+            "Brand new guide window: a compact card with a badge for each step, check marks, kill and loot bars and an Up next line",
+            "Buttons on the card: back, skip, Find my place, guides menu, settings and collapse to one line",
+            "New arrow: a pointer in a round dial with the distance in big text, and a green check when you arrive",
+            "Drag the card anywhere; right-click it for the guides menu",
+        },
+    },
+    {
         version = "0.6.0",
         date = "November 2026",
         changes = {
             "New minimal look by default: flat dark panels, thin borders, a clean font and OpenXP blue highlights",
-            "Prefer the old style? Pick OpenXP Gold or RestedXP Classic under Settings > Look and Feel > Choose Theme",
             "This window has the new look too",
         },
     },

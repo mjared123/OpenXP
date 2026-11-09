@@ -1,0 +1,776 @@
+-- OpenXP guide card and arrow
+--
+-- OpenXP's own guide window: a compact card that shows the steps you're on
+-- with a type badge each, check marks for finished lines, small bars for
+-- kill and loot counts, an "Up next" line and a row of buttons. The engine
+-- still runs the RestedXP-style window underneath (it drives step logic);
+-- in this layout that window is parked off screen and the card reads the
+-- same step data.
+--
+-- The arrow gets the same treatment: a pointer in a round dial with the
+-- distance in large text, turning into a green check on arrival.
+--
+-- This is OpenXP's only layout; the old window is never shown.
+
+local addonName, addon = ...
+local L = addon.locale.Get
+local fmt = string.format
+
+local TEX = "Interface/AddOns/" .. addonName .. "/Textures/Card/"
+local WHITE = "Interface/Buttons/WHITE8X8"
+local FONT = "Fonts\\ARIALN.TTF"
+local WIDTH = 330
+local PAD = 12
+local MAX_BLOCKS = 4
+local MAX_LINES = 8
+
+local C = {
+    bg = {16 / 255, 17 / 255, 21 / 255, 0.9},
+    border = {150 / 255, 160 / 255, 180 / 255, 0.35},
+    text = {0.92, 0.93, 0.95},
+    dim = {0.62, 0.64, 0.70},
+    faint = {0.54, 0.56, 0.61},
+    blue = {90 / 255, 184 / 255, 1},
+    gold = {242 / 255, 195 / 255, 92 / 255},
+    orange = {1, 112 / 255, 67 / 255},
+    cyan = {38 / 255, 198 / 255, 218 / 255},
+    purple = {179 / 255, 157 / 255, 219 / 255},
+    green = {61 / 255, 187 / 255, 122 / 255},
+}
+
+local card = {}
+addon.card = card
+
+local function Profile()
+    return addon.settings and addon.settings.profile
+end
+
+function card.IsEnabled()
+    return Profile() ~= nil and not (addon.v2 and addon.v2:IsGuideWindowEnabled())
+end
+
+local function FontSize(offset)
+    local p = Profile()
+    return ((p and p.guideFontSize) or 12) + (offset or 0)
+end
+
+local function SetFont(fs, offset, flags)
+    fs:SetFont(FONT, FontSize(offset), flags or "")
+end
+
+local function Tint(tex, color, alpha)
+    tex:SetVertexColor(color[1], color[2], color[3], alpha or color[4] or 1)
+end
+
+local function StripCodes(text)
+    return (text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", "")
+end
+
+---------------------------------------------------------------------------
+-- Frame
+---------------------------------------------------------------------------
+
+local f = CreateFrame("Frame", "OpenXPCard", UIParent, "BackdropTemplate")
+card.frame = f
+f:SetSize(WIDTH, 120)
+f:SetPoint("RIGHT", UIParent, "RIGHT", -40, 120)
+f:SetFrameStrata("MEDIUM")
+f:SetClampedToScreen(true)
+f:SetMovable(true)
+f:EnableMouse(true)
+f:RegisterForDrag("LeftButton")
+f:SetBackdrop({bgFile = WHITE, edgeFile = WHITE, edgeSize = 1,
+               insets = {left = 1, right = 1, top = 1, bottom = 1}})
+f:SetBackdropColor(unpack(C.bg))
+f:SetBackdropBorderColor(unpack(C.border))
+f:Hide()
+
+f:SetScript("OnDragStart", function(self)
+    local p = Profile()
+    if p and p.lockFrames then return end
+    self:StartMoving()
+end)
+f:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    local p = Profile()
+    if p then
+        local point, _, relPoint, x, y = self:GetPoint()
+        p.openxpCardPos = {point, relPoint, x, y}
+    end
+end)
+f:SetScript("OnMouseUp", function(self, button)
+    if button == "RightButton" and addon.RXPFrame and addon.RXPFrame.DropDownMenu then
+        addon.RXPFrame.DropDownMenu()
+    end
+end)
+
+-- Header: dot, ZONE, level range ............ Step 12 / 82
+local header = CreateFrame("Frame", nil, f)
+header:SetPoint("TOPLEFT", 1, -1)
+header:SetPoint("TOPRIGHT", -1, -1)
+header:SetHeight(28)
+
+header.dot = header:CreateTexture(nil, "ARTWORK")
+header.dot:SetTexture(TEX .. "filledcircle")
+header.dot:SetSize(9, 9)
+header.dot:SetPoint("LEFT", PAD - 1, 0)
+Tint(header.dot, C.blue)
+
+header.zone = header:CreateFontString(nil, "OVERLAY")
+header.zone:SetPoint("LEFT", header.dot, "RIGHT", 7, 0)
+header.zone:SetTextColor(unpack(C.text))
+
+header.range = header:CreateFontString(nil, "OVERLAY")
+header.range:SetPoint("LEFT", header.zone, "RIGHT", 6, 0)
+header.range:SetTextColor(unpack(C.dim))
+
+header.step = header:CreateFontString(nil, "OVERLAY")
+header.step:SetPoint("RIGHT", -PAD + 1, 0)
+header.step:SetTextColor(unpack(C.dim))
+header.zone:SetJustifyH("LEFT")
+header.zone:SetWordWrap(false)
+
+local progressBg = f:CreateTexture(nil, "ARTWORK")
+progressBg:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, 0)
+progressBg:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT", 0, 0)
+progressBg:SetHeight(2)
+progressBg:SetColorTexture(1, 1, 1, 0.08)
+
+local progress = f:CreateTexture(nil, "OVERLAY")
+progress:SetPoint("TOPLEFT", progressBg, "TOPLEFT")
+progress:SetHeight(2)
+progress:SetWidth(1)
+progress:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 1)
+
+local body = CreateFrame("Frame", nil, f)
+body:SetPoint("TOPLEFT", progressBg, "BOTTOMLEFT", 0, 0)
+body:SetPoint("TOPRIGHT", progressBg, "BOTTOMRIGHT", 0, 0)
+body:SetHeight(10)
+
+---------------------------------------------------------------------------
+-- Step blocks
+---------------------------------------------------------------------------
+
+local BADGES = {
+    accept = {glyph = "!", color = C.gold},
+    turnin = {glyph = "?", color = C.gold},
+    kill = {icon = "cross", color = C.orange},
+    loot = {icon = "diamond", color = C.cyan},
+    travel = {icon = "travel", color = C.blue},
+    town = {icon = "house", color = C.purple},
+}
+
+local function MakeBadge(parent, size)
+    local b = CreateFrame("Frame", nil, parent)
+    b:SetSize(size, size)
+    b.fill = b:CreateTexture(nil, "BACKGROUND")
+    b.fill:SetTexture(TEX .. "disc")
+    b.fill:SetAllPoints()
+    b.ring = b:CreateTexture(nil, "BORDER")
+    b.ring:SetTexture(TEX .. "ring")
+    b.ring:SetAllPoints()
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetPoint("CENTER")
+    b.icon:SetSize(size * 0.55, size * 0.55)
+    b.glyph = b:CreateFontString(nil, "OVERLAY")
+    b.glyph:SetPoint("CENTER", 0, 0)
+    function b:SetKind(kind)
+        local k = BADGES[kind] or BADGES.travel
+        Tint(self.fill, k.color, 0.16)
+        Tint(self.ring, k.color, 1)
+        if k.glyph then
+            self.icon:Hide()
+            self.glyph:SetFont(FONT, math.floor(size * 0.6), "")
+            self.glyph:SetText(k.glyph)
+            self.glyph:SetTextColor(unpack(k.color))
+            self.glyph:Show()
+        else
+            self.glyph:Hide()
+            self.icon:SetTexture(TEX .. k.icon)
+            Tint(self.icon, k.color)
+            self.icon:Show()
+        end
+    end
+    return b
+end
+
+local blocks = {}
+
+local function NewLine(block)
+    local line = CreateFrame("Frame", nil, block)
+    line.mark = line:CreateTexture(nil, "ARTWORK")
+    line.mark:SetSize(13, 13)
+    line.mark:SetPoint("TOPLEFT", 0, -1)
+    line.text = line:CreateFontString(nil, "OVERLAY")
+    line.text:SetPoint("TOPLEFT", line.mark, "TOPRIGHT", 7, 1)
+    line.text:SetJustifyH("LEFT")
+    line.text:SetJustifyV("TOP")
+    line.barBg = line:CreateTexture(nil, "ARTWORK")
+    line.barBg:SetHeight(5)
+    line.barBg:SetColorTexture(1, 1, 1, 0.1)
+    line.bar = line:CreateTexture(nil, "OVERLAY")
+    line.bar:SetHeight(5)
+    line.bar:SetPoint("LEFT", line.barBg, "LEFT")
+    line.count = line:CreateFontString(nil, "OVERLAY")
+    line.count:SetTextColor(unpack(C.dim))
+    return line
+end
+
+local function GetBlock(i)
+    local b = blocks[i]
+    if b then return b end
+    b = CreateFrame("Frame", nil, body)
+    b.sep = b:CreateTexture(nil, "ARTWORK")
+    b.sep:SetPoint("TOPLEFT", PAD, 0)
+    b.sep:SetPoint("TOPRIGHT", -PAD, 0)
+    b.sep:SetHeight(1)
+    b.sep:SetColorTexture(1, 1, 1, 0.07)
+    b.badge = MakeBadge(b, 34)
+    b.badge:SetPoint("TOPLEFT", PAD, -10)
+    b.title = b:CreateFontString(nil, "OVERLAY")
+    b.title:SetPoint("TOPLEFT", b.badge, "TOPRIGHT", 12, -1)
+    b.title:SetJustifyH("LEFT")
+    b.title:SetJustifyV("TOP")
+    b.title:SetTextColor(unpack(C.text))
+    b.lines = {}
+    b:EnableMouse(false)
+    blocks[i] = b
+    return b
+end
+
+-- What kind of step is this, for the badge
+local function StepKind(step)
+    local has = {}
+    local textAll = ""
+    for _, e in ipairs(step.elements or {}) do
+        if e.tag then has[e.tag] = true end
+        if e.textOnly and e.text then textAll = textAll .. " " .. StripCodes(e.text):lower() end
+    end
+    if has.accept then return "accept" end
+    if has.turnin then return "turnin" end
+    if has.complete or has.collect or has.mob or has.unitscan then
+        if textAll:find("loot") or textAll:find("collect") or textAll:find("click") or
+            textAll:find("pick") or has.collect then
+            return "loot"
+        end
+        return "kill"
+    end
+    if has.home or has.hs or has.trainer or has.train or has.vendor or has.bindlocation then
+        return "town"
+    end
+    return "travel"
+end
+
+local function ElementText(e)
+    local text = e.text
+    if not text or text == "" or text == " " then return end
+    if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e) end
+    return text
+end
+
+-- Title (the ">>" instruction) and checklist lines of a step
+local function StepContent(step)
+    local title, lines = nil, {}
+    for _, e in ipairs(step.elements or {}) do
+        local text = ElementText(e)
+        if text then
+            if e.textOnly and not title then
+                title = text
+            elseif not e.textOnly then
+                tinsert(lines, {text = text, done = e.completed or e.skip, element = e})
+            elseif e.textOnly then
+                tinsert(lines, {text = text, done = false, plain = true, element = e})
+            end
+        end
+    end
+    if not title and lines[1] then
+        title = lines[1].text
+        table.remove(lines, 1)
+    end
+    return title or (step.title or fmt(L("Step %d"), step.index or 0)), lines
+end
+
+local function LayoutBlock(b, step, first)
+    local textWidth = WIDTH - PAD * 2 - 34 - 12
+    b.sep:SetShown(not first)
+    b.badge:SetKind(StepKind(step))
+
+    local title, lines = StepContent(step)
+    SetFont(b.title, 3)
+    b.title:SetWidth(textWidth)
+    b.title:SetText(title)
+    local y = 11 + b.title:GetStringHeight() + 7
+
+    for i = 1, MAX_LINES do
+        local line = b.lines[i]
+        local data = lines[i]
+        if data then
+            line = line or NewLine(b)
+            b.lines[i] = line
+            line:ClearAllPoints()
+            line:SetPoint("TOPLEFT", b.title, "TOPLEFT", 0, -(y - 11))
+            line:SetPoint("RIGHT", b, "RIGHT", -PAD, 0)
+            SetFont(line.text, 1)
+            SetFont(line.count, 0)
+            line.text:SetWidth(textWidth - 20)
+
+            local plain = StripCodes(data.text)
+            local have, need = plain:match("(%d+)%s*/%s*(%d+)%s*$")
+            have, need = tonumber(have), tonumber(need)
+
+            if data.plain then
+                line.mark:Hide()
+                line.text:SetPoint("TOPLEFT", line.mark, "TOPLEFT", 0, 1)
+            else
+                line.mark:Show()
+                line.text:SetPoint("TOPLEFT", line.mark, "TOPRIGHT", 7, 1)
+                if data.done then
+                    line.mark:SetTexture(TEX .. "check")
+                    Tint(line.mark, C.green)
+                else
+                    line.mark:SetTexture(TEX .. "opencircle")
+                    Tint(line.mark, C.dim)
+                end
+            end
+
+            line.text:SetText(data.text)
+            if data.done then
+                line.text:SetTextColor(unpack(C.faint))
+                line:SetAlpha(0.7)
+            else
+                line.text:SetTextColor(unpack(C.text))
+                line:SetAlpha(1)
+            end
+
+            local h = line.text:GetStringHeight()
+            if have and need and need > 1 and not data.done then
+                -- kill/loot counts get a small bar under the text
+                line.barBg:ClearAllPoints()
+                line.barBg:SetPoint("TOPLEFT", line.text, "BOTTOMLEFT", 0, -5)
+                line.barBg:SetPoint("RIGHT", line, "RIGHT", -44, 0)
+                line.barBg:Show()
+                local w = math.max(1, (textWidth - 64) * math.min(have / need, 1))
+                line.bar:SetWidth(w)
+                local kindColor = (BADGES[StepKind(step)] or BADGES.travel).color
+                line.bar:SetColorTexture(kindColor[1], kindColor[2], kindColor[3], 1)
+                line.bar:SetShown(have > 0)
+                line.count:ClearAllPoints()
+                line.count:SetPoint("LEFT", line.barBg, "RIGHT", 8, 0)
+                line.count:SetText(fmt("%d / %d", have, need))
+                line.count:Show()
+                h = h + 12
+            else
+                line.barBg:Hide()
+                line.bar:Hide()
+                line.count:Hide()
+            end
+            line:SetHeight(h + 2)
+            line:Show()
+            y = y + h + 7
+        elseif line then
+            line:Hide()
+        end
+    end
+
+    local height = math.max(y + 4, 34 + 20)
+    b:SetHeight(height)
+    return height
+end
+
+---------------------------------------------------------------------------
+-- Up next and the button bar
+---------------------------------------------------------------------------
+
+local upNext = CreateFrame("Frame", nil, f)
+upNext.sep = upNext:CreateTexture(nil, "ARTWORK")
+upNext.sep:SetPoint("TOPLEFT", PAD, 0)
+upNext.sep:SetPoint("TOPRIGHT", -PAD, 0)
+upNext.sep:SetHeight(1)
+upNext.sep:SetColorTexture(1, 1, 1, 0.07)
+upNext.label = upNext:CreateFontString(nil, "OVERLAY")
+upNext.label:SetPoint("TOPLEFT", PAD, -10)
+upNext.label:SetTextColor(unpack(C.dim))
+upNext.text = upNext:CreateFontString(nil, "OVERLAY")
+upNext.text:SetPoint("TOPLEFT", upNext.label, "TOPRIGHT", 8, 1)
+upNext.text:SetJustifyH("LEFT")
+upNext.text:SetTextColor(unpack(C.dim))
+upNext.text:SetWordWrap(false)
+
+local bar = CreateFrame("Frame", nil, f)
+bar:SetHeight(38)
+bar:SetPoint("BOTTOMLEFT", 1, 1)
+bar:SetPoint("BOTTOMRIGHT", -1, 1)
+bar.bg = bar:CreateTexture(nil, "BACKGROUND")
+bar.bg:SetAllPoints()
+bar.bg:SetColorTexture(1, 1, 1, 0.04)
+bar.line = bar:CreateTexture(nil, "ARTWORK")
+bar.line:SetPoint("TOPLEFT")
+bar.line:SetPoint("TOPRIGHT")
+bar.line:SetHeight(1)
+bar.line:SetColorTexture(1, 1, 1, 0.07)
+
+local function MakeButton(parent, icon, tip, onClick, label)
+    local btn = CreateFrame("Button", nil, parent)
+    btn:SetSize(label and 116 or 40, 30)
+    btn.bg = btn:CreateTexture(nil, "BACKGROUND")
+    btn.bg:SetAllPoints()
+    btn.bg:SetTexture(WHITE)
+    btn.icon = btn:CreateTexture(nil, "ARTWORK")
+    btn.icon:SetTexture(TEX .. icon)
+    btn.icon:SetSize(16, 16)
+    if label then
+        btn.bg:SetVertexColor(C.blue[1], C.blue[2], C.blue[3], 0.16)
+        btn.icon:SetPoint("LEFT", 10, 0)
+        Tint(btn.icon, {159 / 255, 212 / 255, 1})
+        btn.label = btn:CreateFontString(nil, "OVERLAY")
+        btn.label:SetFont(FONT, 13, "")
+        btn.label:SetPoint("LEFT", btn.icon, "RIGHT", 6, 0)
+        btn.label:SetText(label)
+        btn.label:SetTextColor(159 / 255, 212 / 255, 1)
+    else
+        btn.bg:SetVertexColor(1, 1, 1, 0)
+        btn.icon:SetPoint("CENTER")
+        Tint(btn.icon, {0.87, 0.88, 0.92})
+    end
+    btn.baseAlpha = label and 0.16 or 0
+    btn:SetScript("OnEnter", function(self)
+        self.bg:SetAlpha(1)
+        self.bg:SetVertexColor(1, 1, 1, 0.1)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText(tip, 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    btn:SetScript("OnLeave", function(self)
+        if label then
+            self.bg:SetVertexColor(C.blue[1], C.blue[2], C.blue[3], 0.16)
+        else
+            self.bg:SetVertexColor(1, 1, 1, 0)
+        end
+        GameTooltip:Hide()
+    end)
+    btn:SetScript("OnClick", onClick)
+    return btn
+end
+
+local function CurrentStep()
+    return addon.GetGuideProgress and addon.GetGuideProgress() or 1
+end
+
+bar.prev = MakeButton(bar, "prev", L("Back one step"), function()
+    if addon.currentGuide then addon.SetStep(math.max(1, CurrentStep() - 1)) end
+end)
+bar.prev:SetPoint("LEFT", 6, 0)
+bar.next = MakeButton(bar, "next", L("Skip this step"), function()
+    if addon.currentGuide then addon.SetStep(CurrentStep() + 1) end
+end)
+bar.next:SetPoint("LEFT", bar.prev, "RIGHT", 2, 0)
+bar.find = MakeButton(bar, "target", L("Jump to the right guide and step for your level, zone and quests"),
+                      function() if addon.smartStart then addon.smartStart.Run() end end, L("Find my place"))
+bar.find:SetPoint("LEFT", bar.next, "RIGHT", 6, 0)
+bar.collapse = MakeButton(bar, "up", L("Collapse to one line"), function() card.SetCollapsed(true) end)
+bar.collapse:SetPoint("RIGHT", -6, 0)
+bar.settings = MakeButton(bar, "gear", L("Settings"), function() addon.settings.OpenSettings() end)
+bar.settings:SetPoint("RIGHT", bar.collapse, "LEFT", -2, 0)
+bar.menu = MakeButton(bar, "menu", L("Pick a guide, skipped quest chains, what's new"), function()
+    if addon.RXPFrame and addon.RXPFrame.DropDownMenu then addon.RXPFrame.DropDownMenu() end
+end)
+bar.menu:SetPoint("RIGHT", bar.settings, "LEFT", -2, 0)
+
+-- Collapsed: one line with the badge, the step and an expand button
+local mini = CreateFrame("Frame", nil, f)
+mini:SetPoint("TOPLEFT", 1, -1)
+mini:SetPoint("BOTTOMRIGHT", -1, 1)
+mini.badge = MakeBadge(mini, 24)
+mini.badge:SetPoint("LEFT", 10, 0)
+mini.text = mini:CreateFontString(nil, "OVERLAY")
+mini.text:SetPoint("LEFT", mini.badge, "RIGHT", 10, 0)
+mini.text:SetJustifyH("LEFT")
+mini.text:SetWordWrap(false)
+mini.text:SetTextColor(unpack(C.text))
+mini.expand = MakeButton(mini, "down", L("Show the full guide"), function() card.SetCollapsed(false) end)
+mini.expand:SetPoint("RIGHT", -4, 0)
+mini.count = mini:CreateFontString(nil, "OVERLAY")
+mini.count:SetPoint("RIGHT", mini.expand, "LEFT", -4, 0)
+mini.count:SetTextColor(unpack(C.dim))
+mini.text:SetPoint("RIGHT", mini.count, "LEFT", -8, 0)
+mini:Hide()
+
+function card.SetCollapsed(value)
+    local p = Profile()
+    if p then p.openxpCardCollapsed = value and true or false end
+    card.Refresh(true)
+end
+
+---------------------------------------------------------------------------
+-- Refresh
+---------------------------------------------------------------------------
+
+local function SplitGuideName(guide)
+    local name = (guide and (guide.displayname or guide.name)) or ""
+    name = StripCodes(name):gsub("\\n", " "):gsub("\n", " ")
+    local range, zone = name:match("^(%d+%s*%-%s*%d+)%s+(.+)$")
+    if range then return zone, (range:gsub("%-", "–")) end
+    return name, ""
+end
+
+local function NextStepText(guide, afterIndex)
+    for i = afterIndex + 1, math.min(#guide.steps, afterIndex + 15) do
+        local step = guide.steps[i]
+        if step and not step.hidewindow and not (OXPCData and OXPCData.stepSkip and OXPCData.stepSkip[i]) then
+            local title = StepContent(step)
+            if title and title ~= "" then return StripCodes(title) end
+        end
+    end
+end
+
+local function Visible()
+    if not card.IsEnabled() or not addon.currentGuide then return false end
+    if addon.isHidden then return false end
+    local p = Profile()
+    if p and p.hideGuideWindow then return false end
+    return true
+end
+
+function card.Refresh(force)
+    if not Visible() then
+        f:Hide()
+        return
+    end
+    f:Show()
+
+    local guide = addon.currentGuide
+    local p = Profile()
+    local total = guide.steps and #guide.steps or 0
+    local current = math.min(CurrentStep() or 1, math.max(total, 1))
+    local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
+
+    local steps = {}
+    local lastIndex = current
+    for _, step in ipairs(active) do
+        if #steps >= MAX_BLOCKS then break end
+        if step and not step.hidewindow and not step.tip then
+            tinsert(steps, step)
+            if not step.sticky and step.index and step.index > lastIndex then lastIndex = step.index end
+        end
+    end
+
+    if p and p.openxpCardCollapsed then
+        header:Hide(); progressBg:Hide(); progress:Hide(); body:Hide(); upNext:Hide(); bar:Hide()
+        mini:Show()
+        SetFont(mini.text, 2)
+        SetFont(mini.count, 0)
+        local first = steps[1]
+        if first then
+            mini.badge:SetKind(StepKind(first))
+            mini.text:SetText(StripCodes((StepContent(first))))
+        else
+            mini.badge:SetKind("travel")
+            mini.text:SetText(L("Guide finished"))
+        end
+        mini.count:SetText(fmt("%d/%d", current, total))
+        f:SetHeight(42)
+        return
+    end
+
+    mini:Hide()
+    header:Show(); progressBg:Show(); progress:Show(); body:Show(); upNext:Show(); bar:Show()
+
+    local zone, range = SplitGuideName(guide)
+    SetFont(header.zone, -1)
+    SetFont(header.range, -1)
+    SetFont(header.step, -1)
+    header.zone:SetWidth(0)
+    header.zone:SetText(zone:upper())
+    if header.zone:GetStringWidth() > WIDTH - 150 then header.zone:SetWidth(WIDTH - 150) end
+    header.range:SetText(range)
+    header.step:SetText(fmt(L("Step %d / %d"), current, total))
+    local frac = total > 0 and current / total or 0
+    progress:SetWidth(math.max(1, (WIDTH - 2) * frac))
+
+    local y = 0
+    for i = 1, MAX_BLOCKS do
+        local b = blocks[i]
+        local step = steps[i]
+        if step then
+            b = GetBlock(i)
+            b:ClearAllPoints()
+            b:SetPoint("TOPLEFT", body, "TOPLEFT", 0, -y)
+            b:SetPoint("TOPRIGHT", body, "TOPRIGHT", 0, -y)
+            y = y + LayoutBlock(b, step, i == 1)
+            b:Show()
+        elseif b then
+            b:Hide()
+        end
+    end
+    if #steps == 0 then
+        y = 8
+    end
+    body:SetHeight(math.max(y, 1))
+
+    local nextText = NextStepText(guide, lastIndex)
+    upNext:ClearAllPoints()
+    upNext:SetPoint("TOPLEFT", body, "BOTTOMLEFT", 0, -4)
+    upNext:SetPoint("TOPRIGHT", body, "BOTTOMRIGHT", 0, -4)
+    local upHeight = 0
+    if nextText then
+        SetFont(upNext.label, -2, "")
+        SetFont(upNext.text, 0)
+        upNext.label:SetText(L("UP NEXT"))
+        upNext.text:SetWidth(WIDTH - PAD * 2 - upNext.label:GetStringWidth() - 10)
+        upNext.text:SetText(nextText)
+        upHeight = 34
+        upNext:Show()
+    else
+        upNext:Hide()
+    end
+    upNext:SetHeight(math.max(upHeight, 1))
+
+    f:SetHeight(1 + 28 + 2 + y + 4 + upHeight + 38 + 1)
+end
+
+-- Throttled refresh while shown; quest progress changes all the time
+local elapsed = 0
+local ticker = CreateFrame("Frame")
+ticker:SetScript("OnUpdate", function(_, dt)
+    elapsed = elapsed + dt
+    if elapsed < 0.25 then return end
+    elapsed = 0
+    if card.enabled then
+        card.Refresh()
+        card.ParkClassicWindow()
+    end
+end)
+
+---------------------------------------------------------------------------
+-- The classic window is still the engine; park it off screen
+---------------------------------------------------------------------------
+
+function card.ParkClassicWindow()
+    local rxp = addon.RXPFrame
+    if not rxp then return end
+    rxp.savePosition = false
+    local left = rxp:GetLeft()
+    if left and left > -1000 then
+        rxp:SetClampedToScreen(false)
+        rxp:ClearAllPoints()
+        rxp:SetPoint("TOPRIGHT", UIParent, "TOPLEFT", -2000, 0)
+    end
+end
+
+---------------------------------------------------------------------------
+-- Arrow
+---------------------------------------------------------------------------
+
+local function StyleArrow()
+    local af = addon.arrowFrame
+    if not af or af.openxpStyled then return end
+    af.openxpStyled = true
+    local p = Profile()
+    local scale = (p and p.arrowScale) or 1
+
+    af.dialBg = af:CreateTexture(nil, "BACKGROUND")
+    af.dialBg:SetTexture(TEX .. "dialdisc")
+    af.dialBg:SetPoint("CENTER")
+    af.dialBg:SetSize(76 * scale, 76 * scale)
+    af.dialBg:SetVertexColor(16 / 255, 17 / 255, 21 / 255, 0.85)
+
+    af.dialRing = af:CreateTexture(nil, "BORDER")
+    af.dialRing:SetTexture(TEX .. "dialring")
+    af.dialRing:SetPoint("CENTER")
+    af.dialRing:SetSize(76 * scale, 76 * scale)
+
+    af.arrived = af:CreateTexture(nil, "OVERLAY")
+    af.arrived:SetTexture(TEX .. "check")
+    af.arrived:SetPoint("CENTER")
+    af.arrived:SetSize(36 * scale, 36 * scale)
+    Tint(af.arrived, C.green)
+    af.arrived:Hide()
+
+    af.texture:ClearAllPoints()
+    af.texture:SetPoint("CENTER")
+    af.texture:SetSize(44 * scale, 44 * scale)
+
+    af.text:SetAlpha(0)
+    -- theme reloads call this; keep the OpenXP pointer
+    af.UpdateVisuals = function(self) self.texture:SetTexture(TEX .. "pointer") end
+
+    af.oxpDist = af:CreateFontString(nil, "OVERLAY")
+    af.oxpDist:SetFont(FONT, 17, "OUTLINE")
+    af.oxpDist:SetPoint("TOP", af.dialBg, "BOTTOM", 0, -6)
+    af.oxpLabel = af:CreateFontString(nil, "OVERLAY")
+    af.oxpLabel:SetFont(FONT, 12, "OUTLINE")
+    af.oxpLabel:SetPoint("TOP", af.oxpDist, "BOTTOM", 0, -3)
+    af.oxpLabel:SetTextColor(0.72, 0.74, 0.8)
+    af:SetHitRectInsets(-22 * scale, -22 * scale, -22 * scale, -22 * scale)
+end
+
+local function ArrowVisuals(af)
+    af.texture:SetTexture(TEX .. "pointer")
+end
+
+local function ArrowUpdate(self, ...)
+    addon.DrawArrow(self, ...)
+    local af = addon.arrowFrame
+    if not af.oxpDist then return end
+    local dist = af.distance or 0
+    local element = af.element
+    local here = element and dist <= 8
+    if here then
+        af.texture:Hide()
+        af.arrived:Show()
+        Tint(af.dialRing, C.green)
+        af.oxpDist:SetText(L("Here"))
+        af.oxpDist:SetTextColor(unpack(C.green))
+    else
+        af.texture:Show()
+        af.arrived:Hide()
+        Tint(af.dialRing, C.blue, 0.6)
+        af.oxpDist:SetText(fmt("%d yd", dist))
+        af.oxpDist:SetTextColor(0.96, 0.97, 0.98)
+    end
+    local label = element and (element.title or (element.step and element.step.arrowtext))
+    af.oxpLabel:SetText(label and StripCodes(label) or "")
+end
+
+function card.SetupArrow()
+    local af = addon.arrowFrame
+    if not af then return end
+    StyleArrow()
+    ArrowVisuals(af)
+    af:SetScript("OnUpdate", ArrowUpdate)
+end
+
+---------------------------------------------------------------------------
+-- Turn on
+---------------------------------------------------------------------------
+
+function card.Enable()
+    if not card.IsEnabled() then return end
+    card.enabled = true
+    local p = Profile()
+    if p and p.openxpCardPos then
+        local pos = p.openxpCardPos
+        f:ClearAllPoints()
+        f:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
+    end
+    f:SetScale((p and p.windowScale) or 1)
+    card.ParkClassicWindow()
+    card.SetupArrow()
+    card.Refresh(true)
+end
+
+-- The engine redraws its arrow on theme reloads; keep ours on top
+if addon.SetupArrow then
+    local origSetupArrow = addon.SetupArrow
+    addon.SetupArrow = function(...)
+        origSetupArrow(...)
+        if card.enabled then card.SetupArrow() end
+    end
+end
+
+local loader = CreateFrame("Frame")
+loader:RegisterEvent("PLAYER_ENTERING_WORLD")
+loader:SetScript("OnEvent", function(self)
+    self:UnregisterAllEvents()
+    C_Timer.After(2, function() card.Enable() end)
+end)

@@ -2689,6 +2689,7 @@ function addon.settings:CreateAceOptionsPanel()
                 order = 10,
                 args = {
                     activeTheme = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = L("Choose Theme"), -- TODO locale
                         desc = L("Choose active theme"),
                         type = "select",
@@ -2708,6 +2709,7 @@ function addon.settings:CreateAceOptionsPanel()
                         end]]
                     },
                     customThemeBackground = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = _G.BACKGROUND,
                         desc = L("Set primary background"),
                         type = "color",
@@ -2729,6 +2731,7 @@ function addon.settings:CreateAceOptionsPanel()
                         end,
                     },
                     customThemeBottomFrameBG = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = L("Step List Background"), -- TODO locale
                         desc = L("Step List Background"),
                         type = "color",
@@ -2751,6 +2754,7 @@ function addon.settings:CreateAceOptionsPanel()
                         end,
                     },
                     customThemeBottomFrameHighlight = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = L("Step Highlight"), -- TODO locale
                         desc = L("Step mouseover highlight color"),
                         type = "color",
@@ -2775,6 +2779,7 @@ function addon.settings:CreateAceOptionsPanel()
                         disabled = function() return addon.v2:IsGuideWindowEnabled() end,
                     },
                     customThemeMapPins = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = L("Map Pins"), -- TODO locale
                         desc = L("Map Pin color"),
                         type = "color",
@@ -2795,6 +2800,7 @@ function addon.settings:CreateAceOptionsPanel()
                         disabled = function() return addon.v2:IsGuideWindowEnabled() end,
                     },
                     customThemeTooltip = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = L("Tooltip"), -- TODO locale
                         desc = L("RGB hex color code"),
                         type = "input", -- TODO color then convert
@@ -2816,6 +2822,7 @@ function addon.settings:CreateAceOptionsPanel()
                         disabled = function() return addon.v2:IsGuideWindowEnabled() end,
                     },
                     customThemeFont = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = L("Font"), -- TODO locale
                         desc = L("Font Path"),
                         type = "input",
@@ -2849,6 +2856,7 @@ function addon.settings:CreateAceOptionsPanel()
                         end,
                     },
                     customThemeTextColor = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = L("Text Color"), -- TODO locale
                         desc = L("Requires Reload to take effect"),
                         type = "color",
@@ -2869,6 +2877,7 @@ function addon.settings:CreateAceOptionsPanel()
                         end,
                     },
                     customThemeApply = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = _G.APPLY,
                         type = 'execute',
                         width = optionsWidth,
@@ -2877,6 +2886,7 @@ function addon.settings:CreateAceOptionsPanel()
                         func = function() _G.ReloadUI() end,
                     },
                     customThemeReset = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = _G.RESET,
                         type = 'execute',
                         width = optionsWidth,
@@ -3074,6 +3084,7 @@ function addon.settings:CreateAceOptionsPanel()
                         end
                     },
                     anchorOrientation = {
+                        hidden = true, -- OpenXP: one look, set by the guide card
                         name = L("Current step frame anchor"),
                         desc =
                             L"Sets the current step frame to grow from bottom to top or top to bottom",
