@@ -173,5 +173,31 @@ try("turn in for a quest not in the log offers skip / get", function()
     log[581] = true
     assert(card.MissingQuest(steps[9]) == nil, "warned with the quest in the log")
 end)
+try("pickup for a quest you can't get yet is skipped once", function()
+    addon.openxpPrereqs = {[4733] = {any = {4681}}, [600] = {excl = {601}}}
+    local done = {}
+    addon.IsQuestTurnedIn = function(id) return done[id] end
+    addon.IsOnQuest = function() return false end
+    steps[12] = {index = 12, elements = {el{tag = "accept", questId = 4733, text = "Accept Beached Sea Creature"},
+                                          el{tag = "goto"}}}
+    addon.currentGuide = {name = "19-21 Darkshore/Ashenvale", steps = steps}
+    assert(card.QuestBlocked(4733) == 4681, "should need Washed Ashore")
+    assert(card.StepUnavailable(steps[12]), "step should be unavailable")
+    addon.GetGuideProgress = function() return 12 end
+    calls.setStep = nil
+    card.TickForTest()
+    assert(calls.setStep == 13, "not skipped")
+    calls.setStep = nil
+    card.TickForTest()
+    assert(calls.setStep == nil, "skipped twice")
+    done[4681] = true
+    assert(not card.QuestBlocked(4733), "blocked after the pre-quest")
+    done[601] = true
+    assert(card.QuestBlocked(600) == 601, "exclusive quest not honoured")
+    -- a step that also turns something in is never auto-skipped
+    steps[13] = {index = 13, elements = {el{tag = "accept", questId = 600}, el{tag = "turnin", questId = 4681}}}
+    assert(not card.StepUnavailable(steps[13]), "mixed step skipped")
+    addon.GetGuideProgress = function() return 1 end
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

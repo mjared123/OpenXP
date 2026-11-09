@@ -381,6 +381,52 @@ function card.MissingQuest(step)
     end
 end
 
+-- Pickup steps for quests you can't get yet (a pre-quest you skipped, or
+-- one you did that locks this one out) send you to a giver who has nothing
+-- for you. DB/forever/QuestPrereqs.lua lists what each guide quest needs.
+local function TurnedIn(id)
+    return addon.IsQuestTurnedIn and addon.IsQuestTurnedIn(math.abs(id))
+end
+
+-- Returns the quest that has to be done first, or nil when it can be picked up
+function card.QuestBlocked(id)
+    local pre = addon.openxpPrereqs and addon.openxpPrereqs[id]
+    if not pre then return end
+    if (addon.IsOnQuest and addon.IsOnQuest(id)) or TurnedIn(id) then return end
+    if pre.any then
+        local ok = false
+        for _, q in ipairs(pre.any) do
+            if TurnedIn(q) then ok = true; break end
+        end
+        if not ok then return pre.any[1] end
+    end
+    if pre.all then
+        for _, q in ipairs(pre.all) do
+            if not TurnedIn(q) then return q end
+        end
+    end
+    if pre.excl then
+        for _, q in ipairs(pre.excl) do
+            q = math.abs(q)
+            if TurnedIn(q) or (addon.IsOnQuest and addon.IsOnQuest(q)) then return q end
+        end
+    end
+end
+
+-- True when every quest on the step is a pickup you can't get yet
+function card.StepUnavailable(step)
+    if not (step and step.elements) then return end
+    local blocked = 0
+    for _, e in ipairs(step.elements) do
+        local id = QuestIdOf(e)
+        if id then
+            if e.tag ~= "accept" or e.completed or not card.QuestBlocked(id) then return end
+            blocked = blocked + 1
+        end
+    end
+    return blocked > 0
+end
+
 -- The step in this guide where the quest is picked up, nearest one before
 -- `before` first
 function card.FindAcceptStep(guide, questId, before)
@@ -535,6 +581,7 @@ local function LayoutBlock(b, step, first)
     if missing and step.index then
         local w = GetWarn(b)
         local accept = card.FindAcceptStep(addon.currentGuide, missing, step.index)
+        if accept and card.QuestBlocked(missing) then accept = nil end
         b.missing = {quest = missing, step = step.index, accept = accept}
         SetFont(w.text, 0)
         w.text:SetWidth(textWidth)
@@ -879,8 +926,20 @@ ticker:SetScript("OnUpdate", function(_, dt)
     elapsed = 0
     Tick()
 end)
+local autoSkipped = {}
 function Tick()
     if card.enabled then
+        -- Move past pickup steps for quests you can't get yet; only once per
+        -- step, so going back with the arrow button still works
+        local guide = addon.currentGuide
+        local cur = guide and guide.steps and addon.GetGuideProgress and addon.GetGuideProgress()
+        if cur and guide.steps[cur] then
+            local key = tostring(guide.name) .. ":" .. cur
+            if not autoSkipped[key] and card.StepUnavailable(guide.steps[cur]) then
+                autoSkipped[key] = true
+                addon.SetStep(cur + 1)
+            end
+        end
         local r = card.returnTo
         if r then
             if addon.currentGuide ~= r.guide then

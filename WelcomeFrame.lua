@@ -5,11 +5,18 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.8.2"
+local OPENXP_VERSION = "0.8.3"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.8.3",
+        date = "November 2026",
+        changes = {
+            "Pickup steps for quests you can't get yet (you skipped the quest before it) are skipped automatically, like the Beached Sea Creature quests if you never did Washed Ashore",
+        },
+    },
     {
         version = "0.8.2",
         date = "November 2026",
