@@ -20,5 +20,10 @@ RestedXP name were written by RestedXP and are kept here with credit.
 - Dropped RestedXP's packaging and CI files.
 - Added Smart start (`SmartStart.lua`): picks the right guide section and step from the player's level, zone, quest log and completed quests, and skips quest chains whose earlier quests were skipped (`/oxp where`, `/oxp catchup`).
 - Added `/oxp` and `/openxp` slash commands, and pointed bug reports at OpenXP's GitHub issues instead of RestedXP's Discord.
-- New default look: the built-in "RXP Blue" theme is recolored to OpenXP's navy and gold, with recolored textures in `Textures/OpenXP/`, and visible "RestedXP" window titles now say OpenXP. Guide group names that RestedXP wrote still carry their name.
+- New guide window (`OpenXPCard.lua`): a compact card that replaces RestedXP's guide window and themes, with drag-resize, a step list, quest-chain help for steps whose quest isn't in your log, a restyled waypoint arrow, and an XP line with time to level. RestedXP's window still runs hidden as the step engine. Visible "RestedXP" titles now say OpenXP; guide group names that RestedXP wrote still carry their name internally.
 - Added a welcome / what's new window (`WelcomeFrame.lua`, `/oxp news`).
+- New guides written for OpenXP (`Guides/openxp/`, `Guides/openxp-classic/`): Alliance 21-60 and Horde 22-60 for WoW Forever and Classic Era, and dungeon quest guides for both factions. Routes were generated with `tools/build_route.py` and `tools/build_dungeons.py` from public quest facts (quest ids, levels, coordinates). No RestedXP paid guide content is used.
+- Optional Questie support: when the separate Questie addon is installed, OpenXP reads its quest data in game for quest chains and levels. Questie's data is not bundled.
+- Added quest tooltips for mobs and NPCs (`OpenXPTooltips.lua`), quest icons on map pins, auto loot and max camera distance options, and turned Sell Junk on by default.
+- Gave OpenXP its own addon message channel so it doesn't exchange version checks with RestedXP.
+- The release zip (`tools/package.py`) only includes the files that load on WoW Forever and Classic Era.
