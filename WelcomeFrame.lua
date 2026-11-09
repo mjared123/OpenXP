@@ -5,11 +5,21 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.7.0"
+local OPENXP_VERSION = "0.8.0"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.8.0",
+        date = "November 2026",
+        changes = {
+            "Resize the guide card: drag the grip in its bottom right corner. A taller card shows more of the route under Up next",
+            "Settings cleaned up: options that did nothing with the new card are gone",
+            "Window scale, arrow scale, arrow text size and Lock frames now apply to the new card and arrow right away",
+            "New Reset Guide Window button in settings puts the card back to its starting spot and size",
+        },
+    },
     {
         version = "0.7.0",
         date = "November 2026",

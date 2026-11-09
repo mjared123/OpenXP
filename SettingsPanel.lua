@@ -674,7 +674,8 @@ function addon.settings:CreateAceOptionsPanel()
                         addon.settings.CloseSettings()
                         addon.comms.OpenBugReport()
                     end)
-                end
+                end,
+                hidden = true, -- OpenXP: not used by the guide card
             },
             splashUI = {
                 order = 1.1,
@@ -847,7 +848,8 @@ function addon.settings:CreateAceOptionsPanel()
                             else
                                 addon.ShowTimers()
                             end
-                        end
+                        end,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     groupMode = {
                         name = L("Enable Group Settings"),
@@ -949,6 +951,7 @@ function addon.settings:CreateAceOptionsPanel()
                         width = "full",
                         order = 5.0,
                         hidden = isNotAdvanced,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     enableV2Interface = {
                         name = L("Enable V2 Interface"),
@@ -961,7 +964,8 @@ function addon.settings:CreateAceOptionsPanel()
                             SetProfileOption(info, value)
                             _G.ReloadUI()
                         end,
-                        hidden = isNotAdvanced
+                        hidden = isNotAdvanced,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     activeStepsV2RenderQuestName = {
                         name = L("Display Quest Link"),
@@ -976,7 +980,8 @@ function addon.settings:CreateAceOptionsPanel()
                         hidden = isNotAdvanced,
                         disabled = function()
                             return not addon.v2:IsGuideWindowEnabled()
-                        end
+                        end,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     enableV2MenuTheme = {
                         name = L("Brand Menus"),
@@ -987,7 +992,8 @@ function addon.settings:CreateAceOptionsPanel()
                         hidden = isNotAdvanced,
                         disabled = function()
                             return not addon.v2:IsGuideWindowEnabled()
-                        end
+                        end,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     inventoryHeader = {
                         name = _G.INVENTORY_TOOLTIP,
@@ -1318,7 +1324,8 @@ function addon.settings:CreateAceOptionsPanel()
                             if value then
                                 addon.ReloadGuide()
                             end
-                        end
+                        end,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     expansionHeader = {
                         name = _G.EXPANSION_FILTER_TEXT,
@@ -1337,7 +1344,8 @@ function addon.settings:CreateAceOptionsPanel()
                             SetProfileOption(info, value)
                             addon.ReloadGuide()
                         end,
-                        hidden = addon.game ~= "WOTLK"
+                        hidden = addon.game ~= "WOTLK",
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     loremasterMode = {
                         name = L("Loremaster Mode"),
@@ -1350,7 +1358,8 @@ function addon.settings:CreateAceOptionsPanel()
                             SetProfileOption(info, value)
                             addon.ReloadGuide()
                         end,
-                        hidden = addon.game ~= "CATA" and addon.game ~= "MOP"
+                        hidden = addon.game ~= "CATA" and addon.game ~= "MOP",
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     chromieTime = {
                         name = L("Show Chromie Time Guides"),
@@ -1365,7 +1374,8 @@ function addon.settings:CreateAceOptionsPanel()
                         sorting = {"auto", "enabled", "disabled"},
                         width = optionsWidth,
                         order = 2.2,
-                        hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE or addon.game == "FOREVER"
+                        hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE or addon.game == "FOREVER",
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     phase = {
                         name = L("Content phase"),
@@ -1398,7 +1408,8 @@ function addon.settings:CreateAceOptionsPanel()
                             SetProfileOption(info, value)
                             addon.RenderFrame()
                         end,
-                        hidden = addon.game ~= "CLASSIC"
+                        hidden = addon.game ~= "CLASSIC",
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     season = {
                         hidden = addon.game ~= "CLASSIC",
@@ -2238,7 +2249,8 @@ function addon.settings:CreateAceOptionsPanel()
                         type = "header",
                         width = "full",
                         order = 4.0,
-                        hidden = isNotAdvanced
+                        hidden = isNotAdvanced,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     enableV2ActivePartyStepsFrame = {
                         name = L("Enable Active Party Step v2"),
@@ -2251,7 +2263,8 @@ function addon.settings:CreateAceOptionsPanel()
                             SetProfileOption(info, value)
                             _G.ReloadUI()
                         end,
-                        hidden = isNotAdvanced
+                        hidden = isNotAdvanced,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     activePartyStepsV2WindowScale = {
                         name = L("Window Scale"),
@@ -2270,7 +2283,8 @@ function addon.settings:CreateAceOptionsPanel()
                         hidden = isNotAdvanced,
                         disabled = function()
                             return not self.profile.enableV2ActivePartyStepsFrame
-                        end
+                        end,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     activePartyStepsV2HideBackground = {
                         name = L("Hide Party Background"),
@@ -2285,7 +2299,8 @@ function addon.settings:CreateAceOptionsPanel()
                         hidden = isNotAdvanced,
                         disabled = function()
                             return not self.profile.enableV2ActivePartyStepsFrame
-                        end
+                        end,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     shareActiveSteps = {
                         name = L("Share Active Step "),
@@ -2313,6 +2328,7 @@ function addon.settings:CreateAceOptionsPanel()
                                 addon.itemUpgrades:Setup()
                             end
                         end,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     enableTipsFrame = {
                         name = L("Enable Tips Frame"), -- TODO locale
@@ -2906,6 +2922,7 @@ function addon.settings:CreateAceOptionsPanel()
                         type = "toggle",
                         width = optionsWidth,
                         order = 1.92,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     previewFramePositions = {
                         name = fmt(L("%s Frame Positions"), _G.PREVIEW),
@@ -3046,7 +3063,7 @@ function addon.settings:CreateAceOptionsPanel()
                     windowScale = {
                         name = L("Window Scale"),
                         desc =
-                            L"Scale of the Main Window, use alt+left click on the main window to resize it",
+                            L"Scale of the guide window. Drag its bottom-right corner to change its width and height",
                         type = "range",
                         width = optionsWidth,
                         order = 3.1,
@@ -3119,7 +3136,8 @@ function addon.settings:CreateAceOptionsPanel()
                         type = "toggle",
                         width = optionsWidth,
                         order = 3.5,
-                        set = function(_, value) self:SetHideCompletedSteps(value) end
+                        set = function(_, value) self:SetHideCompletedSteps(value) end,
+                        hidden = true, -- OpenXP: not used by the guide card
                     },
                     showUnusedGuides = {
                         name = L("Show unused guides"),
@@ -3167,6 +3185,16 @@ function addon.settings:CreateAceOptionsPanel()
                             SetProfileOption(info, value)
                             addon.arrowFrame.text:SetFont(addon.font, value,
                                                           "OUTLINE")
+                        end
+                    },
+                    resetCardPosition = {
+                        name = L("Reset Guide Window"),
+                        desc = L("Move the guide window back to its starting spot and size"),
+                        order = 3.25,
+                        type = "execute",
+                        width = optionsWidth,
+                        func = function()
+                            if addon.card then addon.card.ResetPosition() end
                         end
                     },
                     resetArrowPosition = {

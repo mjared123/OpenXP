@@ -19,7 +19,9 @@ local fmt = string.format
 local TEX = "Interface/AddOns/" .. addonName .. "/Textures/Card/"
 local WHITE = "Interface/Buttons/WHITE8X8"
 local FONT = "Fonts\\ARIALN.TTF"
-local WIDTH = 330
+local WIDTH = 330 -- default; the card can be resized
+local MIN_W, MIN_H, MAX_W, MAX_H = 290, 120, 640, 900
+local MAX_UPNEXT = 12
 local PAD = 12
 local MAX_BLOCKS = 4
 local MAX_LINES = 8
@@ -47,6 +49,10 @@ end
 
 function card.IsEnabled()
     return Profile() ~= nil and not (addon.v2 and addon.v2:IsGuideWindowEnabled())
+end
+
+local function Width()
+    return card.width or WIDTH
 end
 
 local function FontSize(offset)
@@ -98,6 +104,61 @@ f:SetScript("OnDragStop", function(self)
         p.openxpCardPos = {point, relPoint, x, y}
     end
 end)
+f:SetResizable(true)
+if f.SetResizeBounds then
+    f:SetResizeBounds(MIN_W, MIN_H, MAX_W, MAX_H)
+else
+    if f.SetMinResize then f:SetMinResize(MIN_W, MIN_H) end
+    if f.SetMaxResize then f:SetMaxResize(MAX_W, MAX_H) end
+end
+
+-- Resize grip in the bottom right corner
+local grip = CreateFrame("Button", nil, f)
+card.grip = grip
+grip:SetSize(16, 16)
+grip:SetPoint("BOTTOMRIGHT", -2, 2)
+grip:SetFrameLevel(f:GetFrameLevel() + 10)
+grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+grip:SetScript("OnMouseDown", function(self, button)
+    if button ~= "LeftButton" then return end
+    local p = Profile()
+    if p and p.lockFrames then return end
+    card.sizing = true
+    f:StartSizing("BOTTOMRIGHT")
+end)
+grip:SetScript("OnMouseUp", function()
+    if not card.sizing then return end
+    f:StopMovingOrSizing()
+    card.sizing = false
+    card.width = math.floor(math.max(MIN_W, math.min(MAX_W, f:GetWidth() or WIDTH)) + 0.5)
+    local p = Profile()
+    local collapsed = p and p.openxpCardCollapsed
+    if not collapsed then
+        card.height = math.floor(math.max(MIN_H, math.min(MAX_H, f:GetHeight() or MIN_H)) + 0.5)
+    end
+    if p then
+        p.openxpCardWidth = card.width
+        if not collapsed then p.openxpCardHeight = card.height end
+        local point, _, relPoint, x, y = f:GetPoint()
+        if point then p.openxpCardPos = {point, relPoint, x, y} end
+    end
+    card.Refresh(true)
+end)
+grip:SetScript("OnUpdate", function()
+    if card.sizing then
+        card.width = math.max(MIN_W, math.min(MAX_W, f:GetWidth() or WIDTH))
+        card.Refresh(true)
+    end
+end)
+grip:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:SetText(L("Drag to resize"), 1, 1, 1)
+    GameTooltip:Show()
+end)
+grip:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
 f:SetScript("OnMouseUp", function(self, button)
     if button == "RightButton" and addon.RXPFrame and addon.RXPFrame.DropDownMenu then
         addon.RXPFrame.DropDownMenu()
@@ -291,7 +352,7 @@ local function StepContent(step)
 end
 
 local function LayoutBlock(b, step, first)
-    local textWidth = WIDTH - PAD * 2 - 34 - 12
+    local textWidth = Width() - PAD * 2 - 34 - 12
     b.sep:SetShown(not first)
     b.badge:SetKind(StepKind(step))
 
@@ -395,6 +456,18 @@ upNext.text:SetPoint("TOPLEFT", upNext.label, "TOPRIGHT", 8, 1)
 upNext.text:SetJustifyH("LEFT")
 upNext.text:SetTextColor(unpack(C.dim))
 upNext.text:SetWordWrap(false)
+upNext.lines = {upNext.text}
+local function UpNextLine(i)
+    local line = upNext.lines[i]
+    if not line then
+        line = upNext:CreateFontString(nil, "OVERLAY")
+        line:SetJustifyH("LEFT")
+        line:SetTextColor(unpack(C.dim))
+        line:SetWordWrap(false)
+        upNext.lines[i] = line
+    end
+    return line
+end
 
 local bar = CreateFrame("Frame", nil, f)
 bar:SetHeight(38)
@@ -468,7 +541,7 @@ bar.find = MakeButton(bar, "target", L("Jump to the right guide and step for you
                       function() if addon.smartStart then addon.smartStart.Run() end end, L("Find my place"))
 bar.find:SetPoint("LEFT", bar.next, "RIGHT", 6, 0)
 bar.collapse = MakeButton(bar, "up", L("Collapse to one line"), function() card.SetCollapsed(true) end)
-bar.collapse:SetPoint("RIGHT", -6, 0)
+bar.collapse:SetPoint("RIGHT", -20, 0)
 bar.settings = MakeButton(bar, "gear", L("Settings"), function() addon.settings.OpenSettings() end)
 bar.settings:SetPoint("RIGHT", bar.collapse, "LEFT", -2, 0)
 bar.menu = MakeButton(bar, "menu", L("Pick a guide, skipped quest chains, what's new"), function()
@@ -513,14 +586,20 @@ local function SplitGuideName(guide)
     return name, ""
 end
 
-local function NextStepText(guide, afterIndex)
-    for i = afterIndex + 1, math.min(#guide.steps, afterIndex + 15) do
+local function NextStepTexts(guide, afterIndex, count)
+    local out = {}
+    local last = math.min(#guide.steps, afterIndex + 15 * count)
+    for i = afterIndex + 1, last do
         local step = guide.steps[i]
         if step and not step.hidewindow and not (OXPCData and OXPCData.stepSkip and OXPCData.stepSkip[i]) then
             local title = StepContent(step)
-            if title and title ~= "" then return StripCodes(title) end
+            if title and title ~= "" then
+                tinsert(out, (StripCodes(title)))
+                if #out >= count then break end
+            end
         end
     end
+    return out
 end
 
 local function Visible()
@@ -528,6 +607,10 @@ local function Visible()
     if addon.isHidden then return false end
     local p = Profile()
     if p and p.hideGuideWindow then return false end
+    -- the engine still hides its own window in raids, when no guide is
+    -- enabled and so on; follow it
+    local rxp = addon.RXPFrame
+    if rxp and rxp.IsShown and not rxp:IsShown() then return false end
     return true
 end
 
@@ -540,6 +623,10 @@ function card.Refresh(force)
 
     local guide = addon.currentGuide
     local p = Profile()
+    local scale = (p and p.windowScale) or 1
+    if f:GetScale() ~= scale then f:SetScale(scale) end
+    if not card.sizing and f:GetWidth() ~= Width() then f:SetWidth(Width()) end
+    grip:SetShown(not (p and p.lockFrames))
     local total = guide.steps and #guide.steps or 0
     local current = math.min(CurrentStep() or 1, math.max(total, 1))
     local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
@@ -568,11 +655,16 @@ function card.Refresh(force)
             mini.text:SetText(L("Guide finished"))
         end
         mini.count:SetText(fmt("%d/%d", current, total))
-        f:SetHeight(42)
+        if not card.sizing then f:SetHeight(42) end
         return
     end
 
     mini:Hide()
+    local wide = Width() >= 360
+    bar.find:SetWidth(wide and 116 or 40)
+    bar.find.label:SetShown(wide)
+    bar.find.icon:ClearAllPoints()
+    if wide then bar.find.icon:SetPoint("LEFT", 10, 0) else bar.find.icon:SetPoint("CENTER") end
     header:Show(); progressBg:Show(); progress:Show(); body:Show(); upNext:Show(); bar:Show()
 
     local zone, range = SplitGuideName(guide)
@@ -581,11 +673,11 @@ function card.Refresh(force)
     SetFont(header.step, -1)
     header.zone:SetWidth(0)
     header.zone:SetText(zone:upper())
-    if header.zone:GetStringWidth() > WIDTH - 150 then header.zone:SetWidth(WIDTH - 150) end
+    if header.zone:GetStringWidth() > Width() - 150 then header.zone:SetWidth(Width() - 150) end
     header.range:SetText(range)
     header.step:SetText(fmt(L("Step %d / %d"), current, total))
     local frac = total > 0 and current / total or 0
-    progress:SetWidth(math.max(1, (WIDTH - 2) * frac))
+    progress:SetWidth(math.max(1, (Width() - 2) * frac))
 
     local y = 0
     for i = 1, MAX_BLOCKS do
@@ -607,25 +699,48 @@ function card.Refresh(force)
     end
     body:SetHeight(math.max(y, 1))
 
-    local nextText = NextStepText(guide, lastIndex)
+    -- One "up next" line by default; a taller card shows more of the route
+    local lineH = FontSize(0) + 6
+    local baseHeight = 1 + 28 + 2 + y + 4 + 34 + 38 + 1
+    local want = card.sizing and (f:GetHeight() or 0) or (card.height or 0)
+    local extra = math.max(0, math.floor((want - baseHeight) / lineH))
+    local count = math.min(MAX_UPNEXT, 1 + extra)
+    local texts = NextStepTexts(guide, lastIndex, count)
+
     upNext:ClearAllPoints()
     upNext:SetPoint("TOPLEFT", body, "BOTTOMLEFT", 0, -4)
     upNext:SetPoint("TOPRIGHT", body, "BOTTOMRIGHT", 0, -4)
     local upHeight = 0
-    if nextText then
+    if #texts > 0 then
         SetFont(upNext.label, -2, "")
-        SetFont(upNext.text, 0)
         upNext.label:SetText(L("UP NEXT"))
-        upNext.text:SetWidth(WIDTH - PAD * 2 - upNext.label:GetStringWidth() - 10)
-        upNext.text:SetText(nextText)
-        upHeight = 34
+        local textW = Width() - PAD * 2 - upNext.label:GetStringWidth() - 10
+        for i = 1, math.max(#texts, #upNext.lines) do
+            local line = texts[i] and UpNextLine(i) or upNext.lines[i]
+            if texts[i] then
+                SetFont(line, 0)
+                if i > 1 then
+                    line:ClearAllPoints()
+                    line:SetPoint("TOPLEFT", upNext.lines[i - 1], "BOTTOMLEFT", 0, -6)
+                end
+                line:SetWidth(textW)
+                line:SetText(texts[i])
+                line:Show()
+            else
+                line:Hide()
+            end
+        end
+        upHeight = 34 + (#texts - 1) * lineH
         upNext:Show()
     else
         upNext:Hide()
     end
     upNext:SetHeight(math.max(upHeight, 1))
 
-    f:SetHeight(1 + 28 + 2 + y + 4 + upHeight + 38 + 1)
+    if not card.sizing then
+        local content = 1 + 28 + 2 + y + 4 + upHeight + 38 + 1
+        f:SetHeight(math.max(content, card.height or 0))
+    end
 end
 
 -- Throttled refresh while shown; quest progress changes all the time
@@ -708,10 +823,27 @@ local function ArrowVisuals(af)
     af.texture:SetTexture(TEX .. "pointer")
 end
 
+-- Follow the Arrow scale and Arrow text size settings live
+local function ArrowSizes(af)
+    local p = Profile()
+    local scale = (p and p.arrowScale) or 1
+    local textSize = (p and p.arrowText) or 12
+    if af.oxpScale == scale and af.oxpText == textSize then return end
+    af.oxpScale, af.oxpText = scale, textSize
+    af.dialBg:SetSize(76 * scale, 76 * scale)
+    af.dialRing:SetSize(76 * scale, 76 * scale)
+    af.arrived:SetSize(36 * scale, 36 * scale)
+    af.texture:SetSize(44 * scale, 44 * scale)
+    af:SetHitRectInsets(-22 * scale, -22 * scale, -22 * scale, -22 * scale)
+    af.oxpDist:SetFont(FONT, textSize + 5, "OUTLINE")
+    af.oxpLabel:SetFont(FONT, textSize, "OUTLINE")
+end
+
 local function ArrowUpdate(self, ...)
     addon.DrawArrow(self, ...)
     local af = addon.arrowFrame
     if not af.oxpDist then return end
+    ArrowSizes(af)
     local dist = af.distance or 0
     local element = af.element
     local here = element and dist <= 8
@@ -753,9 +885,26 @@ function card.Enable()
         f:ClearAllPoints()
         f:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
     end
+    card.width = p and p.openxpCardWidth or nil
+    card.height = p and p.openxpCardHeight or nil
     f:SetScale((p and p.windowScale) or 1)
     card.ParkClassicWindow()
     card.SetupArrow()
+    card.Refresh(true)
+end
+
+-- Settings > Reset guide card: default spot and size
+function card.ResetPosition()
+    local p = Profile()
+    if p then
+        p.openxpCardPos = nil
+        p.openxpCardWidth = nil
+        p.openxpCardHeight = nil
+    end
+    card.width, card.height = nil, nil
+    f:ClearAllPoints()
+    f:SetPoint("RIGHT", UIParent, "RIGHT", -40, 120)
+    f:SetWidth(WIDTH)
     card.Refresh(true)
 end
 

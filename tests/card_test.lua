@@ -12,6 +12,7 @@ local function obj(name)
         if k == "GetStringHeight" then return function() return 14 end end
         if k == "GetStringWidth" then return function() return 60 end end
         if k == "GetLeft" then return function() return 100 end end
+        if k == "GetFrameLevel" then return function() return 1 end end
         if k == "GetPoint" then return function() return "CENTER", nil, "CENTER", 0, 0 end end
         if k == "GetWidth" or k == "GetHeight" then return function() return 100 end end
         if k == "SetScript" then return function(self, ev, fn) rawset(self, "_" .. ev, fn) end end
@@ -42,6 +43,9 @@ local steps = {
                             el{tag = "goto"}}},
     {index = 3, elements = {el{tag = "fp", text = "Get the Darkshire flight path"}}},
 }
+for i = 4, 20 do
+    steps[i] = {index = i, elements = {el{textOnly = true, text = "Step text " .. i}}}
+end
 local addon = {
     locale = {Get = function(s) return s end},
     settings = {profile = {guideFontSize = 12, arrowScale = 1, windowScale = 1},
@@ -92,6 +96,48 @@ end)
 try("guide with no range in its name", function()
     addon.currentGuide = {name = "Zephras Isle", steps = steps}
     card.Refresh()
+end)
+try("resize with the corner grip (wide and tall)", function()
+    addon.RXPFrame.activeSteps = {steps[1], steps[2]}
+    addon.currentGuide = {name = "28-30 Duskwood", steps = steps}
+    local f, grip = card.frame, card.grip
+    assert(grip, "no grip")
+    local sized
+    f.StartSizing = function() sized = true end
+    f.GetWidth = function() return 420 end
+    f.GetHeight = function() return 520 end
+    local heights = {}
+    f.SetHeight = function(_, h) heights[#heights + 1] = h end
+    grip:GetScript("OnMouseDown")(grip, "LeftButton")
+    assert(sized and card.sizing, "sizing did not start")
+    grip:GetScript("OnUpdate")(grip)
+    grip:GetScript("OnMouseUp")(grip)
+    assert(not card.sizing, "still sizing")
+    local p = addon.settings.profile
+    assert(p.openxpCardWidth == 420 and p.openxpCardHeight == 520, "size not saved")
+    assert(heights[#heights] >= 520, "height not kept: " .. tostring(heights[#heights]))
+end)
+try("locked frames ignore the grip", function()
+    addon.settings.profile.lockFrames = true
+    card.sizing = false
+    card.grip:GetScript("OnMouseDown")(card.grip, "LeftButton")
+    assert(not card.sizing, "resized while locked")
+    addon.settings.profile.lockFrames = nil
+end)
+try("narrow card hides the Find my place label", function()
+    card.width = 290
+    card.Refresh()
+end)
+try("reset position and size", function()
+    card.ResetPosition()
+    local p = addon.settings.profile
+    assert(p.openxpCardWidth == nil and p.openxpCardPos == nil and card.width == nil, "not reset")
+end)
+try("hidden when the engine hides its window", function()
+    addon.RXPFrame.shown = false
+    card.Refresh()
+    assert(not card.frame.shown, "card still shown")
+    addon.RXPFrame.shown = true
 end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails
