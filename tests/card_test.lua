@@ -144,5 +144,34 @@ try("font size change applies on the next redraw", function()
     card.Refresh(true)
     addon.settings.profile.guideFontSize = 12
 end)
+try("turn in for a quest not in the log offers skip / get", function()
+    steps[5] = {index = 5, elements = {el{tag = "accept", questId = 581, text = "Accept The Night Watch"}}}
+    steps[9] = {index = 9, elements = {el{tag = "turnin", questId = 581, title = "The Night Watch",
+                                         text = "Turn in The Night Watch"}}}
+    addon.currentGuide = {name = "28-30 Duskwood", steps = steps}
+    local log = {}
+    addon.IsOnQuest = function(id) return log[id] end
+    addon.IsQuestTurnedIn = function() return false end
+    addon.RXPFrame.activeSteps = {steps[9]}
+    card.Refresh(true)
+    local b = card.blocksForTest and card.blocksForTest[1]
+    local id = card.MissingQuest(steps[9])
+    assert(id == 581, "missing quest not found")
+    assert(card.FindAcceptStep(addon.currentGuide, 581, 9) == 5, "accept step not found")
+    assert(b and b.missing and b.missing.accept == 5, "no warning on the block")
+    b.warn.get:GetScript("OnClick")()
+    assert(calls.setStep == 5, "did not go to the pickup step")
+    log[581] = true
+    card.frame.shown = true
+    -- ticker brings us back once the quest is in the log
+    card.TickForTest()
+    assert(calls.setStep == 9, "did not return after pickup: " .. tostring(calls.setStep))
+    log[581] = nil
+    card.Refresh(true)
+    b.warn.skip:GetScript("OnClick")()
+    assert(calls.setStep == 10, "skip did not move on")
+    log[581] = true
+    assert(card.MissingQuest(steps[9]) == nil, "warned with the quest in the log")
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

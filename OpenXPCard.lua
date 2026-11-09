@@ -256,6 +256,7 @@ local function MakeBadge(parent, size)
 end
 
 local blocks = {}
+card.blocksForTest = blocks
 
 local function NewLine(block)
     local line = CreateFrame("Frame", nil, block)
@@ -351,6 +352,103 @@ local function StepContent(step)
     return title or (step.title or fmt(L("Step %d"), step.index or 0)), lines
 end
 
+---------------------------------------------------------------------------
+-- Steps for a quest that isn't in the log
+---------------------------------------------------------------------------
+-- A turn in or kill step for a quest you never picked up (skipped the
+-- pickup step, Find my place jumped past it, the giver didn't offer it)
+-- would send you somewhere for nothing. The card says so and offers to
+-- skip the step or go back to where the quest is picked up.
+
+local function QuestIdOf(e)
+    local id = tonumber(e.questId)
+    if id and id > 0 then return id end
+end
+
+-- Returns the quest id and its name when the step needs a quest you don't have
+function card.MissingQuest(step)
+    if not (step and step.elements and addon.IsOnQuest) then return end
+    for _, e in ipairs(step.elements) do
+        if (e.tag == "turnin" or e.tag == "complete") and not e.skipIfMissing and not e.completed then
+            local id = QuestIdOf(e)
+            if id and not addon.IsOnQuest(id) and
+                not (addon.IsQuestTurnedIn and addon.IsQuestTurnedIn(id)) then
+                local name = (e.title ~= "" and e.title) or
+                                 (addon.GetQuestName and addon.GetQuestName(id)) or nil
+                return id, name
+            end
+        end
+    end
+end
+
+-- The step in this guide where the quest is picked up, nearest one before
+-- `before` first
+function card.FindAcceptStep(guide, questId, before)
+    local steps = guide and guide.steps
+    if not steps then return end
+    local function accepts(step)
+        for _, e in ipairs(step and step.elements or {}) do
+            if e.tag == "accept" and QuestIdOf(e) == questId then return true end
+        end
+    end
+    for i = math.min(before - 1, #steps), 1, -1 do
+        if accepts(steps[i]) then return i end
+    end
+    for i = before + 1, #steps do
+        if accepts(steps[i]) then return i end
+    end
+end
+
+local function TextButton(parent, text, tip, onClick)
+    local btn = CreateFrame("Button", nil, parent)
+    btn:SetHeight(22)
+    btn.bg = btn:CreateTexture(nil, "BACKGROUND")
+    btn.bg:SetAllPoints()
+    btn.bg:SetColorTexture(1, 1, 1, 0.08)
+    btn.label = btn:CreateFontString(nil, "OVERLAY")
+    btn.label:SetPoint("CENTER")
+    btn.label:SetFont(FONT, 12, "")
+    btn.label:SetTextColor(unpack(C.text))
+    btn.label:SetText(text)
+    btn:SetWidth(math.max(70, (btn.label:GetStringWidth() or 60) + 18))
+    btn:SetScript("OnEnter", function(self)
+        self.bg:SetColorTexture(1, 1, 1, 0.16)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText(tip, 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    btn:SetScript("OnLeave", function(self)
+        self.bg:SetColorTexture(1, 1, 1, 0.08)
+        GameTooltip:Hide()
+    end)
+    btn:SetScript("OnClick", onClick)
+    return btn
+end
+
+local function GetWarn(b)
+    if b.warn then return b.warn end
+    local w = CreateFrame("Frame", nil, b)
+    w.text = w:CreateFontString(nil, "OVERLAY")
+    w.text:SetPoint("TOPLEFT")
+    w.text:SetJustifyH("LEFT")
+    w.text:SetTextColor(unpack(C.gold))
+    w.get = TextButton(w, L("Get the quest"),
+        L("Go back to the step where this quest is picked up. Once you have it the guide brings you back here."),
+        function()
+            local m = b.missing
+            if not (m and m.accept and addon.currentGuide) then return end
+            card.returnTo = {guide = addon.currentGuide, step = m.step, quest = m.quest}
+            addon.SetStep(m.accept)
+        end)
+    w.get:SetPoint("TOPLEFT", w.text, "BOTTOMLEFT", 0, -6)
+    w.skip = TextButton(w, L("Skip this step"), L("Move on without this quest"), function()
+        local m = b.missing
+        if m and addon.currentGuide then addon.SetStep(m.step + 1) end
+    end)
+    b.warn = w
+    return w
+end
+
 local function LayoutBlock(b, step, first)
     local textWidth = Width() - PAD * 2 - 34 - 12
     b.sep:SetShown(not first)
@@ -431,6 +529,34 @@ local function LayoutBlock(b, step, first)
         elseif line then
             line:Hide()
         end
+    end
+
+    local missing, questName = card.MissingQuest(step)
+    if missing and step.index then
+        local w = GetWarn(b)
+        local accept = card.FindAcceptStep(addon.currentGuide, missing, step.index)
+        b.missing = {quest = missing, step = step.index, accept = accept}
+        SetFont(w.text, 0)
+        w.text:SetWidth(textWidth)
+        w.text:SetText(fmt(L("You don't have %s yet"), questName or L("this quest")))
+        w:ClearAllPoints()
+        w:SetPoint("TOPLEFT", b.title, "TOPLEFT", 0, -(y - 11))
+        w:SetPoint("RIGHT", b, "RIGHT", -PAD, 0)
+        w.skip:ClearAllPoints()
+        if accept then
+            w.get:Show()
+            w.skip:SetPoint("LEFT", w.get, "RIGHT", 6, 0)
+        else
+            w.get:Hide()
+            w.skip:SetPoint("TOPLEFT", w.text, "BOTTOMLEFT", 0, -6)
+        end
+        local h = w.text:GetStringHeight() + 6 + 22
+        w:SetHeight(h)
+        w:Show()
+        y = y + h + 8
+    else
+        b.missing = nil
+        if b.warn then b.warn:Hide() end
     end
 
     local height = math.max(y + 4, 34 + 20)
@@ -746,15 +872,29 @@ end
 -- Throttled refresh while shown; quest progress changes all the time
 local elapsed = 0
 local ticker = CreateFrame("Frame")
+local Tick
 ticker:SetScript("OnUpdate", function(_, dt)
     elapsed = elapsed + dt
     if elapsed < 0.25 then return end
     elapsed = 0
+    Tick()
+end)
+function Tick()
     if card.enabled then
+        local r = card.returnTo
+        if r then
+            if addon.currentGuide ~= r.guide then
+                card.returnTo = nil
+            elseif addon.IsOnQuest and addon.IsOnQuest(r.quest) then
+                card.returnTo = nil
+                addon.SetStep(r.step)
+            end
+        end
         card.Refresh()
         card.ParkClassicWindow()
     end
-end)
+end
+card.TickForTest = Tick
 
 ---------------------------------------------------------------------------
 -- The classic window is still the engine; park it off screen
