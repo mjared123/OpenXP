@@ -5,11 +5,19 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.0"
+local OPENXP_VERSION = "0.9.1"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.1",
+        date = "November 2026",
+        changes = {
+            "Quest chain info now comes from Questie while you play, so install Questie to get chains, levels and Do the chain. It stays current whenever Questie updates",
+            "Without Questie, every step still checks your quest log and offers Skip this step or Get the quest",
+        },
+    },
     {
         version = "0.9.0",
         date = "November 2026",

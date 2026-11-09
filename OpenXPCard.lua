@@ -381,6 +381,186 @@ function card.MissingQuest(step)
     end
 end
 
+---------------------------------------------------------------------------
+-- Quest data: read from Questie while the game runs, when it's installed.
+-- OpenXP ships no quest database of its own, so nothing goes out of date
+-- and nothing of Questie's is copied into OpenXP.
+-- card.Prereqs(id) -> {any=, all=, excl=}; card.QuestInfoOf(id) -> {n, l, r, s, f, o}
+-- A spot is {name, uiMapId, x, y}. Tests can fill card.data instead.
+---------------------------------------------------------------------------
+
+card.data = card.data or {}
+local questie, zoneDB
+-- Questie may load after OpenXP and builds its database after login, so
+-- keep asking until it's there
+local function Questie()
+    if not questie then
+        local loader = _G.QuestieLoader
+        if loader and loader.ImportModule then
+            local ok, db = pcall(loader.ImportModule, loader, "QuestieDB")
+            if ok and db and type(db.GetQuest) == "function" then questie = db end
+            local okZ, z = pcall(loader.ImportModule, loader, "ZoneDB")
+            if okZ then zoneDB = z end
+        end
+    end
+    return questie or nil
+end
+function card.HasQuestData()
+    return Questie() ~= nil or card.data.prereqs ~= nil
+end
+
+local function QGet(kind, id)
+    local db = Questie()
+    if not (db and id) then return end
+    local fn = db["Get" .. kind]
+    if type(fn) ~= "function" then return end
+    local ok, obj = pcall(fn, db, id)
+    return ok and obj or nil
+end
+
+local function UiMap(areaId)
+    if zoneDB and zoneDB.GetUiMapIdByAreaId then
+        local ok, m = pcall(zoneDB.GetUiMapIdByAreaId, zoneDB, areaId)
+        if ok and m and m > 0 then return m end
+    end
+end
+
+-- Densest spawn area, and the spawn nearest its middle
+local function SpotOf(obj, preferArea)
+    local spawns = obj and obj.spawns
+    if type(spawns) ~= "table" then return end
+    local bestArea, bestPts, bestScore
+    for area, pts in pairs(spawns) do
+        if type(pts) == "table" and #pts > 0 and UiMap(area) then
+            local score = #pts + (area == preferArea and 10000 or 0)
+            if not bestScore or score > bestScore then
+                bestArea, bestPts, bestScore = area, pts, score
+            end
+        end
+    end
+    if not bestArea then return end
+    local sx, sy, n = 0, 0, 0
+    for _, pt in ipairs(bestPts) do
+        if pt[1] and pt[1] >= 0 then sx, sy, n = sx + pt[1], sy + pt[2], n + 1 end
+    end
+    if n == 0 then return end
+    sx, sy = sx / n, sy / n
+    local best, bestD
+    for _, pt in ipairs(bestPts) do
+        if pt[1] and pt[1] >= 0 then
+            local d = (pt[1] - sx) ^ 2 + (pt[2] - sy) ^ 2
+            if not bestD or d < bestD then best, bestD = pt, d end
+        end
+    end
+    return {obj.name or "?", UiMap(bestArea), best[1], best[2]}
+end
+
+local function Ender(ref, zone)
+    if type(ref) ~= "table" then return end
+    for _, nid in ipairs(ref[1] or {}) do
+        local s = SpotOf(QGet("NPC", nid), zone)
+        if s then return s end
+    end
+    for _, oid in ipairs(ref[2] or {}) do
+        local s = SpotOf(QGet("Object", oid), zone)
+        if s then return s end
+    end
+    for _, iid in ipairs(ref[3] or {}) do
+        local item = QGet("Item", iid)
+        if item then return {item.name or "?", 0, 0, 0} end
+    end
+end
+
+local playerRaceBit
+local function ForPlayer(q)
+    local races = q and (q.requiredRaces or 0) or 0
+    if races == 0 then return true end
+    if not playerRaceBit then
+        local id = UnitRace and select(3, UnitRace("player"))
+        playerRaceBit = id and 2 ^ (id - 1) or 0
+    end
+    if playerRaceBit == 0 or not bit then return true end
+    return bit.band(races, playerRaceBit) ~= 0
+end
+
+local prereqCache, infoCache = {}, {}
+function card.Prereqs(id)
+    if card.data.prereqs then return card.data.prereqs[id] end
+    if prereqCache[id] ~= nil then return prereqCache[id] or nil end
+    local q = QGet("Quest", id)
+    if not q then return end -- unknown, or Questie not ready yet: ask again later
+    local pre = false
+    if q and (q.preQuestSingle or q.preQuestGroup or q.exclusiveTo) then
+        local function abs(list)
+            if type(list) ~= "table" or #list == 0 then return end
+            local out = {}
+            for i, v in ipairs(list) do out[i] = math.abs(v) end
+            return out
+        end
+        pre = {any = abs(q.preQuestSingle), all = abs(q.preQuestGroup), excl = abs(q.exclusiveTo)}
+        if not (pre.any or pre.all or pre.excl) then pre = false end
+    end
+    prereqCache[id] = pre
+    return pre or nil
+end
+
+function card.QuestInfoOf(id)
+    if card.data.info then return card.data.info[id] end
+    if infoCache[id] ~= nil then return infoCache[id] or nil end
+    local q = QGet("Quest", id)
+    if not q then return end
+    local info = false
+    if q then
+        local zone = q.zoneOrSort
+        local objs = {}
+        local o = q.objectives
+        if type(o) == "table" then
+            for _, e in ipairs(o[1] or {}) do tinsert(objs, SpotOf(QGet("NPC", e[1]), zone)) end
+            for _, e in ipairs(o[2] or {}) do tinsert(objs, SpotOf(QGet("Object", e[1]), zone)) end
+            for _, e in ipairs(o[3] or {}) do
+                local item = QGet("Item", e[1])
+                local src = item and (item.npcDrops and item.npcDrops[1] and SpotOf(QGet("NPC", item.npcDrops[1]), zone) or
+                                      item.objectDrops and item.objectDrops[1] and SpotOf(QGet("Object", item.objectDrops[1]), zone))
+                if src then tinsert(objs, src) end
+            end
+        end
+        info = {n = q.name, l = q.level or q.questLevel or 0, r = q.requiredLevel or 0,
+                s = Ender(q.startedBy, zone), f = Ender(q.finishedBy, zone), o = objs, q = q}
+    end
+    infoCache[id] = info
+    return info or nil
+end
+
+-- Earlier quests in the chain, in the order you do them
+function card.Chain(id)
+    if card.data.chains then return card.data.chains[id] or {} end
+    local order, seen = {}, {}
+    local function visit(x, depth)
+        if seen[x] or depth > 25 then return end
+        seen[x] = true
+        local pre = card.Prereqs(x)
+        if pre then
+            if pre.any then
+                local pick
+                for _, p in ipairs(pre.any) do
+                    if addon.IsQuestTurnedIn and addon.IsQuestTurnedIn(p) then pick = nil; break end
+                    local info = card.QuestInfoOf(p)
+                    if not pick and (not info or ForPlayer(info.q)) then pick = p end
+                end
+                if pick then visit(pick, depth + 1) end
+            end
+            for _, p in ipairs(pre.all or {}) do
+                local info = card.QuestInfoOf(p)
+                if not info or ForPlayer(info.q) then visit(p, depth + 1) end
+            end
+        end
+        tinsert(order, x)
+    end
+    visit(id, 0)
+    table.remove(order)
+    return order
+end
+
 -- Pickup steps for quests you can't get yet (a pre-quest you skipped, or
 -- one you did that locks this one out) send you to a giver who has nothing
 -- for you. DB/forever/QuestPrereqs.lua lists what each guide quest needs.
@@ -390,7 +570,7 @@ end
 
 -- Returns the quest that has to be done first, or nil when it can be picked up
 function card.QuestBlocked(id)
-    local pre = addon.openxpPrereqs and addon.openxpPrereqs[id]
+    local pre = card.Prereqs(id)
     if not pre then return end
     if (addon.IsOnQuest and addon.IsOnQuest(id)) or TurnedIn(id) then return end
     if pre.any then
@@ -462,7 +642,7 @@ end
 ---------------------------------------------------------------------------
 
 local function QuestInfo(id)
-    return addon.openxpQuestInfo and addon.openxpQuestInfo[id]
+    return card.QuestInfoOf(id)
 end
 
 local function QuestName(id)
@@ -473,7 +653,7 @@ end
 -- Earlier quests in the chain that you still have to turn in, in order
 function card.MissingChain(id)
     local out = {}
-    for _, q in ipairs(addon.openxpChains and addon.openxpChains[id] or {}) do
+    for _, q in ipairs(card.Chain(id)) do
         if not TurnedIn(q) then tinsert(out, q) end
     end
     return out
@@ -498,7 +678,7 @@ function card.StepProblem(step)
             if needAccept ~= nil then
                 local blocker = card.QuestBlocked(id)
                 if blocker then
-                    local pre = addon.openxpPrereqs[id]
+                    local pre = card.Prereqs(id)
                     local isExcl = false
                     for _, q in ipairs(pre.excl or {}) do
                         if math.abs(q) == blocker then isExcl = true end

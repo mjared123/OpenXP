@@ -174,9 +174,9 @@ try("turn in for a quest not in the log offers skip / get", function()
     assert(card.MissingQuest(steps[9]) == nil, "warned with the quest in the log")
 end)
 try("pickup behind a quest chain offers the chain, then walks it", function()
-    addon.openxpPrereqs = {[4733] = {any = {4681}}, [4681] = {any = {3524}}, [600] = {excl = {601}}}
-    addon.openxpChains = {[4733] = {3524, 4681}, [4681] = {3524}}
-    addon.openxpQuestInfo = {
+    card.data.prereqs = {[4733] = {any = {4681}}, [4681] = {any = {3524}}, [600] = {excl = {601}}}
+    card.data.chains = {[4733] = {3524, 4681}, [4681] = {3524}}
+    card.data.info = {
         [3524] = {n = "Washed Ashore", l = 13, r = 11, s = {"Gwennyth", 1439, 36.6, 45.6}, f = {"Gwennyth", 1439, 36.6, 45.6}, o = {{"Beached Sea Creature", 1439, 36.4, 50.9}}},
         [4681] = {n = "Washed Ashore", l = 14, r = 11, s = {"Gwennyth", 1439, 36.6, 45.6}, f = {"Gwennyth", 1439, 36.6, 45.6}, o = {}},
         [4733] = {n = "Beached Sea Creature", l = 19, r = 13, s = {"Beached Sea Creature", 1439, 31.3, 87.4}, f = {"Gwennyth", 1439, 36.6, 45.6}, o = {}},
@@ -229,6 +229,38 @@ try("pickup behind a quest chain offers the chain, then walks it", function()
     pr = card.StepProblem(steps[14])
     assert(pr.kind == "chain" and pr.needAccept, "turn in behind a chain")
     addon.GetGuideProgress = function() return 1 end
+end)
+try("reads quest chains from Questie when it's installed", function()
+    card.data = {}
+    local quests = {
+        [3524] = {name = "Washed Ashore", level = 13, requiredLevel = 11, startedBy = {{10219}}, finishedBy = {{10219}},
+                  objectives = {nil, {{175226}}}, zoneOrSort = 148},
+        [4681] = {name = "Washed Ashore", level = 14, requiredLevel = 11, preQuestSingle = {3524},
+                  startedBy = {{10219}}, finishedBy = {{10219}}, zoneOrSort = 148},
+        [4733] = {name = "Beached Sea Creature", level = 19, requiredLevel = 13, preQuestSingle = {4681},
+                  startedBy = {nil, {175230}}, finishedBy = {{10219}}, zoneOrSort = 148},
+    }
+    local npcs = {[10219] = {name = "Gwennyth", spawns = {[148] = {{36.6, 45.6}}}}}
+    local objs = {[175230] = {name = "Beached Sea Creature", spawns = {[148] = {{31.3, 87.4}}}},
+                  [175226] = {name = "Beached Sea Creature", spawns = {[148] = {{36.4, 50.9}, {36.5, 51}}}}}
+    local db = {GetQuest = function(_, id) return quests[id] end, GetNPC = function(_, id) return npcs[id] end,
+                GetObject = function(_, id) return objs[id] end, GetItem = function() end}
+    QuestieLoader = {ImportModule = function(_, name)
+        if name == "QuestieDB" then return db end
+        return {GetUiMapIdByAreaId = function(_, a) return a == 148 and 1439 or nil end}
+    end}
+    local done = {}
+    addon.IsQuestTurnedIn = function(id) return done[id] end
+    addon.IsOnQuest = function() return false end
+    local chain = card.Chain(4733)
+    assert(#chain == 2 and chain[1] == 3524 and chain[2] == 4681, "chain from Questie: " .. table.concat(chain, ","))
+    local info = card.QuestInfoOf(4733)
+    assert(info.n == "Beached Sea Creature" and info.l == 19 and info.s[2] == 1439, "info from Questie")
+    assert(info.f[1] == "Gwennyth", "turn in NPC")
+    assert(card.QuestBlocked(4733) == 4681, "blocked by Questie prereq")
+    done[3524], done[4681] = true, true
+    assert(not card.QuestBlocked(4733), "not blocked once done")
+    QuestieLoader = nil
 end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

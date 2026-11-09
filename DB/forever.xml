@@ -4,7 +4,6 @@
 
     <Script file="DB/forever/flightData.lua"/>
     <Script file="DB/forever/quest.lua"/>
-    <Script file="DB/forever/QuestPrereqs.lua"/>
     <Script file="DB/forever/spells.lua"/>
     <Script file="DB/forever/rares.lua"/>
     <Script file="DB/forever/db.lua"/>
