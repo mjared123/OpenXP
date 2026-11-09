@@ -286,5 +286,33 @@ try("current step first, background steps labelled, finished steps marked done",
     assert(t2:find("ALONG THE WAY") and t2:find("book"), "book step not labelled: " .. tostring(t2))
     addon.GetGuideProgress = function() return 1 end
 end)
+try("turn in for a quest you have but haven't finished offers Finish it", function()
+    card.data = {prereqs = {}, chains = {}, info = {[951] = {n = "Mathystra Relics", l = 17, r = 12, o = {{"Relic", 1439, 50, 20}}}}}
+    local complete = false
+    addon.IsOnQuest = function(id) return id == 951 end
+    addon.IsQuestTurnedIn = function() return false end
+    addon.IsQuestComplete = function() return complete end
+    C_QuestLog = {GetQuestObjectives = function() return {{text = "Mathystra Relic: 2/6", finished = false}} end}
+    steps[19] = {index = 19, elements = {el{tag = "turnin", questId = 951, text = "Turn in Mathystra Relics"}}}
+    addon.currentGuide = {name = "19-21 Darkshore/Ashenvale", steps = steps}
+    addon.GetGuideProgress = function() return 19 end
+    addon.RXPFrame.activeSteps = {steps[19]}
+    local pr = card.StepProblem(steps[19])
+    assert(pr and pr.kind == "unfinished", "unfinished not detected")
+    card.Refresh(true)
+    local b = card.blocksForTest[1]
+    assert(b.warn.finish.shown and b.warn.skip.shown, "Finish it / Skip not shown")
+    b.warn.finish:GetScript("OnClick")()
+    assert(card.detour and card.detour.mode == "complete", "finish walk not started")
+    local st = card.DetourStep()
+    assert(st and st.elements[1].text:find("Do Mathystra Relics"), "walk should show the objectives")
+    card.TickForTest()
+    assert(card.detour, "ended early")
+    complete = true
+    card.TickForTest()
+    assert(not card.detour, "walk did not end when the quest was complete")
+    assert(not card.StepProblem(steps[19]), "still a problem once complete")
+    addon.GetGuideProgress = function() return 1 end
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

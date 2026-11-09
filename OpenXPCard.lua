@@ -672,6 +672,12 @@ function card.StepProblem(step)
     for _, e in ipairs(step.elements) do
         local id = QuestIdOf(e)
         if id and not e.completed then
+            -- a turn in for a quest you have but haven't finished (you skipped
+            -- the part of the route where its objectives were done)
+            if e.tag == "turnin" and addon.IsOnQuest and addon.IsOnQuest(id) and
+                addon.IsQuestComplete and not addon.IsQuestComplete(id) then
+                return {kind = "unfinished", quest = id}
+            end
             local needAccept
             if e.tag == "accept" then
                 needAccept = false
@@ -721,6 +727,10 @@ function card.StopDetour()
 end
 
 local function DetourDone(d)
+    if d.mode == "complete" then
+        return TurnedIn(d.target) or not (addon.IsOnQuest and addon.IsOnQuest(d.target)) or
+                   (addon.IsQuestComplete and addon.IsQuestComplete(d.target))
+    end
     if d.mode == "have" then
         return (addon.IsOnQuest and addon.IsOnQuest(d.target)) or TurnedIn(d.target)
     end
@@ -747,7 +757,7 @@ function card.DetourStep()
     local index, id
     for i, q in ipairs(d.ids) do
         local onIt = addon.IsOnQuest and addon.IsOnQuest(q)
-        if not TurnedIn(q) and not (q == d.target and onIt) then
+        if not TurnedIn(q) and not (q == d.target and onIt and d.mode ~= "complete") then
             index, id = i, q
             break
         end
@@ -823,6 +833,12 @@ local function GetWarn(b)
             for _, q in ipairs(m.chain or {}) do tinsert(ids, q) end
             if m.needAccept then tinsert(ids, m.quest) end
             card.StartDetour(m.quest, ids, m.needAccept and "have" or "available")
+        end)
+    w.finish = TextButton(w, L("Finish it"),
+        L("Do this quest's objectives now, with the arrow. When they're done the guide brings you back to turn it in."),
+        function()
+            local m = b.missing
+            if m then card.StartDetour(m.quest, {m.quest}, "complete") end
         end)
     w.skip = TextButton(w, L("Skip this step"), L("Move on without this quest"), function()
         local m = b.missing
@@ -972,7 +988,15 @@ local function LayoutBlock(b, step, first)
         local id = problem.quest
         local m = {quest = id, step = step.index, chain = problem.chain, needAccept = problem.needAccept}
         local text, list, buttons = nil, nil, {}
-        if problem.kind == "missing" then
+        if problem.kind == "unfinished" then
+            text = fmt(L("You haven't finished %s yet"), QuestName(id))
+            local rows = {}
+            for _, o in ipairs(ObjectivesOf(id)) do
+                tinsert(rows, (o.finished and "|cFF3DBB7A" .. L("Done") .. ":|r " or "- ") .. tostring(o.text or ""))
+            end
+            if #rows > 0 then list = table.concat(rows, "\n") end
+            buttons = {w.finish, w.skip}
+        elseif problem.kind == "missing" then
             m.accept = card.FindAcceptStep(addon.currentGuide, id, step.index)
             if not m.accept and not (QuestInfo(id) and QuestInfo(id).s) then
                 buttons = {w.skip}
@@ -1018,7 +1042,7 @@ local function LayoutBlock(b, step, first)
         w:ClearAllPoints()
         w:SetPoint("TOPLEFT", b.title, "TOPLEFT", 0, -(y - 11))
         w:SetPoint("RIGHT", b, "RIGHT", -PAD, 0)
-        w.get:Hide(); w.chain:Hide(); w.skip:Hide()
+        w.get:Hide(); w.chain:Hide(); w.finish:Hide(); w.skip:Hide()
         local anchor = list and w.list or w.text
         for i, btn in ipairs(buttons) do
             btn:ClearAllPoints()

@@ -5,11 +5,19 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.5"
+local OPENXP_VERSION = "0.9.6"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.6",
+        date = "November 2026",
+        changes = {
+            "Turn in steps for a quest you have but haven't finished now say so, list what's left, and offer Finish it or Skip this step",
+            "Finish it walks you through the objectives with the arrow, then brings you back to turn it in",
+        },
+    },
     {
         version = "0.9.5",
         date = "November 2026",
