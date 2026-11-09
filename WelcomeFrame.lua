@@ -5,11 +5,20 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.5.0"
+local OPENXP_VERSION = "0.6.0"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.6.0",
+        date = "November 2026",
+        changes = {
+            "New minimal look by default: flat dark panels, thin borders, a clean font and OpenXP blue highlights",
+            "Prefer the old style? Pick OpenXP Gold or RestedXP Classic under Settings > Look and Feel > Choose Theme",
+            "This window has the new look too",
+        },
+    },
     {
         version = "0.5.0",
         date = "November 2026",
@@ -63,17 +72,19 @@ local CHANGELOG = {
     },
 }
 
+-- Same palette as the minimal guide window theme. "gold" is the accent
+-- (OpenXP blue) and "goldDark" the hairline border; names kept for history.
 local COLORS = {
-    bg = {11 / 255, 15 / 255, 26 / 255, 0.97},
-    panel = {20 / 255, 24 / 255, 40 / 255, 0.9},
-    gold = {242 / 255, 195 / 255, 92 / 255},
-    goldDark = {122 / 255, 84 / 255, 30 / 255},
+    bg = {16 / 255, 17 / 255, 21 / 255, 0.96},
+    panel = {22 / 255, 24 / 255, 29 / 255, 0.9},
+    gold = {90 / 255, 184 / 255, 255 / 255},
+    goldDark = {60 / 255, 66 / 255, 78 / 255},
     blue = {90 / 255, 184 / 255, 255 / 255},
     text = {0.86, 0.86, 0.9},
     muted = {0.6, 0.62, 0.7},
 }
 
-local GOLD_HEX = "|cFFF2C35C"
+local GOLD_HEX = "|cFF5AB8FF"
 local BLUE_HEX = "|cFF5AB8FF"
 local LOGO = "Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-128"
 
@@ -82,9 +93,9 @@ local frame
 local function Backdrop(f, bg, border)
     f:SetBackdrop({
         bgFile = "Interface/Buttons/WHITE8X8",
-        edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-        edgeSize = 14,
-        insets = {left = 3, right = 3, top = 3, bottom = 3},
+        edgeFile = "Interface/Buttons/WHITE8X8",
+        edgeSize = 1,
+        insets = {left = 1, right = 1, top = 1, bottom = 1},
     })
     f:SetBackdropColor(unpack(bg))
     f:SetBackdropBorderColor(unpack(border))
@@ -93,15 +104,15 @@ end
 local function MakeButton(parent, text, primary)
     local b = CreateFrame("Button", nil, parent, "BackdropTemplate")
     b:SetSize(150, 30)
-    Backdrop(b, primary and {92 / 255, 64 / 255, 26 / 255, 1} or COLORS.panel,
+    Backdrop(b, primary and {28 / 255, 70 / 255, 104 / 255, 1} or COLORS.panel,
              primary and COLORS.gold or COLORS.goldDark)
     local label = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     label:SetPoint("CENTER")
     label:SetText(text)
-    label:SetTextColor(unpack(primary and {1, 0.92, 0.7} or COLORS.text))
+    label:SetTextColor(unpack(primary and {1, 1, 1} or COLORS.text))
     b.label = label
     b:SetScript("OnEnter", function(self)
-        self:SetBackdropBorderColor(unpack(COLORS.blue))
+        self:SetBackdropBorderColor(1, 1, 1, 0.8)
     end)
     b:SetScript("OnLeave", function(self)
         self:SetBackdropBorderColor(unpack(primary and COLORS.gold or COLORS.goldDark))
@@ -153,20 +164,19 @@ local function CreateWelcomeFrame()
     header:SetPoint("TOPLEFT", 4, -4)
     header:SetPoint("TOPRIGHT", -4, -4)
     header:SetHeight(110)
-    header:SetTexture("Interface/AddOns/" .. addonName .. "/Textures/OpenXP/rxp-banner")
-    header:SetVertexColor(1, 1, 1, 0.9)
+    header:SetColorTexture(1, 1, 1, 0.03)
 
     local divider = f:CreateTexture(nil, "ARTWORK")
     divider:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, 0)
     divider:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT", 0, 0)
-    divider:SetHeight(2)
-    divider:SetColorTexture(COLORS.gold[1], COLORS.gold[2], COLORS.gold[3], 0.8)
+    divider:SetHeight(1)
+    divider:SetColorTexture(COLORS.gold[1], COLORS.gold[2], COLORS.gold[3], 0.6)
 
     -- Glowing logo
     local glow = f:CreateTexture(nil, "ARTWORK")
     glow:SetTexture("Interface/Cooldown/star4")
     glow:SetBlendMode("ADD")
-    glow:SetVertexColor(COLORS.blue[1], COLORS.blue[2], COLORS.blue[3], 0.6)
+    glow:SetVertexColor(COLORS.blue[1], COLORS.blue[2], COLORS.blue[3], 0.35)
     glow:SetSize(150, 150)
     glow:SetPoint("LEFT", f, "TOPLEFT", -8, -58)
 
@@ -187,7 +197,7 @@ local function CreateWelcomeFrame()
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     title:SetPoint("TOPLEFT", f, "TOPLEFT", 128, -30)
     title:SetText("OpenXP")
-    title:SetTextColor(unpack(COLORS.gold))
+    title:SetTextColor(1, 1, 1)
     title:SetShadowOffset(2, -2)
 
     local subtitle = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")

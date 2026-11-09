@@ -6,27 +6,79 @@ local themes = {}
 local UnitName = addon.GetUnitName
 addon.themes = themes
 
--- OpenXP's default look: deep navy panels, leather-gold borders and the
--- glowing blue guide arrow from the OpenXP icon. The internal key stays
--- 'RXP Blue' so existing settings and theme logic keep working.
+-- OpenXP's default look: minimal. Flat charcoal panels, hairline borders,
+-- a clean narrow font and one blue accent from the OpenXP icon. The
+-- internal key stays 'RXP Blue' so saved settings and theme logic keep
+-- working; the other looks are below as options.
+local OPENXP_BLUE = {90 / 255, 184 / 255, 255 / 255, 1}
+local OPENXP_GOLD = {242 / 255, 195 / 255, 92 / 255, 0.95}
+
 themes['RXP Blue'] = {
     name = 'RXP Blue',
+    background = {16 / 255, 17 / 255, 21 / 255, 0.88},
+    bottomFrameBG = {22 / 255, 24 / 255, 29 / 255, 0.88},
+    bottomFrameHighlight = {38 / 255, 62 / 255, 86 / 255, 1},
+    displayName = "OpenXP Minimal",
+    mapPins = OPENXP_BLUE,
+    tooltip = "|cFF5AB8FF", -- AARRGGBB
+    texturePath = "Interface/AddOns/" .. addonName .. "/Textures/Minimal/",
+    headerTexture = "rxp-banner",
+    font = "Fonts\\ARIALN.TTF",
+    textColor = {0.92, 0.93, 0.95},
+    accent = OPENXP_BLUE,
+    minimal = true,
+    applicable = function() return not OXPCData.GA end,
+    author = "OpenXP",
+    bgTextures = {edge = "Interface/BUTTONS/WHITE8X8", bottom = "Interface/BUTTONS/WHITE8X8"},
+    edges = {
+        edge = "Interface/AddOns/" .. addonName .. "/Textures/Minimal/rxp-borders",
+        guideName = "Interface/AddOns/" .. addonName .. "/Textures/Minimal/rxp-borders"
+    }
+}
+
+-- The navy and gold look from OpenXP 0.2-0.5
+themes['OpenXP Gold'] = {
+    name = 'OpenXP Gold',
     background = {11 / 255, 15 / 255, 26 / 255, 1},
     bottomFrameBG = {20 / 255, 24 / 255, 40 / 255, 1},
     bottomFrameHighlight = {122 / 255, 84 / 255, 30 / 255, 1},
-    displayName = "OpenXP",
-    mapPins = {90 / 255, 184 / 255, 255 / 255, 1},
+    displayName = "OpenXP Gold",
+    mapPins = OPENXP_BLUE,
     tooltip = "|cFFF2C35C", -- AARRGGBB
     texturePath = "Interface/AddOns/" .. addonName .. "/Textures/OpenXP/",
     headerTexture = "rxp-banner",
     font = _G.GameFontNormal:GetFont(),
     textColor = {1, 1, 1},
+    accent = OPENXP_GOLD,
     applicable = function() return not OXPCData.GA end,
     author = "OpenXP",
     bgTextures = {edge = "Interface/BUTTONS/WHITE8X8", bottom = "Interface/BUTTONS/WHITE8X8"},
     edges = {
         edge = "Interface/AddOns/" .. addonName .. "/Textures/OpenXP/rxp-borders",
         guideName = "Interface/AddOns/" .. addonName .. "/Textures/OpenXP/rxp-borders"
+    }
+}
+
+-- The original RestedXP look, for players who prefer it
+themes['RestedXP Classic'] = {
+    name = 'RestedXP Classic',
+    background = {12 / 255, 12 / 255, 27 / 255, 1},
+    bottomFrameBG = {18 / 255, 18 / 255, 40 / 255, 1},
+    bottomFrameHighlight = {54 / 255, 62 / 255, 109 / 255, 1},
+    displayName = "RestedXP Classic",
+    mapPins = {206 / 210, 123 / 210, 1, 1},
+    tooltip = "|cFFCE7BFF", -- AARRGGBB
+    texturePath = "Interface/AddOns/" .. addonName .. "/Textures/",
+    headerTexture = "rxp-banner",
+    font = _G.GameFontNormal:GetFont(),
+    textColor = {1, 1, 1},
+    accent = {206 / 255, 123 / 255, 255 / 255, 0.95},
+    applicable = function() return not OXPCData.GA end,
+    author = "RestedXP",
+    bgTextures = {edge = "Interface/BUTTONS/WHITE8X8", bottom = "Interface/BUTTONS/WHITE8X8"},
+    edges = {
+        edge = "Interface/AddOns/" .. addonName .. "/Textures/rxp-borders",
+        guideName = "Interface/AddOns/" .. addonName .. "/Textures/rxp-borders"
     }
 }
 

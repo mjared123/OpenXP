@@ -78,6 +78,7 @@ function RXPFrame:UpdateVisuals()
     GuideName.icon:SetTexture("Interface/AddOns/" .. addonName .. "/Textures/openxp_logo-64")
     GuideName.classIcon:SetTexture(addon.GetV1Texture(class))
     Footer.cog:SetNormalTexture(addon.GetV1Texture("rxp_cog-32"))
+    addon.ApplyThemeExtras()
     RXPFrame.UpdateScrollBar()
 end
 
@@ -173,6 +174,7 @@ function addon.SetupGuideWindow()
 
     GuideName.classIcon:SetTexture(addon.GetV1Texture(class))
     Footer.cog:SetNormalTexture(addon.GetV1Texture("rxp_cog-32"))
+    addon.ApplyThemeExtras()
 
     RXPFrame.UpdateScrollBar()
 
@@ -1051,8 +1053,8 @@ function addon.SetStep(n, n2, loopback)
             stepframe.accent:SetPoint("TOPLEFT", stepframe, "TOPLEFT", 3, -4)
             stepframe.accent:SetPoint("BOTTOMLEFT", stepframe, "BOTTOMLEFT", 3, 4)
             stepframe.accent:SetWidth(3)
-            stepframe.accent:SetColorTexture(242 / 255, 195 / 255, 92 / 255, 0.95)
         end
+        stepframe.accent:SetColorTexture(unpack(addon.ThemeAccent()))
         if stepframe.theme ~= addon.activeTheme then
             stepframe.theme = addon.activeTheme
             stepframe:ClearBackdrop()
@@ -1454,6 +1456,35 @@ Footer.progress:SetPoint("BOTTOMLEFT", Footer.progressBg, "BOTTOMLEFT")
 Footer.progress:SetWidth(1)
 Footer.progress:SetColorTexture(242 / 255, 195 / 255, 92 / 255, 0.9)
 
+-- Accent colour of the active theme (current step bar, progress bar)
+function addon.ThemeAccent()
+    local theme = addon.activeTheme
+    return theme and theme.accent or {242 / 255, 195 / 255, 92 / 255, 0.95}
+end
+
+-- Theme bits the RestedXP theme format doesn't cover: the minimal look
+-- drops the class badge and shrinks the logo so the header is just text.
+function addon.ApplyThemeExtras()
+    local theme = addon.activeTheme or {}
+    if theme.minimal then
+        GuideName.classIcon:Hide()
+        GuideName.icon:SetSize(24, 24)
+        GuideName.icon:SetAlpha(0.85)
+        GuideName.text:SetPoint("LEFT", GuideName, 30, 0)
+        Footer.progressBg:SetColorTexture(1, 1, 1, 0.08)
+    else
+        GuideName.classIcon:Show()
+        GuideName.icon:SetSize(42, 42)
+        GuideName.icon:SetAlpha(1)
+        GuideName.text:SetPoint("LEFT", GuideName, 29, 0)
+        Footer.progressBg:SetColorTexture(0, 0, 0, 0.5)
+    end
+    Footer.progress:SetColorTexture(unpack(addon.ThemeAccent()))
+    if theme.textColor then
+        Footer.text:SetTextColor(unpack(theme.textColor))
+    end
+end
+
 function addon.UpdateFooterProgress()
     local guide = addon.currentGuide
     local total = guide and guide.steps and #guide.steps or 0
@@ -1464,7 +1495,10 @@ function addon.UpdateFooterProgress()
     end
     local current = math.min(addon.GetGuideProgress() or 1, total)
     local pct = math.floor(current / total * 100 + 0.5)
-    Footer.text:SetText(fmt(L("Step %d of %d  |cFFF2C35C%d%%|r"), current, total, pct))
+    local a = addon.ThemeAccent()
+    Footer.text:SetText(fmt(L("Step %d of %d  |cFF%02X%02X%02X%d%%|r"), current, total,
+                            math.floor(a[1] * 255), math.floor(a[2] * 255),
+                            math.floor(a[3] * 255), pct))
     local width = Footer.progressBg:GetWidth() or 0
     if width > 0 then
         Footer.progress:SetWidth(math.max(1, width * current / total))
