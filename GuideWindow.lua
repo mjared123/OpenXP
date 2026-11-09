@@ -159,12 +159,8 @@ function addon.SetupGuideWindow()
                                "Welcome to OpenXP\nRight click to pick a guide"))
     GuideName.text:SetTextColor(unpack(addon.activeTheme.textColor))
 
-    Footer.text:SetFont(addon.font, 9, "")
-    if addon.player.beta then
-        Footer.text:SetText(fmt("%s %s", addon.title, addon.release))
-    else
-        Footer.text:SetText(fmt("RXP Beta %s %d/%d", addon.release, addon.minGuideVersion ,addon.maxGuideVersion))
-    end
+    Footer.text:SetFont(addon.font, (addon.settings.profile.guideFontSize or 12) - 1, "")
+    addon.UpdateFooterProgress()
     Footer.text:SetTextColor(unpack(addon.activeTheme.textColor))
 
     GuideName.bg:SetTexture(addon.GetV1Texture("rxp-banner"))
@@ -1050,6 +1046,12 @@ function addon.SetStep(n, n2, loopback)
                 unpack(addon.activeTheme.textColor))
             stepframe.number.text:SetFont(addon.font, addon.settings.profile
                                               .guideFontSize, "")
+            -- OpenXP: gold bar down the left edge marks the step to do now
+            stepframe.accent = stepframe:CreateTexture(nil, "OVERLAY")
+            stepframe.accent:SetPoint("TOPLEFT", stepframe, "TOPLEFT", 3, -4)
+            stepframe.accent:SetPoint("BOTTOMLEFT", stepframe, "BOTTOMLEFT", 3, 4)
+            stepframe.accent:SetWidth(3)
+            stepframe.accent:SetColorTexture(242 / 255, 195 / 255, 92 / 255, 0.95)
         end
         if stepframe.theme ~= addon.activeTheme then
             stepframe.theme = addon.activeTheme
@@ -1440,6 +1442,36 @@ Footer.bg = Footer:CreateTexture("$parentBG", "BACKGROUND")
 Footer.bg:SetPoint("TOPLEFT", 4, -2)
 Footer.bg:SetPoint("BOTTOMRIGHT", -2, 4)
 
+-- OpenXP: thin progress bar along the footer, "Step 12 of 148" in the text
+Footer.progressBg = Footer:CreateTexture(nil, "ARTWORK")
+Footer.progressBg:SetPoint("BOTTOMLEFT", Footer, "BOTTOMLEFT", 6, 4)
+Footer.progressBg:SetPoint("BOTTOMRIGHT", Footer, "BOTTOMRIGHT", -18, 4)
+Footer.progressBg:SetHeight(3)
+Footer.progressBg:SetColorTexture(0, 0, 0, 0.5)
+Footer.progress = Footer:CreateTexture(nil, "OVERLAY")
+Footer.progress:SetPoint("TOPLEFT", Footer.progressBg, "TOPLEFT")
+Footer.progress:SetPoint("BOTTOMLEFT", Footer.progressBg, "BOTTOMLEFT")
+Footer.progress:SetWidth(1)
+Footer.progress:SetColorTexture(242 / 255, 195 / 255, 92 / 255, 0.9)
+
+function addon.UpdateFooterProgress()
+    local guide = addon.currentGuide
+    local total = guide and guide.steps and #guide.steps or 0
+    if total <= 1 then
+        Footer.text:SetText("OpenXP " .. (addon.openxpVersion or ""))
+        Footer.progress:Hide()
+        return
+    end
+    local current = math.min(addon.GetGuideProgress() or 1, total)
+    local pct = math.floor(current / total * 100 + 0.5)
+    Footer.text:SetText(fmt(L("Step %d of %d  |cFFF2C35C%d%%|r"), current, total, pct))
+    local width = Footer.progressBg:GetWidth() or 0
+    if width > 0 then
+        Footer.progress:SetWidth(math.max(1, width * current / total))
+        Footer.progress:Show()
+    end
+end
+
 Footer.icon = CreateFrame("Button", "$parentResize", Footer)
 Footer.icon:SetFrameLevel(Footer:GetFrameLevel() + 1)
 Footer.icon:SetSize(16, 16)
@@ -1596,11 +1628,7 @@ addon.emptyGuide = {
 }
 
 function addon.BetaVersionCheck()
-    if GetCurrentRegion() < 20 then--PTR Region 72?
-        Footer.text:SetText(fmt("%s %s", addon.title, addon.release))
-    else
-        Footer.text:SetText(fmt("RXP Beta %s %d/%d", addon.release, addon.minGuideVersion ,addon.maxGuideVersion))
-    end
+    addon.UpdateFooterProgress()
 end
 
 function addon.ProcessGuideTable(guide)
@@ -1951,7 +1979,8 @@ function addon:LoadGuide(guide, OnLoad)
         local guidename = guide.title or addon.GetGuideName(guide)
 
         if guide.subgroup and not guide.title then
-            GuideName.text:SetText(guidename .. "\n" .. guide.subgroup)
+            local subgroup = addon.GuideNames and addon.GuideNames[guide.subgroup] or guide.subgroup
+            GuideName.text:SetText(guidename .. "\n|cFFB8BCCC" .. subgroup .. "|r")
         else
             GuideName.text:SetText(guidename:gsub("\\n","\n"))
         end
@@ -2148,6 +2177,7 @@ function BottomFrame.UpdateFrame(self, stepn, startFrom, skip)
 
     local level = UnitLevel("player")
     local currentStep = addon.GetGuideProgress()
+    addon.UpdateFooterProgress()
 
     if stepPos[0] and ((not self and stepn) or (self and self.step)) and IsFrameShown(self,self and self.step) then
         local stepNumber = stepn or self.step.index
@@ -2310,7 +2340,7 @@ function BottomFrame.UpdateFrame(self, stepn, startFrom, skip)
             if step.completed or
                 (not step.sticky and currentStep > step.index) or
                 OXPCData.stepSkip[step.index] then
-                frame:SetAlpha(0.5)
+                frame:SetAlpha(0.4) -- finished steps fade back
             else
                 frame:SetAlpha(1)
             end
@@ -2603,6 +2633,29 @@ function RXPFrame:GenerateMenuTable(menu)
         end
     end
 
+    -- OpenXP tools, so nobody has to remember the slash commands
+    tinsert(menuList, {text = "|cFFF2C35COpenXP|r", isTitle = 1, notCheckable = 1})
+    if addon.smartStart then
+        tinsert(menuList, {
+            text = L("Find my place in the guide"),
+            notCheckable = 1,
+            func = function() addon:CloseMenu(); addon.smartStart.Run() end,
+        })
+        tinsert(menuList, {
+            text = L("Show skipped quest chains"),
+            notCheckable = 1,
+            func = function() addon:CloseMenu(); addon.smartStart.ShowCatchUp() end,
+        })
+    end
+    if addon.welcome then
+        tinsert(menuList, {
+            text = L("What's new"),
+            notCheckable = 1,
+            func = function() addon:CloseMenu(); addon.welcome.Show("update") end,
+        })
+    end
+    tinsert(menuList, {text = "", notCheckable = 1, isTitle = 1})
+
     if #groupList > 0 then
         tinsert(menuList, {
             text = L("Available Guides"),
@@ -2679,8 +2732,8 @@ function RXPFrame:GenerateMenuTable(menu)
         end
     })
 
-    if addon.ui.v2.configurator.IsSupportedClient() and not addon.currentGuide and
-        not addon.ui.v2.configurator:IsShown() then
+    if addon.game ~= "FOREVER" and addon.ui.v2.configurator.IsSupportedClient() and
+        not addon.currentGuide and not addon.ui.v2.configurator:IsShown() then
         tinsert(menuList, {
             text = L("Run Guide Configurator"),
             notCheckable = 1,
@@ -2691,13 +2744,15 @@ function RXPFrame:GenerateMenuTable(menu)
         })
     end
 
-    tinsert(menuList, {
-        text = L("Import guide"),
-        notCheckable = 1,
-        func = function()
-            addon.guideImporter:Open()
-        end
-    })
+    if addon.game ~= "FOREVER" then
+        tinsert(menuList, {
+            text = L("Import guide"),
+            notCheckable = 1,
+            func = function()
+                addon.guideImporter:Open()
+            end
+        })
+    end
 
     if addon.settings.profile and addon.settings.profile.enableTracker then
         -- Don't show leveling report if in Gold Assistant mode

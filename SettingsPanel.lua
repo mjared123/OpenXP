@@ -153,7 +153,7 @@ local settingsDBDefaults = {
         enableFPAutomation = true,
         enableBindAutomation = true,
         enableGossipAutomation = true,
-        showUnusedGuides = true,
+        showUnusedGuides = false,
         anchorOrientation = "top",
         chromieTime = "auto",
         enableXpStepSkipping = true,
@@ -162,7 +162,7 @@ local settingsDBDefaults = {
 
         -- Sliders
         arrowScale = 1,
-        arrowText = 9,
+        arrowText = 12,
         windowScale = 1,
         numMapPins = 7,
         worldMapPinScale = 1,
@@ -173,7 +173,7 @@ local settingsDBDefaults = {
         updateFrequency = 75,
         phase = 6,
         xprate = 1,
-        guideFontSize = 9,
+        guideFontSize = 12,
         activeItemsScale = 1,
         questLogSize = addon.game == "CLASSIC" and 20 or addon.game == "FOREVER" and 40 or 25,
 
@@ -611,11 +611,52 @@ function addon.settings:CreateAceOptionsPanel()
                     addon.url = nil
                 end
             },
+            -- OpenXP buttons for the /oxp commands
+            findPlaceButton = {
+                order = 1.01,
+                name = L("Find my place"),
+                desc = L("Jump to the right guide and step for your level, zone and quests (/oxp where)"),
+                type = "execute",
+                width = "normal",
+                func = function()
+                    C_Timer.After(0, function()
+                        addon.settings.CloseSettings()
+                        addon.smartStart.Run()
+                    end)
+                end
+            },
+            catchUpButton = {
+                order = 1.02,
+                name = L("Skipped quest chains"),
+                desc = L("List quest chains you skipped and can't start anymore (/oxp catchup)"),
+                type = "execute",
+                width = "normal",
+                func = function()
+                    C_Timer.After(0, function()
+                        addon.settings.CloseSettings()
+                        addon.smartStart.ShowCatchUp()
+                    end)
+                end
+            },
+            whatsNewButton = {
+                order = 1.03,
+                name = L("What's new"),
+                desc = L("Show the OpenXP welcome and update notes (/oxp welcome)"),
+                type = "execute",
+                width = "normal",
+                func = function()
+                    C_Timer.After(0, function()
+                        addon.settings.CloseSettings()
+                        addon.welcome.Show("update")
+                    end)
+                end
+            },
             importGuidesButton = {
                 order = 1.05,
                 name = L("Import Guides"),
                 type = "execute",
                 width = "normal",
+                hidden = addon.game == "FOREVER",
                 func = function()
                     _G.RunNextFrame(function()
                         addon.settings.CloseSettings()
@@ -640,7 +681,7 @@ function addon.settings:CreateAceOptionsPanel()
                 name = L("Run Guide Configurator"),
                 type = "execute",
                 width = 1.2,
-                hidden = not addon.ui.v2.configurator.IsSupportedClient(),
+                hidden = addon.game == "FOREVER" or not addon.ui.v2.configurator.IsSupportedClient(),
                 func = function()
                     C_Timer.After(0, function()
                         addon.settings.CloseSettings()

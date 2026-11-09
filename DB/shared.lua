@@ -47,4 +47,11 @@ addon.GuideNames =
 {
     [L"RXP MoP 1-80 (A)"] = L"RXP MoP 1-60 (A)",
     [L"RXP MoP 1-80 (H)"] = L"RXP MoP 1-60 (H)",
+    -- OpenXP: friendlier names in the guide menu. The group ids stay the
+    -- same so saved progress and #next links keep working.
+    ["RestedXP Forever Guide (A)"] = "OpenXP Alliance",
+    ["RestedXP Forever Guide (H)"] = "OpenXP Horde",
+    ["Speedrun Guide 1-20"] = "Levels 1-20",
+    ["Speedrun Guide 1-22"] = "Levels 1-22",
+    ["OpenXP 21-60"] = "Levels 21-60",
 }

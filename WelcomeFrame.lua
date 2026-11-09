@@ -5,11 +5,23 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.4.0"
+local OPENXP_VERSION = "0.5.0"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.5.0",
+        date = "November 2026",
+        changes = {
+            "Bigger, easier to read guide text and arrow distance",
+            "The step you're on now has a gold bar, and finished steps fade back",
+            "Progress bar along the bottom of the guide window: Step 12 of 148",
+            "Right-click the guide window for Find my place, Skipped quest chains and What's new, no commands needed",
+            "The same buttons are at the top of the OpenXP settings",
+            "Removed the guide menus OpenXP doesn't use (dungeon, mage, survival and endgame lists)",
+        },
+    },
     {
         version = "0.4.0",
         date = "November 2026",
@@ -106,9 +118,8 @@ local function BuildBody(mode, lastSeen)
             "Follow the arrow and the steps, and it takes you from quest to quest by the fastest route.")
         table.insert(lines, "")
         table.insert(lines, BLUE_HEX .. "•|r  Already leveling? Smart start finds where you are from your level, zone and quests.")
-        table.insert(lines, BLUE_HEX .. "•|r  " .. GOLD_HEX .. "/oxp where|r jumps to the right step at any time.")
-        table.insert(lines, BLUE_HEX .. "•|r  " .. GOLD_HEX .. "/oxp catchup|r lists quest chains you skipped.")
-        table.insert(lines, BLUE_HEX .. "•|r  " .. GOLD_HEX .. "/oxp|r opens the settings.")
+        table.insert(lines, BLUE_HEX .. "•|r  " .. GOLD_HEX .. "Right-click the guide window|r for Find my place, Skipped quest chains and What's new.")
+        table.insert(lines, BLUE_HEX .. "•|r  The same buttons are at the top of the settings (" .. GOLD_HEX .. "/oxp|r or the minimap button).")
     else
         table.insert(lines, GOLD_HEX .. "What's new|r")
         for _, entry in ipairs(CHANGELOG) do
@@ -275,6 +286,16 @@ function welcome.CheckOnLogin()
         mode = "update"
     end
     OXPData.openxpLastSeenVersion = OPENXP_VERSION
+    -- 0.5.0 made the guide text bigger. Testers who still have the old
+    -- small default get the new one once; a size they picked is kept.
+    local profile = addon.settings and addon.settings.profile
+    if mode == "update" and profile and lastSeen < "0.5.0" then
+        local changed
+        if profile.guideFontSize == 9 then profile.guideFontSize = 12; changed = true end
+        if profile.arrowText == 9 then profile.arrowText = 12 end
+        if changed and addon.UpdateGuideFontSize then addon.UpdateGuideFontSize() end
+        if changed and addon.ReloadGuide and addon.currentGuide then addon:ReloadGuide(true) end
+    end
     if mode then welcome.Show(mode, lastSeen) end
     return mode
 end
