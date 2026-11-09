@@ -851,6 +851,17 @@ function card.StepRole(step, current)
     return "now"
 end
 
+-- Show the first error of a session in chat so it can be reported, instead
+-- of the card silently stopping
+local reported = {}
+function card.ReportError(err)
+    err = tostring(err)
+    card.lastError = err
+    if reported[err] then return end
+    reported[err] = true
+    print("|cFFFF7043OpenXP card error|r (please send this to the OpenXP author): " .. err)
+end
+
 local function LayoutBlock(b, step, first)
     local textWidth = Width() - PAD * 2 - 34 - 12
     b.sep:SetShown(not first)
@@ -951,7 +962,11 @@ local function LayoutBlock(b, step, first)
         end
     end
 
-    local problem = step.index and not step.detour and card.StepProblem(step)
+    local problem
+    if step.index and not step.detour then
+        local ok, res = pcall(card.StepProblem, step)
+        if ok then problem = res else card.ReportError(res) end
+    end
     if problem then
         local w = GetWarn(b)
         local id = problem.quest
@@ -1410,7 +1425,8 @@ function Tick()
                 addon.SetStep(r.step)
             end
         end
-        card.Refresh()
+        local ok, err = pcall(card.Refresh)
+        if not ok then card.ReportError(err) end
         card.ParkClassicWindow()
     end
 end
@@ -1602,6 +1618,8 @@ function card.DebugStep()
         "ZoneDB:", tostring(zoneDB ~= nil))
     local probe = QGet("Quest", 945)
     say("Questie GetQuest(945):", probe and tostring(probe.name) or "nil", "style:", tostring(card.questieStyle))
+    say("last card error:", tostring(card.lastError))
+    say("auto skip off:", tostring(addon.settings and addon.settings.profile.disableAutoSkip), "isHidden:", tostring(addon.isHidden))
     say("chain walk:", card.detour and ("on, target " .. tostring(card.detour.target)) or "off")
     local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
     for _, step in ipairs(active) do

@@ -5,11 +5,18 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.3"
+local OPENXP_VERSION = "0.9.4"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.4",
+        date = "November 2026",
+        changes = {
+            "If the guide card hits an error it now says so in chat instead of silently not updating",
+        },
+    },
     {
         version = "0.9.3",
         date = "November 2026",
