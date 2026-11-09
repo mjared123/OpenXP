@@ -5,11 +5,19 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.7"
+local OPENXP_VERSION = "0.9.8"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.8",
+        date = "November 2026",
+        changes = {
+            "The guide card can go narrower still (down to 200)",
+            "Active Targets, the quest item bar and Level splits now match the guide card's look",
+        },
+    },
     {
         version = "0.9.7",
         date = "November 2026",

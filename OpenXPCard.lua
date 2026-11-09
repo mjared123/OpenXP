@@ -20,7 +20,7 @@ local TEX = "Interface/AddOns/" .. addonName .. "/Textures/Card/"
 local WHITE = "Interface/Buttons/WHITE8X8"
 local FONT = "Fonts\\ARIALN.TTF"
 local WIDTH = 330 -- default; the card can be resized
-local MIN_W, MIN_H, MAX_W, MAX_H = 220, 120, 640, 900
+local MIN_W, MIN_H, MAX_W, MAX_H = 200, 120, 640, 900
 local MAX_UPNEXT = 12
 local PAD = 12
 local MAX_BLOCKS = 4
@@ -1323,7 +1323,7 @@ function card.Refresh(force)
     local wide = Width() >= 360
     -- a narrow card gets slimmer icon buttons so all six still fit
     local slim = Width() < 300
-    local bw = slim and 30 or 40
+    local bw = Width() < 250 and 26 or slim and 30 or 40
     for _, btn in ipairs({bar.prev, bar.next, bar.menu, bar.settings, bar.collapse}) do
         btn:SetWidth(bw)
     end
@@ -1469,6 +1469,7 @@ function Tick()
         end
         local ok, err = pcall(card.Refresh)
         if not ok then card.ReportError(err) end
+        card.SkinPanels()
         card.ParkClassicWindow()
     end
 end
@@ -1645,6 +1646,63 @@ loader:SetScript("OnEvent", function(self)
     self:UnregisterAllEvents()
     C_Timer.After(2, function() card.Enable() end)
 end)
+
+---------------------------------------------------------------------------
+-- The engine's other panels (Active Targets, quest items, level splits)
+-- get the card's look: dark body, 1px border, a slim title tab
+---------------------------------------------------------------------------
+
+local PANELS = {"RXPTargetFrame", "RXPItemFrame", "RXPLevelSplits"}
+local PANEL_BACKDROP = {bgFile = WHITE, edgeFile = WHITE, edgeSize = 1,
+                        insets = {left = 1, right = 1, top = 1, bottom = 1}}
+
+local function Skinned(frame)
+    local bd = frame.GetBackdrop and frame:GetBackdrop()
+    return bd and bd.edgeFile == WHITE and bd.edgeSize == 1
+end
+
+function card.SkinPanel(frame)
+    if not (frame and frame.SetBackdrop) then return end
+    if not Skinned(frame) then
+        frame:SetBackdrop(PANEL_BACKDROP)
+        frame:SetBackdropColor(unpack(C.bg))
+        frame:SetBackdropBorderColor(unpack(C.border))
+    end
+    local title = frame.title
+    if title and title.SetBackdrop and not Skinned(title) then
+        title:SetBackdrop(PANEL_BACKDROP)
+        title:SetBackdropColor(0.10, 0.11, 0.14, 0.95)
+        title:SetBackdropBorderColor(unpack(C.border))
+    end
+    local text = title and title.text
+    if text and text.GetFont then
+        local font = text:GetFont()
+        if font ~= FONT then
+            text:SetFont(FONT, 11, "")
+            text:SetTextColor(unpack(C.dim))
+            local raw = text:GetText()
+            if raw then text:SetText(raw:upper()) end
+            if title.SetSize and text.GetStringWidth then
+                title:SetSize((text:GetStringWidth() or 60) + 16, 18)
+            end
+        end
+    end
+    -- level splits text
+    for _, key in ipairs({"history", "current", "total"}) do
+        local fs = frame[key]
+        if fs and fs.GetFont then
+            local font, size = fs:GetFont()
+            if font ~= FONT then fs:SetFont(FONT, size or 12, "") end
+        end
+    end
+end
+
+function card.SkinPanels()
+    for _, name in ipairs(PANELS) do
+        local frame = _G[name]
+        if frame then pcall(card.SkinPanel, frame) end
+    end
+end
 
 ---------------------------------------------------------------------------
 -- /oxp step: print what the card knows about the steps on screen
