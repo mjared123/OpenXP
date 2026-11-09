@@ -334,5 +334,38 @@ try("other panels get the card look", function()
     card.Refresh(true)
     card.width = nil
 end)
+try("back button walks past steps that bounce forward", function()
+    addon.currentGuide = {name = "19-21 Darkshore/Ashenvale", steps = steps}
+    local cur = 42
+    for i = 21, 45 do steps[i] = steps[i] or {index = i, elements = {}} end
+    steps[41].sticky = true
+    steps[40].completed = true
+    addon.GetGuideProgress = function() return cur end
+    addon.SetStep = function(n)
+        calls.setStep = n
+        -- engine: sticky or completed steps jump forward
+        if steps[n].sticky or steps[n].completed then cur = 42 else cur = n end
+    end
+    OXPCData.stepSkip = {}
+    assert(card.GoBack(), "could not go back")
+    assert(cur == 40, "should land on 40, got " .. cur)
+    steps[41].sticky = nil
+    addon.SetStep = function(n) calls.setStep = n end
+end)
+try("skipped-to step survives a reload", function()
+    addon.currentGuide = {name = "19-21 Darkshore/Ashenvale", steps = steps}
+    local cur = 42
+    addon.GetGuideProgress = function() return cur end
+    card.restored = true
+    card.RememberStep()
+    assert(OXPCData.openxpSteps["19-21 Darkshore/Ashenvale"] == 42, "not saved")
+    -- reload: engine comes back on an earlier step
+    card.restored = false
+    cur = 20
+    calls.setStep = nil
+    card.RestoreStep()
+    assert(calls.setStep == 42, "not restored")
+    addon.GetGuideProgress = function() return 1 end
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

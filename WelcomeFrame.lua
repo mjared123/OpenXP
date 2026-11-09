@@ -5,11 +5,20 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.8"
+local OPENXP_VERSION = "0.9.9"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.9",
+        date = "November 2026",
+        changes = {
+            "Your place in each guide is saved on the character, including steps you skipped ahead to, and kept through reloads and relogs",
+            "Fixed the back button bouncing you forward again",
+            "Party and guild announcements (level ups, quest progress, flight times) are on by default",
+        },
+    },
     {
         version = "0.9.8",
         date = "November 2026",

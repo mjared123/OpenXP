@@ -1166,9 +1166,25 @@ local function CurrentStep()
     return addon.GetGuideProgress and addon.GetGuideProgress() or 1
 end
 
-bar.prev = MakeButton(bar, "prev", L("Back one step"), function()
-    if addon.currentGuide then addon.SetStep(math.max(1, CurrentStep() - 1)) end
-end)
+-- Back one step. The engine jumps straight past a step it thinks is done or
+-- that is a background (#sticky) step, so a plain "step - 1" could bounce
+-- right back to where you were. Walk back until a step actually sticks.
+function card.GoBack()
+    local guide = addon.currentGuide
+    if not (guide and guide.steps) then return end
+    local from = CurrentStep()
+    for target = from - 1, math.max(1, from - 40), -1 do
+        local step = guide.steps[target]
+        if step and not step.sticky and not step.hidewindow then
+            step.completed = nil
+            if OXPCData and OXPCData.stepSkip then OXPCData.stepSkip[target] = nil end
+            addon.SetStep(target)
+            if CurrentStep() < from then return true end
+        end
+    end
+end
+
+bar.prev = MakeButton(bar, "prev", L("Back one step"), function() card.GoBack() end)
 bar.prev:SetPoint("LEFT", 6, 0)
 bar.next = MakeButton(bar, "next", L("Skip this step"), function()
     if addon.currentGuide then addon.SetStep(CurrentStep() + 1) end
@@ -1447,8 +1463,30 @@ ticker:SetScript("OnUpdate", function(_, dt)
     elapsed = 0
     Tick()
 end)
+-- Remember where you are in each guide on this character, including steps
+-- you skipped forward to, and put you back there after a reload or relog
+function card.RememberStep()
+    local guide = addon.currentGuide
+    if not (card.restored and guide and guide.name and OXPCData) then return end
+    local cur = addon.GetGuideProgress and addon.GetGuideProgress()
+    if not cur then return end
+    OXPCData.openxpSteps = OXPCData.openxpSteps or {}
+    OXPCData.openxpSteps[guide.name] = cur
+end
+
+function card.RestoreStep()
+    card.restored = true
+    local guide = addon.currentGuide
+    local saved = guide and guide.name and OXPCData and OXPCData.openxpSteps and OXPCData.openxpSteps[guide.name]
+    local cur = addon.GetGuideProgress and addon.GetGuideProgress()
+    if saved and cur and saved > cur and guide.steps and saved <= #guide.steps then
+        addon.SetStep(saved)
+    end
+end
+
 function Tick()
     if card.enabled then
+        card.RememberStep()
         local d = card.detour
         if d then
             if (addon.currentGuide and addon.currentGuide.name ~= d.guide) or DetourDone(d) then
@@ -1613,6 +1651,7 @@ function card.Enable()
     f:SetScale((p and p.windowScale) or 1)
     card.ParkClassicWindow()
     card.SetupArrow()
+    pcall(card.RestoreStep)
     card.Refresh(true)
 end
 
@@ -1729,6 +1768,7 @@ function card.DebugStep()
     else
         say("quest log: unreadable (expand all headers in the quest log)")
     end
+    say("saved step for this guide:", tostring(guide and OXPCData and OXPCData.openxpSteps and OXPCData.openxpSteps[guide.name]))
     say("chain walk:", card.detour and ("on, target " .. tostring(card.detour.target)) or "off")
     local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
     for _, step in ipairs(active) do

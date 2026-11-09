@@ -23,8 +23,19 @@ addon.comms.state = {
     group = {leader = nil, members = {}}
 }
 
+-- OpenXP: level ups to party/guild carry a short note about the addon, at
+-- most once every 30 minutes, so people can find it without it being spam
+local lastPromo = 0
+local function WithPromo(message)
+    local now = GetTime()
+    if now - lastPromo < 1800 then return message end
+    lastPromo = now
+    return message .. " " .. L("(OpenXP - free leveling guide addon)")
+end
+
 local function announceLevelUp(message)
     if not message then return end
+    message = WithPromo(message)
 
     if GetNumGroupMembers() > 0 then
         if addon.settings.profile.enableLevelUpAnnounceGroup then SendChatMessage(message, "PARTY", nil) end
