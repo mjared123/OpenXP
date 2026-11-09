@@ -414,8 +414,12 @@ local function QGet(kind, id)
     if not (db and id) then return end
     local fn = db["Get" .. kind]
     if type(fn) ~= "function" then return end
-    local ok, obj = pcall(fn, db, id)
-    return ok and obj or nil
+    -- Questie defines some of these as QuestieDB.GetX(id), others as
+    -- QuestieDB:GetX(id); try both
+    local ok, obj = pcall(fn, id)
+    if ok and type(obj) == "table" then card.questieStyle = "dot"; return obj end
+    ok, obj = pcall(fn, db, id)
+    if ok and type(obj) == "table" then card.questieStyle = "colon"; return obj end
 end
 
 local function UiMap(areaId)
@@ -1538,3 +1542,48 @@ loader:SetScript("OnEvent", function(self)
     self:UnregisterAllEvents()
     C_Timer.After(2, function() card.Enable() end)
 end)
+
+---------------------------------------------------------------------------
+-- /oxp step: print what the card knows about the steps on screen
+---------------------------------------------------------------------------
+
+function card.DebugStep()
+    local out = {}
+    local function say(...) tinsert(out, table.concat({...}, " ")) end
+    local guide = addon.currentGuide
+    say("OpenXP", tostring(addon.openxpVersion), "guide:", guide and tostring(guide.name) or "none",
+        "step:", tostring(addon.GetGuideProgress and addon.GetGuideProgress()))
+    say("QuestieLoader:", tostring(_G.QuestieLoader ~= nil), "QuestieDB:", tostring(Questie() ~= nil),
+        "ZoneDB:", tostring(zoneDB ~= nil))
+    local probe = QGet("Quest", 945)
+    say("Questie GetQuest(945):", probe and tostring(probe.name) or "nil", "style:", tostring(card.questieStyle))
+    say("chain walk:", card.detour and ("on, target " .. tostring(card.detour.target)) or "off")
+    local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
+    for _, step in ipairs(active) do
+        say("-- step", tostring(step.index), step.sticky and "(sticky)" or "", step.hidewindow and "(hidden)" or "")
+        for _, e in ipairs(step.elements or {}) do
+            local id = tonumber(e.questId)
+            if e.tag and e.tag ~= "goto" and e.tag ~= "target" then
+                local line = "   " .. e.tag .. (id and (" q" .. id) or "")
+                if id then
+                    local qid = math.abs(id)
+                    line = line .. " inLog=" .. tostring(addon.IsOnQuest and addon.IsOnQuest(qid) or false) ..
+                               " done=" .. tostring(addon.IsQuestTurnedIn and addon.IsQuestTurnedIn(qid) or false) ..
+                               " blockedBy=" .. tostring((card.QuestBlocked(qid)))
+                    local pre = card.Prereqs(qid)
+                    if pre then
+                        line = line .. " pre=" .. table.concat(pre.any or pre.all or {}, ",")
+                    end
+                end
+                line = line .. (e.completed and " completed" or "") .. (e.skipIfMissing and " skipIfMissing" or "")
+                say(line)
+            end
+        end
+        local pr = card.StepProblem(step)
+        say("   problem:", pr and (pr.kind .. " q" .. tostring(pr.quest) ..
+                                       (pr.chain and (" chain=" .. table.concat(pr.chain, ",")) or "")) or "none")
+    end
+    local text = table.concat(out, "\n")
+    print(text)
+    return text
+end

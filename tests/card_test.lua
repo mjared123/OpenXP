@@ -262,5 +262,11 @@ try("reads quest chains from Questie when it's installed", function()
     assert(not card.QuestBlocked(4733), "not blocked once done")
     QuestieLoader = nil
 end)
+try("/oxp step debug output", function()
+    addon.RXPFrame.activeSteps = {steps[1], steps[9]}
+    print = print or function() end
+    local text = card.DebugStep()
+    assert(text:find("step:") and text:find("problem:"), "debug output")
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

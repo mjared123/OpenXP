@@ -120,6 +120,8 @@ function addon.settings.ChatCommand(input)
         addon.smartStart.Run()
     elseif input == "welcome" or input == "news" then
         addon.welcome.Show("update")
+    elseif input == "step" then
+        if addon.card then addon.card.DebugStep() end
     elseif input == "catchup" then
         addon.smartStart.ShowCatchUp()
     elseif input == "help" then

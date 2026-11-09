@@ -5,11 +5,19 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.1"
+local OPENXP_VERSION = "0.9.2"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.2",
+        date = "November 2026",
+        changes = {
+            "New /oxp step command: prints what the guide card sees for the steps on screen, for bug reports",
+            "Questie lookups work with both ways Questie exposes its quest data",
+        },
+    },
     {
         version = "0.9.1",
         date = "November 2026",
