@@ -5,11 +5,21 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.2"
+local OPENXP_VERSION = "0.9.3"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "0.9.3",
+        date = "November 2026",
+        changes = {
+            "The step you're on is always at the top of the card",
+            "Background steps (like looting an item while you do other things) are labelled Along the way and dimmed",
+            "Finished steps are marked Done and faded",
+            "Pickup steps say You get this quest at this step",
+        },
+    },
     {
         version = "0.9.2",
         date = "November 2026",

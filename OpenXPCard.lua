@@ -832,12 +832,49 @@ local function GetWarn(b)
     return w
 end
 
+-- "now" for the step you're on, "side" for a background step that stays
+-- open while you do others, "done" for a finished one
+function card.StepRole(step, current)
+    if step.detour then return "now" end
+    if step.completed then return "done" end
+    local any, open = false, false
+    for _, e in ipairs(step.elements or {}) do
+        if e.tag and e.tag ~= "goto" and e.tag ~= "target" and not e.textOnly then
+            any = true
+            if not (e.completed or e.skip) then open = true end
+        end
+    end
+    if any and not open then return "done" end
+    if step.sticky or step.completewith or (current and step.index and step.index < current) then
+        return "side"
+    end
+    return "now"
+end
+
 local function LayoutBlock(b, step, first)
     local textWidth = Width() - PAD * 2 - 34 - 12
     b.sep:SetShown(not first)
     b.badge:SetKind(StepKind(step))
 
     local title, lines = StepContent(step)
+    local role = card.StepRole(step, addon.GetGuideProgress and addon.GetGuideProgress())
+    if role == "side" then
+        title = "|cFF9EA3B3" .. L("ALONG THE WAY") .. ":|r " .. title
+    elseif role == "done" then
+        title = "|cFF3DBB7A" .. L("DONE") .. ":|r " .. StripCodes(title)
+    end
+    b:SetAlpha(role == "done" and 0.45 or role == "side" and 0.8 or 1)
+    -- a pickup step is where you get the quest; say so, since it isn't in your log yet
+    if role == "now" and not step.detour then
+        for _, e in ipairs(step.elements or {}) do
+            local id = tonumber(e.questId)
+            if e.tag == "accept" and id and id > 0 and not e.completed and
+                not (addon.IsOnQuest and addon.IsOnQuest(id)) and not card.QuestBlocked(id) then
+                tinsert(lines, {text = "|cFF9EA3B3" .. L("You get this quest at this step") .. "|r", plain = true})
+                break
+            end
+        end
+    end
     SetFont(b.title, 3)
     b.title:SetWidth(textWidth)
     b.title:SetText(title)
@@ -1188,15 +1225,23 @@ function card.Refresh(force)
     local current = math.min(CurrentStep() or 1, math.max(total, 1))
     local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
 
-    local steps = {}
+    -- The step you're on goes first. Steps that stay open in the background
+    -- (#sticky / #completewith, like "loot this book while you're here") go
+    -- under it, labelled, so they never look like the current step.
+    local steps, side = {}, {}
     local lastIndex = current
     for _, step in ipairs(active) do
-        if #steps >= MAX_BLOCKS then break end
         if step and not step.hidewindow and not step.tip then
-            tinsert(steps, step)
+            if card.StepRole(step, current) == "now" then
+                tinsert(steps, step)
+            else
+                tinsert(side, step)
+            end
             if not step.sticky and step.index and step.index > lastIndex then lastIndex = step.index end
         end
     end
+    for _, step in ipairs(side) do tinsert(steps, step) end
+    while #steps > MAX_BLOCKS do table.remove(steps) end
 
     -- Walking through a quest chain: the card shows that instead
     local detourStep, detourIndex

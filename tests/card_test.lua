@@ -17,6 +17,8 @@ local function obj(name)
         if k == "GetWidth" or k == "GetHeight" then return function() return 100 end end
         if k == "SetScript" then return function(self, ev, fn) rawset(self, "_" .. ev, fn) end end
         if k == "GetScript" then return function(self, ev) return rawget(self, "_" .. ev) end end
+        if k == "SetText" then return function(self, t) rawset(self, "_text", t) end end
+        if k == "GetText" then return function(self) return rawget(self, "_text") end end
         if k == "IsShown" then return function(self) return self.shown end end
         if k == "Show" then return function(self) self.shown = true end end
         if k == "Hide" then return function(self) self.shown = false end end
@@ -267,6 +269,22 @@ try("/oxp step debug output", function()
     print = print or function() end
     local text = card.DebugStep()
     assert(text:find("step:") and text:find("problem:"), "debug output")
+end)
+try("current step first, background steps labelled, finished steps marked done", function()
+    local bookStep = {index = 7, completewith = "TheryluneEnd", elements = {el{textOnly = true, text = "Loot the book"}, el{tag = "collect", questId = 968, text = "Book: 0/1"}}}
+    local now = {index = 8, elements = {el{textOnly = true, text = "Talk to Therylune"}, el{tag = "accept", questId = 945, text = "Accept Therylune's Escape"}}}
+    local doneStep = {index = 6, elements = {el{tag = "turnin", questId = 729, text = "Turn in", completed = true}}}
+    addon.GetGuideProgress = function() return 8 end
+    assert(card.StepRole(bookStep, 8) == "side", "book step should be side")
+    assert(card.StepRole(now, 8) == "now", "Therylune is now")
+    assert(card.StepRole(doneStep, 8) == "done", "finished step is done")
+    addon.RXPFrame.activeSteps = {bookStep, now}
+    card.data = {prereqs = {}, chains = {}, info = {}}
+    card.Refresh(true)
+    local t1, t2 = card.blocksForTest[1].title:GetText(), card.blocksForTest[2].title:GetText()
+    assert(t1:find("Therylune") and not t1:find("ALONG"), "current step not first: " .. tostring(t1))
+    assert(t2:find("ALONG THE WAY") and t2:find("book"), "book step not labelled: " .. tostring(t2))
+    addon.GetGuideProgress = function() return 1 end
 end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails
