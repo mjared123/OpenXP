@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.15",
+        date = "November 2026",
+        changes = {
+            "Routes no longer send you for a breadcrumb quest after you already have the quest it leads to (The Hermit in Duskwood after Supplies from Darkshire); all 21-60 routes rebuilt",
+        },
+    },
+    {
         version = "1.3.14",
         date = "November 2026",
         changes = {

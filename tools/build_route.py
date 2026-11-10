@@ -402,6 +402,31 @@ class Builder:
         for k, v in state.items():
             setattr(self, k, v)
 
+    def breadcrumb_blocked(self, q, cands, accepted, turned):
+        """Breadcrumbs (a quest that only sends you to another quest's giver,
+        like The Hermit to Abercrombie's Supplies from Darkshire) disappear
+        once you've picked up or done the quest they lead to. And the quest
+        they lead to waits until the breadcrumb is turned in, or picking it
+        up would make the breadcrumb impossible to turn in."""
+        to = q.breadcrumbFor
+        if to and (to in accepted or to in turned or to in self.done or to in self.accepted_before):
+            return True
+        for b in self._breadcrumbs(cands).get(q.id, ()):
+            if b in accepted and b not in turned:
+                return True
+        return False
+
+    def _breadcrumbs(self, cands):
+        key = id(cands)
+        if getattr(self, "_bc_key", None) != key:
+            m = {}
+            for qid, c in cands.items():
+                to = c["q"].breadcrumbFor
+                if to:
+                    m.setdefault(to, []).append(qid)
+            self._bc_key, self._bc = key, m
+        return self._bc
+
     def objective_xp(self, q, kind):
         if q.class_tag():
             return 0.0  # class quests: in the guide, but not in the level estimate
@@ -709,6 +734,8 @@ class Builder:
                 if qid not in accepted:
                     if not c["start"] or len(accepted) >= QUEST_LOG_LIMIT or not prereqs_ok(q):
                         continue
+                    if self.breadcrumb_blocked(q, cands, accepted, turned_in):
+                        continue
                     if q.reqLevel > int(lvl) or q.level > int(lvl) + LEVELS_ABOVE:
                         continue  # not yet: comes back once you've levelled
                     if q.level <= int(lvl) - GRAY_BELOW:
@@ -837,6 +864,8 @@ class Builder:
                     continue
                 if qid not in st["accepted"]:
                     if not c["start"] or len(st["accepted"]) >= QUEST_LOG_LIMIT or not prereqs_ok(st, q):
+                        continue
+                    if self.breadcrumb_blocked(q, cands, st["accepted"], st["turned"]):
                         continue
                     if q.reqLevel > il or q.level > il + LEVELS_ABOVE or q.level <= il - GRAY_BELOW:
                         continue
@@ -1016,6 +1045,8 @@ class Builder:
                 if kind == "accept":
                     q = cands[ref]["q"]
                     il = int(level_of(xp))
+                    if self.breadcrumb_blocked(q, cands, accepted, turned):
+                        valid.why = "breadcrumb"; return False
                     if q.reqLevel > il or q.level > il + LEVELS_ABOVE:
                         valid.why = 'level'; return False
                     for p in q.preGroup:

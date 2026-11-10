@@ -821,11 +821,6 @@ step
     .turnin 5881 >>Turn in Calling in the Reserves
     .target Grish Longrunner
 step
-    .goto Thousand Needles,32.24,22.17
-    >>Talk to |cRXP_FRIENDLY_Brave Moonhorn|r
-    .accept 4542 >>Accept Message to Freewind Post
-    .target Brave Moonhorn
-step
     .goto Thousand Needles,37.95,26.45
     >>Talk to |cRXP_FRIENDLY_Lakota Windsong|r
     .accept 4904 >>Accept Free at Last
@@ -859,7 +854,6 @@ step
 step
     .goto Thousand Needles,45.67,50.74
     >>Talk to |cRXP_FRIENDLY_Cliffwatcher Longhorn|r
-    .turnin 4542 >>Turn in Message to Freewind Post
     .turnin 5064 >>Turn in Grimtotem Spying
     .turnin 5147 >>Turn in WANTED: Arnak Grimtotem
     .target Cliffwatcher Longhorn
@@ -868,6 +862,12 @@ step
     >>Talk to |cRXP_FRIENDLY_Thalia Amberhide|r
     .turnin 4904 >>Turn in Free at Last
     .target Thalia Amberhide
+step
+    .goto Thousand Needles,53.95,41.49
+    >>Talk to |cRXP_FRIENDLY_Dorn Plainstalker|r
+    .turnin 1149 >>Turn in Test of Faith
+    .accept 1150 >>Accept Test of Endurance
+    .target Dorn Plainstalker
 step
     .goto Thousand Needles,78.06,77.13
     >>Talk to |cRXP_FRIENDLY_Fizzle Brassbolts|r
@@ -918,26 +918,20 @@ step
     .mob Sparkleshell Snapper
     .mob Sparkleshell Borer
 step
-    .goto Thousand Needles,77.79,77.27
-    >>Talk to |cRXP_FRIENDLY_Kravel Koalbeard|r
-    .turnin 1110 >>Turn in Rocket Car Parts
-    .target Kravel Koalbeard
+    .goto Thousand Needles,80.18,75.88
+    >>Talk to |cRXP_FRIENDLY_Pozzik|r
+    .turnin 1176 >>Turn in Load Lightening
+    .target Pozzik
 step
     .goto Thousand Needles,78.14,77.12
     >>Talk to |cRXP_FRIENDLY_Wizzle Brassbolts|r
     .turnin 1105 >>Turn in Hardened Shells
     .target Wizzle Brassbolts
 step
-    .goto Thousand Needles,80.18,75.88
-    >>Talk to |cRXP_FRIENDLY_Pozzik|r
-    .turnin 1176 >>Turn in Load Lightening
-    .target Pozzik
-step
-    .goto Thousand Needles,53.95,41.49
-    >>Talk to |cRXP_FRIENDLY_Dorn Plainstalker|r
-    .turnin 1149 >>Turn in Test of Faith
-    .accept 1150 >>Accept Test of Endurance
-    .target Dorn Plainstalker
+    .goto Thousand Needles,77.79,77.27
+    >>Talk to |cRXP_FRIENDLY_Kravel Koalbeard|r
+    .turnin 1110 >>Turn in Rocket Car Parts
+    .target Kravel Koalbeard
 step
     .goto Thousand Needles,46.21,51.51
     >>Talk to |cRXP_FRIENDLY_Jandia|r
@@ -1014,6 +1008,16 @@ step
     .mob Blacksmith Verringtan
     .mob Hillsbrad Apprentice Blacksmith
 step
+    .goto Hillsbrad Foothills,32.62,39.79
+    >>Kill |cRXP_ENEMY_Citizen Wilkes|r
+    .complete 567,2 --Dangerous!
+    .mob Citizen Wilkes
+step
+    .goto Hillsbrad Foothills,29.51,42.41
+    >>Kill |cRXP_ENEMY_Clerk Horrace Whitesteed|r
+    .complete 567,1 --Dangerous!
+    .mob Clerk Horrace Whitesteed
+step
     .goto Hillsbrad Foothills,31.80,52.70
     >>Kill |cRXP_ENEMY_Miner Hackett|r
     .complete 567,3 --Dangerous!
@@ -1032,6 +1036,7 @@ step
     >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
     .turnin 529 >>Turn in Battle of Hillsbrad
     .accept 532 >>Accept Battle of Hillsbrad
+    .turnin 567 >>Turn in Dangerous!
     .target High Executor Darthalia
 step
     .goto Hillsbrad Foothills,61.50,20.93
@@ -1050,25 +1055,17 @@ step
     .accept 676 >>Accept The Hammer May Fall
     .target Tallow
 step
-    .goto Hillsbrad Foothills,32.62,39.79
-    >>Kill |cRXP_ENEMY_Citizen Wilkes|r
-    .complete 567,2 --Dangerous!
-    .mob Citizen Wilkes
-step
     .goto Hillsbrad Foothills,29.73,41.75
     >>Hillsbrad Proclamation destroyed
     >>Kill |cRXP_ENEMY_Magistrate Burnside|r
     >>Kill |cRXP_ENEMY_Hillsbrad Councilman|r
     >>Loot the |cRXP_PICK_Hillsbrad Town Registry|r
-    >>Kill |cRXP_ENEMY_Clerk Horrace Whitesteed|r
     .complete 532,3 --Battle of Hillsbrad
     .complete 532,1 --Battle of Hillsbrad
     .complete 532,2 --Battle of Hillsbrad
     .complete 532,4 --Battle of Hillsbrad
-    .complete 567,1 --Dangerous!
     .mob Magistrate Burnside
     .mob Hillsbrad Councilman
-    .mob Clerk Horrace Whitesteed
 step
     .goto Alterac Mountains,19.00,84.35
     >>Kill |cRXP_ENEMY_Dalaran Shield Guard|r and |cRXP_ENEMY_Dalaran Theurgist|r and |cRXP_ENEMY_Dalaran Summoner|r. Loot them for |cRXP_LOOT_Worn Stone Token|r
@@ -1086,7 +1083,6 @@ step
     >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
     .turnin 532 >>Turn in Battle of Hillsbrad
     .accept 539 >>Accept Battle of Hillsbrad
-    .turnin 567 >>Turn in Dangerous!
     .target High Executor Darthalia
 step
     .goto Hillsbrad Foothills,31.21,56.01

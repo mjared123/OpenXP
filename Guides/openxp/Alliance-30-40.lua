@@ -71,16 +71,27 @@ step
     .turnin 185 >>Turn in Tiger Mastery
     .target Ajeck Rouack
 step
-    .goto Stranglethorn Vale,40.54,11.40
-    >>Kill |cRXP_ENEMY_Young Panther|r
-    .complete 190,1 --Panther Mastery
-    .mob Young Panther
-step
     .goto Stranglethorn Vale,40.34,8.44
     >>Talk to |cRXP_FRIENDLY_Private Thorsen|r
     .turnin 198 >>Turn in Supplies to Private Thorsen
     .accept 215 >>Accept Jungle Secrets
     .target Private Thorsen
+step
+    .goto Stranglethorn Vale,40.54,11.40
+    >>Kill |cRXP_ENEMY_Young Panther|r
+    .complete 190,1 --Panther Mastery
+    .mob Young Panther
+step
+    .goto Stranglethorn Vale,35.62,10.62
+    >>Talk to |cRXP_FRIENDLY_Ajeck Rouack|r
+    .accept 186 >>Accept Tiger Mastery
+    .target Ajeck Rouack
+step
+    .goto Stranglethorn Vale,35.55,10.55
+    >>Talk to |cRXP_FRIENDLY_Sir S. J. Erlgadin|r
+    .turnin 190 >>Turn in Panther Mastery
+    .accept 191 >>Accept Panther Mastery
+    .target Sir S. J. Erlgadin
 step
     .goto Stranglethorn Vale,38.02,3.33
     >>Talk to |cRXP_FRIENDLY_Sergeant Yohwa|r
@@ -101,17 +112,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Sergeant Yohwa|r
     .turnin 203 >>Turn in The Second Rebellion
     .target Sergeant Yohwa
-step
-    .goto Stranglethorn Vale,35.62,10.62
-    >>Talk to |cRXP_FRIENDLY_Ajeck Rouack|r
-    .accept 186 >>Accept Tiger Mastery
-    .target Ajeck Rouack
-step
-    .goto Stranglethorn Vale,35.55,10.55
-    >>Talk to |cRXP_FRIENDLY_Sir S. J. Erlgadin|r
-    .turnin 190 >>Turn in Panther Mastery
-    .accept 191 >>Accept Panther Mastery
-    .target Sir S. J. Erlgadin
 step
     .goto Stranglethorn Vale,30.40,12.40
     >>Kill |cRXP_ENEMY_Stranglethorn Tiger|r
@@ -150,7 +150,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 31-32 Duskwood
-#next 32-33 Stormwind City
+#next 31-32 Stormwind City
 
 step
     #completewith next
@@ -206,7 +206,7 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 32-33 Stormwind City
+#name 31-32 Stormwind City
 #next 32-33 Wetlands
 
 step
@@ -870,6 +870,11 @@ step
     .mob Shadowforge Darkweaver
     .mob Shadowforge Chanter
 step
+    .goto Badlands,53.42,43.39
+    >>Talk to |cRXP_FRIENDLY_Prospector Ryedol|r
+    .turnin 719 >>Turn in A Dwarf and His Tools
+    .target Prospector Ryedol
+step
     .goto Badlands,53.80,43.30
     >>Talk to |cRXP_FRIENDLY_Sigrun Ironhew|r
     .accept 718 >>Accept Mirages
@@ -877,7 +882,6 @@ step
 step
     .goto Badlands,53.42,43.39
     >>Talk to |cRXP_FRIENDLY_Prospector Ryedol|r
-    .turnin 719 >>Turn in A Dwarf and His Tools
     .turnin 720 >>Turn in A Sign of Hope
     .accept 721 >>Accept A Sign of Hope
     .target Prospector Ryedol

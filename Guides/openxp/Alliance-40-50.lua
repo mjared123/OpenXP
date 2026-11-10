@@ -577,6 +577,7 @@ step
     .goto Tanaris,67.11,23.98
     >>Talk to |cRXP_FRIENDLY_Stoley|r
     .turnin 2873 >>Turn in Stoley's Shipment
+    .accept 2874 >>Accept Deliver to MacKinley
     .target Stoley
 step
     .goto Tanaris,67.06,23.89
