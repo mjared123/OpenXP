@@ -223,6 +223,8 @@ local settingsDBDefaults = {
         autoSellJunk = true,
         openxpTooltips = true,
         openxpNameplates = true,
+        openxpMapRoute = true,
+        openxpRouteColor = {0.72, 0.42, 1.0},
         openxpAutoLoot = false,
         openxpMaxCamera = false,
 
@@ -3244,6 +3246,27 @@ function addon.settings:CreateAceOptionsPanel()
                         set = function(info, value)
                             SetProfileOption(info, value)
                             if addon.openxpTooltips then addon.openxpTooltips.RefreshPlates() end
+                        end,
+                    },
+                    openxpMapRoute = {
+                        name = L("Route lines on the maps"),
+                        desc = L("A line on the world map and minimap from you through your next steps, around mountains and high-level packs"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.512,
+                    },
+                    openxpRouteColor = {
+                        name = L("Route line colour"),
+                        desc = L("Colour of the route line on the maps (purple by default)"),
+                        type = "color",
+                        width = optionsWidth,
+                        order = 5.513,
+                        get = function()
+                            local c = self.profile.openxpRouteColor or {0.72, 0.42, 1.0}
+                            return c[1], c[2], c[3]
+                        end,
+                        set = function(_, r, g, b)
+                            self.profile.openxpRouteColor = {r, g, b}
                         end,
                     },
                     openxpAutoLoot = {

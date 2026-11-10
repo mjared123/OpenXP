@@ -577,8 +577,25 @@ local ROUND = "Interface\\CHARACTERFRAME\\TempPortraitAlphaMask"
 -- One clean line: rounded corners, round joints so the pieces meet without
 -- gaps, a small open chevron now and then for the direction, and a dot
 -- where it ends.
+local function RouteOn()
+    local p = addon.settings and addon.settings.profile
+    return not (p and p.openxpMapRoute == false)
+end
+tr.RouteOn = RouteOn
+
+local routeColor = {0.72, 0.42, 1.0, 0.92}
+local function RouteColor()
+    local p = addon.settings and addon.settings.profile
+    local c = p and p.openxpRouteColor
+    if c and c[1] then
+        routeColor[1], routeColor[2], routeColor[3] = c[1], c[2], c[3]
+    end
+    return routeColor
+end
+
 local function RouteLeg(c, pts, thickness, clip)
-    if #pts < 2 then return end
+    if #pts < 2 or not RouteOn() then return end
+    local ROUTE_CORE = RouteColor()
     pts = SmoothOpen(pts, 2)
     local travelled, nextMark = 0, thickness * 40
     for i = 1, #pts - 1 do

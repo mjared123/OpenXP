@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.23",
+        date = "November 2026",
+        changes = {
+            "Choose whether to show the route line on the world map and minimap, and its colour (purple by default), right here or in the settings",
+            "Questie is recommended: OpenXP uses it to mark where your quest mobs spawn and for quest chains and levels",
+        },
+    },
+    {
         version = "1.3.22",
         date = "November 2026",
         changes = {
@@ -584,7 +592,7 @@ end
 
 local function CreateWelcomeFrame()
     local f = CreateFrame("Frame", "OpenXPWelcomeFrame", UIParent, "BackdropTemplate")
-    f:SetSize(480, 420)
+    f:SetSize(480, 500)
     f:SetPoint("CENTER", 0, 60)
     f:SetFrameStrata("DIALOG")
     f:SetClampedToScreen(true)
@@ -657,7 +665,7 @@ local function CreateWelcomeFrame()
     -- Scrolling body
     local panel = CreateFrame("Frame", nil, f, "BackdropTemplate")
     panel:SetPoint("TOPLEFT", f, "TOPLEFT", 16, -128)
-    panel:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -16, 58)
+    panel:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -16, 138)
     Backdrop(panel, COLORS.panel, COLORS.goldDark)
 
     local scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
@@ -675,6 +683,68 @@ local function CreateWelcomeFrame()
     body:SetSpacing(3)
     body:SetTextColor(unpack(COLORS.text))
     f.body, f.content = body, content
+
+    -- Choices: the route line on the maps, its colour, and a Questie tip
+    local route = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
+    route:SetSize(24, 24)
+    route:SetPoint("TOPLEFT", panel, "BOTTOMLEFT", 0, -8)
+    local routeText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    routeText:SetPoint("LEFT", route, "RIGHT", 4, 0)
+    routeText:SetText("Show route lines on the world map and minimap")
+    routeText:SetTextColor(unpack(COLORS.text))
+    route:SetScript("OnClick", function(self)
+        local p = addon.settings and addon.settings.profile
+        if p then p.openxpMapRoute = self:GetChecked() and true or false end
+    end)
+
+    local swatch = CreateFrame("Button", nil, f, "BackdropTemplate")
+    swatch:SetSize(36, 18)
+    swatch:SetPoint("LEFT", routeText, "RIGHT", 10, 0)
+    Backdrop(swatch, {0.72, 0.42, 1, 1}, COLORS.goldDark)
+    local swatchText = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    swatchText:SetPoint("LEFT", swatch, "RIGHT", 6, 0)
+    swatchText:SetText("Colour")
+    swatchText:SetTextColor(unpack(COLORS.muted))
+    local function ShowColor()
+        local p = addon.settings and addon.settings.profile
+        local c = p and p.openxpRouteColor or {0.72, 0.42, 1.0}
+        swatch:SetBackdropColor(c[1], c[2], c[3], 1)
+    end
+    swatch:SetScript("OnClick", function()
+        local p = addon.settings and addon.settings.profile
+        if not p then return end
+        local c = p.openxpRouteColor or {0.72, 0.42, 1.0}
+        local old = {c[1], c[2], c[3]}
+        local function Apply(r, g, b)
+            p.openxpRouteColor = {r, g, b}
+            ShowColor()
+        end
+        local picker = _G.ColorPickerFrame
+        local function Picked()
+            Apply(picker:GetColorRGB())
+        end
+        local function Cancel(prev)
+            if type(prev) == "table" and prev.r then Apply(prev.r, prev.g, prev.b) else Apply(old[1], old[2], old[3]) end
+        end
+        if picker.SetupColorPickerAndShow then
+            picker:SetupColorPickerAndShow({r = c[1], g = c[2], b = c[3], hasOpacity = false,
+                                            swatchFunc = Picked, cancelFunc = Cancel})
+        else
+            picker.func, picker.cancelFunc, picker.hasOpacity = Picked, Cancel, false
+            picker.previousValues = {r = c[1], g = c[2], b = c[3]}
+            picker:SetColorRGB(c[1], c[2], c[3])
+            picker:Hide()
+            picker:Show()
+        end
+    end)
+
+    local questie = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    questie:SetPoint("TOPLEFT", route, "BOTTOMLEFT", 4, -8)
+    questie:SetPoint("RIGHT", f, "RIGHT", -16, 0)
+    questie:SetJustifyH("LEFT")
+    f.questie = questie
+
+    f.route, f.ShowColor = route, ShowColor
 
     -- Buttons
     local start = MakeButton(f, "Start leveling", true)
@@ -721,6 +791,14 @@ function welcome.Show(mode, lastSeen)
     frame = frame or CreateWelcomeFrame()
     frame.body:SetText(BuildBody(mode or "welcome", lastSeen))
     frame.content:SetHeight(frame.body:GetStringHeight() + 10)
+    local p = addon.settings and addon.settings.profile
+    frame.route:SetChecked(not (p and p.openxpMapRoute == false))
+    frame.ShowColor()
+    if _G.QuestieLoader then
+        frame.questie:SetText(BLUE_HEX .. "Questie is installed.|r OpenXP uses it for spawn marks, quest chains and levels.")
+    else
+        frame.questie:SetText(BLUE_HEX .. "Recommended: install the free Questie addon.|r OpenXP uses it to mark where your quest mobs spawn and to show quest chains and levels.")
+    end
     frame:Show()
 end
 
@@ -745,6 +823,10 @@ function welcome.CheckOnLogin()
         if changed and addon.UpdateGuideFontSize then addon.UpdateGuideFontSize() end
         if changed and addon.ReloadGuide and addon.currentGuide then addon:ReloadGuide(true) end
     end
+    -- The route line on the maps is new: everyone gets asked once, on a
+    -- first install or on the update that brings it.
+    if not mode and not OXPData.openxpRouteAsked then mode = "update" end
+    OXPData.openxpRouteAsked = true
     if mode then welcome.Show(mode, lastSeen) end
     return mode
 end
