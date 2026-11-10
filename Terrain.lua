@@ -306,21 +306,9 @@ end
 --
 -- A step can carry an area (.area in the guide): the place to kill and loot
 -- in. Inside it the arrow says "Here"; outside, it leads to the nearest edge.
--- The area is shaded on the world map and the minimap.
---
--- The way to the arrow's target is drawn on the world map as a glowing
--- purple line, round mountains and packs the same way the arrow goes.
--- The spawns of what the current step needs get a small mark too (from
--- Questie's data when it's installed).
+-- Areas and the route through the next steps are drawn on the world map
+-- and the minimap (see Drawing below).
 
-local MAP_TICK = 0.25
-local ROUTE_GLOW = {0.62, 0.18, 1.0, 0.35}
-local ROUTE_CORE = {0.85, 0.45, 1.0, 1.0}
-local AREA_FILL = {0.25, 0.6, 1.0, 0.22}
-local AREA_EDGE = {0.35, 0.75, 1.0, 0.9}
-local PIN_SIZE = 12
-local PIN_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
-local WHITE = "Interface\\Buttons\\WHITE8X8"
 
 local function InsidePoly(poly, x, y)
     local c, j = false, #poly
@@ -394,107 +382,237 @@ function tr.AreaTarget(element)
 end
 
 ---------------------------------------------------------------------------
--- Drawing
+-- Drawing: smooth purple areas and the purple route, on the world map and
+-- the minimap
+---------------------------------------------------------------------------
+-- Areas are smoothed outlines filled with thin horizontal lines (WoW has no
+-- polygon fill); on the minimap they're clipped to its round edge. The route
+-- runs from you through the next few steps of the guide, each leg bending
+-- round mountains and high-level packs the way the arrow goes, with small
+-- chevrons showing the direction.
+
+local AREA_FILL = {0.55, 0.35, 1.0, 0.32}
+local AREA_EDGE = {0.70, 0.50, 1.0, 0.95}
+local ROUTE_GLOW = {0.75, 0.20, 1.0, 0.30}
+local ROUTE_CORE = {0.90, 0.45, 1.0, 1.0}
+local PIN_SIZE = 12
+local PIN_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
+local WHITE = "Interface\\Buttons\\WHITE8X8"
+local STEPS_AHEAD = 4      -- route and areas for this many steps after the current one
+local MAP_TICK = 0.25
+local MINI_TICK = 0.05
+
+-- Chaikin corner cutting: a rounder outline from a few corners
+local function Smooth(poly, rounds)
+    for _ = 1, rounds do
+        local out = {}
+        for i = 1, #poly do
+            local a, b = poly[i], poly[i % #poly + 1]
+            out[#out + 1] = {a[1] * 0.75 + b[1] * 0.25, a[2] * 0.75 + b[2] * 0.25}
+            out[#out + 1] = {a[1] * 0.25 + b[1] * 0.75, a[2] * 0.25 + b[2] * 0.75}
+        end
+        poly = out
+    end
+    return poly
+end
+
+local smoothCache = setmetatable({}, {__mode = "k"})
+local function Rounded(a)
+    local s = smoothCache[a]
+    if not s then
+        s = Smooth(a.area, 3)
+        smoothCache[a] = s
+    end
+    return s
+end
+
+---------------------------------------------------------------------------
+-- A canvas: a frame plus pools of lines and textures drawn on it
 ---------------------------------------------------------------------------
 
-local function Canvas()
-    local wm = _G.WorldMapFrame
-    if not (wm and wm:IsShown() and wm.GetCanvas) then return end
-    local ok, canvas = pcall(wm.GetCanvas, wm)
-    if ok and canvas then return canvas, wm:GetMapID() end
+local function NewCanvas(parent, level)
+    local f = CreateFrame("Frame", nil, parent)
+    f:SetAllPoints(parent)
+    f:SetFrameLevel(level)
+    return {frame = f, lines = {}, tex = {}, nl = 0, nt = 0}
 end
 
-local overlay
-local pool = {lines = {}, glows = {}, fills = {}, pins = {}, dots = {}}
-local used = {}
+local function Clear(c)
+    for i = 1, #c.lines do c.lines[i]:Hide() end
+    for i = 1, #c.tex do c.tex[i]:Hide() end
+    c.nl, c.nt = 0, 0
+end
 
-local function Overlay(canvas)
-    if not overlay then
-        overlay = CreateFrame("Frame", nil, canvas)
-        overlay:SetAllPoints(canvas)
-        overlay:SetFrameLevel((canvas:GetFrameLevel() or 1) + 20)
-    elseif overlay:GetParent() ~= canvas then
-        overlay:SetParent(canvas)
-        overlay:SetAllPoints(canvas)
+-- x, y in pixels from the frame's top left (y down)
+local function Line(c, color, thickness, x1, y1, x2, y2, layer)
+    c.nl = c.nl + 1
+    local l = c.lines[c.nl]
+    if not l then
+        l = c.frame:CreateLine(nil, "OVERLAY")
+        l:SetTexture(WHITE)
+        c.lines[c.nl] = l
     end
-    return overlay
-end
-
-local function Take(kind, make)
-    used[kind] = (used[kind] or 0) + 1
-    local list = pool[kind]
-    local o = list[used[kind]]
-    if not o then
-        o = make()
-        list[used[kind]] = o
-    end
-    o:Show()
-    return o
-end
-
-local function HideAll()
-    for kind, list in pairs(pool) do
-        for i = 1, #list do list[i]:Hide() end
-        used[kind] = 0
-    end
-end
-
-local function DrawLine(kind, color, thickness, x1, y1, x2, y2, w, h)
-    local l = Take(kind, function()
-        local line = overlay:CreateLine(nil, kind == "glows" and "ARTWORK" or "OVERLAY")
-        line:SetTexture(WHITE)
-        return line
-    end)
-    l:SetVertexColor(unpack(color))
+    l:SetDrawLayer(layer or "OVERLAY")
+    l:SetVertexColor(color[1], color[2], color[3], color[4])
     l:SetThickness(thickness)
-    l:SetStartPoint("TOPLEFT", overlay, x1 / 100 * w, -y1 / 100 * h)
-    l:SetEndPoint("TOPLEFT", overlay, x2 / 100 * w, -y2 / 100 * h)
+    l:SetStartPoint("TOPLEFT", c.frame, x1, -y1)
+    l:SetEndPoint("TOPLEFT", c.frame, x2, -y2)
+    l:Show()
 end
 
-local function DrawDot(kind, color, size, x, y, w, h, texture)
-    local t = Take(kind, function() return overlay:CreateTexture(nil, "OVERLAY") end)
-    t:SetTexture(texture or WHITE)
-    t:SetVertexColor(unpack(color))
+local function Tex(c, texture, color, size, x, y)
+    c.nt = c.nt + 1
+    local t = c.tex[c.nt]
+    if not t then
+        t = c.frame:CreateTexture(nil, "OVERLAY")
+        c.tex[c.nt] = t
+    end
+    t:SetTexture(texture)
+    t:SetVertexColor(color[1], color[2], color[3], color[4])
     t:SetSize(size, size)
     t:ClearAllPoints()
-    t:SetPoint("CENTER", overlay, "TOPLEFT", x / 100 * w, -y / 100 * h)
+    t:SetPoint("CENTER", c.frame, "TOPLEFT", x, -y)
+    t:Show()
 end
 
-local function DrawArea(a, w, h, scale)
-    local poly = a.area
-    -- shade: one square per 1% cell inside the outline
-    local x0, y0, x1, y1 = 100, 100, 0, 0
-    for _, p in ipairs(poly) do
-        x0, y0, x1, y1 = min(x0, p[1]), min(y0, p[2]), max(x1, p[1]), max(y1, p[2])
-    end
-    for y = floor(y0), floor(y1) do
-        for x = floor(x0), floor(x1) do
-            if InsidePoly(poly, x + 0.5, y + 0.5) then
-                local f = Take("fills", function() return overlay:CreateTexture(nil, "ARTWORK") end)
-                f:SetTexture(WHITE)
-                f:SetVertexColor(unpack(AREA_FILL))
-                f:SetSize(w / 100 + 0.5, h / 100 + 0.5)
-                f:ClearAllPoints()
-                f:SetPoint("TOPLEFT", overlay, "TOPLEFT", x / 100 * w, -y / 100 * h)
+-- Fill a polygon (pixel points) with horizontal lines `step` pixels apart,
+-- optionally clipped to a circle {cx, cy, r}.
+local function Fill(c, pts, color, step, clip)
+    local y0, y1 = math.huge, -math.huge
+    for _, p in ipairs(pts) do y0, y1 = min(y0, p[2]), max(y1, p[2]) end
+    if clip then y0, y1 = max(y0, clip[2] - clip[3]), min(y1, clip[2] + clip[3]) end
+    local y = y0 + step / 2
+    local xs = {}
+    while y < y1 do
+        xs = {}
+        local j = #pts
+        for i = 1, #pts do
+            local a, b = pts[j], pts[i]
+            if (a[2] > y) ~= (b[2] > y) then
+                xs[#xs + 1] = a[1] + (y - a[2]) * (b[1] - a[1]) / (b[2] - a[2])
             end
+            j = i
         end
+        table.sort(xs)
+        local lo, hi = -math.huge, math.huge
+        if clip then
+            local dy = y - clip[2]
+            local half = sqrt(max(0, clip[3] * clip[3] - dy * dy))
+            lo, hi = clip[1] - half, clip[1] + half
+        end
+        for k = 1, #xs - 1, 2 do
+            local a, b = max(xs[k], lo), min(xs[k + 1], hi)
+            if b > a then Line(c, color, step + 0.5, a, y, b, y, "ARTWORK") end
+        end
+        y = y + step
     end
-    local j = #poly
-    for i = 1, #poly do
-        DrawLine("lines", AREA_EDGE, 3 / scale, poly[j][1], poly[j][2], poly[i][1], poly[i][2], w, h)
+end
+
+-- the part of segment a-b inside circle {cx, cy, r}, or nil
+local function ClipSegment(ax, ay, bx, by, clip)
+    if not clip then return ax, ay, bx, by end
+    local dx, dy = bx - ax, by - ay
+    local fx, fy = ax - clip[1], ay - clip[2]
+    local A = dx * dx + dy * dy
+    if A == 0 then return end
+    local B = 2 * (fx * dx + fy * dy)
+    local C = fx * fx + fy * fy - clip[3] * clip[3]
+    local disc = B * B - 4 * A * C
+    if disc < 0 then return end
+    disc = sqrt(disc)
+    local t0, t1 = max(0, (-B - disc) / (2 * A)), min(1, (-B + disc) / (2 * A))
+    if t1 <= t0 then return end
+    return ax + dx * t0, ay + dy * t0, ax + dx * t1, ay + dy * t1
+end
+
+local function Outline(c, pts, color, thickness, clip)
+    local j = #pts
+    for i = 1, #pts do
+        local ax, ay, bx, by = ClipSegment(pts[j][1], pts[j][2], pts[i][1], pts[i][2], clip)
+        if ax then Line(c, color, thickness, ax, ay, bx, by) end
         j = i
     end
 end
 
--- the way from (ax, ay) to (bx, by): corners after the start, ending at the target
-local routeCache = {}
-local function Route(map, ax, ay, bx, by, level)
-    local key = map .. ":" .. floor(ax) .. ":" .. floor(ay) .. ":" .. floor(bx * 10) .. ":" .. floor(by * 10) .. ":" .. level
-    if routeCache.key ~= key then
-        routeCache.key = key
-        routeCache.pts = tr.FindPath(map, ax, ay, bx, by, level) or {{bx, by}}
+local function RouteLeg(c, pts, thickness, clip)
+    for i = 1, #pts - 1 do
+        local ax, ay, bx, by = ClipSegment(pts[i][1], pts[i][2], pts[i + 1][1], pts[i + 1][2], clip)
+        if ax then
+            Line(c, ROUTE_GLOW, thickness * 3, ax, ay, bx, by, "ARTWORK")
+            Line(c, ROUTE_CORE, thickness, ax, ay, bx, by)
+            -- a chevron every so often, pointing the way you go
+            local dx, dy = bx - ax, by - ay
+            local len = sqrt(dx * dx + dy * dy)
+            local gap = thickness * 18
+            if len > gap then
+                local ux, uy = dx / len, dy / len
+                local size = thickness * 2.2
+                local d = gap / 2
+                while d < len - gap / 3 do
+                    local mx, my = ax + ux * d, ay + uy * d
+                    local bxx, byy = mx - ux * size, my - uy * size
+                    Line(c, ROUTE_CORE, thickness * 0.8, bxx - uy * size, byy + ux * size, mx, my)
+                    Line(c, ROUTE_CORE, thickness * 0.8, bxx + uy * size, byy - ux * size, mx, my)
+                    d = d + gap
+                end
+            end
+        end
     end
-    return routeCache.pts
+end
+
+---------------------------------------------------------------------------
+-- What to draw: areas and the route through the next few steps
+---------------------------------------------------------------------------
+
+local function StepTarget(step)
+    local a = StepArea(step)
+    for _, e in ipairs(step and step.elements or {}) do
+        if e.arrow and e.zone and e.x and e.y and not e.skip then
+            return e.zone, e.x, e.y, a
+        end
+    end
+    if a then
+        local cx, cy = 0, 0
+        for _, p in ipairs(a.area) do cx, cy = cx + p[1], cy + p[2] end
+        return a.areaZone, cx / #a.area, cy / #a.area, a
+    end
+end
+
+-- {map, x, y, area} for the current step and the next few, in order
+local function Upcoming()
+    local guide = addon.currentGuide
+    local out = {}
+    if not (guide and guide.steps and addon.GetGuideProgress) then return out end
+    local first = addon.GetGuideProgress()
+    for i = first, min(#guide.steps, first + STEPS_AHEAD) do
+        local step = guide.steps[i]
+        if step and not step.completed and not step.skip then
+            local map, x, y, a = StepTarget(step)
+            if map then out[#out + 1] = {map, x, y, a} end
+        end
+    end
+    return out
+end
+
+-- Map points (0-100) of the route on `map` starting at (px, py), or {}
+local legCache = {}
+local function RoutePoints(map, px, py, stops, level)
+    local key = map .. ":" .. floor(px) .. ":" .. floor(py) .. ":" .. level
+    for _, s in ipairs(stops) do key = key .. ":" .. s[1] .. "/" .. floor(s[2] * 10) .. "/" .. floor(s[3] * 10) end
+    if legCache.key == key then return legCache.pts end
+    local pts = {{px, py}}
+    local ax, ay = px, py
+    for k, s in ipairs(stops) do
+        if s[1] ~= map then break end
+        local inside = s[4] and InsidePoly(s[4].area, ax, ay)
+        if not (k == 1 and inside) then
+            local path = Grid(map) and tr.FindPath(map, ax, ay, s[2], s[3], level) or nil
+            for _, p in ipairs(path or {{s[2], s[3]}}) do pts[#pts + 1] = {p[1], p[2]} end
+            ax, ay = s[2], s[3]
+        end
+    end
+    legCache.key, legCache.pts = key, pts
+    return pts
 end
 
 local spawnCache = {}
@@ -536,37 +654,47 @@ local function ObjectiveSpawns(questId, objIndex, area)
 end
 tr.ObjectiveSpawns = ObjectiveSpawns
 
-local function ActiveSteps()
-    local frame = addon.RXPFrame
-    return frame and frame.activeSteps or {}
-end
+---------------------------------------------------------------------------
+-- World map
+---------------------------------------------------------------------------
 
+local wmc
 function tr.DrawMap()
-    local canvas, map = Canvas()
-    if not canvas then return end
-    Overlay(canvas)
-    HideAll()
-    local d = addon.terrainData and addon.terrainData[map]
+    local wm = _G.WorldMapFrame
+    if not (wm and wm:IsShown() and wm.GetCanvas) then return end
+    local canvas = wm:GetCanvas()
+    local map = wm:GetMapID()
+    if not wmc then
+        -- above the map's own pins and textures
+        wmc = NewCanvas(canvas, min(9000, (canvas:GetFrameLevel() or 1) + 3000))
+    end
+    Clear(wmc)
     local w, h = canvas:GetWidth(), canvas:GetHeight()
-    local scale = _G.WorldMapFrame.GetCanvasScale and _G.WorldMapFrame:GetCanvasScale() or 1
+    local scale = wm.GetCanvasScale and wm:GetCanvasScale() or 1
+    local function P(x, y) return x / 100 * w, y / 100 * h end
+    local stops = Upcoming()
 
-    -- kill/loot areas of the active steps
-    for _, step in pairs(ActiveSteps()) do
-        local a = StepArea(step)
-        if a and a.areaZone == map then DrawArea(a, w, h, scale) end
+    for _, s in ipairs(stops) do
+        if s[4] and s[4].areaZone == map then
+            local px = {}
+            for _, p in ipairs(Rounded(s[4])) do px[#px + 1] = {P(p[1], p[2])} end
+            Fill(wmc, px, AREA_FILL, max(1, 2 / scale))
+            Outline(wmc, px, AREA_EDGE, 2.5 / scale)
+        end
     end
 
-    -- the spawns the active steps need
-    if d and d.area then
+    local d = addon.terrainData and addon.terrainData[map]
+    if d and d.area and addon.RXPFrame then
         local seen = {}
-        for _, step in pairs(ActiveSteps()) do
+        for _, step in pairs(addon.RXPFrame.activeSteps or {}) do
             for _, e in ipairs(step.elements or {}) do
                 if e.questId and e.obj and not e.completed and not e.skip then
                     for _, pt in ipairs(ObjectiveSpawns(e.questId, e.obj, d.area)) do
                         local key = floor(pt[1] * 10) .. "," .. floor(pt[2] * 10)
                         if not seen[key] then
                             seen[key] = true
-                            DrawDot("pins", {1, 1, 1, 0.9}, PIN_SIZE / scale, pt[1], pt[2], w, h, PIN_TEXTURE)
+                            local x, y = P(pt[1], pt[2])
+                            Tex(wmc, PIN_TEXTURE, {1, 1, 1, 0.9}, PIN_SIZE / scale, x, y)
                         end
                     end
                 end
@@ -574,85 +702,96 @@ function tr.DrawMap()
         end
     end
 
-    -- the way to where the arrow points, from where you stand
-    local af = addon.arrowFrame
-    local real = af and af.element
     local px, py, pmap = HBD:GetPlayerZonePosition()
-    if not (real and px and pmap == map) or (af.IsShown and not af:IsShown()) then return end
-    local target = tr.AreaTarget and tr.AreaTarget(real) or real
-    if target.inside or not target.wx then return end
-    local bx, by = HBD:GetZoneCoordinatesFromWorld(target.wx, target.wy, map)
-    if not bx then return end
-    px, py, bx, by = px * 100, py * 100, bx * 100, by * 100
-    local pts = d and d.rows and Route(map, px, py, bx, by, PlayerLevel()) or {{bx, by}}
-    local ax, ay = px, py
-    for _, p in ipairs(pts) do
-        DrawLine("glows", ROUTE_GLOW, 12 / scale, ax, ay, p[1], p[2], w, h)
-        DrawLine("lines", ROUTE_CORE, 4 / scale, ax, ay, p[1], p[2], w, h)
-        DrawDot("dots", ROUTE_CORE, 8 / scale, p[1], p[2], w, h)
-        ax, ay = p[1], p[2]
+    if px and pmap == map and #stops > 0 then
+        local pts = {}
+        for _, p in ipairs(RoutePoints(map, px * 100, py * 100, stops, PlayerLevel())) do
+            pts[#pts + 1] = {P(p[1], p[2])}
+        end
+        RouteLeg(wmc, pts, 3.5 / scale)
     end
 end
 
 ---------------------------------------------------------------------------
--- Minimap: the area, shaded
+-- Minimap
 ---------------------------------------------------------------------------
 
-local HBDPins = LibStub("HereBeDragons-Pins-2.0", true)
-local MINI_OWNER = "OpenXPAreas"
-local miniDots, miniShown = {}, nil
+-- yards across the minimap per zoom level (0-5), as HereBeDragons-Pins has them
+local MINI_SIZE = {
+    indoor = {300, 240, 180, 120, 80, 50},
+    outdoor = {466 + 2 / 3, 400, 333 + 1 / 3, 266 + 2 / 6, 200, 133 + 1 / 3},
+}
 
-local function MiniDot(i)
-    local f = miniDots[i]
-    if not f then
-        f = CreateFrame("Frame")
-        f:SetSize(9, 9)
-        local t = f:CreateTexture(nil, "OVERLAY")
-        t:SetAllPoints()
-        t:SetTexture(WHITE)
-        t:SetVertexColor(AREA_FILL[1], AREA_FILL[2], AREA_FILL[3], 0.45)
-        miniDots[i] = f
+local mmc
+local function MinimapRadius()
+    local mm = _G.Minimap
+    if C_Minimap and C_Minimap.GetViewRadius then
+        local ok, r = pcall(C_Minimap.GetViewRadius)
+        if ok and r and r > 0 then return r end
     end
-    return f
+    local zoom = mm:GetZoom()
+    local indoors = (tonumber(GetCVar("minimapZoom")) or 0) == zoom and "outdoor" or "indoor"
+    return MINI_SIZE[indoors][zoom + 1] / 2
 end
 
 function tr.DrawMinimap()
-    if not HBDPins then return end
-    local a
-    for _, step in pairs(ActiveSteps()) do
-        a = StepArea(step)
-        if a then break end
+    local mm = _G.Minimap
+    if not (mm and mm:IsShown()) then return end
+    if not mmc then mmc = NewCanvas(mm, mm:GetFrameLevel() + 2) end
+    Clear(mmc)
+    local stops = Upcoming()
+    if #stops == 0 then return end
+    local wx, wy, inst = HBD:GetPlayerWorldPosition()
+    local px, py, pmap = HBD:GetPlayerZonePosition()
+    if not (wx and px) then return end
+    local radius = MinimapRadius()
+    local size = mm:GetWidth() / 2
+    local rotate = GetCVar("rotateMinimap") == "1"
+    local facing = rotate and GetPlayerFacing and GetPlayerFacing() or 0
+    if rotate and not facing then return end
+    local sin, cos = math.sin(facing or 0), math.cos(facing or 0)
+    local clip = {size, size, size - 2}
+    -- map point (0-100 on pmap) to minimap pixels from its top left
+    local function P(x, y)
+        local ox, oy = HBD:GetWorldCoordinatesFromZone(x / 100, y / 100, pmap)
+        if not ox then return end
+        -- the same sums HereBeDragons-Pins uses for minimap icons
+        local dx, dy = wx - ox, wy - oy
+        if rotate then dx, dy = dx * cos - dy * sin, dx * sin + dy * cos end
+        return size + dx / radius * size, size + dy / radius * size
     end
-    if a == miniShown then return end
-    HBDPins:RemoveAllMinimapIcons(MINI_OWNER)
-    miniShown = a
-    if not a then return end
-    local poly = a.area
-    local x0, y0, x1, y1 = 100, 100, 0, 0
-    for _, p in ipairs(poly) do
-        x0, y0, x1, y1 = min(x0, p[1]), min(y0, p[2]), max(x1, p[1]), max(y1, p[2])
-    end
-    local n = 0
-    for y = floor(y0), floor(y1) do
-        for x = floor(x0), floor(x1) do
-            if InsidePoly(poly, x + 0.5, y + 0.5) then
-                n = n + 1
-                HBDPins:AddMinimapIconMap(MINI_OWNER, MiniDot(n), a.areaZone, (x + 0.5) / 100, (y + 0.5) / 100, false, false)
+    for _, s in ipairs(stops) do
+        if s[4] and s[4].areaZone == pmap then
+            local pts = {}
+            for _, p in ipairs(Rounded(s[4])) do
+                local x, y = P(p[1], p[2])
+                if not x then pts = nil break end
+                pts[#pts + 1] = {x, y}
+            end
+            if pts then
+                Fill(mmc, pts, AREA_FILL, 2, clip)
+                Outline(mmc, pts, AREA_EDGE, 2, clip)
             end
         end
     end
+    local route = {}
+    for _, p in ipairs(RoutePoints(pmap, px * 100, py * 100, stops, PlayerLevel())) do
+        local x, y = P(p[1], p[2])
+        if x then route[#route + 1] = {x, y} end
+    end
+    RouteLeg(mmc, route, 2.5, clip)
 end
 
+tr.draw = {Fill = Fill, ClipSegment = ClipSegment, Smooth = Smooth, Upcoming = Upcoming, RoutePoints = RoutePoints}
+
 if CreateFrame and C_Timer and C_Timer.NewTicker then
+    local function Safe(fn)
+        local ok, err = pcall(fn)
+        if not ok and addon.comms and addon.comms.PrettyDebug then addon.comms.PrettyDebug(tostring(err)) end
+    end
     C_Timer.NewTicker(MAP_TICK, function()
         local wm = _G.WorldMapFrame
-        if wm and wm:IsShown() then
-            local ok, err = pcall(tr.DrawMap)
-            if not ok and addon.comms and addon.comms.PrettyDebug then addon.comms.PrettyDebug(tostring(err)) end
-        elseif overlay then
-            HideAll()
-        end
-        local ok, err = pcall(tr.DrawMinimap)
-        if not ok and addon.comms and addon.comms.PrettyDebug then addon.comms.PrettyDebug(tostring(err)) end
+        if wm and wm:IsShown() then Safe(tr.DrawMap) elseif wmc then Clear(wmc) end
     end)
+    C_Timer.NewTicker(MINI_TICK, function() Safe(tr.DrawMinimap) end)
 end

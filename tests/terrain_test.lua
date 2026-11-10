@@ -131,4 +131,70 @@ try("kill area: Here inside it, the nearest edge from outside", function()
     assert(tr.AreaTarget({wx = 1, wy = 1, instance = 0, step = {elements = {}}}) == nil, "no area: nil")
 end)
 
+-- a stand-in for WoW frames: every method exists and does nothing
+local function Fake(extra)
+    local o = extra or {}
+    return setmetatable(o, {__index = function(t, k)
+        return function(self, ...)
+            if k == "CreateLine" or k == "CreateTexture" then
+                rawset(t, "made", (rawget(t, "made") or 0) + 1)
+                return Fake()
+            end
+            if k == "GetWidth" or k == "GetHeight" then return 1000 end
+            if k == "GetFrameLevel" or k == "GetZoom" then return 1 end
+            if k == "IsShown" then return true end
+        end
+    end})
+end
+
+try("fill: horizontal lines inside the shape, cut to a circle", function()
+    local lines = {}
+    local c = {frame = Fake(), lines = {}, tex = {}, nl = 0, nt = 0}
+    c.frame.CreateLine = function()
+        local l = Fake()
+        l.SetStartPoint = function(_, _, _, x, y) l.x1, l.y1 = x, y end
+        l.SetEndPoint = function(_, _, _, x, y) l.x2 = x; lines[#lines + 1] = l end
+        return l
+    end
+    tr.draw.Fill(c, {{0, 0}, {100, 0}, {100, 100}, {0, 100}}, {1, 1, 1, 1}, 10)
+    assert(#lines == 10, "ten rows: " .. #lines)
+    assert(lines[1].x1 == 0 and lines[1].x2 == 100)
+    lines = {}
+    c.nl = 0
+    c.lines = {}
+    tr.draw.Fill(c, {{0, 0}, {100, 0}, {100, 100}, {0, 100}}, {1, 1, 1, 1}, 10, {50, 50, 20})
+    for _, l in ipairs(lines) do
+        assert(l.x1 >= 29.9 and l.x2 <= 70.1, "inside the circle")
+    end
+    local ax, _, bx = tr.draw.ClipSegment(0, 50, 100, 50, {50, 50, 20})
+    assert(math.abs(ax - 30) < 0.01 and math.abs(bx - 70) < 0.01)
+    assert(tr.draw.ClipSegment(0, 0, 10, 0, {50, 50, 20}) == nil)
+end)
+
+try("world map and minimap draw without errors", function()
+    local me = {x = 20, y = 55}
+    HBD.GetPlayerZonePosition = function() return me.x / 100, me.y / 100, 1431 end
+    HBD.GetPlayerWorldPosition = function() return me.x * 10, me.y * 10, 0 end
+    CreateFrame = function() return Fake() end
+    GetCVar = function() return "0" end
+    wipe = function(t) for k in pairs(t) do t[k] = nil end end
+    local area = {area = {{8.85, 62.27}, {9.23, 48.18}, {12.47, 49.82}, {12.43, 60.62}}, areaZone = 1431}
+    local s1 = {elements = {{arrow = true, zone = 1431, x = 10.75, y = 55.39}, area}}
+    local s2 = {elements = {{arrow = true, zone = 1431, x = 7.78, y = 34.07}}}
+    addon.currentGuide = {steps = {s1, s2}}
+    addon.GetGuideProgress = function() return 1 end
+    addon.RXPFrame = {activeSteps = {s1}}
+    local canvas = Fake()
+    _G.WorldMapFrame = Fake({GetCanvas = function() return canvas end, GetMapID = function() return 1431 end})
+    _G.Minimap = Fake()
+    tr.DrawMap()
+    tr.DrawMinimap()
+    local route = tr.draw.RoutePoints(1431, 20, 55, tr.draw.Upcoming(), 22)
+    assert(#route >= 3, "you, the area, then Sven: " .. #route)
+    me.x, me.y = 10.5, 55
+    route = tr.draw.RoutePoints(1431, 10.5, 55, tr.draw.Upcoming(), 22)
+    assert(route[#route][2] == 34.07, "inside the area: straight on to the next step")
+    _G.WorldMapFrame, _G.Minimap, addon.currentGuide, addon.RXPFrame = nil, nil, nil, nil
+end)
+
 return fails
