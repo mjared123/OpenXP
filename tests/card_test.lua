@@ -476,5 +476,26 @@ try("trainer step is done once you've talked to the trainer", function()
     assert(not done, "old visit counted")
     addon.RXPFrame.activeSteps = {}
 end)
+try("a go-here step you've run past counts as done", function()
+    local done
+    addon.SetElementComplete = function(e) done = e; e.completed = true end
+    local wp = {tag = "goto", wx = 0, wy = 0, radius = 30, instance = 1}
+    local s = {
+        {index = 1, elements = {{textOnly = true, text = "Head up the ramp"}, wp}},
+        {index = 2, elements = {{tag = "goto", wx = 400, wy = 0, instance = 1}, {tag = "trainer"}}},
+    }
+    addon.currentGuide = {name = "ramp", steps = s}
+    addon.GetGuideProgress = function() return 1 end
+    card.hold = nil
+    assert(not card.CheckTravelSteps(-50, 0, 1) and not done, "completed before getting there")
+    assert(not card.CheckTravelSteps(300, 0, 2) and not done, "completed on another continent")
+    assert(card.CheckTravelSteps(300, 0, 1) and done == wp, "not completed after running past")
+    -- a step with something else to do is left alone
+    done = nil
+    wp.completed = nil
+    s[1].elements[3] = {tag = "accept", questId = 5}
+    assert(not card.CheckTravelSteps(300, 0, 1) and not done, "completed a quest step")
+    addon.currentGuide = {name = "28-30 Duskwood", steps = steps}
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

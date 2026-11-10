@@ -11,6 +11,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.3",
+        date = "November 2026",
+        changes = {
+            "\"Go here\" steps (like heading up a ramp) count as done once you've run past them towards the next stop, so the arrow no longer sends you back",
+        },
+    },
+    {
         version = "1.1.2",
         date = "November 2026",
         changes = {

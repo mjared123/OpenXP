@@ -2003,6 +2003,7 @@ function Tick()
             end
         end
         pcall(card.CheckTrainerSteps)
+        pcall(card.CheckTravelSteps)
         local ok, err = pcall(card.Refresh)
         if not ok then card.ReportError(err) end
         card.SkinPanels()
@@ -2383,6 +2384,73 @@ function card.CheckTrainerSteps()
                 end
             end
         end
+    end
+end
+
+---------------------------------------------------------------------------
+-- "Go here" steps you've already gone past. A step that is only a
+-- waypoint (no quest, item or NPC on it) used to wait until you stood
+-- within its radius, even if you'd already run past it towards the next
+-- stop, so the arrow sent you back. It now counts as done once you're
+-- clearly closer to the next step's waypoint than this waypoint is.
+---------------------------------------------------------------------------
+
+local PAST_MIN, PAST_SHARE, PAST_MIN_LEG = 20, 0.15, 40
+
+local function Dist(instance, ax, ay, bx, by)
+    if HBD and HBD.GetWorldDistance then
+        return HBD:GetWorldDistance(instance, ax, ay, bx, by)
+    end
+    local dx, dy = ax - bx, ay - by
+    return math.sqrt(dx * dx + dy * dy)
+end
+
+-- The waypoint of a travel-only step, or nil
+function card.TravelWaypoint(step)
+    if not step or step.sticky or step.hidewindow then return end
+    local wp
+    for _, e in ipairs(step.elements or {}) do
+        if e.tag == "goto" then
+            if e.wx and e.wy and (e.radius or 0) > 0 and not e.completed and not wp then wp = e end
+        elseif e.tag and not e.textOnly then
+            return -- has something to do besides travel
+        end
+    end
+    return wp
+end
+
+local function NextWaypoint(guide, from)
+    for i = from + 1, math.min(#guide.steps, from + 6) do
+        local s = guide.steps[i]
+        if s and not s.sticky and not s.hidewindow then
+            for _, e in ipairs(s.elements or {}) do
+                if e.tag == "goto" and e.wx and e.wy then return e end
+            end
+        end
+    end
+end
+
+-- px, py, pinst: player world position (passed in by tests)
+function card.CheckTravelSteps(px, py, pinst)
+    local guide = addon.currentGuide
+    if not (guide and guide.steps) or card.hold or card.detour then return end
+    local cur = CurrentStep()
+    local wp = card.TravelWaypoint(guide.steps[cur])
+    if not wp then return end
+    local nxt = NextWaypoint(guide, cur)
+    if not nxt or nxt.instance ~= wp.instance then return end
+    if not px then
+        if not (HBD and HBD.GetPlayerWorldPosition) then return end
+        px, py, pinst = HBD:GetPlayerWorldPosition()
+    end
+    if not px or pinst ~= wp.instance then return end
+    local leg = Dist(wp.instance, wp.wx, wp.wy, nxt.wx, nxt.wy)
+    if not leg or leg < PAST_MIN_LEG then return end
+    local toNext = Dist(wp.instance, px, py, nxt.wx, nxt.wy)
+    if toNext and toNext < leg - math.max(PAST_MIN, leg * PAST_SHARE) then
+        wp.skip = true
+        if addon.SetElementComplete then addon.SetElementComplete(wp) end
+        return true
     end
 end
 
