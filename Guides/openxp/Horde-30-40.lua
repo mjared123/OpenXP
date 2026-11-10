@@ -29,6 +29,11 @@ step
     .accept 655 >>Accept Hammerfall
     .target Gor'mul
 step
+    .goto Arathi Highlands,74.24,33.92
+    >>Talk to |cRXP_FRIENDLY_Drum Fel|r
+    .accept 677 >>Accept Call to Arms
+    .target Drum Fel
+step
     .goto Arathi Highlands,74.72,36.29
     >>Talk to |cRXP_FRIENDLY_Tor'gan|r
     .turnin 655 >>Turn in Hammerfall
@@ -51,6 +56,27 @@ step
     >>Click the |cRXP_PICK_Iridescent Shards|r
     .turnin 642 >>Turn in The Princess Trapped
 step
+    .goto Arathi Highlands,71.56,67.11
+    >>Kill |cRXP_ENEMY_Witherbark Witch Doctor|r
+    .complete 677,3 --Call to Arms
+    .mob Witherbark Witch Doctor
+step
+    .goto Arathi Highlands,63.50,72.83
+    >>Kill |cRXP_ENEMY_Witherbark Axe Thrower|r
+    .complete 677,1 --Call to Arms
+    .mob Witherbark Axe Thrower
+step
+    .goto Arathi Highlands,68.17,79.50
+    >>Kill |cRXP_ENEMY_Witherbark Headhunter|r
+    .complete 677,2 --Call to Arms
+    .mob Witherbark Headhunter
+step
+    .goto Arathi Highlands,38.41,67.21
+    >>Kill |cRXP_ENEMY_Highland Strider|r and |cRXP_ENEMY_Highland Thrasher|r. Loot them for |cRXP_LOOT_Highland Raptor Eye|r
+    .complete 672,1 --Raising Spirits
+    .mob Highland Strider
+    .mob Highland Thrasher
+step
     .goto Arathi Highlands,32.27,28.30
     >>Kill |cRXP_ENEMY_Syndicate Highwayman|r and |cRXP_ENEMY_Syndicate Pathstalker|r and |cRXP_ENEMY_Syndicate Mercenary|r. Loot them for |cRXP_LOOT_Bloodstone Amulet|r
     .complete 671,1 --Foul Magics
@@ -58,11 +84,10 @@ step
     .mob Syndicate Pathstalker
     .mob Syndicate Mercenary
 step
-    .goto Arathi Highlands,38.41,67.21
-    >>Kill |cRXP_ENEMY_Highland Strider|r and |cRXP_ENEMY_Highland Thrasher|r. Loot them for |cRXP_LOOT_Highland Raptor Eye|r
-    .complete 672,1 --Raising Spirits
-    .mob Highland Strider
-    .mob Highland Thrasher
+    .goto Arathi Highlands,74.24,33.92
+    >>Talk to |cRXP_FRIENDLY_Drum Fel|r
+    .turnin 677 >>Turn in Call to Arms
+    .target Drum Fel
 step
     .goto Arathi Highlands,74.72,36.29
     >>Talk to |cRXP_FRIENDLY_Tor'gan|r
@@ -175,7 +200,7 @@ step
     .turnin 569 >>Turn in The Defense of Grom'gol
     .target Commander Aggro'gosh
 step
-    .goto Stranglethorn Vale,24.82,23.03
+    .goto Stranglethorn Vale,24.77,22.88
     >>Loot the |cRXP_PICK_Tablet Shard|r
     .complete 629,1 --The Vile Reef
 step
@@ -272,7 +297,7 @@ step
     .accept 195 >>Accept Raptor Mastery
     .target Hemet Nesingwary
 step
-    .goto Stranglethorn Vale,46.58,14.40
+    .goto Stranglethorn Vale,46.40,14.40
     >>Kill |cRXP_ENEMY_Stranglethorn Tiger|r
     .complete 186,1 --Tiger Mastery
     .mob Stranglethorn Tiger
@@ -447,41 +472,68 @@ step
     .accept 6142 >>Accept Clam Bait
     .target Mai'Lahii
 step
-    .goto Desolace,52.57,54.39
-    >>Talk to |cRXP_FRIENDLY_Takata Steelblade|r
-    .accept 1434 >>Accept Befouled by Satyr
-    .target Takata Steelblade
+    .goto Desolace,25.82,68.21
+    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
+    .accept 5381 >>Accept Hand of Iruxos
+    .target Taiga Wisemane
+step
+    .goto Desolace,47.83,61.83
+    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
+    .accept 6134 >>Accept Ghost-o-plasm Round Up
+    .target Hornizz Brimbuzzle
 step
     .goto Desolace,56.19,59.57
     >>Talk to |cRXP_FRIENDLY_Felgur Twocuts|r
     .accept 1365 >>Accept Khan Dez'hepah
     .target Felgur Twocuts
 step
+    .goto Desolace,56.29,59.68
+    >>Talk to |cRXP_FRIENDLY_Gurda Wildmane|r
+    .accept 93225 >>Accept Carved Centaur Totems
+    .target Gurda Wildmane
+step
+    .goto Desolace,55.41,55.81
+    >>Talk to |cRXP_FRIENDLY_Nataka Longhorn|r
+    .accept 5386 >>Accept Catch of the Day
+    .target Nataka Longhorn
+step
+    .goto Desolace,60.86,61.86
+    >>Talk to |cRXP_FRIENDLY_Smeed Scrabblescrew|r
+    .accept 5561 >>Accept Kodo Roundup
+    .target Smeed Scrabblescrew
+step
+    .goto Desolace,51.47,59.16
+    >>Aged Kodo
+    .complete 5561,1 --Kodo Roundup
+    .mob Aged Kodo
+    .mob Dying Kodo
+    .mob Ancient Kodo
+step
+    .goto Desolace,60.86,61.86
+    >>Talk to |cRXP_FRIENDLY_Smeed Scrabblescrew|r
+    .turnin 5561 >>Turn in Kodo Roundup
+    .target Smeed Scrabblescrew
+step
+    .goto Desolace,74.97,68.16
+    >>Talk to |cRXP_FRIENDLY_Warug|r
+    .accept 92743 >>Accept A Conqueror's Crown
+    .turnin 92743 >>Turn in A Conqueror's Crown
+    .target Warug
+step
+    .goto Desolace,74.40,44.80
+    >>Kill |cRXP_ENEMY_Khan Dez'hepah|r. Loot them for |cRXP_LOOT_Khan Dez'hepah's Head|r
+    .complete 1365,1 --Khan Dez'hepah
+    .mob Khan Dez'hepah
+step
     .goto Desolace,62.33,38.99
     >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
     .accept 5501 >>Accept Bone Collector
     .target Bibbly F'utzbuckle
 step
-    .goto Desolace,73.38,41.62
-    >>Kill |cRXP_ENEMY_Khan Dez'hepah|r. Loot them for |cRXP_LOOT_Khan Dez'hepah's Head|r
-    .complete 1365,1 --Khan Dez'hepah
-    .mob Khan Dez'hepah
-step
-    .goto Desolace,77.27,23.71
-    >>Kill |cRXP_ENEMY_Hatefury Hellcaller|r
-    >>Kill |cRXP_ENEMY_Hatefury Felsworn|r
-    >>Kill |cRXP_ENEMY_Hatefury Betrayer|r
-    .complete 1434,4 --Befouled by Satyr
-    .complete 1434,2 --Befouled by Satyr
-    .complete 1434,3 --Befouled by Satyr
-    .mob Hatefury Hellcaller
-    .mob Hatefury Felsworn
-    .mob Hatefury Betrayer
-step
-    .goto Desolace,74.55,22.27
-    >>Kill |cRXP_ENEMY_Hatefury Rogue|r
-    .complete 1434,1 --Befouled by Satyr
-    .mob Hatefury Rogue
+    .goto Desolace,55.00,26.60
+    >>Kill |cRXP_ENEMY_Demon Spirit|r. Loot them for |cRXP_LOOT_Demon Box|r
+    .complete 5381,1 --Hand of Iruxos
+    .mob Demon Spirit
 step
     .goto Desolace,38.88,27.16
     >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
@@ -492,14 +544,15 @@ step
     >>Click the |cRXP_PICK_Rackmore's Log|r
     .accept 6161 >>Accept Claim Rackmore's Treasure!
 step
-    .goto Desolace,34.48,25.64
-    >>Kill |cRXP_ENEMY_Slitherblade Naga|r and |cRXP_ENEMY_Slitherblade Sorceress|r and |cRXP_ENEMY_Slitherblade Warrior|r. Loot them for |cRXP_LOOT_Soft-shelled Clam Meat|r
-    >>Kill |cRXP_ENEMY_Slitherblade Sorceress|r
+    .goto Desolace,32.78,26.64
+    >>Kill |cRXP_ENEMY_Enraged Reef Crawler|r. Loot them for |cRXP_LOOT_Soft-shelled Clam Meat|r
     .complete 6142,1 --Clam Bait
+    .mob Enraged Reef Crawler
+step
+    .goto Desolace,32.94,23.32
+    >>Kill |cRXP_ENEMY_Slitherblade Sorceress|r
     .complete 6143,3 --Other Fish to Fry
-    .mob Slitherblade Naga
     .mob Slitherblade Sorceress
-    .mob Slitherblade Warrior
 step
     .goto Desolace,36.25,23.14
     >>Kill |cRXP_ENEMY_Slitherblade Naga|r
@@ -526,27 +579,31 @@ step
     .goto Desolace,38.88,27.16
     >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
     .turnin 5741 >>Turn in Sceptre of Light
+    .accept 6027 >>Accept Book of the Ancients
     .target Azore Aldamort
 step
-    .goto Desolace,52.57,54.39
-    >>Talk to |cRXP_FRIENDLY_Takata Steelblade|r
-    .turnin 1434 >>Turn in Befouled by Satyr
-    .target Takata Steelblade
+    .goto Desolace,28.24,6.67
+    >>Kill |cRXP_ENEMY_Lord Kragaru|r. Loot them for |cRXP_LOOT_Book of the Ancients|r
+    .complete 6027,1 --Book of the Ancients
+    .mob Lord Kragaru
 step
-    .goto Desolace,50.79,58.70
-    >>Loot the |cRXP_PICK_Kodo Bone|r
-    .complete 5501,1 --Bone Collector
+    .goto Desolace,38.88,27.16
+    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
+    .turnin 6027 >>Turn in Book of the Ancients
+    .target Azore Aldamort
 step
-    .goto Desolace,56.19,59.57
-    >>Talk to |cRXP_FRIENDLY_Felgur Twocuts|r
-    .turnin 1365 >>Turn in Khan Dez'hepah
-    .accept 1366 >>Accept Centaur Bounty
-    .target Felgur Twocuts
+    .goto Desolace,32.17,55.50
+    >>Kill |cRXP_ENEMY_Maraudine Scout|r and |cRXP_ENEMY_Maraudine Wrangler|r and |cRXP_ENEMY_Maraudine Mauler|r. Loot them for |cRXP_LOOT_Carved Centaur Totem|r
+    .complete 93225,1 --Carved Centaur Totems
+    .mob Maraudine Scout
+    .mob Maraudine Wrangler
+    .mob Maraudine Mauler
 step
-    .goto Desolace,62.33,38.99
-    >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
-    .turnin 5501 >>Turn in Bone Collector
-    .target Bibbly F'utzbuckle
+    .goto Desolace,25.82,68.21
+    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
+    .turnin 5381 >>Turn in Hand of Iruxos
+    .accept 5581 >>Accept Portals of the Legion
+    .target Taiga Wisemane
 step
     .goto Desolace,22.64,71.97
     >>Talk to |cRXP_FRIENDLY_Mai'Lahii|r
@@ -558,11 +615,56 @@ step
     .turnin 6143 >>Turn in Other Fish to Fry
     .target Drulzegar Skraghook
 step
+    .goto Desolace,22.45,73.12
+    >>Kill |cRXP_ENEMY_Jinar'Zillen|r. Loot them for |cRXP_LOOT_Bloodbelly Fish|r
+    .complete 5386,1 --Catch of the Day
+    .mob Jinar'Zillen
+step
     .goto Desolace,23.26,80.34
     >>Kill |cRXP_ENEMY_Drysnap Crawler|r and |cRXP_ENEMY_Drysnap Pincer|r. Loot them for |cRXP_LOOT_Rackmore's Silver Key|r
     .complete 6161,1 --Claim Rackmore's Treasure!
     .mob Drysnap Crawler
     .mob Drysnap Pincer
+step
+    .goto Desolace,53.00,80.00
+    >>Kill |cRXP_ENEMY_Demon Portal Guardian|r
+    .complete 5581,1 --Portals of the Legion
+    .mob Demon Portal Guardian
+step
+    .goto Desolace,64.18,91.63
+    >>Kill |cRXP_ENEMY_Magrami Spectre|r. Loot them for |cRXP_LOOT_Ghost-o-plasm|r
+    .complete 6134,1 --Ghost-o-plasm Round Up
+    .mob Magrami Spectre
+step
+    .goto Desolace,56.29,59.68
+    >>Talk to |cRXP_FRIENDLY_Gurda Wildmane|r
+    .turnin 93225 >>Turn in Carved Centaur Totems
+    .target Gurda Wildmane
+step
+    .goto Desolace,56.19,59.57
+    >>Talk to |cRXP_FRIENDLY_Felgur Twocuts|r
+    .turnin 1365 >>Turn in Khan Dez'hepah
+    .accept 1366 >>Accept Centaur Bounty
+    .target Felgur Twocuts
+step
+    .goto Desolace,55.41,55.81
+    >>Talk to |cRXP_FRIENDLY_Nataka Longhorn|r
+    .turnin 5386 >>Turn in Catch of the Day
+    .target Nataka Longhorn
+step
+    .goto Desolace,50.79,58.70
+    >>Loot the |cRXP_PICK_Kodo Bone|r
+    .complete 5501,1 --Bone Collector
+step
+    .goto Desolace,47.83,61.83
+    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
+    .turnin 6134 >>Turn in Ghost-o-plasm Round Up
+    .target Hornizz Brimbuzzle
+step
+    .goto Desolace,25.82,68.21
+    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
+    .turnin 5581 >>Turn in Portals of the Legion
+    .target Taiga Wisemane
 step
     .goto Desolace,38.68,93.36
     >>Kill |cRXP_ENEMY_Kolkar Centaur|r and |cRXP_ENEMY_Kolkar Scout|r and |cRXP_ENEMY_Kolkar Mauler|r. Loot them for |cRXP_LOOT_Centaur Ear|r
@@ -575,6 +677,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Felgur Twocuts|r
     .turnin 1366 >>Turn in Centaur Bounty
     .target Felgur Twocuts
+step
+    .goto Desolace,62.33,38.99
+    >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
+    .turnin 5501 >>Turn in Bone Collector
+    .target Bibbly F'utzbuckle
 step
     .goto Desolace,30.00,8.71
     >>Click the |cRXP_PICK_Rackmore's Chest|r
@@ -626,7 +733,7 @@ step
     .target Mudcrush Durtfeet
 step
     .goto Dustwallow Marsh,29.70,47.64
-    >>Click the |cRXP_PICK_Suspicious Hoofprint|r
+    >>Click the |cRXP_PICK_Hoofprints|r
     .accept 1268 >>Accept Suspicious Hoofprints
 step
     .goto Dustwallow Marsh,29.83,48.24
@@ -662,34 +769,21 @@ step
     .accept 1202 >>Accept The Theramore Docks
     .target Nazeer Bloodpike
 step
-    .goto Dustwallow Marsh,32.56,22.57
-    >>Kill |cRXP_ENEMY_Darkmist Spider|r and |cRXP_ENEMY_Darkmist Recluse|r and |cRXP_ENEMY_Darkmist Silkspinner|r. Loot them for |cRXP_LOOT_Acidic Venom Sac|r
-    .complete 1322,1 --The Black Shield
-    .mob Darkmist Spider
-    .mob Darkmist Recluse
-    .mob Darkmist Silkspinner
-step
-    .goto Dustwallow Marsh,36.53,30.79
-    >>Talk to |cRXP_FRIENDLY_Do'gol|r
-    .turnin 1322 >>Turn in The Black Shield
-    .accept 1323 >>Accept The Black Shield
-    .target Do'gol
-step
-    .goto Dustwallow Marsh,36.42,31.88
-    >>Talk to |cRXP_FRIENDLY_Krog|r
-    .turnin 1323 >>Turn in The Black Shield
-    .target Krog
+    .goto Dustwallow Marsh,55.44,26.27
+    >>Talk to |cRXP_FRIENDLY_"Swamp Eye" Jarl|r
+    .accept 1218 >>Accept Soothing Spices
+    .target "Swamp Eye" Jarl
 step
     .goto Dustwallow Marsh,55.44,25.92
     >>Click the |cRXP_PICK_Loose Dirt|r
     .accept 1238 >>Accept The Lost Report
 step
-    .goto Dustwallow Marsh,57.13,15.03
-    >>Kill |cRXP_ENEMY_Mirefin Murloc|r and |cRXP_ENEMY_Mirefin Muckdweller|r and |cRXP_ENEMY_Mirefin Coastrunner|r. Loot them for |cRXP_LOOT_Mirefin Head|r
+    .goto Dustwallow Marsh,59.60,9.20
+    >>Kill |cRXP_ENEMY_Mirefin Oracle|r and |cRXP_ENEMY_Mirefin Coastrunner|r and |cRXP_ENEMY_Mirefin Warrior|r. Loot them for |cRXP_LOOT_Mirefin Head|r
     .complete 1177,1 --Hungry!
-    .mob Mirefin Murloc
-    .mob Mirefin Muckdweller
+    .mob Mirefin Oracle
     .mob Mirefin Coastrunner
+    .mob Mirefin Warrior
 step
     .goto Dustwallow Marsh,35.21,30.66
     >>Talk to |cRXP_FRIENDLY_Nazeer Bloodpike|r
@@ -714,23 +808,30 @@ step
     >>Loot the |cRXP_PICK_Mok'Morokk's Grog|r
     .complete 1166,2 --Overlord Mok'Morokk's Concern
 step
-    .goto Dustwallow Marsh,42.25,65.50
-    >>Kill |cRXP_ENEMY_Firemane Ash Tail|r
+    .goto Dustwallow Marsh,42.60,66.60
     >>Kill |cRXP_ENEMY_Firemane Scout|r
+    >>Kill |cRXP_ENEMY_Firemane Ash Tail|r
     >>Loot the |cRXP_PICK_Mok'Morokk's Snuff|r
-    .complete 1168,2 --Army of the Black Dragon
     .complete 1168,1 --Army of the Black Dragon
+    .complete 1168,2 --Army of the Black Dragon
     .complete 1166,1 --Overlord Mok'Morokk's Concern
-    .mob Firemane Ash Tail
     .mob Firemane Scout
+    .mob Firemane Ash Tail
 step
-    .goto Dustwallow Marsh,45.95,67.21
+    .goto Dustwallow Marsh,46.00,67.40
     >>Kill |cRXP_ENEMY_Searing Hatchling|r and |cRXP_ENEMY_Searing Whelp|r. Loot them for |cRXP_LOOT_Searing Heart|r
     >>Kill |cRXP_ENEMY_Searing Hatchling|r and |cRXP_ENEMY_Searing Whelp|r. Loot them for |cRXP_LOOT_Searing Tongue|r
     .complete 1169,2 --Identifying the Brood
     .complete 1169,1 --Identifying the Brood
     .mob Searing Hatchling
     .mob Searing Whelp
+step
+    .goto Dustwallow Marsh,51.39,63.25
+    >>Kill |cRXP_ENEMY_Darkfang Creeper|r and |cRXP_ENEMY_Darkfang Spider|r and |cRXP_ENEMY_Darkfang Venomspitter|r. Loot them for |cRXP_LOOT_Acidic Venom Sac|r
+    .complete 1322,1 --The Black Shield
+    .mob Darkfang Creeper
+    .mob Darkfang Spider
+    .mob Darkfang Venomspitter
 step
     .goto Dustwallow Marsh,51.66,74.73
     >>Kill |cRXP_ENEMY_Firemane Scalebane|r
@@ -741,37 +842,75 @@ step
     >>Loot the |cRXP_PICK_Mok'Morokk's Strongbox|r
     .complete 1166,3 --Overlord Mok'Morokk's Concern
 step
-    .goto Dustwallow Marsh,37.15,33.09
-    >>Talk to |cRXP_FRIENDLY_Draz'Zilb|r
-    .turnin 1169 >>Turn in Identifying the Brood
-    .accept 1170 >>Accept The Brood of Onyxia
-    .target Draz'Zilb
+    .goto Dustwallow Marsh,66.44,51.46
+    >>Kill |cRXP_ENEMY_Helenia Olden|r. Loot them for |cRXP_LOOT_Soothing Spices|r
+    .complete 1218,1 --Soothing Spices
+    .mob Helenia Olden
+step
+    .goto Dustwallow Marsh,71.53,51.19
+    >>Loot the |cRXP_PICK_Captain's Documents|r
+    .complete 1202,1 --The Theramore Docks
+step
+    .goto Dustwallow Marsh,55.44,26.27
+    >>Talk to |cRXP_FRIENDLY_"Swamp Eye" Jarl|r
+    .turnin 1218 >>Turn in Soothing Spices
+    .accept 1206 >>Accept Jarl Needs Eyes
+    .target "Swamp Eye" Jarl
 step
     .goto Dustwallow Marsh,37.37,31.39
     >>Talk to |cRXP_FRIENDLY_Tharg|r
     .turnin 1168 >>Turn in Army of the Black Dragon
     .target Tharg
 step
+    .goto Dustwallow Marsh,36.53,30.79
+    >>Talk to |cRXP_FRIENDLY_Do'gol|r
+    .turnin 1322 >>Turn in The Black Shield
+    .accept 1323 >>Accept The Black Shield
+    .target Do'gol
+step
     .goto Dustwallow Marsh,36.29,31.41
     >>Talk to |cRXP_FRIENDLY_Overlord Mok'Morokk|r
     .turnin 1166 >>Turn in Overlord Mok'Morokk's Concern
+    .target Overlord Mok'Morokk
+step
+    .goto Dustwallow Marsh,36.42,31.88
+    >>Talk to |cRXP_FRIENDLY_Krog|r
+    .turnin 1323 >>Turn in The Black Shield
+    .target Krog
+step
+    .goto Dustwallow Marsh,37.15,33.09
+    >>Talk to |cRXP_FRIENDLY_Draz'Zilb|r
+    .turnin 1169 >>Turn in Identifying the Brood
+    .accept 1170 >>Accept The Brood of Onyxia
+    .target Draz'Zilb
+step
+    .goto Dustwallow Marsh,36.29,31.41
+    >>Talk to |cRXP_FRIENDLY_Overlord Mok'Morokk|r
     .turnin 1170 >>Turn in The Brood of Onyxia
     .accept 1171 >>Accept The Brood of Onyxia
     .target Overlord Mok'Morokk
+step
+    .goto Dustwallow Marsh,35.21,30.66
+    >>Talk to |cRXP_FRIENDLY_Nazeer Bloodpike|r
+    .turnin 1202 >>Turn in The Theramore Docks
+    .target Nazeer Bloodpike
 step
     .goto Dustwallow Marsh,37.15,33.09
     >>Talk to |cRXP_FRIENDLY_Draz'Zilb|r
     .turnin 1171 >>Turn in The Brood of Onyxia
     .target Draz'Zilb
 step
-    .goto Dustwallow Marsh,71.53,51.19
-    >>Loot the |cRXP_PICK_Captain's Documents|r
-    .complete 1202,1 --The Theramore Docks
+    .goto Dustwallow Marsh,32.60,22.40
+    >>Kill |cRXP_ENEMY_Darkmist Spider|r and |cRXP_ENEMY_Darkmist Lurker|r and |cRXP_ENEMY_Darkmist Recluse|r. Loot them for |cRXP_LOOT_Unpopped Darkmist Eye|r
+    .complete 1206,1 --Jarl Needs Eyes
+    .mob Darkmist Spider
+    .mob Darkmist Lurker
+    .mob Darkmist Recluse
 step
-    .goto Dustwallow Marsh,35.21,30.66
-    >>Talk to |cRXP_FRIENDLY_Nazeer Bloodpike|r
-    .turnin 1202 >>Turn in The Theramore Docks
-    .target Nazeer Bloodpike
+    .goto Dustwallow Marsh,55.44,26.27
+    >>Talk to |cRXP_FRIENDLY_"Swamp Eye" Jarl|r
+    .turnin 1206 >>Turn in Jarl Needs Eyes
+    .target "Swamp Eye" Jarl
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -851,7 +990,6 @@ step
     .goto Badlands,42.39,52.93
     >>Talk to |cRXP_FRIENDLY_Rigglefuzz|r
     .accept 703 >>Accept Barbecued Buzzard Wings
-    .accept 705 >>Accept Pearl Diving
     .target Rigglefuzz
 step
     .goto Badlands,55.56,53.83
@@ -863,15 +1001,15 @@ step
     .mob Feral Crag Coyote
     .mob Elder Crag Coyote
 step
-    .goto Badlands,41.49,29.75
-    >>Kill |cRXP_ENEMY_Shadowforge Commander|r. Loot them for |cRXP_LOOT_Blue Pearl|r
-    .complete 705,1 --Pearl Diving
-    .mob Shadowforge Commander
+    .goto Badlands,51.39,76.87
+    >>Talk to |cRXP_FRIENDLY_Theldurin the Lost|r
+    .accept 709 >>Accept Solution to Doom
+    .target Theldurin the Lost
 step
-    .goto Badlands,42.39,52.93
-    >>Talk to |cRXP_FRIENDLY_Rigglefuzz|r
-    .turnin 705 >>Turn in Pearl Diving
-    .target Rigglefuzz
+    .goto Badlands,43.32,84.20
+    >>Kill |cRXP_ENEMY_Rock Elemental|r. Loot them for |cRXP_LOOT_Large Stone Slab|r
+    .complete 711,1 --Study of the Elements: Rock
+    .mob Rock Elemental
 step
     .goto Badlands,17.18,60.02
     >>Kill |cRXP_ENEMY_Starving Buzzard|r and |cRXP_ENEMY_Buzzard|r and |cRXP_ENEMY_Giant Buzzard|r. Loot them for |cRXP_LOOT_Buzzard Wing|r
@@ -891,25 +1029,24 @@ step
     .accept 2202 >>Accept Uldaman Reagent Run
     .target Jarkal Mossmeld
 step
-    .goto Badlands,34.04,24.42
-    >>Loot the |cRXP_PICK_Magenta Fungus Cap|r
-    .complete 2202,1 --Uldaman Reagent Run
+    .goto Badlands,25.95,44.87
+    >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
+    .turnin 711 >>Turn in Study of the Elements: Rock
+    .accept 712 >>Accept Study of the Elements: Rock
+    .target Lotwil Veriatus
 step
     .goto Badlands,42.39,52.93
     >>Talk to |cRXP_FRIENDLY_Rigglefuzz|r
     .turnin 703 >>Turn in Barbecued Buzzard Wings
     .target Rigglefuzz
 step
-    .goto Badlands,43.32,84.20
-    >>Kill |cRXP_ENEMY_Rock Elemental|r. Loot them for |cRXP_LOOT_Large Stone Slab|r
-    .complete 711,1 --Study of the Elements: Rock
-    .mob Rock Elemental
+    .goto Badlands,39.34,18.82
+    >>Loot the |cRXP_PICK_Tablet of Ryun'eh|r
+    .complete 709,1 --Solution to Doom
 step
-    .goto Badlands,25.95,44.87
-    >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
-    .turnin 711 >>Turn in Study of the Elements: Rock
-    .accept 712 >>Accept Study of the Elements: Rock
-    .target Lotwil Veriatus
+    .goto Badlands,36.20,12.50
+    >>Loot the |cRXP_PICK_Magenta Fungus Cap|r
+    .complete 2202,1 --Uldaman Reagent Run
 step
     .goto Badlands,2.42,46.06
     >>Talk to |cRXP_FRIENDLY_Jarkal Mossmeld|r
@@ -925,4 +1062,9 @@ step
     >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
     .turnin 712 >>Turn in Study of the Elements: Rock
     .target Lotwil Veriatus
+step
+    .goto Badlands,51.39,76.87
+    >>Talk to |cRXP_FRIENDLY_Theldurin the Lost|r
+    .turnin 709 >>Turn in Solution to Doom
+    .target Theldurin the Lost
 ]])

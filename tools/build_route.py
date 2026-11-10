@@ -106,8 +106,13 @@ def load_dump(path):
         if isinstance(v, dict):
             v = {k: x for k, x in v.items() if k != "n"}  # table.pack's count
             keys = list(v)
-            if keys and all(isinstance(k, int) for k in keys) and sorted(keys) == list(range(1, len(keys) + 1)):
-                return [py(v[k]) for k in range(1, len(keys) + 1)]
+            if keys and all(isinstance(k, int) and k > 0 for k in keys):
+                top = max(keys)
+                # arrays, including ones with nil holes like {id, nil, 0};
+                # tables keyed by zone id (spawns) start above 1 and stay dicts,
+                # like load_db() leaves them
+                if top == len(keys) or (1 in v and top <= 10):
+                    return [py(v.get(k)) for k in range(1, top + 1)]
             return {k: py(x) for k, x in v.items()}
         return v
 

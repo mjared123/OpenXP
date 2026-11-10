@@ -25,6 +25,12 @@ step
     .fp Southshore >>Get the Southshore flight path
     .target Darla Harris
 step
+    .goto Hillsbrad Foothills,46.43,50.20
+    >>Talk to |cRXP_FRIENDLY_Captain McManus|r
+    .accept 98059 >>Accept Hillsbrad's Hoard
+    .turnin 98059 >>Turn in Hillsbrad's Hoard
+    .target Captain McManus
+step
     .goto Hillsbrad Foothills,52.42,55.96
     >>Talk to |cRXP_FRIENDLY_Darren Malvew|r
     .accept 564 >>Accept Costly Menace
@@ -34,6 +40,22 @@ step
     >>Talk to |cRXP_FRIENDLY_Lieutenant Farren Orinelle|r
     .accept 536 >>Accept Down the Coast
     .target Lieutenant Farren Orinelle
+step
+    .goto Hillsbrad Foothills,51.57,58.57
+    >>Talk to |cRXP_FRIENDLY_Barkeep Kelly|r
+    .accept 98463 >>Accept Talk of the Town
+    .target Barkeep Kelly
+step
+    .goto Hillsbrad Foothills,51.89,58.68
+    >>Talk to |cRXP_FRIENDLY_Chef Jessen|r
+    .accept 555 >>Accept Soothing Turtle Bisque
+    .target Chef Jessen
+step
+    .goto Hillsbrad Foothills,52.13,58.74
+    >>Talk to |cRXP_FRIENDLY_Brewmeister Bilger|r
+    .accept 98071 >>Accept Brewer's Trade
+    .turnin 98071 >>Turn in Brewer's Trade
+    .target Brewmeister Bilger
 step
     .goto Hillsbrad Foothills,50.35,59.05
     >>Talk to |cRXP_FRIENDLY_Phin Odelic|r
@@ -49,6 +71,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Magistrate Henry Maleb|r
     .accept 505 >>Accept Syndicate Assassins
     .target Magistrate Henry Maleb
+step
+    .goto Hillsbrad Foothills,48.94,55.03
+    >>Kill |cRXP_ENEMY_Micha Yance|r. Loot them for |cRXP_LOOT_Soothing Spices|r
+    .complete 555,2 --Soothing Turtle Bisque
+    .mob Micha Yance
 step
     .goto Hillsbrad Foothills,43.95,68.65
     >>Kill |cRXP_ENEMY_Torn Fin Oracle|r
@@ -106,10 +133,10 @@ step
     .turnin 562 >>Turn in Stormwind Ho!
     .target Lieutenant Farren Orinelle
 step
-    .goto Hillsbrad Foothills,38.80,24.62
-    >>Kill |cRXP_ENEMY_Mountain Lion|r
-    .complete 564,1 --Costly Menace
-    .mob Mountain Lion
+    .goto Hillsbrad Foothills,68.11,28.94
+    >>Kill |cRXP_ENEMY_Snapjaw|r. Loot them for |cRXP_LOOT_Turtle Meat|r
+    .complete 555,1 --Soothing Turtle Bisque
+    .mob Snapjaw
 step
     .goto Alterac Mountains,58.35,66.70
     >>Kill |cRXP_ENEMY_Syndicate Footpad|r
@@ -118,6 +145,11 @@ step
     .complete 505,2 --Syndicate Assassins
     .mob Syndicate Footpad
     .mob Syndicate Thief
+step
+    .goto Hillsbrad Foothills,38.80,24.62
+    >>Kill |cRXP_ENEMY_Mountain Lion|r
+    .complete 564,1 --Costly Menace
+    .mob Mountain Lion
 step
     .goto Alterac Mountains,52.14,43.96
     >>Kill |cRXP_ENEMY_Crushridge Ogre|r and |cRXP_ENEMY_Crushridge Brute|r. Loot them for |cRXP_LOOT_Dirty Knucklebones|r
@@ -134,6 +166,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Darren Malvew|r
     .turnin 564 >>Turn in Costly Menace
     .target Darren Malvew
+step
+    .goto Hillsbrad Foothills,51.89,58.68
+    >>Talk to |cRXP_FRIENDLY_Chef Jessen|r
+    .turnin 555 >>Turn in Soothing Turtle Bisque
+    .target Chef Jessen
 step
     .goto Hillsbrad Foothills,49.47,58.73
     >>Talk to |cRXP_FRIENDLY_Marshal Redpath|r
@@ -170,6 +207,11 @@ step
     .accept 681 >>Accept Northfold Manor
     .target Captain Nials
 step
+    .goto Arathi Highlands,46.20,47.75
+    >>Talk to |cRXP_FRIENDLY_Apprentice Kryten|r
+    .accept 691 >>Accept Worth Its Weight in Gold
+    .target Apprentice Kryten
+step
     .goto Arathi Highlands,60.18,53.85
     >>Talk to |cRXP_FRIENDLY_Quae|r
     .turnin 659 >>Turn in Hints of a New Plague?
@@ -191,6 +233,41 @@ step
     >>Talk to |cRXP_FRIENDLY_Kinelory|r
     .turnin 657 >>Turn in Hints of a New Plague?
     .target Kinelory
+step
+    .goto Arathi Highlands,71.56,67.11
+    >>Kill |cRXP_ENEMY_Witherbark Witch Doctor|r. Loot them for |cRXP_LOOT_Witherbark Medicine Pouch|r
+    .complete 691,2 --Worth Its Weight in Gold
+    .mob Witherbark Witch Doctor
+step
+    .goto Arathi Highlands,68.29,80.06
+    >>Kill |cRXP_ENEMY_Witherbark Shadow Hunter|r. Loot them for |cRXP_LOOT_Shadow Hunter Knife|r
+    >>Kill |cRXP_ENEMY_Witherbark Troll|r and |cRXP_ENEMY_Witherbark Shadowcaster|r and |cRXP_ENEMY_Witherbark Axe Thrower|r. Loot them for |cRXP_LOOT_Witherbark Tusk|r
+    .complete 691,3 --Worth Its Weight in Gold
+    .complete 691,1 --Worth Its Weight in Gold
+    .mob Witherbark Shadow Hunter
+    .mob Witherbark Troll
+    .mob Witherbark Shadowcaster
+    .mob Witherbark Axe Thrower
+step
+    .goto Arathi Highlands,31.78,82.68
+    >>Talk to |cRXP_FRIENDLY_Lolo the Lookout|r
+    .accept 663 >>Accept Land Ho!
+    .target Lolo the Lookout
+step
+    .goto Arathi Highlands,32.28,81.38
+    >>Talk to |cRXP_FRIENDLY_Shakes O'Breen|r
+    .turnin 663 >>Turn in Land Ho!
+    .target Shakes O'Breen
+step
+    .goto Arathi Highlands,46.20,47.75
+    >>Talk to |cRXP_FRIENDLY_Apprentice Kryten|r
+    .turnin 691 >>Turn in Worth Its Weight in Gold
+    .target Apprentice Kryten
+step
+    .goto Arathi Highlands,46.65,47.01
+    >>Talk to |cRXP_FRIENDLY_Skuerto|r
+    .accept 693 >>Accept Wand over Fist
+    .target Skuerto
 step
     .goto Arathi Highlands,62.50,33.73
     >>Click the |cRXP_PICK_Shards of Myzrael|r
@@ -227,9 +304,8 @@ step
     .mob Syndicate Mercenary
 step
     .goto Arathi Highlands,25.46,30.11
-    >>Kill |cRXP_ENEMY_Burning Exile|r. Loot them for |cRXP_LOOT_Burning Key|r
+    >>Loot the |cRXP_PICK_Burning Key|r
     .complete 651,1 --Stones of Binding
-    .mob Burning Exile
 step
     .goto Arathi Highlands,45.83,47.56
     >>Talk to |cRXP_FRIENDLY_Captain Nials|r
@@ -240,15 +316,15 @@ step
     >>Click the |cRXP_PICK_Stone of Inner Binding|r
     .turnin 651 >>Turn in Stones of Binding
 step
-    .goto Arathi Highlands,31.78,82.68
-    >>Talk to |cRXP_FRIENDLY_Lolo the Lookout|r
-    .accept 663 >>Accept Land Ho!
-    .target Lolo the Lookout
+    .goto Arathi Highlands,54.75,81.87
+    >>Kill |cRXP_ENEMY_Kor'gresh Coldrage|r. Loot them for |cRXP_LOOT_Trelane's Wand of Invocation|r
+    .complete 693,1 --Wand over Fist
+    .mob Kor'gresh Coldrage
 step
-    .goto Arathi Highlands,32.28,81.38
-    >>Talk to |cRXP_FRIENDLY_Shakes O'Breen|r
-    .turnin 663 >>Turn in Land Ho!
-    .target Shakes O'Breen
+    .goto Arathi Highlands,46.65,47.01
+    >>Talk to |cRXP_FRIENDLY_Skuerto|r
+    .turnin 693 >>Turn in Wand over Fist
+    .target Skuerto
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -265,11 +341,6 @@ step
     #completewith next
     .zone Stranglethorn Vale >>Fly to Ironforge, take the Deeprun Tram to Stormwind, fly to Darkshire and ride south to the Rebel Camp in Stranglethorn Vale
 step
-    .goto Stranglethorn Vale,37.98,3.41
-    >>Talk to |cRXP_FRIENDLY_Private Thorsen|r
-    .accept 215 >>Accept Jungle Secrets
-    .target Private Thorsen
-step
     .goto Stranglethorn Vale,38.02,3.33
     >>Talk to |cRXP_FRIENDLY_Sergeant Yohwa|r
     .accept 203 >>Accept The Second Rebellion
@@ -280,6 +351,35 @@ step
     >>Talk to |cRXP_FRIENDLY_Corporal Kaleb|r
     .accept 210 >>Accept Krazek's Cookery
     .target Corporal Kaleb
+step
+    .goto Stranglethorn Vale,40.34,8.44
+    >>Talk to |cRXP_FRIENDLY_Private Thorsen|r
+    .accept 215 >>Accept Jungle Secrets
+    .target Private Thorsen
+step
+    .goto Stranglethorn Vale,44.10,9.54
+    >>Loot the |cRXP_PICK_Venom Fern Extract|r
+    >>Kill |cRXP_ENEMY_Kurzen Jungle Fighter|r
+    >>Kill |cRXP_ENEMY_Kurzen Medicine Man|r and |cRXP_ENEMY_Kurzen Headshrinker|r and |cRXP_ENEMY_Kurzen Witch Doctor|r. Loot them for |cRXP_LOOT_Jungle Remedy|r
+    .complete 204,2 --Bad Medicine
+    .complete 203,1 --The Second Rebellion
+    .complete 204,1 --Bad Medicine
+    .mob Kurzen Jungle Fighter
+    .mob Kurzen Medicine Man
+    .mob Kurzen Headshrinker
+    .mob Kurzen Witch Doctor
+step
+    .goto Stranglethorn Vale,38.02,3.33
+    >>Talk to |cRXP_FRIENDLY_Sergeant Yohwa|r
+    .turnin 203 >>Turn in The Second Rebellion
+    .turnin 204 >>Turn in Bad Medicine
+    .accept 574 >>Accept Special Forces
+    .target Sergeant Yohwa
+step
+    .goto Stranglethorn Vale,37.83,3.56
+    >>Talk to |cRXP_FRIENDLY_Brother Nimetz|r
+    .accept 207 >>Accept Kurzen's Mystery
+    .target Brother Nimetz
 step
     .goto Stranglethorn Vale,38.04,3.01
     >>Talk to |cRXP_FRIENDLY_Lieutenant Doren|r
@@ -329,67 +429,35 @@ step
     .turnin 200 >>Turn in Bookie Herod
     .accept 328 >>Accept The Hidden Key
 step
-    .goto Stranglethorn Vale,44.10,9.54
-    >>Kill |cRXP_ENEMY_Kurzen Jungle Fighter|r and |cRXP_ENEMY_Kurzen Medicine Man|r and |cRXP_ENEMY_Kurzen Headshrinker|r. Loot them for |cRXP_LOOT_Jungle Remedy|r
-    >>Loot the |cRXP_PICK_Venom Fern Extract|r
-    >>Kill |cRXP_ENEMY_Kurzen Jungle Fighter|r
-    .complete 204,1 --Bad Medicine
-    .complete 204,2 --Bad Medicine
-    .complete 203,1 --The Second Rebellion
-    .mob Kurzen Jungle Fighter
-    .mob Kurzen Medicine Man
+    .goto Stranglethorn Vale,45.93,7.90
+    >>Kill |cRXP_ENEMY_Kurzen Headshrinker|r
+    >>Kill |cRXP_ENEMY_Kurzen Commando|r
+    .complete 574,2 --Special Forces
+    .complete 574,1 --Special Forces
     .mob Kurzen Headshrinker
-step
-    .goto Stranglethorn Vale,46.58,14.40
-    >>Kill |cRXP_ENEMY_Stranglethorn Tiger|r
-    .complete 186,1 --Tiger Mastery
-    .mob Stranglethorn Tiger
+    .mob Kurzen Commando
 step
     .goto Stranglethorn Vale,49.62,7.56
     >>Click the |cRXP_PICK_Bookie Herod's Strongbox|r
     .turnin 328 >>Turn in The Hidden Key
     .accept 329 >>Accept The Spy Revealed!
 step
-    .goto Stranglethorn Vale,38.02,3.33
-    >>Talk to |cRXP_FRIENDLY_Sergeant Yohwa|r
-    .turnin 203 >>Turn in The Second Rebellion
-    .turnin 204 >>Turn in Bad Medicine
-    .accept 574 >>Accept Special Forces
-    .target Sergeant Yohwa
-step
-    .goto Stranglethorn Vale,37.83,3.56
-    >>Talk to |cRXP_FRIENDLY_Brother Nimetz|r
-    .accept 207 >>Accept Kurzen's Mystery
-    .target Brother Nimetz
-step
-    .goto Stranglethorn Vale,38.04,3.01
-    >>Talk to |cRXP_FRIENDLY_Lieutenant Doren|r
-    .turnin 329 >>Turn in The Spy Revealed!
-    .accept 330 >>Accept Patrol Schedules
-    .target Lieutenant Doren
-step
-    .goto Stranglethorn Vale,37.66,3.39
-    >>Talk to |cRXP_FRIENDLY_Corporal Sethman|r
-    .turnin 330 >>Turn in Patrol Schedules
-    .accept 331 >>Accept Report to Doren
-    .target Corporal Sethman
-step
-    .goto Stranglethorn Vale,38.04,3.01
-    >>Talk to |cRXP_FRIENDLY_Lieutenant Doren|r
-    .turnin 331 >>Turn in Report to Doren
-    .target Lieutenant Doren
-step
-    .goto Stranglethorn Vale,35.55,10.55
-    >>Talk to |cRXP_FRIENDLY_Sir S. J. Erlgadin|r
-    .turnin 190 >>Turn in Panther Mastery
-    .accept 191 >>Accept Panther Mastery
-    .target Sir S. J. Erlgadin
+    .goto Stranglethorn Vale,46.40,14.40
+    >>Kill |cRXP_ENEMY_Stranglethorn Tiger|r
+    .complete 186,1 --Tiger Mastery
+    .mob Stranglethorn Tiger
 step
     .goto Stranglethorn Vale,35.62,10.62
     >>Talk to |cRXP_FRIENDLY_Ajeck Rouack|r
     .turnin 186 >>Turn in Tiger Mastery
     .accept 187 >>Accept Tiger Mastery
     .target Ajeck Rouack
+step
+    .goto Stranglethorn Vale,35.55,10.55
+    >>Talk to |cRXP_FRIENDLY_Sir S. J. Erlgadin|r
+    .turnin 190 >>Turn in Panther Mastery
+    .accept 191 >>Accept Panther Mastery
+    .target Sir S. J. Erlgadin
 step
     .goto Stranglethorn Vale,29.45,13.59
     >>Kill |cRXP_ENEMY_Panther|r
@@ -421,6 +489,24 @@ step
     .accept 195 >>Accept Raptor Mastery
     .target Hemet Nesingwary
 step
+    .goto Stranglethorn Vale,38.04,3.01
+    >>Talk to |cRXP_FRIENDLY_Lieutenant Doren|r
+    .turnin 329 >>Turn in The Spy Revealed!
+    .accept 330 >>Accept Patrol Schedules
+    .turnin 574 >>Turn in Special Forces
+    .target Lieutenant Doren
+step
+    .goto Stranglethorn Vale,37.66,3.39
+    >>Talk to |cRXP_FRIENDLY_Corporal Sethman|r
+    .turnin 330 >>Turn in Patrol Schedules
+    .accept 331 >>Accept Report to Doren
+    .target Corporal Sethman
+step
+    .goto Stranglethorn Vale,38.04,3.01
+    >>Talk to |cRXP_FRIENDLY_Lieutenant Doren|r
+    .turnin 331 >>Turn in Report to Doren
+    .target Lieutenant Doren
+step
     .goto Stranglethorn Vale,33.53,18.31
     >>Kill |cRXP_ENEMY_Elder Stranglethorn Tiger|r
     .complete 187,1 --Tiger Mastery
@@ -435,7 +521,7 @@ step
     .complete 195,1 --Raptor Mastery
     .mob Lashtail Raptor
 step
-    .goto Stranglethorn Vale,24.82,23.03
+    .goto Stranglethorn Vale,24.77,22.88
     >>Loot the |cRXP_PICK_The Second Troll Legend|r
     .complete 207,2 --Kurzen's Mystery
 step
@@ -455,19 +541,6 @@ step
     .turnin 207 >>Turn in Kurzen's Mystery
     .accept 205 >>Accept Troll Witchery
     .target Brother Nimetz
-step
-    .goto Stranglethorn Vale,45.93,7.90
-    >>Kill |cRXP_ENEMY_Kurzen Headshrinker|r
-    >>Kill |cRXP_ENEMY_Kurzen Commando|r
-    .complete 574,2 --Special Forces
-    .complete 574,1 --Special Forces
-    .mob Kurzen Headshrinker
-    .mob Kurzen Commando
-step
-    .goto Stranglethorn Vale,38.04,3.01
-    >>Talk to |cRXP_FRIENDLY_Lieutenant Doren|r
-    .turnin 574 >>Turn in Special Forces
-    .target Lieutenant Doren
 step
     .goto Stranglethorn Vale,32.21,17.39
     >>Kill |cRXP_ENEMY_Sin'Dall|r. Loot them for |cRXP_LOOT_Paw of Sin'Dall|r
@@ -506,17 +579,22 @@ step
     .accept 213 >>Accept Hostile Takeover
     .target Kebok
 step
-    .goto Stranglethorn Vale,26.94,77.21
-    >>Talk to |cRXP_FRIENDLY_Krazek|r
-    .accept 198 >>Accept Supplies to Private Thorsen
-    .turnin 210 >>Turn in Krazek's Cookery
-    .accept 616 >>Accept The Haunted Isle
-    .target Krazek
+    .goto Stranglethorn Vale,27.04,77.17
+    >>Talk to |cRXP_FRIENDLY_Nixxrax Fillamug|r
+    .turnin 98463 >>Turn in Talk of the Town
+    .target Nixxrax Fillamug
 step
     .goto Stranglethorn Vale,27.12,77.21
     >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
     .accept 605 >>Accept Singing Blue Shards
     .target Crank Fizzlebub
+step
+    .goto Stranglethorn Vale,26.95,77.21
+    >>Talk to |cRXP_FRIENDLY_Krazek|r
+    .accept 198 >>Accept Supplies to Private Thorsen
+    .turnin 210 >>Turn in Krazek's Cookery
+    .accept 616 >>Accept The Haunted Isle
+    .target Krazek
 step
     .goto Stranglethorn Vale,27.23,76.87
     >>Talk to |cRXP_FRIENDLY_Baron Revilgaz|r
@@ -540,15 +618,15 @@ step
     .complete 213,1 --Hostile Takeover
     .mob Venture Co. Geologist
 step
+    .goto Stranglethorn Vale,40.34,8.44
+    >>Talk to |cRXP_FRIENDLY_Private Thorsen|r
+    .turnin 198 >>Turn in Supplies to Private Thorsen
+    .target Private Thorsen
+step
     .goto Stranglethorn Vale,36.85,10.51
     >>Kill |cRXP_ENEMY_River Crocolisk|r. Loot them for |cRXP_LOOT_Large River Crocolisk Skin|r
     .complete 575,1 --Supply and Demand
     .mob River Crocolisk
-step
-    .goto Stranglethorn Vale,37.98,3.41
-    >>Talk to |cRXP_FRIENDLY_Private Thorsen|r
-    .turnin 198 >>Turn in Supplies to Private Thorsen
-    .target Private Thorsen
 step
     .goto Stranglethorn Vale,24.40,11.18
     >>Kill |cRXP_ENEMY_Bloodscalp Warrior|r and |cRXP_ENEMY_Bloodscalp Scout|r and |cRXP_ENEMY_Bloodscalp Hunter|r. Loot them for |cRXP_LOOT_Bloodscalp Ear|r
@@ -609,14 +687,58 @@ step
     .accept 1282 >>Accept They Call Him Smiling Jim
     .target Guard Byron
 step
+    .goto Dustwallow Marsh,66.34,45.47
+    >>Talk to |cRXP_FRIENDLY_Morgan Stern|r
+    .accept 1204 >>Accept Mudrock Soup and Bugs
+    .target Morgan Stern
+step
     .goto Dustwallow Marsh,68.21,48.62
     >>Talk to |cRXP_FRIENDLY_Captain Garran Vimes|r
     .turnin 1282 >>Turn in They Call Him Smiling Jim
     .target Captain Garran Vimes
 step
+    .goto Dustwallow Marsh,59.80,54.40
+    >>Kill |cRXP_ENEMY_Mudrock Tortoise|r and |cRXP_ENEMY_Mudrock Spikeshell|r and |cRXP_ENEMY_Mudrock Burrower|r. Loot them for |cRXP_LOOT_Forked Mudrock Tongue|r
+    .complete 1204,1 --Mudrock Soup and Bugs
+    .mob Mudrock Tortoise
+    .mob Mudrock Spikeshell
+    .mob Mudrock Burrower
+step
+    .goto Dustwallow Marsh,66.34,45.47
+    >>Talk to |cRXP_FRIENDLY_Morgan Stern|r
+    .turnin 1204 >>Turn in Mudrock Soup and Bugs
+    .target Morgan Stern
+step
+    .goto Dustwallow Marsh,55.44,26.27
+    >>Talk to |cRXP_FRIENDLY_"Swamp Eye" Jarl|r
+    .accept 1218 >>Accept Soothing Spices
+    .target "Swamp Eye" Jarl
+step
     .goto Dustwallow Marsh,55.44,25.92
     >>Click the |cRXP_PICK_Loose Dirt|r
     .accept 1219 >>Accept The Orc Report
+step
+    .goto Dustwallow Marsh,65.00,47.00
+    >>Talk to |cRXP_FRIENDLY_Theramore Lieutenant|r
+    .turnin 1219 >>Turn in The Orc Report
+    .accept 1220 >>Accept Captain Vimes
+    .target Theramore Lieutenant
+step
+    .goto Dustwallow Marsh,68.21,48.62
+    >>Talk to |cRXP_FRIENDLY_Captain Garran Vimes|r
+    .turnin 1220 >>Turn in Captain Vimes
+    .target Captain Garran Vimes
+step
+    .goto Dustwallow Marsh,66.44,51.46
+    >>Kill |cRXP_ENEMY_Helenia Olden|r. Loot them for |cRXP_LOOT_Soothing Spices|r
+    .complete 1218,1 --Soothing Spices
+    .mob Helenia Olden
+step
+    .goto Dustwallow Marsh,55.44,26.27
+    >>Talk to |cRXP_FRIENDLY_"Swamp Eye" Jarl|r
+    .turnin 1218 >>Turn in Soothing Spices
+    .accept 1206 >>Accept Jarl Needs Eyes
+    .target "Swamp Eye" Jarl
 step
     .goto Dustwallow Marsh,35.15,38.26
     >>Talk to |cRXP_FRIENDLY_Mudcrush Durtfeet|r
@@ -624,7 +746,7 @@ step
     .target Mudcrush Durtfeet
 step
     .goto Dustwallow Marsh,29.70,47.64
-    >>Click the |cRXP_PICK_Suspicious Hoofprint|r
+    >>Click the |cRXP_PICK_Hoofprints|r
     .accept 1284 >>Accept Suspicious Hoofprints
 step
     .goto Dustwallow Marsh,29.83,48.24
@@ -635,15 +757,32 @@ step
     >>Click the |cRXP_PICK_Black Shield|r
     .accept 1253 >>Accept The Black Shield
 step
-    .goto Dustwallow Marsh,67.07,53.22
-    >>Talk to |cRXP_FRIENDLY_Theramore Lieutenant|r
-    .turnin 1219 >>Turn in The Orc Report
-    .accept 1220 >>Accept Captain Vimes
-    .target Theramore Lieutenant
+    .goto Dustwallow Marsh,32.60,22.40
+    >>Kill |cRXP_ENEMY_Darkmist Spider|r and |cRXP_ENEMY_Darkmist Lurker|r and |cRXP_ENEMY_Darkmist Recluse|r. Loot them for |cRXP_LOOT_Unpopped Darkmist Eye|r
+    .complete 1206,1 --Jarl Needs Eyes
+    .mob Darkmist Spider
+    .mob Darkmist Lurker
+    .mob Darkmist Recluse
+step
+    .goto Dustwallow Marsh,55.44,26.27
+    >>Talk to |cRXP_FRIENDLY_"Swamp Eye" Jarl|r
+    .turnin 1206 >>Turn in Jarl Needs Eyes
+    .target "Swamp Eye" Jarl
+step
+    .goto Dustwallow Marsh,59.60,9.20
+    >>Kill |cRXP_ENEMY_Mirefin Oracle|r and |cRXP_ENEMY_Mirefin Coastrunner|r and |cRXP_ENEMY_Mirefin Warrior|r. Loot them for |cRXP_LOOT_Mirefin Head|r
+    .complete 1177,1 --Hungry!
+    .mob Mirefin Oracle
+    .mob Mirefin Coastrunner
+    .mob Mirefin Warrior
+step
+    .goto Dustwallow Marsh,35.15,38.26
+    >>Talk to |cRXP_FRIENDLY_Mudcrush Durtfeet|r
+    .turnin 1177 >>Turn in Hungry!
+    .target Mudcrush Durtfeet
 step
     .goto Dustwallow Marsh,68.21,48.62
     >>Talk to |cRXP_FRIENDLY_Captain Garran Vimes|r
-    .turnin 1220 >>Turn in Captain Vimes
     .turnin 1252 >>Turn in Lieutenant Paval Reethe
     .turnin 1253 >>Turn in The Black Shield
     .accept 1259 >>Accept Lieutenant Paval Reethe
@@ -684,18 +823,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Captain Garran Vimes|r
     .turnin 1287 >>Turn in The Deserters
     .target Captain Garran Vimes
-step
-    .goto Dustwallow Marsh,57.13,15.03
-    >>Kill |cRXP_ENEMY_Mirefin Murloc|r and |cRXP_ENEMY_Mirefin Muckdweller|r and |cRXP_ENEMY_Mirefin Coastrunner|r. Loot them for |cRXP_LOOT_Mirefin Head|r
-    .complete 1177,1 --Hungry!
-    .mob Mirefin Murloc
-    .mob Mirefin Muckdweller
-    .mob Mirefin Coastrunner
-step
-    .goto Dustwallow Marsh,35.15,38.26
-    >>Talk to |cRXP_FRIENDLY_Mudcrush Durtfeet|r
-    .turnin 1177 >>Turn in Hungry!
-    .target Mudcrush Durtfeet
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -772,12 +899,10 @@ step
 step
     .goto Thousand Needles,75.49,57.37
     >>Kill |cRXP_ENEMY_Saltstone Basilisk|r
-    .complete 1175,1 --A Bump in the Road
-    .mob Saltstone Basilisk
-step
-    .goto Thousand Needles,70.60,59.13
     >>Loot the |cRXP_PICK_Rocket Car Parts|r
+    .complete 1175,1 --A Bump in the Road
     .complete 1110,1 --Rocket Car Parts
+    .mob Saltstone Basilisk
 step
     .goto Thousand Needles,80.18,75.88
     >>Talk to |cRXP_FRIENDLY_Pozzik|r
@@ -827,6 +952,11 @@ step
     .fp Nijel's Point >>Get the Nijel's Point flight path
     .target Baritanas Skyriver
 step
+    .goto Desolace,66.66,10.93
+    >>Talk to |cRXP_FRIENDLY_Captain Pentigast|r
+    .accept 93224 >>Accept Carved Centaur Totems
+    .target Captain Pentigast
+step
     .goto Desolace,66.74,10.87
     >>Talk to |cRXP_FRIENDLY_Corporal Melkins|r
     .accept 1387 >>Accept Centaur Bounty
@@ -874,46 +1004,43 @@ step
     .accept 5501 >>Accept Bone Collector
     .target Bibbly F'utzbuckle
 step
-    .goto Desolace,50.79,58.70
+    .goto Desolace,60.86,61.86
+    >>Talk to |cRXP_FRIENDLY_Smeed Scrabblescrew|r
+    .accept 5561 >>Accept Kodo Roundup
+    .target Smeed Scrabblescrew
+step
+    .goto Desolace,51.47,59.16
+    >>Aged Kodo
     >>Loot the |cRXP_PICK_Kodo Bone|r
+    .complete 5561,1 --Kodo Roundup
     .complete 5501,1 --Bone Collector
+    .mob Aged Kodo
+    .mob Dying Kodo
+    .mob Ancient Kodo
 step
-    .goto Desolace,62.33,38.99
-    >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
-    .turnin 5501 >>Turn in Bone Collector
-    .target Bibbly F'utzbuckle
+    .goto Desolace,47.83,61.83
+    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
+    .accept 6134 >>Accept Ghost-o-plasm Round Up
+    .target Hornizz Brimbuzzle
 step
-    .goto Desolace,38.88,27.16
-    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
-    .accept 5741 >>Accept Sceptre of Light
-    .target Azore Aldamort
+    .goto Desolace,60.86,61.86
+    >>Talk to |cRXP_FRIENDLY_Smeed Scrabblescrew|r
+    .turnin 5561 >>Turn in Kodo Roundup
+    .target Smeed Scrabblescrew
 step
-    .goto Desolace,36.07,30.41
-    >>Click the |cRXP_PICK_Rackmore's Log|r
-    .accept 6161 >>Accept Claim Rackmore's Treasure!
+    .goto Desolace,74.97,68.16
+    >>Talk to |cRXP_FRIENDLY_Warug|r
+    .accept 92743 >>Accept A Conqueror's Crown
+    .turnin 92743 >>Turn in A Conqueror's Crown
+    .target Warug
 step
-    .goto Desolace,55.17,30.15
-    >>Kill |cRXP_ENEMY_Burning Blade Seer|r. Loot them for |cRXP_LOOT_Sceptre of Light|r
-    .complete 5741,1 --Sceptre of Light
-    .mob Burning Blade Seer
-step
-    .goto Desolace,38.88,27.16
-    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
-    .turnin 5741 >>Turn in Sceptre of Light
-    .target Azore Aldamort
-step
-    .goto Desolace,30.24,8.83
-    >>Kill |cRXP_ENEMY_Slitherblade Naga|r and |cRXP_ENEMY_Slitherblade Sorceress|r and |cRXP_ENEMY_Slitherblade Warrior|r. Loot them for |cRXP_LOOT_Rackmore's Golden Key|r
-    .complete 6161,2 --Claim Rackmore's Treasure!
-    .mob Slitherblade Naga
-    .mob Slitherblade Sorceress
-    .mob Slitherblade Warrior
-step
-    .goto Desolace,23.26,80.34
-    >>Kill |cRXP_ENEMY_Drysnap Crawler|r and |cRXP_ENEMY_Drysnap Pincer|r. Loot them for |cRXP_LOOT_Rackmore's Silver Key|r
-    .complete 6161,1 --Claim Rackmore's Treasure!
-    .mob Drysnap Crawler
-    .mob Drysnap Pincer
+    .goto Desolace,63.03,90.00
+    >>Kill |cRXP_ENEMY_Undead Ravager|r
+    >>Kill |cRXP_ENEMY_Magrami Spectre|r. Loot them for |cRXP_LOOT_Ghost-o-plasm|r
+    .complete 261,1 --Down the Scarlet Path
+    .complete 6134,1 --Ghost-o-plasm Round Up
+    .mob Undead Ravager
+    .mob Magrami Spectre
 step
     .goto Desolace,38.68,93.36
     >>Kill |cRXP_ENEMY_Kolkar Centaur|r and |cRXP_ENEMY_Kolkar Scout|r and |cRXP_ENEMY_Kolkar Mauler|r. Loot them for |cRXP_LOOT_Centaur Ear|r
@@ -922,10 +1049,62 @@ step
     .mob Kolkar Scout
     .mob Kolkar Mauler
 step
-    .goto Desolace,63.03,90.00
-    >>Kill |cRXP_ENEMY_Undead Ravager|r
-    .complete 261,1 --Down the Scarlet Path
-    .mob Undead Ravager
+    .goto Desolace,47.83,61.83
+    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
+    .turnin 6134 >>Turn in Ghost-o-plasm Round Up
+    .target Hornizz Brimbuzzle
+step
+    .goto Desolace,32.17,55.50
+    >>Kill |cRXP_ENEMY_Maraudine Scout|r and |cRXP_ENEMY_Maraudine Wrangler|r and |cRXP_ENEMY_Maraudine Mauler|r. Loot them for |cRXP_LOOT_Carved Centaur Totem|r
+    .complete 93224,1 --Carved Centaur Totems
+    .mob Maraudine Scout
+    .mob Maraudine Wrangler
+    .mob Maraudine Mauler
+step
+    .goto Desolace,36.07,30.41
+    >>Click the |cRXP_PICK_Rackmore's Log|r
+    .accept 6161 >>Accept Claim Rackmore's Treasure!
+step
+    .goto Desolace,38.88,27.16
+    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
+    .accept 5741 >>Accept Sceptre of Light
+    .target Azore Aldamort
+step
+    .goto Desolace,55.17,30.15
+    >>Kill |cRXP_ENEMY_Burning Blade Seer|r. Loot them for |cRXP_LOOT_Sceptre of Light|r
+    .complete 5741,1 --Sceptre of Light
+    .mob Burning Blade Seer
+step
+    .goto Desolace,62.33,38.99
+    >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
+    .turnin 5501 >>Turn in Bone Collector
+    .target Bibbly F'utzbuckle
+step
+    .goto Desolace,38.88,27.16
+    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
+    .turnin 5741 >>Turn in Sceptre of Light
+    .accept 6027 >>Accept Book of the Ancients
+    .target Azore Aldamort
+step
+    .goto Desolace,30.24,8.83
+    >>Kill |cRXP_ENEMY_Slitherblade Naga|r and |cRXP_ENEMY_Slitherblade Sorceress|r and |cRXP_ENEMY_Slitherblade Warrior|r. Loot them for |cRXP_LOOT_Rackmore's Golden Key|r
+    >>Kill |cRXP_ENEMY_Lord Kragaru|r. Loot them for |cRXP_LOOT_Book of the Ancients|r
+    .complete 6161,2 --Claim Rackmore's Treasure!
+    .complete 6027,1 --Book of the Ancients
+    .mob Slitherblade Naga
+    .mob Slitherblade Sorceress
+    .mob Slitherblade Warrior
+    .mob Lord Kragaru
+step
+    .goto Desolace,38.88,27.16
+    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
+    .turnin 6027 >>Turn in Book of the Ancients
+    .target Azore Aldamort
+step
+    .goto Desolace,66.66,10.93
+    >>Talk to |cRXP_FRIENDLY_Captain Pentigast|r
+    .turnin 93224 >>Turn in Carved Centaur Totems
+    .target Captain Pentigast
 step
     .goto Desolace,66.74,10.87
     >>Talk to |cRXP_FRIENDLY_Corporal Melkins|r
@@ -936,6 +1115,12 @@ step
     >>Talk to |cRXP_FRIENDLY_Brother Anton|r
     .turnin 261 >>Turn in Down the Scarlet Path
     .target Brother Anton
+step
+    .goto Desolace,23.26,80.34
+    >>Kill |cRXP_ENEMY_Drysnap Crawler|r and |cRXP_ENEMY_Drysnap Pincer|r. Loot them for |cRXP_LOOT_Rackmore's Silver Key|r
+    .complete 6161,1 --Claim Rackmore's Treasure!
+    .mob Drysnap Crawler
+    .mob Drysnap Pincer
 step
     .goto Desolace,30.00,8.71
     >>Click the |cRXP_PICK_Rackmore's Chest|r
@@ -992,16 +1177,16 @@ step
     .turnin 595 >>Turn in The Bloodsail Buccaneers
     .accept 597 >>Accept The Bloodsail Buccaneers
 step
-    .goto Stranglethorn Vale,28.59,75.90
-    >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
-    .accept 576 >>Accept Keep An Eye Out
-    .target Dizzy One-Eye
-step
     .goto Stranglethorn Vale,28.10,76.22
     >>Talk to |cRXP_FRIENDLY_First Mate Crazz|r
     .turnin 597 >>Turn in The Bloodsail Buccaneers
     .accept 599 >>Accept The Bloodsail Buccaneers
     .target First Mate Crazz
+step
+    .goto Stranglethorn Vale,28.59,75.90
+    >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
+    .accept 576 >>Accept Keep An Eye Out
+    .target Dizzy One-Eye
 step
     .goto Stranglethorn Vale,27.17,77.01
     >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
@@ -1034,9 +1219,10 @@ step
     .mob Elder Mistvale Gorilla
 step
     .goto Stranglethorn Vale,26.20,62.42
-    >>Kill |cRXP_ENEMY_Naga Explorer|r. Loot them for |cRXP_LOOT_Akiris Reed|r
+    >>Kill |cRXP_ENEMY_Naga Explorer|r and |cRXP_ENEMY_Brinescale Skirmisher|r. Loot them for |cRXP_LOOT_Akiris Reed|r
     .complete 617,1 --Akiris by the Bundle
     .mob Naga Explorer
+    .mob Brinescale Skirmisher
 step
     .goto Stranglethorn Vale,26.90,73.59
     >>Talk to |cRXP_FRIENDLY_"Shaky" Phillipe|r

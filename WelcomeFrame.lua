@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.2.0-beta",
+        date = "November 2026",
+        changes = {
+            "Levels 21-40 guides rebuilt with WoW Forever's own quests included (from Questie). About 50 more quests across Wetlands, Duskwood, Stranglethorn, Desolace, Hillsbrad and Badlands, nothing taken out",
+            "Horde 38-40 Badlands section now has its quests",
+        },
+    },
+    {
         version = "1.1.9-beta",
         date = "November 2026",
         changes = {
