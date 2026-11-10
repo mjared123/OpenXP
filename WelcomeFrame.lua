@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.1-beta",
+        date = "November 2026",
+        changes = {
+            "The arrow now walks you around caves and cliffs. When a quest is inside a cave or up on a ridge, it first points at the entrance or the bottom of the ramp (\"Enter Jasperlode Mine\"), then at the quest. Leaving a cave works the same way",
+            "OpenXP learns cave entrances by itself: walk into a cave once and the arrow uses that entrance from then on",
+            "New /oxp path command: stand at a ramp, pass or cave mouth and type /oxp path add to save it as a stepping stone toward the arrow's target, then /oxp path done. /oxp path off turns all of this off",
+        },
+    },
+    {
         version = "1.3.0-beta",
         date = "November 2026",
         changes = {

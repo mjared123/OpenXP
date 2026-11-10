@@ -2105,7 +2105,8 @@ local function ArrowUpdate(self, ...)
     if not af.oxpDist then return end
     ArrowSizes(af)
     local dist = af.distance or 0
-    local element = af.element
+    -- a stepping stone from PathHints.lua (cave entrance, ramp) when there is one
+    local element = af.oxpVia or af.element
     local here = element and dist <= 8
     if here then
         af.texture:Hide()

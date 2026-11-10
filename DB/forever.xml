@@ -11,5 +11,6 @@
     <Script file="DB/forever/StatWeights.lua"/>
     <Script file="DB/forever/SpiritHealerDB.lua"/>
     <Script file="DB/questDB.lua"/>
+    <Script file="DB/pathHints.lua"/>
 
 </Ui>

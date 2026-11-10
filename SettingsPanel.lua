@@ -128,6 +128,8 @@ function addon.settings.ChatCommand(input)
         addon.questDump.Run()
     elseif input == "questdump clear" then
         addon.questDump.Clear()
+    elseif input == "path" or input:match("^path%s") then
+        if addon.pathHints then addon.pathHints.Command(input:sub(5)) end
     elseif input == "catchup" then
         addon.smartStart.ShowCatchUp()
     elseif input == "help" then
