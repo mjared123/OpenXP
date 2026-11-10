@@ -97,19 +97,29 @@ def load_dump(path):
     variable in WTF/Account/<name>/SavedVariables/OpenXP.lua). It has what the
     installed Questie knows, including WoW Forever quests that Questie's
     public data files don't have yet. Same row layout as load_db()."""
-    rt = lupa.LuaRuntime(unpack_returned_tuples=True)
-    rt.execute(open(path, encoding="utf-8").read())
-    d = rt.globals().OXPQuestieDump
-    if d is None:
+    import savedvars  # the file is too big for Lua's constant limit
+    d = savedvars.load(path, only="OXPQuestieDump").get("OXPQuestieDump")
+    if not d:
         raise SystemExit("no OXPQuestieDump in %s: run /oxp questdump in game, then /reload" % path)
+
+    def py(v):
+        if isinstance(v, dict):
+            v = {k: x for k, x in v.items() if k != "n"}  # table.pack's count
+            keys = list(v)
+            if keys and all(isinstance(k, int) for k in keys) and sorted(keys) == list(range(1, len(keys) + 1)):
+                return [py(v[k]) for k in range(1, len(keys) + 1)]
+            return {k: py(x) for k, x in v.items()}
+        return v
+
     out = {}
     for short, kind in (("q", "quest"), ("n", "npc"), ("o", "object"), ("i", "item")):
-        keys = d["keys"][kind] if d["keys"] else None
+        keys = (d.get("keys") or {}).get(kind) or {}
         width = max(keys.values()) if keys else 0
         rows = {}
-        for id_, row in (d[kind] or {}).items():
-            n = width or (max(row.keys()) if list(row.keys()) else 0)
-            rows[int(id_)] = [_lua_to_py(row[i]) if row[i] is not None else None for i in range(1, n + 1)]
+        for id_, row in (d.get(kind) or {}).items():
+            row = {k: x for k, x in row.items() if isinstance(k, int)}
+            n = width or (max(row) if row else 0)
+            rows[int(id_)] = [py(row.get(i)) for i in range(1, n + 1)]
         out[short] = rows
     return out
 
