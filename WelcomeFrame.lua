@@ -14,6 +14,18 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.26",
+        date = "November 2026",
+        changes = {
+            "Levels 21-60 replanned, Alliance and Horde: the planner now knows how many mobs each quest wants, how often quest items drop and how fast mobs respawn, so it picks the camp that's really faster, not just the closest",
+            "Loot steps say roughly how often the item drops (about 35% drop)",
+            "Mobs that count for two quests are killed once: their kills and drops count for both at the same time",
+            "Quest givers and turn-ins right by the way you're going are visited on the way",
+            "Quests with very rare drops or thinly spread mobs are left out when they're slower than killing mobs",
+            "The plan walks along the roads like the route line does",
+        },
+    },
+    {
         version = "1.3.25",
         date = "November 2026",
         changes = {

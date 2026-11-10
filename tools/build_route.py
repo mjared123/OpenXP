@@ -91,6 +91,9 @@ MIN_OPEN = 3
 MIN_VISIT = 4
 # How many of the best next zones get a look one visit further ahead.
 LOOKAHEAD = 8
+# 2: also look a third visit ahead, for the best LOOKAHEAD2 second visits.
+LOOKAHEAD_DEPTH = 2
+LOOKAHEAD2 = 3
 # ...but never more than this many levels.
 MAX_GRIND = 1.5
 # Rough minutes, to compare zones by XP per minute: per map-percent walked
@@ -115,6 +118,68 @@ KILLS = {"kill": 10, "loot": 12, "credit": 4, "use": 3, "explore": 1}
 TRAVEL_KILLS = 0.15
 
 
+# ---------------------------------------------------------------------------
+# Work model (with tools/route_facts.py facts)
+#
+# How long an objective takes depends on how many mobs it needs, how often
+# the item drops, how many mobs live at the spot and how fast they respawn.
+# Without facts for a quest (WoW Forever's own new quests) the old flat
+# estimates in KILLS and MINUTES_WORK are used.
+# ---------------------------------------------------------------------------
+
+FACTS = None  # from --facts: see tools/route_facts.py
+# Plan walks with the in-game arrow's costs (roads preferred, see terrain.py).
+ARROW_COSTS = True
+# OXP_OLD_DECISIONS=1: plan like 1.3.x (for comparing routes on the new
+# time model); only the bookkeeping is new.
+OLD = bool(os.environ.get("OXP_OLD_DECISIONS"))
+# Minutes to kill, loot and recover per mob, and to click an object; the
+# walk to the next mob comes on top (walk_gap). Grinding a good spot works
+# out at GRIND_KILLS_PER_MINUTE, so quests and grinding are on one scale.
+MINUTES_PER_KILL = 0.30
+MINUTES_PER_CLICK = 0.25
+# Map units: spawns this close to a spot count as "at the spot".
+SPOT_RADIUS = 7.0
+# Most minutes per kill once a spot runs dry (you widen the circle).
+MAX_WAIT = 1.2
+# Respawn time when the database doesn't know (seconds).
+DEFAULT_RESPAWN = 300.0
+# Never plan on more than this many kills for one objective.
+MAX_KILLS = 80
+# A quest whose XP per minute (quest + kills, done on its own at its best
+# spots) is below this share of grinding is left out, unless a later quest
+# needs it: think 5% drops.
+QUEST_WORTH_IT = 0.45
+# Map units: a quest giver or turn-in this close to the way you're going
+# anyway gets visited on the way.
+PASSBY = 2.0
+
+
+def facts_quest(qid):
+    return (FACTS or {}).get("quest", {}).get(qid)
+
+
+def walk_gap(spawns):
+    """Minutes walking from one mob to the next, from how many live at the spot."""
+    return min(0.5, 0.9 / math.sqrt(max(1.0, spawns)))
+
+
+def work_minutes(kills, spawns, respawn, click=False):
+    """Minutes for `kills` kills (or clicks) at a spot with `spawns` mobs
+    that come back after `respawn` seconds."""
+    if kills <= 0:
+        return 0.0
+    spawns = max(1.0, spawns)
+    each = (MINUTES_PER_CLICK if click else MINUTES_PER_KILL) + walk_gap(spawns)
+    if kills <= spawns:
+        return kills * each
+    # The spot runs dry: after the first round, wait for respawns.
+    # You don't stand and wait: you widen the circle, so the wait per kill
+    # is capped at MAX_WAIT.
+    respawn_min = respawn / 60.0
+    return spawns * each + (kills - spawns) * min(MAX_WAIT, max(each, respawn_min / spawns))
+
+
 def xp_at_level(level):
     """Total XP at the start of a level (can be fractional)."""
     whole = int(level)
@@ -133,9 +198,14 @@ def level_of(xp):
     return lvl + (xp / XP_TO_NEXT[lvl] if lvl < MAX_LEVEL else 0)
 
 
-def quest_xp(qlevel, level):
-    """Estimated XP for turning in a quest of qlevel at level."""
-    base = max(150, 110 * qlevel - 1000) if qlevel >= 12 else 40 * qlevel + 100
+def quest_xp(qlevel, level, qid=None):
+    """XP for turning in a quest of qlevel at level: the real reward when
+    the facts have it, else an estimate."""
+    f = facts_quest(qid) if qid else None
+    if f and f.get("xp"):
+        base = f["xp"]
+    else:
+        base = max(150, 110 * qlevel - 1000) if qlevel >= 12 else 40 * qlevel + 100
     gap = int(level) - qlevel
     if gap <= 5:
         return base
@@ -366,7 +436,7 @@ def cluster_center(points, radius=4.0):
     # Snap to the closest real spawn so the arrow points at something real.
     return min(best, key=lambda p: math.dist(p, (x, y)))
 
-def dense_clusters(points, radius=4.0, keep=4):
+def dense_clusters(points, radius=4.0, keep=4, thin=0.8):
     """The densest spots among points, best first: [(point, count)]. Each
     spot is a real spawn near the middle of its group; groups don't overlap,
     and spots with under a third of the best one's mobs are left out."""
@@ -382,7 +452,7 @@ def dense_clusters(points, radius=4.0, keep=4):
                 best, best_n, best_s = p, n, score
         # other spots only when they're nearly as good: a thin spot means
         # waiting for respawns
-        if out and best_s < max(3, out[0][1] * 0.8):
+        if out and best_s < max(3, out[0][1] * thin):
             break
         x = sum(p[0] for p in best_n) / len(best_n)
         y = sum(p[1] for p in best_n) / len(best_n)
@@ -409,6 +479,7 @@ class Builder:
         self._quests = None
         self.alts = {}                      # (quest, zone, objective) -> dense spots
         self.site_pts = {}                  # (quest, zone, objective) -> spawn points
+        self.oinfo = {}                     # (quest, zone, objective) -> what it takes
         self.rollouts = False               # look ahead when ordering steps (slow)
 
     file_accepted = set()
@@ -457,6 +528,16 @@ class Builder:
         x = KILLS.get(kind, 0) * mob_xp(max(1, q.level - 1), self.level())
         self.xp_from["kills"] += x
         return x
+
+    def npc_id(self, row):
+        if not hasattr(self, "_nid"):
+            self._nid = {id(r): k for k, r in self.db["n"].items()}
+        return self._nid.get(id(row))
+
+    def obj_id(self, row):
+        if not hasattr(self, "_oid"):
+            self._oid = {id(r): k for k, r in self.db["o"].items()}
+        return self._oid.get(id(row))
 
     def npc(self, nid):
         return self.db["n"].get(nid)
@@ -550,6 +631,8 @@ class Builder:
             return None, None
 
         sites = []
+        info = []  # per site: what it takes (see objective_info)
+        fq = facts_quest(q.id) or {}
         obj = q.objectives or {}
         idx = 0
         for entry in as_list(li(obj, 1)):  # creatures
@@ -561,6 +644,9 @@ class Builder:
             if not pt:
                 return None
             sites.append((idx, "kill", li(n, 1), [li(n, 1)], pt, place))
+            need = fq.get("mobs", {}).get(entry[0])
+            info.append(dict(ids=frozenset([entry[0]]), kills=float(need or KILLS["kill"]),
+                             known=bool(need), mob_level=self.mob_level(n)))
         for entry in as_list(li(obj, 2)):  # objects
             idx += 1
             o = self.db["o"].get(entry[0])
@@ -569,6 +655,10 @@ class Builder:
                 return None
             label = entry[1] if len(entry) > 1 and entry[1] else (li(o, 1) or "object")
             sites.append((idx, "use", label, [], pt, place))
+            need = fq.get("mobs", {}).get(entry[0])
+            info.append(dict(ids=frozenset([("o", entry[0])]), kills=float(need or KILLS["use"]),
+                             known=bool(need), click=True, mob_level=0,
+                             respawn=(FACTS or {}).get("obj_respawn", {}).get(entry[0])))
         for entry in as_list(li(obj, 3)):  # items
             idx += 1
             item = self.db["i"].get(entry[0])
@@ -605,6 +695,7 @@ class Builder:
             mobs = [nm for c, nm in sorted(near, key=lambda t: -t[0]) if c > 0]
             mobs = mobs or [li(n, 1) for n in droppers if spawns_in(n, area, 7)]
             sites.append((idx, "loot", li(item, 1), mobs[:3], pt, place))
+            info.append(self._loot_info(q, entry[0], droppers, objs, area, spot, fq))
         # reputation (4) objectives are never part of a leveling route
         if li(obj, 4):
             return None
@@ -625,6 +716,10 @@ class Builder:
             mobs = [li(n, 1) for n in creditors if spawns_in(n, area, 7)]
             label = entry[2] if len(entry) > 2 and entry[2] else (mobs[0] if mobs else "target")
             sites.append((idx, "credit", label, mobs[:3], pt, place))
+            ids = frozenset(as_list(entry[0]))
+            need = next((fq.get("mobs", {}).get(i) for i in ids if fq.get("mobs", {}).get(i)), None)
+            info.append(dict(ids=ids, kills=float(need or KILLS["credit"]), known=bool(need),
+                             mob_level=max([self.mob_level(n) for n in creditors] or [0])))
         if q.triggerEnd:
             text = li(q.triggerEnd, 1)
             locs = li(q.triggerEnd, 2) or {}
@@ -636,13 +731,56 @@ class Builder:
                 return None
             idx += 1
             sites.append((idx, "explore", text, [], pt, place))
+            info.append(dict(ids=frozenset(), kills=0.0, known=True, mob_level=0))
         # Other dense spots for each objective, for routes that pick the spot
         # that fits the way best (zones with terrain, see simulate_terrain).
-        for site, pts in zip(sites, seq):
+        for site, pts, inf in zip(sites, seq, info):
+            self.oinfo[(q.id, zone, site[0])] = inf
             if pts:
-                self.alts[(q.id, zone, site[0])] = [c for c, _n in dense_clusters(pts)]
+                self.alts[(q.id, zone, site[0])] = [c for c, _n in dense_clusters(pts, thin=0.8 if OLD else 0.35)]
                 self.site_pts[(q.id, zone, site[0])] = pts
         return sites
+
+    def mob_level(self, n):
+        lo = li(n, 4) or 0
+        hi = li(n, 5) or lo
+        return (lo + hi) / 2.0
+
+    def _loot_info(self, q, item_id, droppers, objs, area, spot, fq):
+        """What a loot objective takes: kills (or clicks) for the count the
+        quest wants at the drop chance, from the facts; mobs that live at
+        the spot weigh most when they drop it at different rates."""
+        need = fq.get("items", {}).get(item_id)
+        drops = (FACTS or {}).get("drop", {}).get(item_id, {})
+        odrops = (FACTS or {}).get("obj_drop", {}).get(item_id, {})
+        ids, w_sum, c_sum, lv = set(), 0.0, 0.0, []
+        for n in droppers:
+            nid = self.npc_id(n)
+            ids.add(nid)
+            here = sum(1 for p in spawns_in(n, area, 7) if math.dist(p, spot) <= SPOT_RADIUS * 1.75) or 0.2
+            ch = drops.get(nid)
+            if ch:
+                w_sum += here
+                c_sum += here * ch[0] * ch[1]
+            lv.append(self.mob_level(n))
+        click = False
+        for o in objs:
+            oid = self.obj_id(o)
+            ids.add(("o", oid))
+            ch = odrops.get(oid)
+            here = sum(1 for p in spawns_in(o, area, 4) if math.dist(p, spot) <= SPOT_RADIUS * 1.75) or 0.2
+            w_sum += here
+            c_sum += here * (ch[0] * ch[1] if ch else 1.0)
+            click = click or not droppers
+        chance = c_sum / w_sum if w_sum else None
+        if need and chance:
+            kills = min(MAX_KILLS, need / max(chance, 0.01))
+        elif need and click:
+            kills = float(need)
+        else:
+            kills = float(KILLS["loot"])
+        return dict(ids=frozenset(ids), kills=kills, known=bool(need and chance), chance=chance,
+                    need=need, click=click, mob_level=(sum(lv) / len(lv)) if lv else 0)
 
     def candidates(self, section, later_areas=(), carry_ahead=None):
         """Quests to do in this section.
@@ -738,7 +876,41 @@ class Builder:
                 for other in out[qid]["q"].exclusiveTo:
                     if other != qid and other in out:
                         del out[other]
+        if FACTS and not OLD:
+            self.drop_poor(out, zone)
         return out
+
+    def drop_poor(self, out, zone):
+        """Leave out quests that are slow for what they give, done on their
+        own at their best spots: a 5% drop, 20 kills of a thinly spread mob
+        for a little XP. Quests that a later quest needs stay in."""
+        lvl = self.level()
+        grind = GRIND_KILLS_PER_MINUTE * mob_xp(int(lvl), lvl)
+        needed = set()
+        for c in out.values():
+            needed |= set(c["q"].preGroup) | set(c["q"].preSingle)
+        self.poor = getattr(self, "poor", {})
+        for qid, c in list(out.items()):
+            q = c["q"]
+            if qid in needed or c["carried"] or q.class_tag() or not c["sites"]:
+                continue
+            infos = [self.oinfo.get((qid, zone, s[0])) for s in c["sites"]]
+            if not all(i and i.get("known") for i in infos):
+                continue  # no facts: keep it, like before
+            minutes, xp = 2.0, quest_xp(q.level, lvl, qid)
+            for s, inf in zip(c["sites"], infos):
+                sp = self.site_pts.get((qid, zone, s[0]))
+                n = 6.0
+                if sp:
+                    wt = _weight(sp)
+                    n = max(sum(wt(x) for x in sp if math.dist(x, p) <= SPOT_RADIUS)
+                            for p in [s[4]] + list(self.alts.get((qid, zone, s[0])) or []))
+                minutes += self.spot_minutes(inf, n) * (1 + SLOWER_PER_LEVEL * max(0, q.level - int(lvl)))
+                if not inf.get("click"):
+                    xp += inf["kills"] * mob_xp(inf.get("mob_level") or q.level - 1, lvl)
+            if xp / minutes < QUEST_WORTH_IT * grind:
+                self.poor[qid] = (q.name, round(xp / minutes), round(grind))
+                del out[qid]
 
     def simulate(self, section, cands, start_pos):
         """Greedy walk: always do the cheapest available thing next.
@@ -828,7 +1000,7 @@ class Builder:
             elif kind == "turnin":
                 accepted.discard(ref)
                 turned_in.add(ref)
-                x = 0.0 if cands[ref]["q"].class_tag() else quest_xp(cands[ref]["q"].level, self.level())
+                x = 0.0 if cands[ref]["q"].class_tag() else quest_xp(cands[ref]["q"].level, self.level(), ref)
                 self.xp += x
                 self.xp_from["quests"] += x
             actions.append((kind, ref, where))
@@ -874,12 +1046,39 @@ class Builder:
                     pts += [p for p in self.alts.get((qid, area, i)) or [] if math.dist(p, site[4]) > 1.0]
                 spots[(qid, i)] = pts
 
+        # What each spot offers: how many of the objective's mobs live there
+        # and how fast they come back, so a thin camp next door can lose to
+        # a busy one a little further on.
+        spot_info = {}
+        best_work = {}
+        for (qid, i), pts in spots.items():
+            inf = self.oinfo.get((qid, area, i)) or {}
+            sp = self.site_pts.get((qid, area, i))
+            for p in pts:
+                if sp:
+                    wt = _weight(sp)
+                    n = sum(wt(x) for x in sp if math.dist(x, p) <= SPOT_RADIUS)
+                else:
+                    n = 6.0
+                spot_info[(qid, i, p)] = n
+            mins = [self.spot_minutes(inf, spot_info[(qid, i, p)]) for p in pts]
+            best_work[(qid, i)] = min(mins) if mins else 0.0
+
+        def extra_at(qid, i, p):
+            """Map units' worth of extra time this spot costs over the best one."""
+            inf = self.oinfo.get((qid, area, i)) or {}
+            if OLD:
+                return 0.0
+            return (self.spot_minutes(inf, spot_info.get((qid, i, p), 6.0)) - best_work[(qid, i)]) / MINUTES_PER_UNIT
+
         def dist(a, b, lvl):
             # Walking distance around the terrain only. Packs above your
             # level are left to the arrow, which walks around them: counted
             # here they'd make every quest whose mobs live in a pack look far
             # away, and the route would criss-cross the zone to avoid them.
-            return t.cost(a, b, None) / unit
+            # The arrow's own costs: roads count less and mobs near your level
+            # a little more, so the plan follows the road like the line does.
+            return t.cost(a, b, None, arrow=ARROW_COSTS) / unit
 
         st = dict(pos=start_pos, xp=self.xp, minutes=self.minutes, kills=0.0, quests=0.0,
                   accepted=set(q for q in self.accepted_before if q in cands),
@@ -919,22 +1118,56 @@ class Builder:
                         if s[0] in left:
                             work = 3.0 if s[1] in ("kill", "loot") else 1.0
                             for p in spots[(qid, s[0])]:
-                                out.append((dist(pos, p, il) + work * harder, "obj", (qid, s[0]), p))
+                                out.append((dist(pos, p, il) + work * harder + extra_at(qid, s[0], p),
+                                            "obj", (qid, s[0]), p))
                 elif c["finish"]:
                     out.append((dist(pos, c["finish"][2], il) - 0.5, "turnin", qid, c["finish"][2]))
             out.sort(key=lambda o: (o[0], 0 if o[1] != "obj" else 1))
             return out
 
-        def do_obj(st, qid, i, where, harder, record):
-            q = cands[qid]["q"]
-            st["left"][qid].discard(i)
-            site = next(s for s in cands[qid]["sites"] if s[0] == i)
-            x = 0.0 if q.class_tag() else KILLS.get(site[1], 0) * mob_xp(max(1, q.level - 1), level_of(st["xp"]))
-            st["xp"] += x
-            st["kills"] += x
-            st["minutes"] += MINUTES_WORK.get(site[1], 1) * (0.0 if q.class_tag() else harder)
-            if record:
-                st["actions"].append(("obj", (qid, i), where))
+        def work_here(st, group, where, il, record):
+            """Do every objective in `group` at `where` together. Mobs that
+            count for several objectives are killed once: 15 Skeletal Fiends
+            for one quest and their drops for another take the longer of the
+            two, not both. Mobs that differ add up, but share the walk."""
+            alloc = {}   # mob id -> kills
+            spawns = {}  # mob id group -> mobs living at the spot
+            harder_max, lv = 1.0, []
+            xp = 0.0
+            lvl = level_of(st["xp"])
+            for qid, i in sorted(group, key=lambda g: -self.oinfo_kills(area, g)):
+                q = cands[qid]["q"]
+                inf = self.oinfo.get((qid, area, i)) or {}
+                st["left"][qid].discard(i)
+                if record:
+                    st["actions"].append(("obj", (qid, i), where))
+                if q.class_tag():
+                    continue  # class quests: in the guide, not in the estimates
+                ids = inf.get("ids") or frozenset([("q", qid, i)])
+                need = inf.get("kills", KILLS.get(next(s for s in cands[qid]["sites"] if s[0] == i)[1], 1))
+                covered = sum(alloc.get(m, 0.0) for m in ids)
+                extra = max(0.0, need - covered)
+                if extra:
+                    m0 = min(ids, key=str)
+                    alloc[m0] = alloc.get(m0, 0.0) + extra
+                    mob_lv = inf.get("mob_level") or max(1, q.level - 1)
+                    if not inf.get("click"):
+                        xp += extra * mob_xp(mob_lv, lvl)
+                key = ids
+                n = spot_info.get((qid, i, where))
+                if n is None:
+                    n = 6.0
+                if not any(key & k for k in spawns):
+                    spawns[key] = (n, inf.get("respawn") or self.respawn_of(ids), inf.get("click"))
+                harder_max = max(harder_max, 1 + SLOWER_PER_LEVEL * max(0, q.level - il))
+            minutes = 0.0
+            for key, (n, resp, click) in spawns.items():
+                k = sum(v for m, v in alloc.items() if m in key)
+                minutes += work_minutes(k, n, resp, click)
+            # leftover allocations (mobs not in any spawn group) at a default spot
+            st["xp"] += xp
+            st["kills"] += xp
+            st["minutes"] += minutes * harder_max
 
         def apply(st, opt, record=True):
             _, kind, ref, where = opt
@@ -958,7 +1191,7 @@ class Builder:
                 st["accepted"].discard(ref)
                 st["turned"].add(ref)
                 q = cands[ref]["q"]
-                x = 0.0 if q.class_tag() else quest_xp(q.level, level_of(st["xp"]))
+                x = 0.0 if q.class_tag() else quest_xp(q.level, level_of(st["xp"]), q.id)
                 st["xp"] += x
                 st["quests"] += x
                 if record:
@@ -966,14 +1199,13 @@ class Builder:
             else:
                 qid, i = ref
                 il = int(lvl)
-                harder = 1 + SLOWER_PER_LEVEL * max(0, cands[qid]["q"].level - il)
-                do_obj(st, qid, i, where, harder, record)
+                group = [(qid, i)]
                 # everything else in your log that can be done right here
                 for q2 in sorted(st["accepted"]):
                     for i2 in sorted(st["left"][q2]):
-                        if any(math.dist(p, where) <= self.SHARE for p in spots[(q2, i2)]):
-                            h2 = 1 + SLOWER_PER_LEVEL * max(0, cands[q2]["q"].level - il)
-                            do_obj(st, q2, i2, where, h2, record)
+                        if (q2, i2) != (qid, i) and any(math.dist(p, where) <= self.SHARE for p in spots[(q2, i2)]):
+                            group.append((q2, i2))
+                work_here(st, group, where, il, record)
 
         def clone(st):
             return dict(pos=st["pos"], xp=st["xp"], minutes=st["minutes"], kills=st["kills"],
@@ -1016,6 +1248,11 @@ class Builder:
                     if len(tried) >= self.ROLLOUT_TOP:
                         break
                 choice = best[1]
+            if choice[1] == "obj" or choice[0] > self.HERE:
+                # a quest giver or turn-in right by the way there: stop on the way
+                by = None if OLD else self.passby(opts, st["pos"], dist, choice)
+                if by:
+                    choice = by
             apply(st, choice)
 
         if self.rollouts:
@@ -1035,6 +1272,38 @@ class Builder:
         self.done |= turned_in
         return st["actions"], turned_in
 
+    def passby(self, opts, pos, dist, toward=None):
+        """A quest to accept or turn in right on the way to `toward` (or,
+        with no target, nothing): the detour is at most PASSBY."""
+        if toward is None:
+            return None
+        best = None
+        straight = dist(pos, toward[3], 0)
+        for o in opts:
+            if o[1] == "obj" or o is toward or o[0] > straight:
+                continue
+            detour = dist(pos, o[3], 0) + dist(o[3], toward[3], 0) - straight
+            if detour <= PASSBY and (best is None or detour < best[0]):
+                best = (detour, o)
+        return best[1] if best else None
+
+    def oinfo_kills(self, area, g):
+        return (self.oinfo.get((g[0], area, g[1])) or {}).get("kills", 0.0)
+
+    def respawn_of(self, ids):
+        r = (FACTS or {}).get("respawn", {})
+        ts = [r[m] for m in ids if not isinstance(m, tuple) and m in r]
+        if not ts:
+            return DEFAULT_RESPAWN
+        return sorted(ts)[len(ts) // 2]
+
+    def spot_minutes(self, inf, spawns):
+        if not inf:
+            return 0.0
+        return work_minutes(inf.get("kills", 0.0), spawns,
+                            inf.get("respawn") or self.respawn_of(inf.get("ids") or ()),
+                            inf.get("click"))
+
     def improve_order(self, actions, cands, spots, start_pos, xp0, t, lvl0):
         """Shorten the walk of a visit by moving steps around (or-opt) and
         moving objectives to other dense spots, keeping every order rule:
@@ -1048,7 +1317,7 @@ class Builder:
         lvl_key = int(lvl0)
 
         def cost(a, b):
-            return t.cost(a, b, None)
+            return t.cost(a, b, None, arrow=ARROW_COSTS)
 
         def total(seq):
             pos, s = start_pos, 0.0
@@ -1063,7 +1332,7 @@ class Builder:
         for a in acts:
             if a[0] == "turnin":
                 q = cands[a[1]]["q"]
-                gain.append(0.0 if q.class_tag() else quest_xp(q.level, lvl0))
+                gain.append(0.0 if q.class_tag() else quest_xp(q.level, lvl0, q.id))
             elif a[0] == "obj":
                 q = cands[a[1][0]]["q"]
                 site = next(s for s in cands[a[1][0]]["sites"] if s[0] == a[1][1])
@@ -1301,6 +1570,12 @@ def render_section(builder, section, cands, actions, group, nxt):
                 if mobs:
                     t = "Kill |cRXP_ENEMY_%s|r. Loot them for |cRXP_LOOT_%s|r" % (
                         "|r and |cRXP_ENEMY_".join(mobs), label)
+                    # the chance per kill, from the 1.12 data
+                    inf = builder.oinfo.get((qid, section["area"], oi)) or {}
+                    ch = inf.get("chance")
+                    if ch and ch < 0.95 and not inf.get("click"):
+                        pct = round(ch * 20) * 5 if ch >= 0.1 else max(1, round(ch * 100))
+                        t += " (about %d%% drop)" % pct
                 else:
                     t = "Loot the |cRXP_PICK_%s|r" % label
             else:
@@ -1412,6 +1687,8 @@ def main():
     ap.add_argument("--questiedb", required=True)
     ap.add_argument("--dump", help="OpenXP.lua saved variables with /oxp questdump data")
     ap.add_argument("--log", help="write every zone choice and its numbers to this JSON file")
+    ap.add_argument("--facts", help="tools/route_facts.py output: kill counts, drop chances, "
+                                    "respawn times and quest XP (optional)")
     ap.add_argument("routes", nargs="+",
                     help="route files, in level order; they're built as one run so "
                          "your level carries from one file into the next")
@@ -1419,7 +1696,13 @@ def main():
 
     routes = [load_route(p) for p in args.routes]
     first = routes[0]
-    global GAME, FACTION
+    global GAME, FACTION, FACTS
+    # OXP_SET="LEVELS_ABOVE=3,QUEST_WORTH_IT=0.6": try other tuning knobs
+    for kv in filter(None, os.environ.get("OXP_SET", "").split(",")):
+        k, v = kv.split("=")
+        globals()[k] = type(globals()[k])(float(v))
+    if args.facts:
+        FACTS = pickle.load(open(args.facts, "rb"))
     GAME = getattr(first, "GAME", "Forever")
     FACTION = getattr(first, "FACTION", "Alliance")
     db = load_db(args.questiedb)
@@ -1596,6 +1879,12 @@ def plan_hubs(builder, route):
         best = None
         # Look one visit ahead for the best few, so a trip across the sea
         # counts what you can do once you're there.
+        # A visit has to beat grinding on its own: a quick city stop whose
+        # next visit is great doesn't count, the next visit can go first.
+        lvl = builder.level()
+        bar = WORTH_IT * GRIND_KILLS_PER_MINUTE * mob_xp(int(lvl), lvl) if cur is not None else 0.0
+        if not OLD:
+            scored = [x for x in scored if x[0] >= bar]
         for rate, hub in scored[:LOOKAHEAD]:
             saved = builder.snapshot()
             visit(hub, False)
@@ -1605,6 +1894,7 @@ def plan_hubs(builder, route):
             gain2 = spent2 = 0.0
             best2 = 0.0
             best_next = None
+            seconds = []
             for hub2 in hubs:
                 if hub2["key"] == hub["key"]:
                     continue
@@ -1612,9 +1902,40 @@ def plan_hubs(builder, route):
                 _, _, _, _, _, worth2, rate2 = visit(hub2, False, frm=hub)
                 g2, s2 = visit.last
                 builder.restore(saved2)
+                if worth2 >= (3 if hub2.get("city") else MIN_VISIT):
+                    seconds.append((rate2, g2, s2, hub2))
                 if worth2 >= (3 if hub2.get("city") else MIN_VISIT) and rate2 > best2:
                     best2, gain2, spent2 = rate2, g2, s2
                     best_next = hub2["key"]
+            if LOOKAHEAD_DEPTH >= 2:
+                # Two visits ahead: the best few second visits, each followed
+                # by its own best third, so a zone that sets up a great pair
+                # of visits wins over one great visit then a poor one.
+                seconds.sort(key=lambda x: -x[0])
+                best23 = None
+                for rate2, g2, s2, hub2 in seconds[:LOOKAHEAD2]:
+                    saved2 = builder.snapshot()
+                    visit(hub2, False, frm=hub)
+                    w2 = visits.get(hub2["key"], 0)
+                    visits[hub2["key"]] = w2 + 1
+                    g3 = s3 = 0.0
+                    r3 = 0.0
+                    for hub3 in hubs:
+                        if hub3["key"] == hub2["key"]:
+                            continue
+                        saved3 = builder.snapshot()
+                        _, _, _, _, _, worth3, rate3 = visit(hub3, False, frm=hub2)
+                        gg, ss = visit.last
+                        builder.restore(saved3)
+                        if worth3 >= (3 if hub3.get("city") else MIN_VISIT) and rate3 > r3:
+                            r3, g3, s3 = rate3, gg, ss
+                    visits[hub2["key"]] = w2
+                    builder.restore(saved2)
+                    tot = (g2 + g3, s2 + s3)
+                    if best23 is None or tot[0] / max(tot[1], 1e-9) > best23[0][0] / max(best23[0][1], 1e-9):
+                        best23 = (tot, hub2["key"])
+                if best23:
+                    (gain2, spent2), best_next = best23
             visits[hub["key"]] = w
             builder.restore(saved)
             combined = (gain1 + gain2) / (spent1 + spent2) if spent1 + spent2 else 0
