@@ -109,7 +109,15 @@ step
     .accept 5 >>Accept Jitters' Growling Gut
     .target Jitters
 step
-    .goto Duskwood,10.75,55.39
+    #loop
+    .goto Duskwood,9.52,59.48,0
+    .goto Duskwood,9.75,51.11,0
+    .goto Duskwood,11.60,52.30,0
+    .goto Duskwood,11.58,58.26,0
+    .goto Duskwood,9.52,59.48,30,0
+    .goto Duskwood,9.75,51.11,30,0
+    .goto Duskwood,11.60,52.30,30,0
+    .goto Duskwood,11.58,58.26,30,0
     >>Kill |cRXP_ENEMY_Pygmy Venom Web Spider|r
     .complete 245,1 --Eight-Legged Menaces
     .mob Pygmy Venom Web Spider
@@ -124,12 +132,30 @@ step
     .accept 226 >>Accept Wolves at Our Heels
     .target Lars
 step
-    .goto Duskwood,11.02,32.27
+    #loop
+    .goto Duskwood,11.60,31.74,0
+    .goto Duskwood,13.71,28.24,0
+    .goto Duskwood,14.04,27.97,0
+    .goto Duskwood,15.44,29.80,0
+    .goto Duskwood,12.01,32.71,0
+    .goto Duskwood,11.60,31.74,30,0
+    .goto Duskwood,13.71,28.24,30,0
+    .goto Duskwood,14.04,27.97,30,0
+    .goto Duskwood,15.44,29.80,30,0
+    .goto Duskwood,12.01,32.71,30,0
     >>Kill |cRXP_ENEMY_Rabid Dire Wolf|r
     .complete 226,2 --Wolves at Our Heels
     .mob Rabid Dire Wolf
 step
-    .goto Duskwood,22.58,25.95
+    #loop
+    .goto Duskwood,18.14,23.70,0
+    .goto Duskwood,26.90,26.06,0
+    .goto Duskwood,27.62,27.75,0
+    .goto Duskwood,22.28,28.22,0
+    .goto Duskwood,18.14,23.70,30,0
+    .goto Duskwood,26.90,26.06,30,0
+    .goto Duskwood,27.62,27.75,30,0
+    .goto Duskwood,22.28,28.22,30,0
     >>Kill |cRXP_ENEMY_Starving Dire Wolf|r
     .complete 226,1 --Wolves at Our Heels
     .mob Starving Dire Wolf
@@ -177,7 +203,19 @@ step
     .accept 154 >>Accept Return the Comb
     .target Blind Mary
 step
-    .goto Duskwood,79.71,69.33
+    #loop
+    .goto Duskwood,77.54,68.81,0
+    .goto Duskwood,79.68,67.23,0
+    .goto Duskwood,81.46,69.22,0
+    .goto Duskwood,81.38,71.67,0
+    .goto Duskwood,78.46,74.42,0
+    .goto Duskwood,77.53,71.84,0
+    .goto Duskwood,77.54,68.81,30,0
+    .goto Duskwood,79.68,67.23,30,0
+    .goto Duskwood,81.46,69.22,30,0
+    .goto Duskwood,81.38,71.67,30,0
+    .goto Duskwood,78.46,74.42,30,0
+    .goto Duskwood,77.53,71.84,30,0
     >>Kill |cRXP_ENEMY_Skeletal Mage|r
     >>Kill |cRXP_ENEMY_Skeletal Warrior|r
     .complete 56,2 --The Night Watch
@@ -196,7 +234,19 @@ step
     .accept 157 >>Accept Deliver the Thread
     .target Madame Eva
 step
-    .goto Duskwood,68.62,20.24
+    #loop
+    .goto Duskwood,63.95,18.85,0
+    .goto Duskwood,68.27,16.95,0
+    .goto Duskwood,73.15,18.14,0
+    .goto Duskwood,70.58,22.79,0
+    .goto Duskwood,65.72,21.78,0
+    .goto Duskwood,64.00,20.33,0
+    .goto Duskwood,63.95,18.85,30,0
+    .goto Duskwood,68.27,16.95,30,0
+    .goto Duskwood,73.15,18.14,30,0
+    .goto Duskwood,70.58,22.79,30,0
+    .goto Duskwood,65.72,21.78,30,0
+    .goto Duskwood,64.00,20.33,30,0
     >>Kill |cRXP_ENEMY_Venom Web Spider|r and |cRXP_ENEMY_Pygmy Venom Web Spider|r and |cRXP_ENEMY_Green Recluse|r. Loot them for |cRXP_LOOT_Gooey Spider Leg|r
     .complete 93,1 --Dusky Crab Cakes
     .mob Venom Web Spider
@@ -261,27 +311,75 @@ step
     .accept 453 >>Accept Finding the Shadowy Figure
     .target Tavernkeep Smitts
 step
-    .goto Duskwood,68.62,20.24
+    #loop
+    .goto Duskwood,63.95,18.85,0
+    .goto Duskwood,68.27,16.95,0
+    .goto Duskwood,73.15,18.14,0
+    .goto Duskwood,70.58,22.79,0
+    .goto Duskwood,65.72,21.78,0
+    .goto Duskwood,64.00,20.33,0
+    .goto Duskwood,63.95,18.85,30,0
+    .goto Duskwood,68.27,16.95,30,0
+    .goto Duskwood,73.15,18.14,30,0
+    .goto Duskwood,70.58,22.79,30,0
+    .goto Duskwood,65.72,21.78,30,0
+    .goto Duskwood,64.00,20.33,30,0
     >>Kill |cRXP_ENEMY_Venom Web Spider|r and |cRXP_ENEMY_Pygmy Venom Web Spider|r and |cRXP_ENEMY_Green Recluse|r. Loot them for |cRXP_LOOT_Vial of Spider Venom|r
     .complete 101,2 --The Totem of Infliction
     .mob Venom Web Spider
     .mob Pygmy Venom Web Spider
     .mob Green Recluse
 step
-    .goto Duskwood,77.86,33.54
+    #loop
+    .goto Duskwood,75.85,36.11,0
+    .goto Duskwood,76.95,31.37,0
+    .goto Duskwood,78.82,31.95,0
+    .goto Duskwood,80.46,32.90,0
+    .goto Duskwood,78.47,35.57,0
+    .goto Duskwood,76.68,36.38,0
+    .goto Duskwood,75.85,36.11,30,0
+    .goto Duskwood,76.95,31.37,30,0
+    .goto Duskwood,78.82,31.95,30,0
+    .goto Duskwood,80.46,32.90,30,0
+    .goto Duskwood,78.47,35.57,30,0
+    .goto Duskwood,76.68,36.38,30,0
     >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Fang|r
     .complete 101,1 --The Totem of Infliction
     .mob Flesh Eater
     .mob Bone Chewer
     .mob Brain Eater
 step
-    .goto Duskwood,80.64,59.42
+    #loop
+    .goto Duskwood,79.57,57.96,0
+    .goto Duskwood,80.97,56.95,0
+    .goto Duskwood,81.64,57.66,0
+    .goto Duskwood,81.43,60.19,0
+    .goto Duskwood,80.91,61.11,0
+    .goto Duskwood,79.90,61.20,0
+    .goto Duskwood,79.57,57.96,30,0
+    .goto Duskwood,80.97,56.95,30,0
+    .goto Duskwood,81.64,57.66,30,0
+    .goto Duskwood,81.43,60.19,30,0
+    .goto Duskwood,80.91,61.11,30,0
+    .goto Duskwood,79.90,61.20,30,0
     >>Kill |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Fiend|r. Loot them for |cRXP_LOOT_Rot Blossom|r
     .complete 156,1 --Gather Rot Blossoms
     .mob Skeletal Horror
     .mob Skeletal Fiend
 step
-    .goto Duskwood,78.96,69.68
+    #loop
+    .goto Duskwood,77.54,68.81,0
+    .goto Duskwood,79.68,67.23,0
+    .goto Duskwood,81.46,69.22,0
+    .goto Duskwood,81.38,71.67,0
+    .goto Duskwood,78.46,74.42,0
+    .goto Duskwood,77.53,71.84,0
+    .goto Duskwood,77.54,68.81,30,0
+    .goto Duskwood,79.68,67.23,30,0
+    .goto Duskwood,81.46,69.22,30,0
+    .goto Duskwood,81.38,71.67,30,0
+    .goto Duskwood,78.46,74.42,30,0
+    .goto Duskwood,77.53,71.84,30,0
     >>Kill |cRXP_ENEMY_Skeletal Warrior|r and |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Mage|r. Loot them for |cRXP_LOOT_Skeleton Finger|r
     .complete 101,3 --The Totem of Infliction
     .mob Skeletal Warrior
@@ -310,7 +408,19 @@ step
     .accept 268 >>Accept Return to Sven
     .target Jitters
 step
-    .goto Duskwood,17.65,47.14
+    #loop
+    .goto Duskwood,15.27,43.09,0
+    .goto Duskwood,21.40,43.18,0
+    .goto Duskwood,22.56,44.44,0
+    .goto Duskwood,22.02,46.78,0
+    .goto Duskwood,20.89,47.67,0
+    .goto Duskwood,15.62,47.38,0
+    .goto Duskwood,15.27,43.09,30,0
+    .goto Duskwood,21.40,43.18,30,0
+    .goto Duskwood,22.56,44.44,30,0
+    .goto Duskwood,22.02,46.78,30,0
+    .goto Duskwood,20.89,47.67,30,0
+    .goto Duskwood,15.62,47.38,30,0
     >>Kill |cRXP_ENEMY_Skeletal Horror|r
     >>Kill |cRXP_ENEMY_Skeletal Fiend|r
     .complete 57,2 --The Night Watch
@@ -713,7 +823,19 @@ step
     .turnin 66 >>Turn in The Legend of Stalvan
     .target Clerk Daltry
 step
-    .goto Duskwood,65.48,69.13
+    #loop
+    .goto Duskwood,61.18,71.70,0
+    .goto Duskwood,64.35,67.20,0
+    .goto Duskwood,65.91,67.41,0
+    .goto Duskwood,66.61,70.65,0
+    .goto Duskwood,66.53,74.25,0
+    .goto Duskwood,64.86,73.82,0
+    .goto Duskwood,61.18,71.70,30,0
+    .goto Duskwood,64.35,67.20,30,0
+    .goto Duskwood,65.91,67.41,30,0
+    .goto Duskwood,66.61,70.65,30,0
+    .goto Duskwood,66.53,74.25,30,0
+    .goto Duskwood,64.86,73.82,30,0
     >>Kill |cRXP_ENEMY_Nightbane Shadow Weaver|r
     .complete 173,1 --Worgen in the Woods
     .mob Nightbane Shadow Weaver
@@ -724,7 +846,19 @@ step
     .accept 221 >>Accept Worgen in the Woods
     .target Calor
 step
-    .goto Duskwood,65.60,67.23
+    #loop
+    .goto Duskwood,64.09,72.45,0
+    .goto Duskwood,64.94,66.86,0
+    .goto Duskwood,65.51,66.81,0
+    .goto Duskwood,66.80,69.30,0
+    .goto Duskwood,66.00,72.84,0
+    .goto Duskwood,64.29,72.66,0
+    .goto Duskwood,64.09,72.45,30,0
+    .goto Duskwood,64.94,66.86,30,0
+    .goto Duskwood,65.51,66.81,30,0
+    .goto Duskwood,66.80,69.30,30,0
+    .goto Duskwood,66.00,72.84,30,0
+    .goto Duskwood,64.29,72.66,30,0
     >>Kill |cRXP_ENEMY_Nightbane Dark Runner|r
     .complete 221,1 --Worgen in the Woods
     .mob Nightbane Dark Runner
@@ -734,7 +868,19 @@ step
     .accept 133 >>Accept Ghoulish Effigy
     .target Abercrombie
 step
-    .goto Duskwood,24.14,36.05
+    #loop
+    .goto Duskwood,19.39,34.33,0
+    .goto Duskwood,21.42,31.21,0
+    .goto Duskwood,24.32,30.47,0
+    .goto Duskwood,26.15,34.38,0
+    .goto Duskwood,25.02,37.94,0
+    .goto Duskwood,23.10,37.99,0
+    .goto Duskwood,19.39,34.33,30,0
+    .goto Duskwood,21.42,31.21,30,0
+    .goto Duskwood,24.32,30.47,30,0
+    .goto Duskwood,26.15,34.38,30,0
+    .goto Duskwood,25.02,37.94,30,0
+    .goto Duskwood,23.10,37.99,30,0
     >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Rib|r
     .complete 133,1 --Ghoulish Effigy
     .mob Flesh Eater
@@ -757,7 +903,19 @@ step
     .accept 134 >>Accept Ogre Thieves
     .target Abercrombie
 step
-    .goto Duskwood,24.47,34.72
+    #loop
+    .goto Duskwood,19.41,34.09,0
+    .goto Duskwood,22.88,29.62,0
+    .goto Duskwood,25.10,31.42,0
+    .goto Duskwood,25.75,34.09,0
+    .goto Duskwood,25.43,34.86,0
+    .goto Duskwood,23.72,35.98,0
+    .goto Duskwood,19.41,34.09,30,0
+    .goto Duskwood,22.88,29.62,30,0
+    .goto Duskwood,25.10,31.42,30,0
+    .goto Duskwood,25.75,34.09,30,0
+    .goto Duskwood,25.43,34.86,30,0
+    .goto Duskwood,23.72,35.98,30,0
     >>Kill |cRXP_ENEMY_Plague Spreader|r
     .complete 58,1 --The Night Watch
     .mob Plague Spreader
@@ -767,7 +925,19 @@ step
     .accept 323 >>Accept Proving Your Worth
     .target Sven Yorgen
 step
-    .goto Duskwood,17.16,34.94
+    #loop
+    .goto Duskwood,14.13,33.91,0
+    .goto Duskwood,16.91,29.93,0
+    .goto Duskwood,17.74,35.61,0
+    .goto Duskwood,17.64,38.43,0
+    .goto Duskwood,15.25,39.22,0
+    .goto Duskwood,14.17,36.09,0
+    .goto Duskwood,14.13,33.91,30,0
+    .goto Duskwood,16.91,29.93,30,0
+    .goto Duskwood,17.74,35.61,30,0
+    .goto Duskwood,17.64,38.43,30,0
+    .goto Duskwood,15.25,39.22,30,0
+    .goto Duskwood,14.17,36.09,30,0
     >>Kill |cRXP_ENEMY_Skeletal Raider|r
     >>Kill |cRXP_ENEMY_Skeletal Healer|r
     >>Kill |cRXP_ENEMY_Skeletal Warder|r

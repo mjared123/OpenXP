@@ -296,3 +296,188 @@ function tr.Route(target, px, py, inst, ctx)
     if not wx then return end
     return {wx, wy}
 end
+
+---------------------------------------------------------------------------
+-- World map: the way around, and where the step's mobs are
+---------------------------------------------------------------------------
+-- (Kept in this file rather than a new one: WoW only loads new addon files
+-- after a full restart, and this way a /reload is enough.)
+--
+-- While the world map shows the zone you're in, two things are drawn on it:
+-- - the way the arrow is taking you round mountains and packs, as a line
+--   from you through each corner to the target;
+-- - a small mark on every spawn of the mobs (and objects) the current step's
+--   objectives need, read from Questie when it's installed.
+
+local MAP_TICK = 0.5
+local PATH_COLOR = {0.35, 0.85, 1, 0.9}
+local PIN_SIZE = 12
+local PIN_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
+
+local drawn = {lines = {}, pins = {}}
+
+local function Canvas()
+    local wm = _G.WorldMapFrame
+    if not (wm and wm:IsShown() and wm.GetCanvas) then return end
+    local ok, canvas = pcall(wm.GetCanvas, wm)
+    if ok and canvas then return canvas, wm:GetMapID() end
+end
+
+local overlay
+local function Overlay(canvas)
+    if not overlay then
+        overlay = CreateFrame("Frame", nil, canvas)
+        overlay:SetAllPoints(canvas)
+        overlay:SetFrameLevel((canvas:GetFrameLevel() or 1) + 20)
+    elseif overlay:GetParent() ~= canvas then
+        overlay:SetParent(canvas)
+        overlay:SetAllPoints(canvas)
+    end
+    return overlay
+end
+
+local function HideAll()
+    for _, l in ipairs(drawn.lines) do l:Hide() end
+    for _, p in ipairs(drawn.pins) do p:Hide() end
+end
+
+local function Line(i)
+    local l = drawn.lines[i]
+    if not l then
+        l = overlay:CreateLine(nil, "OVERLAY")
+        l:SetColorTexture(unpack(PATH_COLOR))
+        drawn.lines[i] = l
+    end
+    l:SetThickness(3)
+    return l
+end
+
+local function Pin(i)
+    local p = drawn.pins[i]
+    if not p then
+        p = overlay:CreateTexture(nil, "OVERLAY")
+        p:SetTexture(PIN_TEXTURE)
+        p:SetSize(PIN_SIZE, PIN_SIZE)
+        p:SetAlpha(0.85)
+        drawn.pins[i] = p
+    end
+    return p
+end
+
+-- Spawn points (0-100 map coordinates) of what the active steps' objectives
+-- need on this map, from Questie.
+local spawnCache = {}
+local function ObjectiveSpawns(questId, objIndex, area)
+    local key = questId .. ":" .. objIndex .. ":" .. area
+    if spawnCache[key] ~= nil then return spawnCache[key] end
+    local QGet = addon.card and addon.card.QGet
+    local q = QGet and QGet("Quest", questId)
+    if not q then return {} end -- Questie not ready yet: try again later
+    local o = type(q.objectives) == "table" and q.objectives or {}
+    local sources = {}
+    local i = 0
+    for _, e in ipairs(o[1] or {}) do -- creatures
+        i = i + 1
+        if i == objIndex then sources[#sources + 1] = {"NPC", e[1]} end
+    end
+    for _, e in ipairs(o[2] or {}) do -- objects
+        i = i + 1
+        if i == objIndex then sources[#sources + 1] = {"Object", e[1]} end
+    end
+    for _, e in ipairs(o[3] or {}) do -- items: whoever drops them
+        i = i + 1
+        if i == objIndex then
+            local item = QGet("Item", e[1])
+            for _, nid in ipairs(item and item.npcDrops or {}) do sources[#sources + 1] = {"NPC", nid} end
+            for _, oid in ipairs(item and item.objectDrops or {}) do sources[#sources + 1] = {"Object", oid} end
+        end
+    end
+    local pts = {}
+    for _, src in ipairs(sources) do
+        local obj = QGet(src[1], src[2])
+        local here = obj and type(obj.spawns) == "table" and obj.spawns[area]
+        for _, pt in ipairs(here or {}) do
+            if pt[1] and pt[1] >= 0 then pts[#pts + 1] = {pt[1], pt[2]} end
+        end
+    end
+    spawnCache[key] = pts
+    return pts
+end
+tr.ObjectiveSpawns = ObjectiveSpawns
+
+local function ActiveObjectives()
+    local out = {}
+    local frame = addon.RXPFrame
+    for _, step in pairs(frame and frame.activeSteps or {}) do
+        for _, e in ipairs(step.elements or {}) do
+            if e.questId and e.obj and not e.completed and not e.skip then
+                out[#out + 1] = {e.questId, e.obj}
+            end
+        end
+    end
+    return out
+end
+
+function tr.DrawMap()
+    local canvas, map = Canvas()
+    if not canvas then return end
+    Overlay(canvas)
+    HideAll()
+    local d = addon.terrainData and addon.terrainData[map]
+    if not d then return end
+    local w, h = canvas:GetWidth(), canvas:GetHeight()
+    local scale = _G.WorldMapFrame.GetCanvasScale and _G.WorldMapFrame:GetCanvasScale() or 1
+
+    -- the way around
+    local pts = state.pts
+    if pts and state.map == map and state.idx and state.idx < #pts then
+        local px, py = HBD:GetPlayerZonePosition()
+        local mapNow = HBD:GetPlayerZone()
+        if px and mapNow == map then
+            local prev = {px * 100, py * 100}
+            local n = 0
+            for k = state.idx, #pts do
+                local p = pts[k]
+                n = n + 1
+                local l = Line(n)
+                l:SetThickness(3 / scale)
+                l:SetStartPoint("TOPLEFT", overlay, prev[1] / 100 * w, -prev[2] / 100 * h)
+                l:SetEndPoint("TOPLEFT", overlay, p[1] / 100 * w, -p[2] / 100 * h)
+                l:Show()
+                prev = p
+            end
+        end
+    end
+
+    -- the mobs and objects the current step needs
+    if d.area then
+        local n = 0
+        local seen = {}
+        for _, qo in ipairs(ActiveObjectives()) do
+            for _, pt in ipairs(ObjectiveSpawns(qo[1], qo[2], d.area)) do
+                local key = floor(pt[1] * 10) .. "," .. floor(pt[2] * 10)
+                if not seen[key] then
+                    seen[key] = true
+                    n = n + 1
+                    local p = Pin(n)
+                    p:SetSize(PIN_SIZE / scale, PIN_SIZE / scale)
+                    p:ClearAllPoints()
+                    p:SetPoint("CENTER", overlay, "TOPLEFT", pt[1] / 100 * w, -pt[2] / 100 * h)
+                    p:Show()
+                end
+            end
+        end
+    end
+end
+
+if CreateFrame and C_Timer and C_Timer.NewTicker then
+    C_Timer.NewTicker(MAP_TICK, function()
+        local wm = _G.WorldMapFrame
+        if wm and wm:IsShown() then
+            local ok, err = pcall(tr.DrawMap)
+            if not ok and addon.comms and addon.comms.PrettyDebug then addon.comms.PrettyDebug(tostring(err)) end
+        elseif overlay then
+            HideAll()
+        end
+    end)
+end

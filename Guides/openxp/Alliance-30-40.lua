@@ -171,12 +171,34 @@ step
     >>Loot the |cRXP_PICK_Defias Docket|r
     .complete 1244,1 --The Missing Diplomat
 step
-    .goto Duskwood,62.33,82.20
+    #loop
+    .goto Duskwood,61.33,81.24,0
+    .goto Duskwood,63.00,80.81,0
+    .goto Duskwood,63.32,83.27,0
+    .goto Duskwood,63.34,83.70,0
+    .goto Duskwood,61.58,81.81,0
+    .goto Duskwood,61.33,81.24,30,0
+    .goto Duskwood,63.00,80.81,30,0
+    .goto Duskwood,63.32,83.27,30,0
+    .goto Duskwood,63.34,83.70,30,0
+    .goto Duskwood,61.58,81.81,30,0
     >>Kill |cRXP_ENEMY_Nightbane Tainted One|r
     .complete 222,2 --Worgen in the Woods
     .mob Nightbane Tainted One
 step
-    .goto Duskwood,72.93,72.09
+    #loop
+    .goto Duskwood,71.42,71.41,0
+    .goto Duskwood,72.44,68.33,0
+    .goto Duskwood,73.25,69.20,0
+    .goto Duskwood,73.43,70.22,0
+    .goto Duskwood,73.16,72.23,0
+    .goto Duskwood,72.16,73.82,0
+    .goto Duskwood,71.42,71.41,30,0
+    .goto Duskwood,72.44,68.33,30,0
+    .goto Duskwood,73.25,69.20,30,0
+    .goto Duskwood,73.43,70.22,30,0
+    .goto Duskwood,73.16,72.23,30,0
+    .goto Duskwood,72.16,73.82,30,0
     >>Kill |cRXP_ENEMY_Nightbane Vile Fang|r
     .complete 222,1 --Worgen in the Woods
     .mob Nightbane Vile Fang

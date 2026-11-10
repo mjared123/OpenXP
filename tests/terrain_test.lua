@@ -92,4 +92,25 @@ try("other zones: no terrain, straight line", function()
     assert(tr.Route({wx = 1, wy = 1, instance = 0}, 2, 2, 0, {zone = 1429}) == nil)
 end)
 
+try("spawn marks: the mobs an item objective drops from, on this map", function()
+    addon.card = {QGet = function(kind, id)
+        if kind == "Quest" and id == 101 then
+            return {objectives = {{{48}}, nil, {{1130}}}}
+        elseif kind == "Item" and id == 1130 then
+            return {npcDrops = {217, 539}}
+        elseif kind == "NPC" and id == 217 then
+            return {spawns = {[10] = {{10.5, 55.2}, {11.0, 52.3}}, [12] = {{1, 1}}}}
+        elseif kind == "NPC" and id == 539 then
+            return {spawns = {[10] = {{9.7, 51.1}}}}
+        elseif kind == "NPC" and id == 48 then
+            return {spawns = {[10] = {{79, 69}}}}
+        end
+    end}
+    local pts = tr.ObjectiveSpawns(101, 2, 10)
+    assert(#pts == 3, "three spiders in Duskwood: " .. #pts)
+    local skel = tr.ObjectiveSpawns(101, 1, 10)
+    assert(#skel == 1 and skel[1][1] == 79, "objective 1 is the creature")
+    addon.card = nil
+end)
+
 return fails

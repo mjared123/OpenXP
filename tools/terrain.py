@@ -374,6 +374,7 @@ def to_lua():
     for name, z in ZONES.items():
         g = build_grid(z)
         out.append("    [%d] = { -- %s" % (z["uimap"], name))
+        out.append("        area = %d," % z["area"])
         out.append("        yards = {%.1f, %.1f}," % z["yards"])
         out.append("        rows = {")
         for row in g:

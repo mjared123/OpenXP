@@ -385,6 +385,7 @@ class Builder:
         self._cache = {}
         self._quests = None
         self.alts = {}                      # (quest, zone, objective) -> dense spots
+        self.site_pts = {}                  # (quest, zone, objective) -> spawn points
         self.rollouts = False               # look ahead when ordering steps (slow)
 
     file_accepted = set()
@@ -603,6 +604,7 @@ class Builder:
         for site, pts in zip(sites, seq):
             if pts:
                 self.alts[(q.id, zone, site[0])] = [c for c, _n in dense_clusters(pts)]
+                self.site_pts[(q.id, zone, site[0])] = pts
         return sites
 
     def candidates(self, section, later_areas=(), carry_ahead=None):
@@ -1121,6 +1123,46 @@ class Builder:
 # Output
 # ---------------------------------------------------------------------------
 
+AREA_RADIUS = 30   # yards: a corner of a kill/loot area counts as reached
+AREA_REACH = 7.0   # map units: spawns this close to the step's spot make its area
+
+
+def area_loop(points, where, most=6):
+    """The kill/loot area around `where` as a loop of corners: the outline of
+    the spawns near it, pulled in a little so the corners sit among the mobs,
+    with at most `most` corners. None when there aren't enough spawns."""
+    near = sorted({(round(p[0], 2), round(p[1], 2)) for p in points if math.dist(p, where) <= AREA_REACH})
+    if len(near) < 4:
+        return None
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    lower, upper = [], []
+    for p in near:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+    for p in reversed(near):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+    hull = lower[:-1] + upper[:-1]
+    if len(hull) < 3:
+        return None
+    while len(hull) > most:
+        # drop the corner that changes the outline least
+        def area(i):
+            a, b, c = hull[i - 1], hull[i], hull[(i + 1) % len(hull)]
+            return abs(cross(a, b, c))
+        hull.pop(min(range(len(hull)), key=area))
+    cx = sum(p[0] for p in near) / len(near)
+    cy = sum(p[1] for p in near) / len(near)
+    loop = [(cx + (x - cx) * 0.75, cy + (y - cy) * 0.75) for x, y in hull]
+    if max(math.dist(a, b) for a in loop for b in loop) < 2.0:
+        return None  # a single spot: no need to walk around
+    return loop
+
+
 def fmt_coord(zone_name, p):
     return "%s,%.2f,%.2f" % (zone_name, p[0], p[1])
 
@@ -1233,7 +1275,21 @@ def render_section(builder, section, cands, actions, group, nxt):
                     mobs_all.append(m)
         tag = tags.pop() if len(tags) == 1 else None
         lines.append("step" + (" << " + tag if tag else ""))
-        if place0:
+        loop = None
+        if section.get("areas") and not place0:
+            pts = []
+            for _, (qid, oi), _w in group_objs:
+                pts += builder.site_pts.get((qid, section["area"], oi)) or []
+            loop = area_loop(pts, where)
+        if loop:
+            # An area to work through, not a spot: the outline is drawn on the
+            # map and the arrow walks you round it until the step is done.
+            lines.append("    #loop")
+            for p in loop:
+                lines.append("    .goto %s,0" % fmt_coord(zname, p))
+            for p in loop:
+                lines.append("    .goto %s,%d,0" % (fmt_coord(zname, p), AREA_RADIUS))
+        elif place0:
             lines.append("    .goto %s,%.2f,%.2f" % place0)
         else:
             lines.append("    .goto %s" % fmt_coord(zname, where))
