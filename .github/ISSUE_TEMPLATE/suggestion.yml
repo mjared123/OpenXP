@@ -1,0 +1,28 @@
+name: Suggest something
+description: An idea for a feature, a better route, or a quest the guide should add
+title: "[Idea] "
+labels: ["suggestion"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of suggestion?
+      options:
+        - New feature
+        - Better route or a missing quest
+        - Change to how something works
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What would you like OpenXP to do, and how would it help you while leveling?
+    validations:
+      required: true
+  - type: input
+    id: guide
+    attributes:
+      label: Guide or zone (if it's about a route)
+      placeholder: "Alliance 30-40, Stranglethorn"

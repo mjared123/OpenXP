@@ -2838,9 +2838,9 @@ function RXPFrame:GenerateMenuTable(menu)
     end
 
     tinsert(menuList, {
-        text = L("Open Feedback Form"),
+        text = L("Feedback and bugs"),
         notCheckable = 1,
-        func = function() addon.comms.OpenBugReport() end
+        func = function() addon.feedback.Show() end
     })
 
     if addon.v2 and addon.v2.IsActivePartyStepsFrameHidden and

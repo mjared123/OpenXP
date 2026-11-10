@@ -24,7 +24,8 @@ H[L"What are command the line options?"] = L[[
 |cff909090/oxp debug|r - enable debugging output
 |cff909090/oxp splits|r - Toggle Level Splits on or off, if enabled
 |cff909090/oxp show||hide||toggle|r - Toggle all enabled frames on or off
-|cff909090/oxp bug||feedback|r - Open Feedback Form
+|cff909090/oxp feedback|r - Report a bug, suggest something, leave a comment or rate OpenXP
+|cff909090/oxp bugform|r - Full bug details to paste into a bug report
 |cff909090/oxp where|r - Smart start: jump to the right guide step for your character
 |cff909090/oxp catchup|r - List quest chains Smart start skipped and where to get them
 |cff909090/oxp news|r - Show the OpenXP welcome and what's new window

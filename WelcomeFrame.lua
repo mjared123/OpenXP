@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.8",
+        date = "November 2026",
+        changes = {
+            "New Feedback window: report a bug, suggest something, leave a comment or rate OpenXP. Open it with /oxp feedback or \"Feedback and bugs\" in the right-click menu",
+            "The bug report link fills in your OpenXP version, guide and step for you, and \"Full bug details\" has everything else to paste in",
+        },
+    },
+    {
         version = "1.3.7",
         date = "November 2026",
         changes = {

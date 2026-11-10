@@ -112,7 +112,9 @@ function addon.settings.ChatCommand(input)
         addon.tracker:ToggleLevelSplits()
     elseif input == "show" or input == "hide" or input == "toggle" then
         addon.settings.ToggleActive()
-    elseif input == "bug" or input == "feedback" then
+    elseif input == "bug" or input == "feedback" or input == "rate" then
+        addon.feedback.Show()
+    elseif input == "bugform" then
         addon.comms.OpenBugReport()
     elseif input == "preview" then
         addon.settings:EnableFramePreviews()
@@ -620,13 +622,15 @@ function addon.settings:CreateAceOptionsPanel()
         args = {
             discordButton = {
                 order = 1.0,
-                name = L("Report an issue"), -- OpenXP: GitHub issues instead of RestedXP's Discord
+                name = L("Feedback and bugs"), -- OpenXP: feedback window instead of RestedXP's Discord
+                desc = L("Report a bug, suggest something, leave a comment or rate OpenXP (/oxp feedback)"),
                 type = "execute",
                 width = "normal",
                 func = function()
-                    addon.url = "https://github.com/mjared123/OpenXP/issues"
-                    _G.StaticPopup_Show("RXP_Link")
-                    addon.url = nil
+                    C_Timer.After(0, function()
+                        addon.settings.CloseSettings()
+                        addon.feedback.Show()
+                    end)
                 end
             },
             -- OpenXP buttons for the /oxp commands
@@ -4352,9 +4356,9 @@ local function buildWorldMapMenu()
     })
 
     tinsert(menu, {
-        text = L("Open Feedback Form"),
+        text = L("Feedback and bugs"),
         notCheckable = 1,
-        func = function() addon.comms.OpenBugReport() end
+        func = function() addon.feedback.Show() end
     })
 
     tinsert(menu, {
