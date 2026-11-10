@@ -40,9 +40,9 @@ local function announceLevelUp(message)
 
     if GetNumGroupMembers() > 0 then
         if addon.settings.profile.enableLevelUpAnnounceGroup then SendChatMessage(message, "PARTY", nil) end
-    else
-        if addon.settings.profile.enableLevelUpAnnounceSolo then SendChatMessage(message, "EMOTE", nil) end
     end
+    -- No solo /emote: WoW Forever blocks addons from sending /say, /yell and
+    -- /emote outside instances (ADDON_ACTION_BLOCKED)
 
     if addon.settings.profile.enableLevelUpAnnounceGuild and IsInGuild() then SendChatMessage(message, "GUILD", nil) end
 end

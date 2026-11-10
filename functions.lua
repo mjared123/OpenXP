@@ -952,14 +952,16 @@ function addon.GetNpcName(id)
 end
 
 function addon.ReplaceNpcIds(textLine,element)
+    -- an element without a step (an OpenXP detour target) counts as active
+    local inactive = element and element.step and not element.step.active
     textLine = textLine:gsub("npc:(.-):(%d+)",function(name,id)
-        if not element or element.step.active then
+        if not inactive then
             return addon.GetNpcName(tonumber(id)) or name
         else
             return id
         end
     end)
-    if element and not element.step.active then
+    if inactive then
         return textLine:gsub("::%d+","")
     end
     for name,npcId in string.gmatch(textLine, "|c%x%x%x%x%x%x%x%x([^|:]+)::(%d+)|r") do
