@@ -14,18 +14,21 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 50-51 Ironforge
-#next 50-51 Un'Goro Crater
+#next 50-51 Darnassus
 
 step
     #completewith next
     .zone Ironforge >>Travel to Ironforge
 step
-    .xp 50 >>Kill mobs on the way, or run Maraudon, until you're level 50: the quests here are a bit high for you before that
-step
     .goto Ironforge,75.77,23.38
     >>Talk to |cRXP_FRIENDLY_Laris Geardawdle|r
     .accept 4512 >>Accept A Little Slime Goes a Long Way
     .target Laris Geardawdle
+step
+    .goto Ironforge,71.50,15.74
+    >>Talk to |cRXP_FRIENDLY_Curator Thorius|r
+    .turnin -3368 >>Turn in Suntara Stones
+    .target Curator Thorius
 step
     .goto Ironforge,77.54,11.82
     >>Talk to |cRXP_FRIENDLY_Historian Karnik|r
@@ -59,6 +62,11 @@ step << Paladin
     .accept 8415 >>Accept Chillwind Point
     .target Brandur Ironhammer
 step
+    .goto Ironforge,18.15,51.45
+    >>Talk to |cRXP_FRIENDLY_Innkeeper Firebrew|r
+    .accept 3790 >>Accept Assisting Arch Druid Staghelm
+    .target Innkeeper Firebrew
+step
     .goto Ironforge,55.92,81.39
     >>Talk to |cRXP_FRIENDLY_Courier Hammerfall|r
     .accept 5090 >>Accept A Call to Arms: The Plaguelands!
@@ -84,315 +92,8 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 50-51 Un'Goro Crater
-#next 50-51 Burning Steppes
-
-step
-    #completewith next
-    .zone Un'Goro Crater >>Travel to Marshal's Refuge in Un'Goro Crater
-step
-    .goto Un'Goro Crater,45.23,5.83
-    >>Talk to |cRXP_FRIENDLY_Gryfe|r
-    .fp Marshal's Refuge >>Get the Marshal's Refuge flight path
-    .target Gryfe
-step
-    .goto Un'Goro Crater,43.89,7.24
-    >>Talk to |cRXP_FRIENDLY_Hol'anyee Marshal|r
-    .accept 3883 >>Accept Alien Ecology
-    .target Hol'anyee Marshal
-step
-    .goto Un'Goro Crater,43.50,7.42
-    >>Talk to |cRXP_FRIENDLY_Spark Nilminer|r
-    .accept 3882 >>Accept Roll the Bones
-    .target Spark Nilminer
-step
-    .goto Un'Goro Crater,42.94,9.64
-    >>Talk to |cRXP_FRIENDLY_Muigin|r
-    .accept 4141 >>Accept Muigin and Larion
-    .target Muigin
-step
-    .goto Un'Goro Crater,44.23,11.59
-    >>Talk to |cRXP_FRIENDLY_Shizzle|r
-    .accept 4503 >>Accept Shizzle's Flyer
-    .target Shizzle
-step
-    .goto Un'Goro Crater,68.45,30.13
-    >>Kill |cRXP_ENEMY_Bloodpetal Lasher|r and |cRXP_ENEMY_Bloodpetal Flayer|r and |cRXP_ENEMY_Bloodpetal Thresher|r. Loot them for |cRXP_LOOT_Bloodpetal|r
-    .complete 4141,1 --Muigin and Larion
-    .mob Bloodpetal Lasher
-    .mob Bloodpetal Flayer
-    .mob Bloodpetal Thresher
-step
-    .goto Un'Goro Crater,42.94,9.64
-    >>Talk to |cRXP_FRIENDLY_Muigin|r
-    .turnin 4141 >>Turn in Muigin and Larion
-    .target Muigin
-step
-    .goto Un'Goro Crater,25.40,39.80
-    >>Kill |cRXP_ENEMY_Fledgling Pterrordax|r and |cRXP_ENEMY_Pterrordax|r and |cRXP_ENEMY_Frenzied Pterrordax|r. Loot them for |cRXP_LOOT_Webbed Pterrordax Scale|r
-    .complete 4503,2 --Shizzle's Flyer
-    .mob Fledgling Pterrordax
-    .mob Pterrordax
-    .mob Frenzied Pterrordax
-step
-    .goto Un'Goro Crater,44.70,54.42
-    >>Loot the |cRXP_PICK_Un'Goro Soil|r
-    .complete -3764,1 --Un'Goro Soil
-step
-    .goto Un'Goro Crater,50.37,62.88
-    >>Kill |cRXP_ENEMY_Young Diemetradon|r and |cRXP_ENEMY_Diemetradon|r and |cRXP_ENEMY_Elder Diemetradon|r. Loot them for |cRXP_LOOT_Dinosaur Bone|r
-    >>Kill |cRXP_ENEMY_Young Diemetradon|r and |cRXP_ENEMY_Diemetradon|r and |cRXP_ENEMY_Elder Diemetradon|r. Loot them for |cRXP_LOOT_Webbed Diemetradon Scale|r
-    .complete 3882,1 --Roll the Bones
-    .complete 4503,1 --Shizzle's Flyer
-    .mob Young Diemetradon
-    .mob Diemetradon
-    .mob Elder Diemetradon
-step
-    .goto Un'Goro Crater,63.02,68.60
-    >>Click the |cRXP_PICK_A Wrecked Raft|r
-    .accept 3844 >>Accept It's a Secret to Everybody
-step
-    .goto Un'Goro Crater,63.11,69.06
-    >>Click the |cRXP_PICK_A Small Pack|r
-    .turnin 3844 >>Turn in It's a Secret to Everybody
-step << Druid
-    .goto Un'Goro Crater,71.64,75.96
-    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
-    .accept 9052 >>Accept Bloodpetal Poison
-    .target Torwa Pathfinder
-step << Druid
-    .goto Un'Goro Crater,48.33,81.52
-    >>Kill |cRXP_ENEMY_Gorishi Wasp|r and |cRXP_ENEMY_Gorishi Stinger|r. Loot them for |cRXP_LOOT_Gorishi Sting|r
-    .complete 9052,1 --Bloodpetal Poison
-    .mob Gorishi Wasp
-    .mob Gorishi Stinger
-step
-    .goto Un'Goro Crater,48.69,85.32
-    >>Loot the |cRXP_PICK_Hive Wall Sample|r
-    .complete 3883,1 --Alien Ecology
-step << Druid
-    .goto Un'Goro Crater,37.08,25.11
-    >>Loot the |cRXP_PICK_Bloodcap|r
-    .complete 9052,2 --Bloodpetal Poison
-step
-    .goto Un'Goro Crater,44.23,11.59
-    >>Talk to |cRXP_FRIENDLY_Shizzle|r
-    .turnin 4503 >>Turn in Shizzle's Flyer
-    .target Shizzle
-step
-    .goto Un'Goro Crater,43.50,7.42
-    >>Talk to |cRXP_FRIENDLY_Spark Nilminer|r
-    .turnin 3882 >>Turn in Roll the Bones
-    .target Spark Nilminer
-step
-    .goto Un'Goro Crater,43.89,7.24
-    >>Talk to |cRXP_FRIENDLY_Hol'anyee Marshal|r
-    .turnin 3883 >>Turn in Alien Ecology
-    .target Hol'anyee Marshal
-step << Druid
-    .goto Un'Goro Crater,71.64,75.96
-    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
-    .turnin 9052 >>Turn in Bloodpetal Poison
-    .accept 9051 >>Accept Toxic Test
-    .target Torwa Pathfinder
-step << Druid
-    .goto Un'Goro Crater,34.60,22.37
-    >>Devilsaur
-    .complete 9051,1 --Toxic Test
-    .mob Devilsaur
-    .mob Ironhide Devilsaur
-    .mob Tyrant Devilsaur
-step << Druid
-    .goto Un'Goro Crater,71.64,75.96
-    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
-    .turnin 9051 >>Turn in Toxic Test
-    .target Torwa Pathfinder
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 50-51 Burning Steppes
-#next 50-51 Western Plaguelands
-
-step
-    #completewith next
-    .zone Burning Steppes >>Travel to Morgan's Vigil in Burning Steppes
-step
-    .goto Burning Steppes,84.33,68.33
-    >>Talk to |cRXP_FRIENDLY_Borgus Stoutarm|r
-    .fp Morgan's Vigil >>Get the Morgan's Vigil flight path
-    .target Borgus Stoutarm
-step
-    .goto Burning Steppes,84.56,68.68
-    >>Talk to |cRXP_FRIENDLY_Oralius|r
-    .accept 3823 >>Accept Extinguish the Firegut
-    .target Oralius
-step
-    .goto Burning Steppes,77.38,47.17
-    >>Kill |cRXP_ENEMY_Firegut Ogre|r
-    .complete 3823,2 --Extinguish the Firegut
-    .mob Firegut Ogre
-step
-    .goto Burning Steppes,80.39,45.11
-    >>Kill |cRXP_ENEMY_Firegut Ogre Mage|r
-    >>Kill |cRXP_ENEMY_Firegut Brute|r
-    .complete 3823,1 --Extinguish the Firegut
-    .complete 3823,3 --Extinguish the Firegut
-    .mob Firegut Ogre Mage
-    .mob Firegut Brute
-step
-    .goto Burning Steppes,84.56,68.68
-    >>Talk to |cRXP_FRIENDLY_Oralius|r
-    .turnin 3823 >>Turn in Extinguish the Firegut
-    .target Oralius
-step
-    .goto Burning Steppes,65.24,24.00
-    >>Talk to |cRXP_FRIENDLY_Tinkee Steamboil|r
-    .accept 4726 >>Accept Broodling Essence
-    .target Tinkee Steamboil
-step
-    .goto Burning Steppes,65.15,23.91
-    >>Talk to |cRXP_FRIENDLY_Maxwort Uberglint|r
-    .accept 4296 >>Accept Tablet of the Seven
-    .target Maxwort Uberglint
-step
-    .goto Burning Steppes,54.12,40.76
-    >>Loot the |cRXP_PICK_Tablet Transcript|r
-    .complete 4296,1 --Tablet of the Seven
-step << Warlock
-    .goto Burning Steppes,42.30,44.74
-    >>Kill |cRXP_ENEMY_Terrorspark|r. Loot them for |cRXP_LOOT_Felcloth|r
-    .complete 8419,1 --An Imp's Request
-    .mob Terrorspark
-step
-    .goto Burning Steppes,28.96,28.93
-    >>Talk to |cRXP_FRIENDLY_Franclorn Forgewright|r
-    .accept 3801 >>Accept Dark Iron Legacy
-    .turnin 3801 >>Turn in Dark Iron Legacy
-    .target Franclorn Forgewright
-step
-    .goto Burning Steppes,65.15,23.91
-    >>Talk to |cRXP_FRIENDLY_Maxwort Uberglint|r
-    .turnin 4296 >>Turn in Tablet of the Seven
-    .target Maxwort Uberglint
-step
-    .goto Burning Steppes,86.92,30.55
-    >>Loot the |cRXP_PICK_Broodling Essence|r
-    .complete 4726,1 --Broodling Essence
-step
-    .goto Burning Steppes,65.24,24.00
-    >>Talk to |cRXP_FRIENDLY_Tinkee Steamboil|r
-    .turnin 4726 >>Turn in Broodling Essence
-    .target Tinkee Steamboil
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 50-51 Western Plaguelands
-#next 51-52 Darnassus
-
-step
-    #completewith next
-    .zone Western Plaguelands >>Travel to Chillwind Camp in Western Plaguelands
-step
-    .goto Western Plaguelands,42.92,85.06
-    >>Talk to |cRXP_FRIENDLY_Bibilfaz Featherwhistle|r
-    .fp Chillwind Camp >>Get the Chillwind Camp flight path
-    .target Bibilfaz Featherwhistle
-step
-    .goto Western Plaguelands,42.70,84.03
-    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
-    .turnin 5090 >>Turn in A Call to Arms: The Plaguelands!
-    .accept 5092 >>Accept Clear the Way
-    .accept 8414 >>Accept Dispelling Evil << Paladin
-    .turnin 8415 >>Turn in Chillwind Point << Paladin
-    .target Commander Ashlam Valorfist
-step
-    .goto Western Plaguelands,50.36,80.05
-    >>Kill |cRXP_ENEMY_Slavering Ghoul|r
-    .complete 5092,2 --Clear the Way
-    .mob Slavering Ghoul
-step << Paladin
-    .goto Western Plaguelands,42.60,69.21
-    >>Kill |cRXP_ENEMY_Skeletal Flayer|r and |cRXP_ENEMY_Skeletal Sorcerer|r and |cRXP_ENEMY_Skeletal Terror|r. Loot them for |cRXP_LOOT_Minion's Scourgestone|r
-    .complete 8414,1 --Dispelling Evil
-    .mob Skeletal Flayer
-    .mob Skeletal Sorcerer
-    .mob Skeletal Terror
-step
-    .goto Western Plaguelands,38.40,54.05
-    >>Talk to |cRXP_FRIENDLY_Janice Felstone|r
-    .accept 5021 >>Accept Better Late Than Never
-    .target Janice Felstone
-step
-    .goto Western Plaguelands,38.73,55.24
-    >>Click the |cRXP_PICK_Janice's Parcel|r
-    .turnin 5021 >>Turn in Better Late Than Never
-    .accept 5022 >>Accept Better Late Than Never
-step
-    .goto Western Plaguelands,37.56,56.55
-    >>Kill |cRXP_ENEMY_Skeletal Flayer|r
-    .complete 5092,1 --Clear the Way
-    .mob Skeletal Flayer
-step
-    .goto Western Plaguelands,42.70,84.03
-    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
-    .turnin 5092 >>Turn in Clear the Way
-    .accept 5215 >>Accept The Scourge Cauldrons
-    .target Commander Ashlam Valorfist
-step
-    .goto Western Plaguelands,42.97,84.50
-    >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
-    .turnin 5215 >>Turn in The Scourge Cauldrons
-    .accept 5216 >>Accept Target: Felstone Field
-    .target High Priestess MacDonnell
-step << Paladin
-    .goto Western Plaguelands,52.05,83.27
-    >>Talk to |cRXP_FRIENDLY_High Priest Thel'danis|r
-    .turnin 8414 >>Turn in Dispelling Evil
-    .accept 8416 >>Accept Inert Scourgestones
-    .target High Priest Thel'danis
-step << Paladin
-    .goto Western Plaguelands,42.70,84.03
-    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
-    .turnin 8416 >>Turn in Inert Scourgestones
-    .target Commander Ashlam Valorfist
-step
-    .goto Western Plaguelands,36.93,57.41
-    >>Kill |cRXP_ENEMY_Cauldron Lord Bilemaw|r. Loot them for |cRXP_LOOT_Felstone Field Cauldron Key|r
-    .complete 5216,1 --Target: Felstone Field
-    .mob Cauldron Lord Bilemaw
-step
-    .goto Western Plaguelands,37.25,56.78
-    >>Click the |cRXP_PICK_Scourge Cauldron|r
-    .turnin 5216 >>Turn in Target: Felstone Field
-    .accept 5217 >>Accept Return to Chillwind Camp
-step
-    .goto Western Plaguelands,42.97,84.50
-    >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
-    .turnin 5217 >>Turn in Return to Chillwind Camp
-    .target High Priestess MacDonnell
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 51-52 Darnassus
-#next 51-52 Felwood
+#name 50-51 Darnassus
+#next 50-51 Feralas
 
 step
     #completewith next
@@ -405,7 +106,7 @@ step << Druid
 step
     .goto Darnassus,34.81,9.26
     >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
-    .turnin -3790 >>Turn in Assisting Arch Druid Staghelm
+    .turnin 3790 >>Turn in Assisting Arch Druid Staghelm
     .target Arch Druid Fandral Staghelm
 step
     .goto Darnassus,31.49,8.23
@@ -436,8 +137,259 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
+#name 50-51 Feralas
+#next 50-51 Burning Steppes
+
+step
+    #completewith next
+    .zone Feralas >>Fly to Feathermoon Stronghold in Feralas
+step
+    .goto Feralas,30.97,43.49
+    >>Talk to |cRXP_FRIENDLY_Innkeeper Shyria|r
+    .accept 3788 >>Accept Jonespyre's Request
+    .target Innkeeper Shyria
+step
+    .goto Feralas,31.83,45.61
+    >>Talk to |cRXP_FRIENDLY_Angelas Moonbreeze|r
+    .accept 3445 >>Accept The Sunken Temple
+    .target Angelas Moonbreeze
+step
+    .goto Feralas,32.45,43.79
+    >>Talk to |cRXP_FRIENDLY_Quintis Jonespyre|r
+    .turnin 3788 >>Turn in Jonespyre's Request
+    .target Quintis Jonespyre
+step
+    .goto Feralas,42.39,22.00
+    >>Talk to |cRXP_FRIENDLY_Rockbiter|r
+    .accept 2844 >>Accept The Giant Guardian
+    .target Rockbiter
+step
+    .goto Feralas,38.22,10.30
+    >>Talk to |cRXP_FRIENDLY_Shay Leafrunner|r
+    .turnin 2844 >>Turn in The Giant Guardian
+    .accept 2845 >>Accept Wandering Shay
+    .target Shay Leafrunner
+step
+    .goto Feralas,38.25,10.29
+    >>Loot the |cRXP_PICK_Shay's Bell|r
+    .complete 2845,1 --Wandering Shay
+step
+    .goto Feralas,42.33,21.85
+    >>Take Shay Leafrunner to Rockbiter's camp
+    .complete 2845,2 --Wandering Shay
+step
+    .goto Feralas,42.39,22.00
+    >>Talk to |cRXP_FRIENDLY_Rockbiter|r
+    .turnin 2845 >>Turn in Wandering Shay
+    .target Rockbiter
+step
+    .goto Feralas,45.12,25.57
+    >>Talk to |cRXP_FRIENDLY_Gregan Brewspewer|r
+    .turnin -4142 >>Turn in A Visit to Gregan
+    .target Gregan Brewspewer
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 50-51 Burning Steppes
+#next 51-52 Western Plaguelands
+
+step
+    #completewith next
+    .zone Burning Steppes >>Travel to Morgan's Vigil in Burning Steppes
+step
+    .goto Burning Steppes,84.33,68.33
+    >>Talk to |cRXP_FRIENDLY_Borgus Stoutarm|r
+    .fp Morgan's Vigil >>Get the Morgan's Vigil flight path
+    .target Borgus Stoutarm
+step
+    .goto Burning Steppes,84.56,68.68
+    >>Talk to |cRXP_FRIENDLY_Oralius|r
+    .accept 3823 >>Accept Extinguish the Firegut
+    .target Oralius
+step
+    .goto Burning Steppes,80.39,45.11
+    >>Kill |cRXP_ENEMY_Firegut Brute|r
+    >>Kill |cRXP_ENEMY_Firegut Ogre Mage|r
+    .complete 3823,3 --Extinguish the Firegut
+    .complete 3823,1 --Extinguish the Firegut
+    .mob Firegut Brute
+    .mob Firegut Ogre Mage
+step
+    .goto Burning Steppes,65.24,24.00
+    >>Talk to |cRXP_FRIENDLY_Tinkee Steamboil|r
+    .accept 4726 >>Accept Broodling Essence
+    .target Tinkee Steamboil
+step
+    .goto Burning Steppes,65.15,23.91
+    >>Talk to |cRXP_FRIENDLY_Maxwort Uberglint|r
+    .accept 4296 >>Accept Tablet of the Seven
+    .target Maxwort Uberglint
+step
+    .goto Burning Steppes,59.19,32.29
+    >>Loot the |cRXP_PICK_Broodling Essence|r
+    .complete 4726,1 --Broodling Essence
+step
+    .goto Burning Steppes,54.12,40.76
+    >>Loot the |cRXP_PICK_Tablet Transcript|r
+    .complete 4296,1 --Tablet of the Seven
+step << Warlock
+    .goto Burning Steppes,42.30,44.74
+    >>Kill |cRXP_ENEMY_Terrorspark|r. Loot them for |cRXP_LOOT_Felcloth|r
+    .complete 8419,1 --An Imp's Request
+    .mob Terrorspark
+step
+    .goto Burning Steppes,28.96,28.93
+    >>Talk to |cRXP_FRIENDLY_Franclorn Forgewright|r
+    .accept 3801 >>Accept Dark Iron Legacy
+    .turnin 3801 >>Turn in Dark Iron Legacy
+    .target Franclorn Forgewright
+step
+    .goto Burning Steppes,65.15,23.91
+    >>Talk to |cRXP_FRIENDLY_Maxwort Uberglint|r
+    .turnin 4296 >>Turn in Tablet of the Seven
+    .target Maxwort Uberglint
+step
+    .goto Burning Steppes,65.24,24.00
+    >>Talk to |cRXP_FRIENDLY_Tinkee Steamboil|r
+    .turnin 4726 >>Turn in Broodling Essence
+    .target Tinkee Steamboil
+step
+    .goto Burning Steppes,77.38,47.17
+    >>Kill |cRXP_ENEMY_Firegut Ogre|r
+    .complete 3823,2 --Extinguish the Firegut
+    .mob Firegut Ogre
+step
+    .goto Burning Steppes,84.56,68.68
+    >>Talk to |cRXP_FRIENDLY_Oralius|r
+    .turnin 3823 >>Turn in Extinguish the Firegut
+    .accept 3824 >>Accept Gor'tesh the Brute Lord
+    .target Oralius
+step
+    .goto Burning Steppes,39.33,55.30
+    >>Kill |cRXP_ENEMY_Gor'tesh|r and |cRXP_ENEMY_Grubbub|r. Loot them for |cRXP_LOOT_Gor'tesh's Lopped Off Head|r
+    .complete 3824,1 --Gor'tesh the Brute Lord
+    .mob Gor'tesh
+    .mob Grubbub
+step
+    .goto Burning Steppes,84.56,68.68
+    >>Talk to |cRXP_FRIENDLY_Oralius|r
+    .turnin 3824 >>Turn in Gor'tesh the Brute Lord
+    .accept 3825 >>Accept Ogre Head On A Stick = Party
+    .target Oralius
+step
+    .goto Burning Steppes,81.00,46.79
+    >>Gor'tesh Head Planted
+    .complete 3825,1 --Ogre Head On A Stick = Party
+step
+    .goto Burning Steppes,84.56,68.68
+    >>Talk to |cRXP_FRIENDLY_Oralius|r
+    .turnin 3825 >>Turn in Ogre Head On A Stick = Party
+    .target Oralius
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 51-52 Western Plaguelands
+#next 51-52 Felwood
+
+step
+    #completewith next
+    .zone Western Plaguelands >>Travel to Chillwind Camp in Western Plaguelands
+step
+    .goto Western Plaguelands,42.92,85.06
+    >>Talk to |cRXP_FRIENDLY_Bibilfaz Featherwhistle|r
+    .fp Chillwind Camp >>Get the Chillwind Camp flight path
+    .target Bibilfaz Featherwhistle
+step
+    .goto Western Plaguelands,42.70,84.03
+    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
+    .turnin 5090 >>Turn in A Call to Arms: The Plaguelands!
+    .accept 5092 >>Accept Clear the Way
+    .accept 8414 >>Accept Dispelling Evil << Paladin
+    .turnin 8415 >>Turn in Chillwind Point << Paladin
+    .target Commander Ashlam Valorfist
+step
+    .goto Western Plaguelands,50.77,80.55
+    >>Kill |cRXP_ENEMY_Skeletal Flayer|r
+    >>Kill |cRXP_ENEMY_Slavering Ghoul|r
+    >>Kill |cRXP_ENEMY_Skeletal Flayer|r and |cRXP_ENEMY_Skeletal Sorcerer|r and |cRXP_ENEMY_Skeletal Terror|r. Loot them for |cRXP_LOOT_Minion's Scourgestone|r
+    .complete 5092,1 --Clear the Way
+    .complete 5092,2 --Clear the Way
+    .complete 8414,1 --Dispelling Evil
+    .mob Skeletal Flayer
+    .mob Slavering Ghoul
+    .mob Skeletal Sorcerer
+    .mob Skeletal Terror
+step << Paladin
+    .goto Western Plaguelands,52.05,83.27
+    >>Talk to |cRXP_FRIENDLY_High Priest Thel'danis|r
+    .turnin 8414 >>Turn in Dispelling Evil
+    .accept 8416 >>Accept Inert Scourgestones
+    .target High Priest Thel'danis
+step
+    .goto Western Plaguelands,42.70,84.03
+    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
+    .turnin 5092 >>Turn in Clear the Way
+    .accept 5215 >>Accept The Scourge Cauldrons
+    .target Commander Ashlam Valorfist
+step
+    .goto Western Plaguelands,42.97,84.50
+    >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
+    .turnin 5215 >>Turn in The Scourge Cauldrons
+    .accept 5216 >>Accept Target: Felstone Field
+    .target High Priestess MacDonnell
+step << Paladin
+    .goto Western Plaguelands,42.70,84.03
+    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
+    .turnin 8416 >>Turn in Inert Scourgestones
+    .target Commander Ashlam Valorfist
+step
+    .goto Western Plaguelands,36.93,57.41
+    >>Kill |cRXP_ENEMY_Cauldron Lord Bilemaw|r. Loot them for |cRXP_LOOT_Felstone Field Cauldron Key|r
+    .complete 5216,1 --Target: Felstone Field
+    .mob Cauldron Lord Bilemaw
+step
+    .goto Western Plaguelands,37.25,56.78
+    >>Click the |cRXP_PICK_Scourge Cauldron|r
+    .turnin 5216 >>Turn in Target: Felstone Field
+    .accept 5217 >>Accept Return to Chillwind Camp
+step
+    .goto Western Plaguelands,38.40,54.05
+    >>Talk to |cRXP_FRIENDLY_Janice Felstone|r
+    .accept 5021 >>Accept Better Late Than Never
+    .target Janice Felstone
+step
+    .goto Western Plaguelands,38.73,55.24
+    >>Click the |cRXP_PICK_Janice's Parcel|r
+    .turnin 5021 >>Turn in Better Late Than Never
+    .accept 5022 >>Accept Better Late Than Never
+step
+    .goto Western Plaguelands,42.97,84.50
+    >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
+    .turnin 5217 >>Turn in Return to Chillwind Camp
+    .target High Priestess MacDonnell
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
 #name 51-52 Felwood
-#next 51-52 Thousand Needles
+#next 51-52 Azshara
 
 step
     #completewith next
@@ -466,11 +418,18 @@ step
     .complete 4512,2 --A Little Slime Goes a Long Way
     .complete 8421,2 --The Wrong Stuff
     .mob Tainted Ooze
-step
-    .goto Felwood,40.63,70.60
-    >>Kill |cRXP_ENEMY_Cursed Ooze|r. Loot them for |cRXP_LOOT_Filled Cursed Ooze Jar|r
-    .complete 4512,1 --A Little Slime Goes a Long Way
-    .mob Cursed Ooze
+step << Warlock
+    .goto Felwood,51.50,21.67
+    >>Kill |cRXP_ENEMY_Irontree Wanderer|r and |cRXP_ENEMY_Irontree Stomper|r and |cRXP_ENEMY_Withered Protector|r. Loot them for |cRXP_LOOT_Rotting Wood|r
+    .complete 8421,1 --The Wrong Stuff
+    .mob Irontree Wanderer
+    .mob Irontree Stomper
+    .mob Withered Protector
+step << Warlock
+    .goto Felwood,41.36,45.02
+    >>Talk to |cRXP_FRIENDLY_Impsy|r
+    .turnin 8421 >>Turn in The Wrong Stuff
+    .target Impsy
 step
     .goto Felwood,51.21,82.11
     >>Talk to |cRXP_FRIENDLY_Greta Mosshoof|r
@@ -483,34 +442,39 @@ step
     .target Grazle
 step
     .goto Felwood,48.30,89.46
+    >>Kill |cRXP_ENEMY_Deadwood Pathfinder|r
     >>Kill |cRXP_ENEMY_Deadwood Warrior|r
     >>Kill |cRXP_ENEMY_Deadwood Gardener|r
-    >>Kill |cRXP_ENEMY_Deadwood Pathfinder|r
+    .complete 8460,2 --Timbermaw Ally
     .complete 8460,1 --Timbermaw Ally
     .complete 8460,3 --Timbermaw Ally
-    .complete 8460,2 --Timbermaw Ally
+    .mob Deadwood Pathfinder
     .mob Deadwood Warrior
     .mob Deadwood Gardener
-    .mob Deadwood Pathfinder
 step
     .goto Felwood,50.93,85.01
     >>Talk to |cRXP_FRIENDLY_Grazle|r
     .turnin 8460 >>Turn in Timbermaw Ally
     .target Grazle
 step
+    .goto Felwood,40.63,70.60
+    >>Kill |cRXP_ENEMY_Cursed Ooze|r. Loot them for |cRXP_LOOT_Filled Cursed Ooze Jar|r
+    .complete 4512,1 --A Little Slime Goes a Long Way
+    .mob Cursed Ooze
+step
     .goto Felwood,38.38,61.07
+    >>Kill |cRXP_ENEMY_Jaedenar Hound|r
     >>Kill |cRXP_ENEMY_Jaedenar Guardian|r
     >>Kill |cRXP_ENEMY_Jaedenar Adept|r
     >>Kill |cRXP_ENEMY_Jaedenar Cultist|r
-    >>Kill |cRXP_ENEMY_Jaedenar Hound|r
+    .complete 5155,1 --Forces of Jaedenar
     .complete 5155,2 --Forces of Jaedenar
     .complete 5155,3 --Forces of Jaedenar
     .complete 5155,4 --Forces of Jaedenar
-    .complete 5155,1 --Forces of Jaedenar
+    .mob Jaedenar Hound
     .mob Jaedenar Guardian
     .mob Jaedenar Adept
     .mob Jaedenar Cultist
-    .mob Jaedenar Hound
 step
     .goto Felwood,51.21,82.11
     >>Talk to |cRXP_FRIENDLY_Greta Mosshoof|r
@@ -526,49 +490,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Greta Mosshoof|r
     .turnin 5157 >>Turn in Collection of the Corrupt Water
     .target Greta Mosshoof
-step << Warlock
-    .goto Felwood,51.50,21.67
-    >>Kill |cRXP_ENEMY_Irontree Wanderer|r and |cRXP_ENEMY_Irontree Stomper|r and |cRXP_ENEMY_Withered Protector|r. Loot them for |cRXP_LOOT_Rotting Wood|r
-    .complete 8421,1 --The Wrong Stuff
-    .mob Irontree Wanderer
-    .mob Irontree Stomper
-    .mob Withered Protector
-step << Warlock
-    .goto Felwood,41.36,45.02
-    >>Talk to |cRXP_FRIENDLY_Impsy|r
-    .turnin 8421 >>Turn in The Wrong Stuff
-    .target Impsy
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 51-52 Thousand Needles
-#next 51-52 Azshara
-
-step
-    #completewith next
-    .zone Thousand Needles >>Fly to Gadgetzan or Theramore and ride to the Shimmering Flats in Thousand Needles
-step
-    .goto Thousand Needles,78.14,77.12
-    >>Talk to |cRXP_FRIENDLY_Wizzle Brassbolts|r
-    .turnin -1179 >>Turn in The Brassbolts Brothers
-    .turnin -2769 >>Turn in The Brassbolts Brothers
-    .target Wizzle Brassbolts
-step
-    .goto Thousand Needles,78.35,74.72
-    >>Talk to |cRXP_FRIENDLY_Quentin|r
-    .turnin -3841 >>Turn in An Orphan Looking For a Home
-    .target Quentin
-step
-    .goto Thousand Needles,75.49,57.37
-    >>Kill |cRXP_ENEMY_Saltstone Basilisk|r. Loot them for |cRXP_LOOT_Crystalized Scales|r
-    .complete -1078,1 --Retrieval for Mauren
-    .mob Saltstone Basilisk
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -596,7 +517,7 @@ step
     .accept 5536 >>Accept A Land Filled with Hatred
     .target Loh'atu
 step
-    .goto Azshara,16.67,70.78
+    .goto Azshara,17.27,70.71
     >>Kill |cRXP_ENEMY_Highborne Apparition|r
     >>Kill |cRXP_ENEMY_Highborne Lichling|r
     .complete 5535,1 --Spiritual Unrest
@@ -604,21 +525,16 @@ step
     .mob Highborne Apparition
     .mob Highborne Lichling
 step
-    .goto Azshara,11.37,78.17
-    >>Talk to |cRXP_FRIENDLY_Loh'atu|r
-    .turnin 5535 >>Turn in Spiritual Unrest
-    .target Loh'atu
-step
     .goto Azshara,19.76,62.16
+    >>Kill |cRXP_ENEMY_Haldarr Satyr|r
     >>Kill |cRXP_ENEMY_Haldarr Trickster|r
     >>Kill |cRXP_ENEMY_Haldarr Felsworn|r
-    >>Kill |cRXP_ENEMY_Haldarr Satyr|r
+    .complete 5536,1 --A Land Filled with Hatred
     .complete 5536,2 --A Land Filled with Hatred
     .complete 5536,3 --A Land Filled with Hatred
-    .complete 5536,1 --A Land Filled with Hatred
+    .mob Haldarr Satyr
     .mob Haldarr Trickster
     .mob Haldarr Felsworn
-    .mob Haldarr Satyr
 step << Mage
     .goto Azshara,28.11,50.09
     >>Talk to |cRXP_FRIENDLY_Sanath Lim-yo|r
@@ -638,34 +554,24 @@ step
     .accept 8255 >>Accept Of Coursers We Know << Priest
     .target Ogtinc
 step
-    .goto Azshara,39.56,50.25
-    >>Loot the |cRXP_PICK_Rubbing: Rune of Jin'yael|r
-    .complete 3449,2 --Arcane Runes
-step
-    .goto Azshara,36.91,53.17
-    >>Loot the |cRXP_PICK_Rubbing: Rune of Beth'Amara|r
-    .complete 3449,1 --Arcane Runes
-step
-    .goto Azshara,39.36,55.48
-    >>Loot the |cRXP_PICK_Rubbing: Rune of Markri|r
-    .complete 3449,3 --Arcane Runes
-step
     .goto Azshara,42.38,64.15
     >>Loot the |cRXP_PICK_Rubbing: Rune of Sael'hai|r
     .complete 3449,4 --Arcane Runes
 step
-    .goto Azshara,48.12,80.69
+    .goto Azshara,38.20,68.95
     >>Kill |cRXP_ENEMY_Mosshoof Courser|r. Loot them for |cRXP_LOOT_Perfect Courser Antler|r
     >>Kill |cRXP_ENEMY_Mosshoof Courser|r. Loot them for |cRXP_LOOT_Healthy Courser Gland|r
     .complete 8153,1 --Courser Antlers
     .complete 8255,1 --Of Coursers We Know
     .mob Mosshoof Courser
 step
-    .goto Azshara,77.81,91.40
-    >>Talk to |cRXP_FRIENDLY_Pilot Xiggs Fuselighter|r
-    .turnin 3449 >>Turn in Arcane Runes
-    .accept 3461 >>Accept Return to Tymor
-    .target Pilot Xiggs Fuselighter
+    .goto Azshara,39.36,55.48
+    >>Loot the |cRXP_PICK_Rubbing: Rune of Markri|r
+    .complete 3449,3 --Arcane Runes
+step
+    .goto Azshara,39.56,50.25
+    >>Loot the |cRXP_PICK_Rubbing: Rune of Jin'yael|r
+    .complete 3449,2 --Arcane Runes
 step
     .goto Azshara,42.40,42.62
     >>Talk to |cRXP_FRIENDLY_Ogtinc|r
@@ -682,15 +588,15 @@ step
 step
     .goto Azshara,56.71,28.05
     >>Kill |cRXP_ENEMY_Blood Elf Surveyor|r and |cRXP_ENEMY_Blood Elf Reclaimer|r. Loot them for |cRXP_LOOT_Glittering Dust|r
+    >>Loot the |cRXP_PICK_Kim'Jael's Compass|r
     >>Loot the |cRXP_PICK_Kim'Jael's Scope|r
     >>Loot the |cRXP_PICK_Kim'Jael's Stuffed Chicken|r
     >>Loot the |cRXP_PICK_Kim'Jael's Wizzlegoober|r
-    >>Loot the |cRXP_PICK_Kim'Jael's Compass|r
     .complete 8251,1 --Magic Dust
+    .complete 3601,1 --Kim'jael Indeed!
     .complete 3601,2 --Kim'jael Indeed!
     .complete 3601,3 --Kim'jael Indeed!
     .complete 3601,4 --Kim'jael Indeed!
-    .complete 3601,1 --Kim'jael Indeed!
     .mob Blood Elf Surveyor
     .mob Blood Elf Reclaimer
 step
@@ -705,15 +611,14 @@ step << Mage
     .turnin 8251 >>Turn in Magic Dust
     .accept 8252 >>Accept The Siren's Coral
     .target Archmage Xylem
-step << Mage
+step
     .goto Azshara,38.12,53.04
     >>Kill |cRXP_ENEMY_Spitelash Siren|r. Loot them for |cRXP_LOOT_Enchanted Coral|r
-    .complete 8252,1 --The Siren's Coral
-    .mob Spitelash Siren
-step
-    .goto Azshara,46.08,50.78
     >>Kill |cRXP_ENEMY_Spitelash Siren|r and |cRXP_ENEMY_Spitelash Myrmidon|r and |cRXP_ENEMY_Spitelash Battlemaster|r. Loot them for |cRXP_LOOT_Some Rune|r
+    >>Loot the |cRXP_PICK_Rubbing: Rune of Beth'Amara|r
+    .complete 8252,1 --The Siren's Coral
     .complete 5534,1 --Kim'jael's "Missing" Equipment
+    .complete 3449,1 --Arcane Runes
     .mob Spitelash Siren
     .mob Spitelash Myrmidon
     .mob Spitelash Battlemaster
@@ -722,23 +627,6 @@ step << Mage
     >>Talk to |cRXP_FRIENDLY_Archmage Xylem|r
     .turnin 8252 >>Turn in The Siren's Coral
     .target Archmage Xylem
-step
-    .goto Azshara,53.45,21.82
-    >>Talk to |cRXP_FRIENDLY_Kim'jael|r
-    .turnin 5534 >>Turn in Kim'jael's "Missing" Equipment
-    .target Kim'jael
-step << Hunter
-    .goto Azshara,85.54,11.69
-    >>Kill |cRXP_ENEMY_Young Wavethrasher|r and |cRXP_ENEMY_Wavethrasher|r and |cRXP_ENEMY_Great Wavethrasher|r. Loot them for |cRXP_LOOT_Wavethrasher Scales|r
-    .complete 8231,1 --Wavethrashing
-    .mob Young Wavethrasher
-    .mob Wavethrasher
-    .mob Great Wavethrasher
-step << Hunter
-    .goto Azshara,42.40,42.62
-    >>Talk to |cRXP_FRIENDLY_Ogtinc|r
-    .turnin 8231 >>Turn in Wavethrashing
-    .target Ogtinc
 step << Priest
     .goto Azshara,16.57,69.40
     >>Kill |cRXP_ENEMY_Highborne Apparition|r and |cRXP_ENEMY_Highborne Lichling|r and |cRXP_ENEMY_Lingering Highborne|r. Loot them for |cRXP_LOOT_Ichor of Undeath|r
@@ -749,13 +637,33 @@ step << Priest
 step
     .goto Azshara,11.37,78.17
     >>Talk to |cRXP_FRIENDLY_Loh'atu|r
+    .turnin 5535 >>Turn in Spiritual Unrest
     .turnin 5536 >>Turn in A Land Filled with Hatred
     .target Loh'atu
-step << Priest
+step << Hunter
+    .goto Azshara,62.75,96.27
+    >>Kill |cRXP_ENEMY_Young Wavethrasher|r and |cRXP_ENEMY_Wavethrasher|r and |cRXP_ENEMY_Great Wavethrasher|r. Loot them for |cRXP_LOOT_Wavethrasher Scales|r
+    .complete 8231,1 --Wavethrashing
+    .mob Young Wavethrasher
+    .mob Wavethrasher
+    .mob Great Wavethrasher
+step
+    .goto Azshara,77.81,91.40
+    >>Talk to |cRXP_FRIENDLY_Pilot Xiggs Fuselighter|r
+    .turnin 3449 >>Turn in Arcane Runes
+    .accept 3461 >>Accept Return to Tymor
+    .target Pilot Xiggs Fuselighter
+step
     .goto Azshara,42.40,42.62
     >>Talk to |cRXP_FRIENDLY_Ogtinc|r
-    .turnin 8256 >>Turn in The Ichor of Undeath
+    .turnin 8231 >>Turn in Wavethrashing << Hunter
+    .turnin 8256 >>Turn in The Ichor of Undeath << Priest
     .target Ogtinc
+step
+    .goto Azshara,53.45,21.82
+    >>Talk to |cRXP_FRIENDLY_Kim'jael|r
+    .turnin 5534 >>Turn in Kim'jael's "Missing" Equipment
+    .target Kim'jael
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -766,26 +674,48 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 52-53 Un'Goro Crater
-#next 52-53 Stormwind City
+#next 52-53 Ironforge
 
 step
     #completewith next
     .zone Un'Goro Crater >>Fly to Marshal's Refuge in Un'Goro Crater
-step
-    .goto Un'Goro Crater,43.95,7.14
-    >>Talk to |cRXP_FRIENDLY_Williden Marshal|r
-    .accept 3881 >>Accept Expedition Salvation
-    .target Williden Marshal
 step
     .goto Un'Goro Crater,41.92,2.70
     >>Talk to |cRXP_FRIENDLY_J.D. Collie|r
     .accept 4284 >>Accept Crystals of Power
     .target J.D. Collie
 step
+    .goto Un'Goro Crater,43.95,7.14
+    >>Talk to |cRXP_FRIENDLY_Williden Marshal|r
+    .accept 3881 >>Accept Expedition Salvation
+    .target Williden Marshal
+step
+    .goto Un'Goro Crater,57.30,10.10
+    >>Loot the |cRXP_PICK_Red Power Crystal|r
+    >>Loot the |cRXP_PICK_Yellow Power Crystal|r
+    >>Loot the |cRXP_PICK_Green Power Crystal|r
+    >>Loot the |cRXP_PICK_Blue Power Crystal|r
+    .complete 4284,1 --Crystals of Power
+    .complete 4284,2 --Crystals of Power
+    .complete 4284,3 --Crystals of Power
+    .complete 4284,4 --Crystals of Power
+step
     .goto Un'Goro Crater,46.38,13.44
     >>Talk to |cRXP_FRIENDLY_Karna Remtravel|r
     .accept 4243 >>Accept Chasing A-Me 01
     .target Karna Remtravel
+step
+    .goto Un'Goro Crater,41.92,2.70
+    >>Talk to |cRXP_FRIENDLY_J.D. Collie|r
+    .turnin 4284 >>Turn in Crystals of Power
+    .accept 4285 >>Accept The Northern Pylon
+    .accept 4287 >>Accept The Eastern Pylon
+    .accept 4288 >>Accept The Western Pylon
+    .target J.D. Collie
+step
+    .goto Un'Goro Crater,56.52,12.54
+    >>Northern Crystal Pylon
+    .complete 4285,1 --The Northern Pylon
 step
     .goto Un'Goro Crater,67.66,16.76
     >>Talk to |cRXP_FRIENDLY_A-Me 01|r
@@ -796,15 +726,9 @@ step
     >>Loot the |cRXP_PICK_Crate of Foodstuffs|r
     .complete 3881,1 --Expedition Salvation
 step
-    .goto Un'Goro Crater,71.80,63.40
-    >>Loot the |cRXP_PICK_Yellow Power Crystal|r
-    >>Loot the |cRXP_PICK_Green Power Crystal|r
-    >>Loot the |cRXP_PICK_Blue Power Crystal|r
-    >>Loot the |cRXP_PICK_Red Power Crystal|r
-    .complete 4284,2 --Crystals of Power
-    .complete 4284,3 --Crystals of Power
-    .complete 4284,4 --Crystals of Power
-    .complete 4284,1 --Crystals of Power
+    .goto Un'Goro Crater,77.16,49.98
+    >>Eastern Crystal Pylon
+    .complete 4287,1 --The Eastern Pylon
 step
     .goto Un'Goro Crater,71.64,75.96
     >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
@@ -836,6 +760,10 @@ step
     >>Loot the |cRXP_PICK_Research Equipment|r
     .complete 3881,2 --Expedition Salvation
 step
+    .goto Un'Goro Crater,23.86,59.19
+    >>Western Crystal Pylon
+    .complete 4288,1 --The Western Pylon
+step
     .goto Un'Goro Crater,43.95,7.14
     >>Talk to |cRXP_FRIENDLY_Williden Marshal|r
     .turnin 3881 >>Turn in Expedition Salvation
@@ -843,31 +771,7 @@ step
 step
     .goto Un'Goro Crater,41.92,2.70
     >>Talk to |cRXP_FRIENDLY_J.D. Collie|r
-    .turnin 4284 >>Turn in Crystals of Power
-    .accept 4285 >>Accept The Northern Pylon
-    .accept 4287 >>Accept The Eastern Pylon
-    .accept 4288 >>Accept The Western Pylon
-    .target J.D. Collie
-step
-    .goto Un'Goro Crater,56.52,12.54
-    >>Northern Crystal Pylon
-    .complete 4285,1 --The Northern Pylon
-step
-    .goto Un'Goro Crater,41.92,2.70
-    >>Talk to |cRXP_FRIENDLY_J.D. Collie|r
     .turnin 4285 >>Turn in The Northern Pylon
-    .target J.D. Collie
-step
-    .goto Un'Goro Crater,77.16,49.98
-    >>Eastern Crystal Pylon
-    .complete 4287,1 --The Eastern Pylon
-step
-    .goto Un'Goro Crater,23.86,59.19
-    >>Western Crystal Pylon
-    .complete 4288,1 --The Western Pylon
-step
-    .goto Un'Goro Crater,41.92,2.70
-    >>Talk to |cRXP_FRIENDLY_J.D. Collie|r
     .turnin 4287 >>Turn in The Eastern Pylon
     .turnin 4288 >>Turn in The Western Pylon
     .accept 4321 >>Accept Making Sense of It
@@ -882,54 +786,7 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 52-53 Stormwind City
-#next 53-54 Ironforge
-
-step
-    #completewith next
-    .zone Stormwind City >>Travel to Stormwind City
-step
-    .goto Stormwind City,60.39,75.27
-    >>Talk to |cRXP_FRIENDLY_Innkeeper Allison|r
-    .accept 3789 >>Accept Assisting Arch Druid Staghelm
-    .target Innkeeper Allison
-step
-    .goto Stormwind City,56.39,74.09
-    >>Talk to |cRXP_FRIENDLY_Crier Goodman|r
-    .accept 5066 >>Accept A Call to Arms: The Plaguelands!
-    .target Crier Goodman
-step
-    .goto Stormwind City,53.02,86.64
-    >>Talk to |cRXP_FRIENDLY_Collin Mauren|r
-    .turnin -1078 >>Turn in Retrieval for Mauren
-    .target Collin Mauren
-step
-    .goto Stormwind City,51.79,93.64
-    >>Talk to |cRXP_FRIENDLY_Angus Stern|r
-    .turnin -212 >>Turn in A Meal Served Cold
-    .target Angus Stern
-step
-    .goto Stormwind City,57.17,48.07
-    >>Talk to |cRXP_FRIENDLY_Royal Factor Bathrilor|r
-    .turnin 5022 >>Turn in Better Late Than Never
-    .accept 5048 >>Accept Good Natured Emma
-    .target Royal Factor Bathrilor
-step
-    .goto Stormwind City,60.20,57.03
-    >>Talk to |cRXP_FRIENDLY_Ol' Emma|r
-    .turnin 5048 >>Turn in Good Natured Emma
-    .accept 5050 >>Accept Good Luck Charm
-    .target Ol' Emma
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 53-54 Ironforge
+#name 52-53 Ironforge
 #next 53-54 Western Plaguelands
 
 step
@@ -977,21 +834,21 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 53-54 Western Plaguelands
-#next 53-54 Eastern Plaguelands
+#next 53-54 Searing Gorge
 
 step
     #completewith next
     .zone Western Plaguelands >>Fly to Chillwind Camp in Western Plaguelands
 step
+    .goto Western Plaguelands,42.70,84.03
+    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
+    .turnin 5091 >>Turn in A Call to Arms: The Plaguelands!
+    .target Commander Ashlam Valorfist
+step
     .goto Western Plaguelands,42.97,84.50
     >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
     .accept 5219 >>Accept Target: Dalson's Tears
     .target High Priestess MacDonnell
-step
-    .goto Western Plaguelands,42.70,84.03
-    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
-    .turnin 5066 >>Turn in A Call to Arms: The Plaguelands!
-    .target Commander Ashlam Valorfist
 step
     .goto Western Plaguelands,42.97,83.55
     >>Talk to |cRXP_FRIENDLY_Argent Officer Pureheart|r
@@ -999,15 +856,20 @@ step
     .turnin 5401 >>Turn in Argent Dawn Commission
     .target Argent Officer Pureheart
 step
-    .goto Western Plaguelands,49.17,78.57
-    >>Talk to |cRXP_FRIENDLY_Marlene Redpath|r
-    .accept 5142 >>Accept Little Pamela
-    .target Marlene Redpath
-step
     .goto Western Plaguelands,53.73,64.66
     >>Talk to |cRXP_FRIENDLY_Mulgris Deepriver|r
     .accept 4984 >>Accept The Wildlife Suffers Too
     .target Mulgris Deepriver
+step
+    .goto Western Plaguelands,48.58,60.24
+    >>Kill |cRXP_ENEMY_Diseased Wolf|r
+    .complete 4984,1 --The Wildlife Suffers Too
+    .mob Diseased Wolf
+step
+    .goto Western Plaguelands,46.11,52.61
+    >>Kill |cRXP_ENEMY_Cauldron Lord Malvinious|r. Loot them for |cRXP_LOOT_Dalson's Tears Cauldron Key|r
+    .complete 5219,1 --Target: Dalson's Tears
+    .mob Cauldron Lord Malvinious
 step
     .goto Western Plaguelands,47.80,50.67
     >>Click the |cRXP_PICK_Mrs. Dalson's Diary|r
@@ -1027,36 +889,21 @@ step
     >>Click the |cRXP_PICK_Locked Cabinet|r
     .turnin 5060 >>Turn in Locked Away
 step
-    .goto Western Plaguelands,46.11,52.61
-    >>Kill |cRXP_ENEMY_Cauldron Lord Malvinious|r. Loot them for |cRXP_LOOT_Dalson's Tears Cauldron Key|r
-    .complete 5219,1 --Target: Dalson's Tears
-    .mob Cauldron Lord Malvinious
-step
     .goto Western Plaguelands,46.18,51.90
     >>Click the |cRXP_PICK_Scourge Cauldron|r
     .turnin 5219 >>Turn in Target: Dalson's Tears
     .accept 5220 >>Accept Return to Chillwind Camp
-step
-    .goto Western Plaguelands,38.40,54.05
-    >>Talk to |cRXP_FRIENDLY_Janice Felstone|r
-    .turnin 5050 >>Turn in Good Luck Charm
-    .target Janice Felstone
-step
-    .goto Western Plaguelands,46.52,44.91
-    >>Kill |cRXP_ENEMY_Diseased Wolf|r
-    .complete 4984,1 --The Wildlife Suffers Too
-    .mob Diseased Wolf
-step
-    .goto Western Plaguelands,53.73,64.66
-    >>Talk to |cRXP_FRIENDLY_Mulgris Deepriver|r
-    .turnin 4984 >>Turn in The Wildlife Suffers Too
-    .target Mulgris Deepriver
 step
     .goto Western Plaguelands,42.97,84.50
     >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
     .turnin 5220 >>Turn in Return to Chillwind Camp
     .accept 5222 >>Accept Target: Writhing Haunt
     .target High Priestess MacDonnell
+step
+    .goto Western Plaguelands,49.17,78.57
+    >>Talk to |cRXP_FRIENDLY_Marlene Redpath|r
+    .accept 5142 >>Accept Little Pamela
+    .target Marlene Redpath
 step
     .goto Western Plaguelands,52.88,66.08
     >>Kill |cRXP_ENEMY_Cauldron Lord Razarch|r. Loot them for |cRXP_LOOT_Writhing Haunt Cauldron Key|r
@@ -1067,6 +914,11 @@ step
     >>Click the |cRXP_PICK_Scourge Cauldron|r
     .turnin 5222 >>Turn in Target: Writhing Haunt
     .accept 5223 >>Accept Return to Chillwind Camp
+step
+    .goto Western Plaguelands,53.73,64.66
+    >>Talk to |cRXP_FRIENDLY_Mulgris Deepriver|r
+    .turnin 4984 >>Turn in The Wildlife Suffers Too
+    .target Mulgris Deepriver
 step
     .goto Western Plaguelands,42.97,84.50
     >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
@@ -1081,8 +933,64 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
+#name 53-54 Searing Gorge
+#next 53-54 Eastern Plaguelands
+
+step
+    #completewith next
+    .zone Searing Gorge >>Fly to Thorium Point in Searing Gorge
+step
+    .goto Searing Gorge,38.80,28.51
+    >>Talk to |cRXP_FRIENDLY_Master Smith Burninate|r
+    .accept 7722 >>Accept What the Flux?
+    .target Master Smith Burninate
+step
+    .goto Searing Gorge,41.14,25.56
+    >>Talk to |cRXP_FRIENDLY_Dying Archaeologist|r
+    .turnin 3371 >>Turn in Dwarven Justice
+    .accept 3372 >>Accept Release Them
+    .target Dying Archaeologist
+step
+    .goto Searing Gorge,40.45,35.74
+    >>Loot the |cRXP_PICK_Secret Plans: Fiery Flux|r
+    .complete 7722,1 --What the Flux?
+step
+    .goto Searing Gorge,29.57,26.29
+    >>Talk to |cRXP_FRIENDLY_Zamael Lunthistle|r
+    .accept 3377 >>Accept Prayer to Elune
+    .target Zamael Lunthistle
+step
+    .goto Searing Gorge,29.57,26.29
+    >>Kill |cRXP_ENEMY_Zamael Lunthistle|r
+    >>Loot the |cRXP_PICK_Mysterious Artifact|r
+    .complete 3377,1 --Prayer to Elune
+    .complete 3372,1 --Release Them
+    .mob Zamael Lunthistle
+step
+    .goto Searing Gorge,29.57,26.29
+    >>Talk to |cRXP_FRIENDLY_Zamael Lunthistle|r
+    .turnin 3377 >>Turn in Prayer to Elune
+    .target Zamael Lunthistle
+step
+    .goto Searing Gorge,38.80,28.51
+    >>Talk to |cRXP_FRIENDLY_Master Smith Burninate|r
+    .turnin 7722 >>Turn in What the Flux?
+    .target Master Smith Burninate
+step
+    .goto Searing Gorge,41.25,25.41
+    >>Click the |cRXP_PICK_Altar of Suntara|r
+    .turnin 3372 >>Turn in Release Them
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
 #name 53-54 Eastern Plaguelands
-#next 53-54 Searing Gorge
+#next 53-54 Un'Goro Crater
 
 step
     #completewith next
@@ -1109,16 +1017,6 @@ step
     .accept 6021 >>Accept Zaeldarr the Outcast
     .target Caretaker Alen
 step
-    .goto Eastern Plaguelands,57.32,32.01
-    >>Kill |cRXP_ENEMY_Darrowshire Spirit|r
-    .complete 5211,1 --Defenders of Darrowshire
-    .mob Darrowshire Spirit
-step
-    .goto Eastern Plaguelands,71.70,50.04
-    >>Talk to |cRXP_FRIENDLY_Carlin Redpath|r
-    .turnin 5211 >>Turn in Defenders of Darrowshire
-    .target Carlin Redpath
-step
     .goto Eastern Plaguelands,31.15,77.98
     >>Talk to |cRXP_FRIENDLY_Pamela Redpath|r
     .turnin 5142 >>Turn in Little Pamela
@@ -1134,9 +1032,12 @@ step
     .accept 6164 >>Accept Augustus' Receipt Book
     .target Augustus the Touched
 step
-    .goto Eastern Plaguelands,14.04,24.22
+    .goto Eastern Plaguelands,14.11,24.36
+    >>Kill |cRXP_ENEMY_Darrowshire Spirit|r
     >>Loot the |cRXP_PICK_Augustus' Receipt Book|r
+    .complete 5211,1 --Defenders of Darrowshire
     .complete 6164,1 --Augustus' Receipt Book
+    .mob Darrowshire Spirit
 step
     .goto Eastern Plaguelands,11.36,26.37
     >>Talk to |cRXP_FRIENDLY_Augustus the Touched|r
@@ -1147,6 +1048,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Caretaker Alen|r
     .turnin 6021 >>Turn in Zaeldarr the Outcast
     .target Caretaker Alen
+step
+    .goto Eastern Plaguelands,71.70,50.04
+    >>Talk to |cRXP_FRIENDLY_Carlin Redpath|r
+    .turnin 5211 >>Turn in Defenders of Darrowshire
+    .target Carlin Redpath
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1156,292 +1062,44 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 53-54 Searing Gorge
-#next 54-55 Darnassus
-
-step
-    #completewith next
-    .zone Searing Gorge >>Fly to Thorium Point in Searing Gorge
-step
-    .goto Searing Gorge,38.80,28.51
-    >>Talk to |cRXP_FRIENDLY_Master Smith Burninate|r
-    .accept 7722 >>Accept What the Flux?
-    .target Master Smith Burninate
-step
-    .goto Searing Gorge,41.14,25.56
-    >>Talk to |cRXP_FRIENDLY_Dying Archaeologist|r
-    .turnin 3371 >>Turn in Dwarven Justice
-    .accept 3372 >>Accept Release Them
-    .target Dying Archaeologist
-step
-    .goto Searing Gorge,29.57,26.29
-    >>Talk to |cRXP_FRIENDLY_Zamael Lunthistle|r
-    .accept 3377 >>Accept Prayer to Elune
-    .target Zamael Lunthistle
-step
-    .goto Searing Gorge,29.57,26.29
-    >>Kill |cRXP_ENEMY_Zamael Lunthistle|r
-    .complete 3377,1 --Prayer to Elune
-    .mob Zamael Lunthistle
-step
-    .goto Searing Gorge,29.57,26.29
-    >>Talk to |cRXP_FRIENDLY_Zamael Lunthistle|r
-    .turnin 3377 >>Turn in Prayer to Elune
-    .target Zamael Lunthistle
-step
-    .goto Searing Gorge,29.14,25.87
-    >>Loot the |cRXP_PICK_Mysterious Artifact|r
-    .complete 3372,1 --Release Them
-step
-    .goto Searing Gorge,41.25,25.41
-    >>Click the |cRXP_PICK_Altar of Suntara|r
-    .turnin 3372 >>Turn in Release Them
-step
-    .goto Searing Gorge,40.45,35.74
-    >>Loot the |cRXP_PICK_Secret Plans: Fiery Flux|r
-    .complete 7722,1 --What the Flux?
-step
-    .goto Searing Gorge,38.80,28.51
-    >>Talk to |cRXP_FRIENDLY_Master Smith Burninate|r
-    .turnin 7722 >>Turn in What the Flux?
-    .target Master Smith Burninate
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 54-55 Darnassus
+#name 53-54 Un'Goro Crater
 #next 54-55 Felwood
 
 step
     #completewith next
-    .zone Darnassus >>Travel to Darnassus
-step
-    .goto Darnassus,34.81,9.26
-    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
-    .turnin 3789 >>Turn in Assisting Arch Druid Staghelm
-    .target Arch Druid Fandral Staghelm
-step
-    .goto Darnassus,47.81,81.97
-    >>Talk to |cRXP_FRIENDLY_Herald Moonstalker|r
-    .accept 1047 >>Accept The New Frontier
-    .target Herald Moonstalker
-step
-    .goto Darnassus,34.81,9.26
-    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
-    .turnin 1047 >>Turn in The New Frontier
-    .accept 6761 >>Accept The New Frontier
-    .target Arch Druid Fandral Staghelm
-step
-    .goto Darnassus,35.37,8.40
-    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
-    .turnin 6761 >>Turn in The New Frontier
-    .target Mathrengyl Bearwalker
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 54-55 Felwood
-#next 54-55 Un'Goro Crater
-
-step
-    #completewith next
-    .zone Felwood >>Fly to Talonbranch Glade in Felwood
-step
-    .goto Felwood,64.77,8.13
-    >>Talk to |cRXP_FRIENDLY_Nafien|r
-    .accept 8461 >>Accept Deadwood of the North
-    .target Nafien
-step
-    .goto Felwood,62.67,8.45
-    >>Kill |cRXP_ENEMY_Deadwood Den Watcher|r
-    >>Kill |cRXP_ENEMY_Deadwood Shaman|r
-    >>Kill |cRXP_ENEMY_Deadwood Avenger|r
-    .complete 8461,1 --Deadwood of the North
-    .complete 8461,3 --Deadwood of the North
-    .complete 8461,2 --Deadwood of the North
-    .mob Deadwood Den Watcher
-    .mob Deadwood Shaman
-    .mob Deadwood Avenger
-step
-    .goto Felwood,64.77,8.13
-    >>Talk to |cRXP_FRIENDLY_Nafien|r
-    .turnin 8461 >>Turn in Deadwood of the North
-    .accept 8465 >>Accept Speak to Salfa
-    .target Nafien
-step << Warlock
-    .goto Felwood,41.36,45.02
-    >>Talk to |cRXP_FRIENDLY_Impsy|r
-    .accept 8420 >>Accept Hot and Itchy
-    .target Impsy
-step << Warlock
-    .goto Felwood,35.39,67.03
-    >>Kill |cRXP_ENEMY_Jadefire Rogue|r and |cRXP_ENEMY_Jadefire Trickster|r and |cRXP_ENEMY_Jadefire Betrayer|r. Loot them for |cRXP_LOOT_Felcloth|r
-    .complete 8420,1 --Hot and Itchy
-    .mob Jadefire Rogue
-    .mob Jadefire Trickster
-    .mob Jadefire Betrayer
-step
-    .goto Felwood,50.89,81.62
-    >>Talk to |cRXP_FRIENDLY_Taronn Redfeather|r
-    .accept 5156 >>Accept Verifying the Corruption
-    .target Taronn Redfeather
-step
-    .goto Felwood,50.96,81.58
-    >>Talk to |cRXP_FRIENDLY_Ivy Leafrunner|r
-    .accept 5249 >>Accept To Winterspring!
-    .target Ivy Leafrunner
-step
-    .goto Felwood,51.35,81.51
-    >>Talk to |cRXP_FRIENDLY_Eridan Bluewind|r
-    .accept 4421 >>Accept The Corruption of the Jadefire
-    .target Eridan Bluewind
-step
-    .goto Felwood,50.93,85.01
-    >>Talk to |cRXP_FRIENDLY_Grazle|r
-    .accept 8462 >>Accept Speak to Nafien
-    .target Grazle
-step
-    .goto Felwood,54.15,86.83
-    >>Talk to |cRXP_FRIENDLY_Arathandris Silversky|r
-    .accept 4101 >>Accept Cleansing Felwood
-    .target Arathandris Silversky
-step
-    .goto Felwood,40.66,85.54
-    >>Kill |cRXP_ENEMY_Jadefire Felsworn|r
-    .complete 4421,1 --The Corruption of the Jadefire
-    .mob Jadefire Felsworn
-step
-    .goto Felwood,37.04,68.13
-    >>Kill |cRXP_ENEMY_Jadefire Rogue|r
-    >>Kill |cRXP_ENEMY_Jadefire Shadowstalker|r
-    .complete 4421,3 --The Corruption of the Jadefire
-    .complete 4421,2 --The Corruption of the Jadefire
-    .mob Jadefire Rogue
-    .mob Jadefire Shadowstalker
-step
-    .goto Felwood,32.23,67.11
-    >>Kill |cRXP_ENEMY_Xavathras|r
-    .complete 4421,4 --The Corruption of the Jadefire
-    .mob Xavathras
-step << Warlock
-    .goto Felwood,41.36,45.02
-    >>Talk to |cRXP_FRIENDLY_Impsy|r
-    .turnin 8420 >>Turn in Hot and Itchy
-    .target Impsy
-step
-    .goto Felwood,41.03,41.96
-    >>Kill |cRXP_ENEMY_Entropic Beast|r
-    >>Kill |cRXP_ENEMY_Entropic Horror|r
-    >>Explore the craters in Shatter Scar Vale
-    .complete 5156,1 --Verifying the Corruption
-    .complete 5156,2 --Verifying the Corruption
-    .complete 5156,3 --Verifying the Corruption
-    .mob Entropic Beast
-    .mob Entropic Horror
-step
-    .goto Felwood,57.28,19.67
-    >>Kill |cRXP_ENEMY_Warpwood Moss Flayer|r and |cRXP_ENEMY_Warpwood Shredder|r. Loot them for |cRXP_LOOT_Blood Amber|r
-    .complete 4101,1 --Cleansing Felwood
-    .mob Warpwood Moss Flayer
-    .mob Warpwood Shredder
-step
-    .goto Felwood,64.77,8.13
-    >>Talk to |cRXP_FRIENDLY_Nafien|r
-    .turnin 8462 >>Turn in Speak to Nafien
-    .target Nafien
-step
-    .goto Felwood,51.35,81.51
-    >>Talk to |cRXP_FRIENDLY_Eridan Bluewind|r
-    .turnin 4421 >>Turn in The Corruption of the Jadefire
-    .accept 4906 >>Accept Further Corruption
-    .target Eridan Bluewind
-step
-    .goto Felwood,50.89,81.62
-    >>Talk to |cRXP_FRIENDLY_Taronn Redfeather|r
-    .turnin 5156 >>Turn in Verifying the Corruption
-    .target Taronn Redfeather
-step
-    .goto Felwood,54.15,86.83
-    >>Talk to |cRXP_FRIENDLY_Arathandris Silversky|r
-    .turnin 4101 >>Turn in Cleansing Felwood
-    .accept 5882 >>Accept Salve via Hunting
-    .target Arathandris Silversky
-step
-    .goto Felwood,39.25,47.34
-    >>Kill |cRXP_ENEMY_Cursed Ooze|r and |cRXP_ENEMY_Tainted Ooze|r and |cRXP_ENEMY_Vile Ooze|r. Loot them for |cRXP_LOOT_Corrupted Soul Shard|r
-    .complete 5882,1 --Salve via Hunting
-    .mob Cursed Ooze
-    .mob Tainted Ooze
-    .mob Vile Ooze
-step
-    .goto Felwood,39.07,22.35
-    >>Kill |cRXP_ENEMY_Jadefire Hellcaller|r
-    >>Kill |cRXP_ENEMY_Xavaric|r
-    .complete 4906,1 --Further Corruption
-    .complete 4906,4 --Further Corruption
-    .mob Jadefire Hellcaller
-    .mob Xavaric
-step
-    .goto Felwood,42.37,17.05
-    >>Kill |cRXP_ENEMY_Jadefire Trickster|r
-    >>Kill |cRXP_ENEMY_Jadefire Betrayer|r
-    .complete 4906,3 --Further Corruption
-    .complete 4906,2 --Further Corruption
-    .mob Jadefire Trickster
-    .mob Jadefire Betrayer
-step
-    .goto Felwood,51.35,81.51
-    >>Talk to |cRXP_FRIENDLY_Eridan Bluewind|r
-    .turnin 4906 >>Turn in Further Corruption
-    .target Eridan Bluewind
-step
-    .goto Felwood,54.15,86.83
-    >>Talk to |cRXP_FRIENDLY_Arathandris Silversky|r
-    .turnin 5882 >>Turn in Salve via Hunting
-    .target Arathandris Silversky
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 54-55 Un'Goro Crater
-#next 55-56 Winterspring
-
-step
-    #completewith next
     .zone Un'Goro Crater >>Fly to Marshal's Refuge in Un'Goro Crater
-step
-    .goto Un'Goro Crater,43.53,8.44
-    >>Click the |cRXP_PICK_Beware of Pterrordax|r
-    .accept 4501 >>Accept Beware of Pterrordax
 step
     .goto Un'Goro Crater,43.62,8.50
     >>Talk to |cRXP_FRIENDLY_Spraggle Frock|r
     .accept 4492 >>Accept Lost!
     .target Spraggle Frock
 step
+    .goto Un'Goro Crater,43.53,8.44
+    >>Click the |cRXP_PICK_Beware of Pterrordax|r
+    .accept 4501 >>Accept Beware of Pterrordax
+step
     .goto Un'Goro Crater,43.71,8.29
     >>Escort Ringo to Spraggle Frock at Marshal's Refuge
     .complete 4492,1 --Lost!
 step
-    .goto Un'Goro Crater,57.20,10.20
+    .goto Un'Goro Crater,50.60,11.40
     >>Kill |cRXP_ENEMY_Pterrordax|r
     .complete 4501,1 --Beware of Pterrordax
     .mob Pterrordax
+step
+    .goto Un'Goro Crater,36.20,42.20
+    >>Kill |cRXP_ENEMY_Frenzied Pterrordax|r
+    .complete 4501,2 --Beware of Pterrordax
+    .mob Frenzied Pterrordax
+step
+    .goto Un'Goro Crater,30.93,50.44
+    >>Talk to |cRXP_FRIENDLY_Krakle|r
+    .accept 974 >>Accept Finding the Source
+    .target Krakle
+step
+    .goto Un'Goro Crater,49.69,45.64
+    >>Fire Plume Ridge Hot Spot
+    .complete 974,1 --Finding the Source
 step
     .goto Un'Goro Crater,51.90,49.85
     >>Talk to |cRXP_FRIENDLY_Ringo|r
@@ -1449,27 +1107,7 @@ step
     .accept 4491 >>Accept A Little Help From My Friends
     .target Ringo
 step
-    .goto Un'Goro Crater,30.93,50.44
-    >>Talk to |cRXP_FRIENDLY_Krakle|r
-    .accept 974 >>Accept Finding the Source
-    .target Krakle
-step
-    .goto Un'Goro Crater,25.40,39.80
-    >>Kill |cRXP_ENEMY_Frenzied Pterrordax|r
-    .complete 4501,2 --Beware of Pterrordax
-    .mob Frenzied Pterrordax
-step
-    .goto Un'Goro Crater,49.69,45.64
-    >>Fire Plume Ridge Hot Spot
-    .complete 974,1 --Finding the Source
-step
-    .goto Un'Goro Crater,30.93,50.44
-    >>Talk to |cRXP_FRIENDLY_Krakle|r
-    .turnin 974 >>Turn in Finding the Source
-    .accept 980 >>Accept The New Springs
-    .target Krakle
-step
-    .goto Un'Goro Crater,43.47,65.21
+    .goto Un'Goro Crater,57.24,66.20
     >>Kill |cRXP_ENEMY_Muculent Ooze|r and |cRXP_ENEMY_Primal Ooze|r and |cRXP_ENEMY_Glutinous Ooze|r. Loot them for |cRXP_LOOT_Filled Pure Sample Jar|r
     .complete 4513,1 --A Little Slime Goes a Long Way
     .mob Muculent Ooze
@@ -1482,26 +1120,11 @@ step
     .accept 4292 >>Accept The Bait for Lar'korwi
     .target Torwa Pathfinder
 step
-    .goto Un'Goro Crater,79.65,49.83
-    >>Kill |cRXP_ENEMY_Lar'korwi|r. Loot them for |cRXP_LOOT_Lar'korwi's Head|r
-    .complete 4292,1 --The Bait for Lar'korwi
-    .mob Lar'korwi
-step
-    .goto Un'Goro Crater,71.64,75.96
-    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
-    .turnin 4292 >>Turn in The Bait for Lar'korwi
-    .target Torwa Pathfinder
-step
-    .goto Un'Goro Crater,65.85,15.62
-    >>Kill |cRXP_ENEMY_Un'Goro Stomper|r. Loot them for |cRXP_LOOT_Un'Goro Stomper Pelt|r
-    >>Kill |cRXP_ENEMY_Un'Goro Thunderer|r. Loot them for |cRXP_LOOT_Un'Goro Thunderer Pelt|r
-    >>Kill |cRXP_ENEMY_Un'Goro Gorilla|r. Loot them for |cRXP_LOOT_Un'Goro Gorilla Pelt|r
-    .complete 4289,2 --The Apes of Un'Goro
-    .complete 4289,3 --The Apes of Un'Goro
-    .complete 4289,1 --The Apes of Un'Goro
-    .mob Un'Goro Stomper
-    .mob Un'Goro Thunderer
-    .mob Un'Goro Gorilla
+    .goto Un'Goro Crater,30.93,50.44
+    >>Talk to |cRXP_FRIENDLY_Krakle|r
+    .turnin 974 >>Turn in Finding the Source
+    .accept 980 >>Accept The New Springs
+    .target Krakle
 step
     .goto Un'Goro Crater,43.62,8.50
     >>Talk to |cRXP_FRIENDLY_Spraggle Frock|r
@@ -1517,9 +1140,26 @@ step
     .turnin 4491 >>Turn in A Little Help From My Friends
     .target Spraggle Frock
 step
+    .goto Un'Goro Crater,65.85,15.62
+    >>Kill |cRXP_ENEMY_Un'Goro Gorilla|r. Loot them for |cRXP_LOOT_Un'Goro Gorilla Pelt|r
+    >>Kill |cRXP_ENEMY_Un'Goro Stomper|r. Loot them for |cRXP_LOOT_Un'Goro Stomper Pelt|r
+    >>Kill |cRXP_ENEMY_Un'Goro Thunderer|r. Loot them for |cRXP_LOOT_Un'Goro Thunderer Pelt|r
+    .complete 4289,1 --The Apes of Un'Goro
+    .complete 4289,2 --The Apes of Un'Goro
+    .complete 4289,3 --The Apes of Un'Goro
+    .mob Un'Goro Gorilla
+    .mob Un'Goro Stomper
+    .mob Un'Goro Thunderer
+step
+    .goto Un'Goro Crater,79.65,49.83
+    >>Kill |cRXP_ENEMY_Lar'korwi|r. Loot them for |cRXP_LOOT_Lar'korwi's Head|r
+    .complete 4292,1 --The Bait for Lar'korwi
+    .mob Lar'korwi
+step
     .goto Un'Goro Crater,71.64,75.96
     >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
     .turnin 4289 >>Turn in The Apes of Un'Goro
+    .turnin 4292 >>Turn in The Bait for Lar'korwi
     .accept 4301 >>Accept The Mighty U'cha
     .target Torwa Pathfinder
 step
@@ -1541,7 +1181,169 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 55-56 Winterspring
+#name 54-55 Felwood
+#next 54-55 Winterspring
+
+step
+    #completewith next
+    .zone Felwood >>Fly to Talonbranch Glade in Felwood
+step << Warlock
+    .goto Felwood,41.36,45.02
+    >>Talk to |cRXP_FRIENDLY_Impsy|r
+    .accept 8420 >>Accept Hot and Itchy
+    .target Impsy
+step
+    .goto Felwood,51.35,81.51
+    >>Talk to |cRXP_FRIENDLY_Eridan Bluewind|r
+    .accept 4421 >>Accept The Corruption of the Jadefire
+    .target Eridan Bluewind
+step
+    .goto Felwood,50.96,81.58
+    >>Talk to |cRXP_FRIENDLY_Ivy Leafrunner|r
+    .accept 5249 >>Accept To Winterspring!
+    .target Ivy Leafrunner
+step
+    .goto Felwood,50.89,81.62
+    >>Talk to |cRXP_FRIENDLY_Taronn Redfeather|r
+    .accept 5156 >>Accept Verifying the Corruption
+    .target Taronn Redfeather
+step
+    .goto Felwood,37.04,68.13
+    >>Kill |cRXP_ENEMY_Jadefire Shadowstalker|r
+    >>Kill |cRXP_ENEMY_Jadefire Felsworn|r
+    >>Kill |cRXP_ENEMY_Jadefire Rogue|r
+    .complete 4421,2 --The Corruption of the Jadefire
+    .complete 4421,1 --The Corruption of the Jadefire
+    .complete 4421,3 --The Corruption of the Jadefire
+    .mob Jadefire Shadowstalker
+    .mob Jadefire Felsworn
+    .mob Jadefire Rogue
+step
+    .goto Felwood,32.23,67.11
+    >>Kill |cRXP_ENEMY_Xavathras|r
+    .complete 4421,4 --The Corruption of the Jadefire
+    .mob Xavathras
+step << Warlock
+    .goto Felwood,35.39,67.03
+    >>Kill |cRXP_ENEMY_Jadefire Rogue|r and |cRXP_ENEMY_Jadefire Trickster|r and |cRXP_ENEMY_Jadefire Betrayer|r. Loot them for |cRXP_LOOT_Felcloth|r
+    .complete 8420,1 --Hot and Itchy
+    .mob Jadefire Rogue
+    .mob Jadefire Trickster
+    .mob Jadefire Betrayer
+step
+    .goto Felwood,50.93,85.01
+    >>Talk to |cRXP_FRIENDLY_Grazle|r
+    .accept 8462 >>Accept Speak to Nafien
+    .target Grazle
+step
+    .goto Felwood,54.15,86.83
+    >>Talk to |cRXP_FRIENDLY_Arathandris Silversky|r
+    .accept 4101 >>Accept Cleansing Felwood
+    .target Arathandris Silversky
+step
+    .goto Felwood,51.35,81.51
+    >>Talk to |cRXP_FRIENDLY_Eridan Bluewind|r
+    .turnin 4421 >>Turn in The Corruption of the Jadefire
+    .accept 4906 >>Accept Further Corruption
+    .target Eridan Bluewind
+step << Warlock
+    .goto Felwood,41.36,45.02
+    >>Talk to |cRXP_FRIENDLY_Impsy|r
+    .turnin 8420 >>Turn in Hot and Itchy
+    .target Impsy
+step
+    .goto Felwood,41.03,41.96
+    >>Explore the craters in Shatter Scar Vale
+    >>Kill |cRXP_ENEMY_Entropic Beast|r
+    >>Kill |cRXP_ENEMY_Entropic Horror|r
+    .complete 5156,3 --Verifying the Corruption
+    .complete 5156,1 --Verifying the Corruption
+    .complete 5156,2 --Verifying the Corruption
+    .mob Entropic Beast
+    .mob Entropic Horror
+step
+    .goto Felwood,39.07,22.35
+    >>Kill |cRXP_ENEMY_Xavaric|r
+    >>Kill |cRXP_ENEMY_Jadefire Hellcaller|r
+    .complete 4906,4 --Further Corruption
+    .complete 4906,1 --Further Corruption
+    .mob Xavaric
+    .mob Jadefire Hellcaller
+step
+    .goto Felwood,42.37,17.05
+    >>Kill |cRXP_ENEMY_Jadefire Betrayer|r
+    >>Kill |cRXP_ENEMY_Jadefire Trickster|r
+    .complete 4906,2 --Further Corruption
+    .complete 4906,3 --Further Corruption
+    .mob Jadefire Betrayer
+    .mob Jadefire Trickster
+step
+    .goto Felwood,64.77,8.13
+    >>Talk to |cRXP_FRIENDLY_Nafien|r
+    .accept 8461 >>Accept Deadwood of the North
+    .turnin 8462 >>Turn in Speak to Nafien
+    .target Nafien
+step
+    .goto Felwood,62.67,8.45
+    >>Kill |cRXP_ENEMY_Deadwood Avenger|r
+    >>Kill |cRXP_ENEMY_Deadwood Den Watcher|r
+    >>Kill |cRXP_ENEMY_Deadwood Shaman|r
+    .complete 8461,2 --Deadwood of the North
+    .complete 8461,1 --Deadwood of the North
+    .complete 8461,3 --Deadwood of the North
+    .mob Deadwood Avenger
+    .mob Deadwood Den Watcher
+    .mob Deadwood Shaman
+step
+    .goto Felwood,64.77,8.13
+    >>Talk to |cRXP_FRIENDLY_Nafien|r
+    .turnin 8461 >>Turn in Deadwood of the North
+    .accept 8465 >>Accept Speak to Salfa
+    .target Nafien
+step
+    .goto Felwood,57.28,19.67
+    >>Kill |cRXP_ENEMY_Warpwood Moss Flayer|r and |cRXP_ENEMY_Warpwood Shredder|r. Loot them for |cRXP_LOOT_Blood Amber|r
+    .complete 4101,1 --Cleansing Felwood
+    .mob Warpwood Moss Flayer
+    .mob Warpwood Shredder
+step
+    .goto Felwood,50.89,81.62
+    >>Talk to |cRXP_FRIENDLY_Taronn Redfeather|r
+    .turnin 5156 >>Turn in Verifying the Corruption
+    .target Taronn Redfeather
+step
+    .goto Felwood,51.35,81.51
+    >>Talk to |cRXP_FRIENDLY_Eridan Bluewind|r
+    .turnin 4906 >>Turn in Further Corruption
+    .target Eridan Bluewind
+step
+    .goto Felwood,54.15,86.83
+    >>Talk to |cRXP_FRIENDLY_Arathandris Silversky|r
+    .turnin 4101 >>Turn in Cleansing Felwood
+    .accept 5882 >>Accept Salve via Hunting
+    .target Arathandris Silversky
+step
+    .goto Felwood,41.97,84.18
+    >>Kill |cRXP_ENEMY_Cursed Ooze|r and |cRXP_ENEMY_Tainted Ooze|r and |cRXP_ENEMY_Vile Ooze|r. Loot them for |cRXP_LOOT_Corrupted Soul Shard|r
+    .complete 5882,1 --Salve via Hunting
+    .mob Cursed Ooze
+    .mob Tainted Ooze
+    .mob Vile Ooze
+step
+    .goto Felwood,54.15,86.83
+    >>Talk to |cRXP_FRIENDLY_Arathandris Silversky|r
+    .turnin 5882 >>Turn in Salve via Hunting
+    .target Arathandris Silversky
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 54-55 Winterspring
 #next 55-56 Eastern Plaguelands
 
 step
@@ -1553,36 +1355,14 @@ step
     .fp Everlook >>Get the Everlook flight path
     .target Maethrya
 step
-    .goto Winterspring,60.88,37.62
-    >>Talk to |cRXP_FRIENDLY_Umi Rumplesnicker|r
-    .accept 3783 >>Accept Are We There, Yeti?
-    .target Umi Rumplesnicker
-step
     .goto Winterspring,60.66,38.17
     >>Talk to |cRXP_FRIENDLY_Meggi Peppinrocker|r
     .accept 6603 >>Accept Trouble in Winterspring!
     .target Meggi Peppinrocker
 step
-    .goto Winterspring,61.28,38.98
-    >>Talk to |cRXP_FRIENDLY_Jessica Redpath|r
-    .accept 5601 >>Accept Sister Pamela
-    .target Jessica Redpath
-step
-    .goto Winterspring,61.35,38.97
-    >>Talk to |cRXP_FRIENDLY_Gregor Greystone|r
-    .accept 6028 >>Accept The Everlook Report
-    .accept 6030 >>Accept Duke Nicholas Zverenhoff
-    .target Gregor Greystone
-step
-    .goto Winterspring,67.48,41.82
-    >>Kill |cRXP_ENEMY_Rogue Ice Thistle|r and |cRXP_ENEMY_Ice Thistle Yeti|r. Loot them for |cRXP_LOOT_Thick Yeti Fur|r
-    .complete 3783,1 --Are We There, Yeti?
-    .mob Rogue Ice Thistle
-    .mob Ice Thistle Yeti
-step
     .goto Winterspring,60.88,37.62
     >>Talk to |cRXP_FRIENDLY_Umi Rumplesnicker|r
-    .turnin 3783 >>Turn in Are We There, Yeti?
+    .accept 3783 >>Accept Are We There, Yeti?
     .target Umi Rumplesnicker
 step
     .goto Winterspring,51.97,30.39
@@ -1597,17 +1377,15 @@ step
     .accept 5245 >>Accept Troubled Spirits of Kel'Theril
     .target Jaron Stoneshaper
 step
-    .goto Winterspring,52.42,41.50
-    >>Loot the |cRXP_PICK_Second Relic Fragment|r
+    .goto Winterspring,53.31,43.44
     >>Loot the |cRXP_PICK_Third Relic Fragment|r
-    >>Loot the |cRXP_PICK_Fourth Relic Fragment|r
-    .complete 5245,2 --Troubled Spirits of Kel'Theril
-    .complete 5245,3 --Troubled Spirits of Kel'Theril
-    .complete 5245,4 --Troubled Spirits of Kel'Theril
-step
-    .goto Winterspring,55.14,42.98
     >>Loot the |cRXP_PICK_First Relic Fragment|r
+    >>Loot the |cRXP_PICK_Second Relic Fragment|r
+    >>Loot the |cRXP_PICK_Fourth Relic Fragment|r
+    .complete 5245,3 --Troubled Spirits of Kel'Theril
     .complete 5245,1 --Troubled Spirits of Kel'Theril
+    .complete 5245,2 --Troubled Spirits of Kel'Theril
+    .complete 5245,4 --Troubled Spirits of Kel'Theril
 step
     .goto Winterspring,31.27,45.16
     >>Talk to |cRXP_FRIENDLY_Donova Snowden|r
@@ -1624,23 +1402,38 @@ step
 step
     .goto Winterspring,32.36,37.06
     >>Kill |cRXP_ENEMY_Winterfall Pathfinder|r
-    .complete 5082,1 --Threat of the Winterfall
-    .mob Winterfall Pathfinder
-step
-    .goto Winterspring,40.07,43.41
     >>Kill |cRXP_ENEMY_Winterfall Totemic|r
+    .complete 5082,1 --Threat of the Winterfall
     .complete 5082,3 --Threat of the Winterfall
+    .mob Winterfall Pathfinder
     .mob Winterfall Totemic
+step
+    .goto Winterspring,43.23,37.49
+    >>Kill |cRXP_ENEMY_Rogue Ice Thistle|r and |cRXP_ENEMY_Ice Thistle Yeti|r. Loot them for |cRXP_LOOT_Thick Yeti Fur|r
+    .complete 3783,1 --Are We There, Yeti?
+    .mob Rogue Ice Thistle
+    .mob Ice Thistle Yeti
+step
+    .goto Winterspring,60.88,37.62
+    >>Talk to |cRXP_FRIENDLY_Umi Rumplesnicker|r
+    .turnin 3783 >>Turn in Are We There, Yeti?
+    .target Umi Rumplesnicker
+step
+    .goto Winterspring,61.28,38.98
+    >>Talk to |cRXP_FRIENDLY_Jessica Redpath|r
+    .accept 5601 >>Accept Sister Pamela
+    .target Jessica Redpath
+step
+    .goto Winterspring,61.35,38.97
+    >>Talk to |cRXP_FRIENDLY_Gregor Greystone|r
+    .accept 6028 >>Accept The Everlook Report
+    .accept 6030 >>Accept Duke Nicholas Zverenhoff
+    .target Gregor Greystone
 step
     .goto Winterspring,66.97,34.49
     >>Kill |cRXP_ENEMY_Winterfall Den Watcher|r
     .complete 5082,2 --Threat of the Winterfall
     .mob Winterfall Den Watcher
-step
-    .goto Winterspring,31.27,45.16
-    >>Talk to |cRXP_FRIENDLY_Donova Snowden|r
-    .turnin 5082 >>Turn in Threat of the Winterfall
-    .target Donova Snowden
 step
     .goto Winterspring,59.82,74.25
     >>Discover Darkwhisper Gorge
@@ -1649,6 +1442,7 @@ step
     .goto Winterspring,31.27,45.16
     >>Talk to |cRXP_FRIENDLY_Donova Snowden|r
     .turnin 4842 >>Turn in Strange Sources
+    .turnin 5082 >>Turn in Threat of the Winterfall
     .target Donova Snowden
 ]])
 
@@ -1660,7 +1454,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 55-56 Eastern Plaguelands
-#next 56-57 Western Plaguelands
+#next 55-56 Western Plaguelands
 
 step
     #completewith next
@@ -1683,13 +1477,19 @@ step
     .accept 5544 >>Accept Carrion Grubbage
     .target Tirion Fordring
 step
-    .goto Eastern Plaguelands,13.57,66.96
-    >>Kill |cRXP_ENEMY_Plaguebat|r
+    .goto Eastern Plaguelands,14.32,53.90
     >>Kill |cRXP_ENEMY_Plaguehound Runt|r
-    .complete 5543,1 --Blood Tinged Skies
     .complete 5542,1 --Demon Dogs
-    .mob Plaguebat
     .mob Plaguehound Runt
+step
+    .goto Eastern Plaguelands,13.75,64.97
+    >>Kill |cRXP_ENEMY_Carrion Grub|r and |cRXP_ENEMY_Carrion Devourer|r. Loot them for |cRXP_LOOT_Slab of Carrion Worm Meat|r
+    >>Kill |cRXP_ENEMY_Plaguebat|r
+    .complete 5544,1 --Carrion Grubbage
+    .complete 5543,1 --Blood Tinged Skies
+    .mob Carrion Grub
+    .mob Carrion Devourer
+    .mob Plaguebat
 step
     .goto Eastern Plaguelands,31.15,77.98
     >>Talk to |cRXP_FRIENDLY_Pamela Redpath|r
@@ -1706,12 +1506,6 @@ step
     .complete 5542,3 --Demon Dogs
     .mob Frenzied Plaguehound
 step
-    .goto Eastern Plaguelands,55.82,23.35
-    >>Kill |cRXP_ENEMY_Carrion Grub|r and |cRXP_ENEMY_Carrion Devourer|r. Loot them for |cRXP_LOOT_Slab of Carrion Worm Meat|r
-    .complete 5544,1 --Carrion Grubbage
-    .mob Carrion Grub
-    .mob Carrion Devourer
-step
     .goto Eastern Plaguelands,5.16,35.57
     >>Talk to |cRXP_FRIENDLY_Tirion Fordring|r
     .turnin 5542 >>Turn in Demon Dogs
@@ -1727,21 +1521,15 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 56-57 Western Plaguelands
-#next 56-57 Burning Steppes
+#name 55-56 Western Plaguelands
+#next 56-57 Darnassus
 
 step
     #completewith next
     .zone Western Plaguelands >>Fly to Chillwind Camp in Western Plaguelands
 step
-    .goto Western Plaguelands,42.97,84.50
-    >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
-    .accept 5225 >>Accept Target: Gahrron's Withering
-    .target High Priestess MacDonnell
-step
     .goto Western Plaguelands,42.70,84.03
     >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
-    .turnin 5091 >>Turn in A Call to Arms: The Plaguelands!
     .accept 5097 >>Accept All Along the Watchtowers
     .target Commander Ashlam Valorfist
 step
@@ -1765,11 +1553,6 @@ step
     .complete 5097,2 --All Along the Watchtowers
     .mob Andorhal Tower Two
 step
-    .goto Western Plaguelands,44.30,63.25
-    >>Kill |cRXP_ENEMY_Andorhal Tower Three|r
-    .complete 5097,3 --All Along the Watchtowers
-    .mob Andorhal Tower Three
-step
     .goto Western Plaguelands,48.26,65.77
     >>Kill |cRXP_ENEMY_Temporal Parasite|r
     .complete 4971,1 --A Matter of Time
@@ -1780,10 +1563,21 @@ step
     .accept 4985 >>Accept The Wildlife Suffers Too
     .target Mulgris Deepriver
 step
-    .goto Western Plaguelands,46.62,71.05
-    >>Kill |cRXP_ENEMY_Andorhal Tower Four|r
-    .complete 5097,4 --All Along the Watchtowers
-    .mob Andorhal Tower Four
+    .goto Western Plaguelands,55.93,60.97
+    >>Kill |cRXP_ENEMY_Diseased Grizzly|r
+    .complete 4985,1 --The Wildlife Suffers Too
+    .mob Diseased Grizzly
+step
+    .goto Western Plaguelands,53.73,64.66
+    >>Talk to |cRXP_FRIENDLY_Mulgris Deepriver|r
+    .turnin 4985 >>Turn in The Wildlife Suffers Too
+    .accept 4986 >>Accept Glyphed Oaken Branch
+    .target Mulgris Deepriver
+step
+    .goto Western Plaguelands,44.30,63.25
+    >>Kill |cRXP_ENEMY_Andorhal Tower Three|r
+    .complete 5097,3 --All Along the Watchtowers
+    .mob Andorhal Tower Three
 step
     .goto Western Plaguelands,39.46,66.76
     >>Talk to |cRXP_FRIENDLY_Chromie|r
@@ -1795,14 +1589,23 @@ step
     >>Loot the |cRXP_PICK_Andorhal Watch|r
     .complete 4972,1 --Counting Out Time
 step
-    .goto Western Plaguelands,39.46,66.76
-    >>Talk to |cRXP_FRIENDLY_Chromie|r
-    .turnin 4972 >>Turn in Counting Out Time
-    .target Chromie
+    .goto Western Plaguelands,46.62,71.05
+    >>Kill |cRXP_ENEMY_Andorhal Tower Four|r
+    .complete 5097,4 --All Along the Watchtowers
+    .mob Andorhal Tower Four
 step
     .goto Western Plaguelands,42.70,84.03
     >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
     .turnin 5097 >>Turn in All Along the Watchtowers
+    .target Commander Ashlam Valorfist
+step
+    .goto Western Plaguelands,42.97,84.50
+    >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
+    .accept 5225 >>Accept Target: Gahrron's Withering
+    .target High Priestess MacDonnell
+step
+    .goto Western Plaguelands,42.70,84.03
+    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
     .accept 5533 >>Accept Scholomance
     .target Commander Ashlam Valorfist
 step
@@ -1812,17 +1615,12 @@ step
     .accept 5537 >>Accept Skeletal Fragments
     .target Alchemist Arbington
 step
-    .goto Western Plaguelands,37.36,56.33
+    .goto Western Plaguelands,50.77,80.55
     >>Kill |cRXP_ENEMY_Skeletal Flayer|r and |cRXP_ENEMY_Skeletal Sorcerer|r and |cRXP_ENEMY_Skeletal Terror|r. Loot them for |cRXP_LOOT_Skeletal Fragments|r
     .complete 5537,1 --Skeletal Fragments
     .mob Skeletal Flayer
     .mob Skeletal Sorcerer
     .mob Skeletal Terror
-step
-    .goto Western Plaguelands,42.66,83.77
-    >>Talk to |cRXP_FRIENDLY_Alchemist Arbington|r
-    .turnin 5537 >>Turn in Skeletal Fragments
-    .target Alchemist Arbington
 step
     .goto Western Plaguelands,62.18,59.06
     >>Kill |cRXP_ENEMY_Cauldron Lord Soulwrath|r. Loot them for |cRXP_LOOT_Gahrron's Withering Cauldron Key|r
@@ -1833,27 +1631,6 @@ step
     >>Click the |cRXP_PICK_Scourge Cauldron|r
     .turnin 5225 >>Turn in Target: Gahrron's Withering
     .accept 5226 >>Accept Return to Chillwind Camp
-step
-    .goto Western Plaguelands,63.73,49.75
-    >>Kill |cRXP_ENEMY_Diseased Grizzly|r
-    .complete 4985,1 --The Wildlife Suffers Too
-    .mob Diseased Grizzly
-step
-    .goto Western Plaguelands,53.73,64.66
-    >>Talk to |cRXP_FRIENDLY_Mulgris Deepriver|r
-    .turnin 4985 >>Turn in The Wildlife Suffers Too
-    .target Mulgris Deepriver
-step
-    .goto Western Plaguelands,42.97,84.50
-    >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
-    .turnin 5226 >>Turn in Return to Chillwind Camp
-    .target High Priestess MacDonnell
-step
-    .goto Western Plaguelands,42.70,84.03
-    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
-    .accept 5237 >>Accept Mission Accomplished!
-    .turnin 5237 >>Turn in Mission Accomplished!
-    .target Commander Ashlam Valorfist
 step
     .goto Western Plaguelands,51.92,28.06
     >>Talk to |cRXP_FRIENDLY_Kirsta Deepshadow|r
@@ -1870,15 +1647,13 @@ step
     .complete 6004,4 --Unfinished Business
     .mob Scarlet Knight
 step
-    .goto Western Plaguelands,51.70,44.03
-    >>Kill |cRXP_ENEMY_Scarlet Hunter|r
-    .complete 6004,2 --Unfinished Business
-    .mob Scarlet Hunter
-step
-    .goto Western Plaguelands,40.80,51.92
+    .goto Western Plaguelands,51.89,44.61
     >>Kill |cRXP_ENEMY_Scarlet Medic|r
+    >>Kill |cRXP_ENEMY_Scarlet Hunter|r
     .complete 6004,1 --Unfinished Business
+    .complete 6004,2 --Unfinished Business
     .mob Scarlet Medic
+    .mob Scarlet Hunter
 step
     .goto Western Plaguelands,51.92,28.06
     >>Talk to |cRXP_FRIENDLY_Kirsta Deepshadow|r
@@ -1910,6 +1685,28 @@ step
     >>Talk to |cRXP_FRIENDLY_Kirsta Deepshadow|r
     .turnin 6025 >>Turn in Unfinished Business
     .target Kirsta Deepshadow
+step
+    .goto Western Plaguelands,39.46,66.76
+    >>Talk to |cRXP_FRIENDLY_Chromie|r
+    .turnin 4972 >>Turn in Counting Out Time
+    .target Chromie
+step
+    .goto Western Plaguelands,42.66,83.77
+    >>Talk to |cRXP_FRIENDLY_Alchemist Arbington|r
+    .turnin 5537 >>Turn in Skeletal Fragments
+    .accept 5538 >>Accept Mold Rhymes With...
+    .target Alchemist Arbington
+step
+    .goto Western Plaguelands,42.97,84.50
+    >>Talk to |cRXP_FRIENDLY_High Priestess MacDonnell|r
+    .turnin 5226 >>Turn in Return to Chillwind Camp
+    .target High Priestess MacDonnell
+step
+    .goto Western Plaguelands,42.70,84.03
+    >>Talk to |cRXP_FRIENDLY_Commander Ashlam Valorfist|r
+    .accept 5237 >>Accept Mission Accomplished!
+    .turnin 5237 >>Turn in Mission Accomplished!
+    .target Commander Ashlam Valorfist
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1919,56 +1716,38 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 56-57 Burning Steppes
-#next 57-58 Silithus
+#name 56-57 Darnassus
+#next 56-57 Silithus
 
 step
     #completewith next
-    .zone Burning Steppes >>Fly to Morgan's Vigil in Burning Steppes
+    .zone Darnassus >>Travel to Darnassus
 step
-    .goto Burning Steppes,84.56,68.68
-    >>Talk to |cRXP_FRIENDLY_Oralius|r
-    .accept 3824 >>Accept Gor'tesh the Brute Lord
-    .accept 4283 >>Accept FIFTY! YEP!
-    .target Oralius
+    .goto Darnassus,35.37,8.40
+    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
+    .turnin 4986 >>Turn in Glyphed Oaken Branch
+    .target Mathrengyl Bearwalker
 step
-    .goto Burning Steppes,55.77,39.40
-    >>Information Recovered
-    .complete 3701,1 --The Smoldering Ruins of Thaurissan
+    .goto Darnassus,47.81,81.97
+    >>Talk to |cRXP_FRIENDLY_Herald Moonstalker|r
+    .accept 1047 >>Accept The New Frontier
+    .target Herald Moonstalker
 step
-    .goto Burning Steppes,65.24,24.00
-    >>Talk to |cRXP_FRIENDLY_Tinkee Steamboil|r
-    .accept 4808 >>Accept Felnok Steelspring
-    .target Tinkee Steamboil
+    .goto Darnassus,41.83,85.62
+    >>Talk to |cRXP_FRIENDLY_Gracina Spiritmight|r
+    .accept 4493 >>Accept March of the Silithid
+    .target Gracina Spiritmight
 step
-    .goto Burning Steppes,41.14,34.92
-    >>Kill |cRXP_ENEMY_Blackrock Soldier|r and |cRXP_ENEMY_Blackrock Sorcerer|r and |cRXP_ENEMY_Blackrock Slayer|r. Loot them for |cRXP_LOOT_Blackrock Medallion|r
-    .complete 4283,1 --FIFTY! YEP!
-    .mob Blackrock Soldier
-    .mob Blackrock Sorcerer
-    .mob Blackrock Slayer
+    .goto Darnassus,34.81,9.26
+    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
+    .turnin 1047 >>Turn in The New Frontier
+    .accept 6761 >>Accept The New Frontier
+    .target Arch Druid Fandral Staghelm
 step
-    .goto Burning Steppes,39.33,55.30
-    >>Kill |cRXP_ENEMY_Gor'tesh|r and |cRXP_ENEMY_Grubbub|r. Loot them for |cRXP_LOOT_Gor'tesh's Lopped Off Head|r
-    .complete 3824,1 --Gor'tesh the Brute Lord
-    .mob Gor'tesh
-    .mob Grubbub
-step
-    .goto Burning Steppes,84.56,68.68
-    >>Talk to |cRXP_FRIENDLY_Oralius|r
-    .turnin 3824 >>Turn in Gor'tesh the Brute Lord
-    .accept 3825 >>Accept Ogre Head On A Stick = Party
-    .turnin 4283 >>Turn in FIFTY! YEP!
-    .target Oralius
-step
-    .goto Burning Steppes,81.00,46.79
-    >>Gor'tesh Head Planted
-    .complete 3825,1 --Ogre Head On A Stick = Party
-step
-    .goto Burning Steppes,84.56,68.68
-    >>Talk to |cRXP_FRIENDLY_Oralius|r
-    .turnin 3825 >>Turn in Ogre Head On A Stick = Party
-    .target Oralius
+    .goto Darnassus,35.37,8.40
+    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
+    .turnin 6761 >>Turn in The New Frontier
+    .target Mathrengyl Bearwalker
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1978,7 +1757,7 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 57-58 Silithus
+#name 56-57 Silithus
 #next 57-58 Winterspring
 
 step
@@ -1995,77 +1774,28 @@ step
     .accept 8284 >>Accept The Twilight Mystery
     .target Geologist Larksbane
 step
-    .goto Silithus,51.15,38.29
-    >>Talk to |cRXP_FRIENDLY_Windcaller Proudhorn|r
-    .accept 8280 >>Accept Securing the Supply Lines
-    .target Windcaller Proudhorn
-step
     .goto Silithus,51.61,38.63
     >>Talk to |cRXP_FRIENDLY_Beetix Ficklespragg|r
     .accept 8277 >>Accept Deadly Desert Venom
     .target Beetix Ficklespragg
 step
-    .goto Silithus,61.84,26.60
+    .goto Silithus,51.15,38.29
+    >>Talk to |cRXP_FRIENDLY_Windcaller Proudhorn|r
+    .accept 8280 >>Accept Securing the Supply Lines
+    .target Windcaller Proudhorn
+step
+    .goto Silithus,42.65,36.95
+    >>Kill |cRXP_ENEMY_Dredge Striker|r
     >>Kill |cRXP_ENEMY_Stonelash Scorpid|r. Loot them for |cRXP_LOOT_Stonelash Scorpid Stinger|r
+    .complete 8280,1 --Securing the Supply Lines
     .complete 8277,1 --Deadly Desert Venom
+    .mob Dredge Striker
     .mob Stonelash Scorpid
 step
-    .goto Silithus,55.57,22.78
+    .goto Silithus,34.39,20.16
     >>Kill |cRXP_ENEMY_Sand Skitterer|r. Loot them for |cRXP_LOOT_Sand Skitterer Fang|r
     .complete 8277,2 --Deadly Desert Venom
     .mob Sand Skitterer
-step
-    .goto Silithus,53.90,17.59
-    >>Kill |cRXP_ENEMY_Dredge Striker|r
-    .complete 8280,1 --Securing the Supply Lines
-    .mob Dredge Striker
-step
-    .goto Silithus,51.15,38.29
-    >>Talk to |cRXP_FRIENDLY_Windcaller Proudhorn|r
-    .turnin 8280 >>Turn in Securing the Supply Lines
-    .accept 8281 >>Accept Stepping Up Security
-    .target Windcaller Proudhorn
-step
-    .goto Silithus,51.61,38.63
-    >>Talk to |cRXP_FRIENDLY_Beetix Ficklespragg|r
-    .turnin 8277 >>Turn in Deadly Desert Venom
-    .accept 8278 >>Accept Noggle's Last Hope
-    .target Beetix Ficklespragg
-step
-    .goto Silithus,30.97,43.51
-    >>Kill |cRXP_ENEMY_Dredge Crusher|r
-    .complete 8281,1 --Stepping Up Security
-    .mob Dredge Crusher
-step
-    .goto Silithus,51.15,38.29
-    >>Talk to |cRXP_FRIENDLY_Windcaller Proudhorn|r
-    .turnin 8281 >>Turn in Stepping Up Security
-    .target Windcaller Proudhorn
-step
-    .goto Silithus,37.00,61.27
-    >>Kill |cRXP_ENEMY_Stonelash Pincer|r. Loot them for |cRXP_LOOT_Stonelash Pincer Stinger|r
-    .complete 8278,2 --Noggle's Last Hope
-    .mob Stonelash Pincer
-step
-    .goto Silithus,25.88,78.43
-    >>Kill |cRXP_ENEMY_Stonelash Flayer|r. Loot them for |cRXP_LOOT_Stonelash Flayer Stinger|r
-    .complete 8278,1 --Noggle's Last Hope
-    .mob Stonelash Flayer
-step
-    .goto Silithus,40.57,83.91
-    >>Kill |cRXP_ENEMY_Rock Stalker|r. Loot them for |cRXP_LOOT_Rock Stalker Fang|r
-    .complete 8278,3 --Noggle's Last Hope
-    .mob Rock Stalker
-step
-    .goto Silithus,51.61,38.63
-    >>Talk to |cRXP_FRIENDLY_Beetix Ficklespragg|r
-    .turnin 8278 >>Turn in Noggle's Last Hope
-    .target Beetix Ficklespragg
-step
-    .goto Silithus,51.63,38.50
-    >>Talk to |cRXP_FRIENDLY_Noggle Ficklespragg|r
-    .accept 8282 >>Accept Noggle's Lost Satchel
-    .target Noggle Ficklespragg
 step
     .goto Silithus,21.78,10.33
     >>Loot the |cRXP_PICK_Twilight Tablet Fragment|r
@@ -2074,13 +1804,52 @@ step
     .goto Silithus,49.67,37.46
     >>Talk to |cRXP_FRIENDLY_Geologist Larksbane|r
     .turnin 8284 >>Turn in The Twilight Mystery
-    .accept 8285 >>Accept The Deserter
     .target Geologist Larksbane
 step
-    .goto Silithus,67.19,69.76
-    >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r
-    .turnin 8285 >>Turn in The Deserter
-    .target Hermit Ortell
+    .goto Silithus,51.61,38.63
+    >>Talk to |cRXP_FRIENDLY_Beetix Ficklespragg|r
+    .turnin 8277 >>Turn in Deadly Desert Venom
+    .accept 8278 >>Accept Noggle's Last Hope
+    .target Beetix Ficklespragg
+step
+    .goto Silithus,51.15,38.29
+    >>Talk to |cRXP_FRIENDLY_Windcaller Proudhorn|r
+    .turnin 8280 >>Turn in Securing the Supply Lines
+    .accept 8281 >>Accept Stepping Up Security
+    .target Windcaller Proudhorn
+step
+    .goto Silithus,38.71,54.21
+    >>Kill |cRXP_ENEMY_Dredge Crusher|r
+    .complete 8281,1 --Stepping Up Security
+    .mob Dredge Crusher
+step
+    .goto Silithus,37.00,61.27
+    >>Kill |cRXP_ENEMY_Stonelash Pincer|r. Loot them for |cRXP_LOOT_Stonelash Pincer Stinger|r
+    .complete 8278,2 --Noggle's Last Hope
+    .mob Stonelash Pincer
+step
+    .goto Silithus,33.58,73.91
+    >>Kill |cRXP_ENEMY_Stonelash Flayer|r. Loot them for |cRXP_LOOT_Stonelash Flayer Stinger|r
+    >>Kill |cRXP_ENEMY_Rock Stalker|r. Loot them for |cRXP_LOOT_Rock Stalker Fang|r
+    .complete 8278,1 --Noggle's Last Hope
+    .complete 8278,3 --Noggle's Last Hope
+    .mob Stonelash Flayer
+    .mob Rock Stalker
+step
+    .goto Silithus,51.61,38.63
+    >>Talk to |cRXP_FRIENDLY_Beetix Ficklespragg|r
+    .turnin 8278 >>Turn in Noggle's Last Hope
+    .target Beetix Ficklespragg
+step
+    .goto Silithus,51.15,38.29
+    >>Talk to |cRXP_FRIENDLY_Windcaller Proudhorn|r
+    .turnin 8281 >>Turn in Stepping Up Security
+    .target Windcaller Proudhorn
+step
+    .goto Silithus,51.63,38.50
+    >>Talk to |cRXP_FRIENDLY_Noggle Ficklespragg|r
+    .accept 8282 >>Accept Noggle's Lost Satchel
+    .target Noggle Ficklespragg
 step
     .goto Silithus,44.56,91.38
     >>Loot the |cRXP_PICK_Noggle's Satchel|r
@@ -2090,6 +1859,16 @@ step
     >>Talk to |cRXP_FRIENDLY_Noggle Ficklespragg|r
     .turnin 8282 >>Turn in Noggle's Lost Satchel
     .target Noggle Ficklespragg
+step
+    .goto Silithus,49.67,37.46
+    >>Talk to |cRXP_FRIENDLY_Geologist Larksbane|r
+    .accept 8285 >>Accept The Deserter
+    .target Geologist Larksbane
+step
+    .goto Silithus,67.19,69.76
+    >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r
+    .turnin 8285 >>Turn in The Deserter
+    .target Hermit Ortell
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -2100,37 +1879,20 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 57-58 Winterspring
-#next 58-59 Silithus
+#next 58-59 Stormwind City
 
 step
     #completewith next
     .zone Winterspring >>Fly to Everlook in Winterspring
-step
-    .goto Winterspring,60.88,37.62
-    >>Talk to |cRXP_FRIENDLY_Umi Rumplesnicker|r
-    .accept 977 >>Accept Are We There, Yeti?
-    .target Umi Rumplesnicker
 step
     .goto Winterspring,61.12,38.43
     >>Talk to |cRXP_FRIENDLY_Harlo Wigglesworth|r
     .accept 6604 >>Accept Enraged Wildkin
     .target Harlo Wigglesworth
 step
-    .goto Winterspring,61.63,38.61
-    >>Talk to |cRXP_FRIENDLY_Felnok Steelspring|r
-    .turnin 4808 >>Turn in Felnok Steelspring
-    .accept 4809 >>Accept Chillwind Horns
-    .target Felnok Steelspring
-step
-    .goto Winterspring,68.91,40.97
-    >>Kill |cRXP_ENEMY_Ice Thistle Matriarch|r and |cRXP_ENEMY_Ice Thistle Patriarch|r. Loot them for |cRXP_LOOT_Pristine Yeti Horn|r
-    .complete 977,1 --Are We There, Yeti?
-    .mob Ice Thistle Matriarch
-    .mob Ice Thistle Patriarch
-step
     .goto Winterspring,60.88,37.62
     >>Talk to |cRXP_FRIENDLY_Umi Rumplesnicker|r
-    .turnin 977 >>Turn in Are We There, Yeti?
+    .accept 977 >>Accept Are We There, Yeti?
     .target Umi Rumplesnicker
 step
     .goto Winterspring,52.14,30.43
@@ -2139,17 +1901,10 @@ step
     .turnin 6604 >>Turn in Enraged Wildkin
     .target Jaron Stoneshaper
 step
-    .goto Winterspring,58.05,23.00
-    >>Kill |cRXP_ENEMY_Fledgling Chillwind|r and |cRXP_ENEMY_Chillwind Chimaera|r and |cRXP_ENEMY_Chillwind Ravager|r. Loot them for |cRXP_LOOT_Uncracked Chillwind Horn|r
-    .complete 4809,1 --Chillwind Horns
-    .mob Fledgling Chillwind
-    .mob Chillwind Chimaera
-    .mob Chillwind Ravager
-step
-    .goto Winterspring,61.63,38.61
-    >>Talk to |cRXP_FRIENDLY_Felnok Steelspring|r
-    .turnin 4809 >>Turn in Chillwind Horns
-    .target Felnok Steelspring
+    .goto Winterspring,27.73,34.50
+    >>Talk to |cRXP_FRIENDLY_Salfa|r
+    .accept 8464 >>Accept Winterfall Activity
+    .target Salfa
 step
     .goto Winterspring,58.99,59.79
     >>Click the |cRXP_PICK_Damaged Crate|r
@@ -2165,30 +1920,36 @@ step
     >>Loot the |cRXP_PICK_Jaron's Supplies|r
     .complete 4864,1 --Enraged Wildkin
 step
-    .goto Winterspring,27.73,34.50
-    >>Talk to |cRXP_FRIENDLY_Salfa|r
-    .accept 8464 >>Accept Winterfall Activity
-    .target Salfa
-step
-    .goto Winterspring,66.64,38.86
-    >>Kill |cRXP_ENEMY_Winterfall Ursa|r
-    >>Kill |cRXP_ENEMY_Winterfall Shaman|r
-    .complete 8464,3 --Winterfall Activity
-    .complete 8464,1 --Winterfall Activity
-    .mob Winterfall Ursa
-    .mob Winterfall Shaman
-step
-    .goto Winterspring,66.97,34.49
-    >>Kill |cRXP_ENEMY_Winterfall Den Watcher|r
-    .complete 8464,2 --Winterfall Activity
-    .mob Winterfall Den Watcher
-step
-    .goto Winterspring,64.77,20.84
+    .goto Winterspring,64.99,61.09
     >>Kill |cRXP_ENEMY_Crazed Owlbeast|r and |cRXP_ENEMY_Moontouched Owlbeast|r and |cRXP_ENEMY_Berserk Owlbeast|r. Loot them for |cRXP_LOOT_Blue-feathered Amulet|r
     .complete 4864,2 --Enraged Wildkin
     .mob Crazed Owlbeast
     .mob Moontouched Owlbeast
     .mob Berserk Owlbeast
+step
+    .goto Winterspring,68.91,40.97
+    >>Kill |cRXP_ENEMY_Ice Thistle Matriarch|r and |cRXP_ENEMY_Ice Thistle Patriarch|r. Loot them for |cRXP_LOOT_Pristine Yeti Horn|r
+    .complete 977,1 --Are We There, Yeti?
+    .mob Ice Thistle Matriarch
+    .mob Ice Thistle Patriarch
+step
+    .goto Winterspring,66.64,38.86
+    >>Kill |cRXP_ENEMY_Winterfall Ursa|r
+    .complete 8464,3 --Winterfall Activity
+    .mob Winterfall Ursa
+step
+    .goto Winterspring,66.97,34.49
+    >>Kill |cRXP_ENEMY_Winterfall Den Watcher|r
+    >>Kill |cRXP_ENEMY_Winterfall Shaman|r
+    .complete 8464,2 --Winterfall Activity
+    .complete 8464,1 --Winterfall Activity
+    .mob Winterfall Den Watcher
+    .mob Winterfall Shaman
+step
+    .goto Winterspring,60.88,37.62
+    >>Talk to |cRXP_FRIENDLY_Umi Rumplesnicker|r
+    .turnin 977 >>Turn in Are We There, Yeti?
+    .target Umi Rumplesnicker
 step
     .goto Winterspring,52.14,30.43
     >>Talk to |cRXP_FRIENDLY_Jaron Stoneshaper|r
@@ -2208,103 +1969,123 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 58-59 Silithus
+#name 58-59 Stormwind City
+#next 58-59 Burning Steppes
+
+step
+    #completewith next
+    .zone Stormwind City >>Travel to Stormwind City
+step
+    .xp 58 >>Kill mobs on the way, or run Blackrock Depths, until you're level 58: the quests here are a bit high for you before that
+step
+    .goto Stormwind City,62.16,72.26
+    >>Talk to |cRXP_FRIENDLY_Argent Recruiter|r
+    .accept 9154 >>Accept Light's Hope Chapel
+    .target Argent Recruiter
+step
+    .goto Stormwind City,61.51,70.61
+    >>Talk to |cRXP_FRIENDLY_Master Sergeant Maclure|r
+    .accept 8796 >>Accept The Alliance Needs Your Help!
+    .target Master Sergeant Maclure
+step
+    .goto Stormwind City,53.93,81.69
+    >>Talk to |cRXP_FRIENDLY_Clavicus Knavingham|r
+    .accept 7791 >>Accept A Donation of Wool
+    .accept 7793 >>Accept A Donation of Silk
+    .accept 7794 >>Accept A Donation of Mageweave
+    .target Clavicus Knavingham
+step
+    .goto Stormwind City,57.17,48.07
+    >>Talk to |cRXP_FRIENDLY_Royal Factor Bathrilor|r
+    .turnin 5022 >>Turn in Better Late Than Never
+    .target Royal Factor Bathrilor
+step << Paladin
+    .goto Stormwind City,50.48,47.49
+    >>Talk to |cRXP_FRIENDLY_Duthorian Rall|r
+    .turnin -4485 >>Turn in The Tome of Nobility
+    .target Duthorian Rall
+step
+    .goto Stormwind City,76.94,47.83
+    >>Talk to |cRXP_FRIENDLY_Count Remington Ridgewell|r
+    .accept 4766 >>Accept Mayara Brightwing
+    .target Count Remington Ridgewell
+step
+    .goto Stormwind City,80.21,38.35
+    >>Talk to |cRXP_FRIENDLY_Highlord Bolvar Fordragon|r
+    .accept 6182 >>Accept The First and the Last
+    .target Highlord Bolvar Fordragon
+step
+    .goto Stormwind City,78.31,70.74
+    >>Talk to |cRXP_FRIENDLY_Master Mathias Shaw|r
+    .turnin 6182 >>Turn in The First and the Last
+    .accept 6183 >>Accept Honor the Dead
+    .turnin 6183 >>Turn in Honor the Dead
+    .target Master Mathias Shaw
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 58-59 Burning Steppes
 #next 58-59 Ironforge
 
 step
     #completewith next
-    .zone Silithus >>Fly to Cenarion Hold in Silithus
+    .zone Burning Steppes >>Fly to Morgan's Vigil in Burning Steppes
 step
-    .xp 58 >>Kill mobs on the way, or run Blackrock Depths, until you're level 58: the quests here are a bit high for you before that
+    .goto Burning Steppes,84.56,68.68
+    >>Talk to |cRXP_FRIENDLY_Oralius|r
+    .accept 4283 >>Accept FIFTY! YEP!
+    .target Oralius
 step
-    .goto Silithus,49.20,34.18
-    >>Talk to |cRXP_FRIENDLY_Commander Mar'alith|r
-    .accept 8304 >>Accept Dearest Natalia
-    .target Commander Mar'alith
+    .goto Burning Steppes,82.86,46.15
+    >>Loot the |cRXP_PICK_Mageweave Cloth|r
+    .complete 7794,1 --A Donation of Mageweave
 step
-    .goto Silithus,49.45,37.25
-    >>Talk to |cRXP_FRIENDLY_Colossus Researcher Nestor|r
-    .accept 8857 >>Accept Secrets of the Colossus - Ashi
-    .target Colossus Researcher Nestor
+    .goto Burning Steppes,65.24,24.00
+    >>Talk to |cRXP_FRIENDLY_Tinkee Steamboil|r
+    .accept 4808 >>Accept Felnok Steelspring
+    .target Tinkee Steamboil
 step
-    .goto Silithus,49.47,37.30
-    >>Talk to |cRXP_FRIENDLY_Colossus Researcher Sophia|r
-    .accept 8859 >>Accept Secrets of the Colossus - Zora
-    .target Colossus Researcher Sophia
+    .goto Burning Steppes,65.01,23.76
+    >>Talk to |cRXP_FRIENDLY_Ragged John|r
+    .accept 4866 >>Accept Mother's Milk
+    .target Ragged John
 step
-    .goto Silithus,48.57,37.78
-    >>Talk to |cRXP_FRIENDLY_Bor Wildmane|r
-    .accept 8318 >>Accept Secret Communication
-    .target Bor Wildmane
+    .goto Burning Steppes,65.01,23.76
+    >>Kill |cRXP_ENEMY_Ragged John|r
+    .complete 4866,1 --Mother's Milk
+    .mob Ragged John
 step
-    .goto Silithus,39.23,44.56
-    >>Kill |cRXP_ENEMY_Twilight Keeper Havunth|r and |cRXP_ENEMY_Twilight Avenger|r and |cRXP_ENEMY_Twilight Geolord|r. Loot them for |cRXP_LOOT_Encrypted Twilight Text|r
-    .complete 8318,1 --Secret Communication
-    .mob Twilight Keeper Havunth
-    .mob Twilight Avenger
-    .mob Twilight Geolord
+    .goto Burning Steppes,65.01,23.76
+    >>Talk to |cRXP_FRIENDLY_Ragged John|r
+    .turnin 4866 >>Turn in Mother's Milk
+    .target Ragged John
 step
-    .goto Silithus,48.57,37.78
-    >>Talk to |cRXP_FRIENDLY_Bor Wildmane|r
-    .turnin 8318 >>Turn in Secret Communication
-    .target Bor Wildmane
+    .goto Burning Steppes,55.77,39.40
+    >>Information Recovered
+    .complete 3701,1 --The Smoldering Ruins of Thaurissan
 step
-    .goto Silithus,67.19,69.76
-    >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r
-    .accept 8279 >>Accept The Twilight Lexicon
-    .target Hermit Ortell
+    .goto Burning Steppes,55.26,53.99
+    >>Kill |cRXP_ENEMY_Blackrock Soldier|r and |cRXP_ENEMY_Blackrock Sorcerer|r and |cRXP_ENEMY_Blackrock Slayer|r. Loot them for |cRXP_LOOT_Blackrock Medallion|r
+    .complete 4283,1 --FIFTY! YEP!
+    .mob Blackrock Soldier
+    .mob Blackrock Sorcerer
+    .mob Blackrock Slayer
 step
-    .goto Silithus,41.28,88.45
-    >>Kill |cRXP_ENEMY_Frankal Stonebridge|r
-    >>Kill |cRXP_ENEMY_Rutgar Glyphshaper|r
-    .complete 8304,1 --Dearest Natalia
-    .complete 8304,2 --Dearest Natalia
-    .mob Frankal Stonebridge
-    .mob Rutgar Glyphshaper
+    .goto Burning Steppes,84.84,69.12
+    >>Talk to |cRXP_FRIENDLY_Mayara Brightwing|r
+    .turnin 4766 >>Turn in Mayara Brightwing
+    .target Mayara Brightwing
 step
-    .goto Silithus,16.09,86.37
-    >>Kill |cRXP_ENEMY_Twilight Keeper Exeter|r. Loot them for |cRXP_LOOT_Twilight Lexicon - Chapter 2|r
-    .complete 8279,2 --The Twilight Lexicon
-    .mob Twilight Keeper Exeter
-step
-    .goto Silithus,40.86,42.22
-    >>Kill |cRXP_ENEMY_Twilight Keeper Havunth|r. Loot them for |cRXP_LOOT_Twilight Lexicon - Chapter 3|r
-    .complete 8279,3 --The Twilight Lexicon
-    .mob Twilight Keeper Havunth
-step
-    .goto Silithus,49.20,34.18
-    >>Talk to |cRXP_FRIENDLY_Commander Mar'alith|r
-    .turnin 8304 >>Turn in Dearest Natalia
-    .target Commander Mar'alith
-step
-    .goto Silithus,26.35,36.62
-    >>Kill |cRXP_ENEMY_Twilight Keeper Mayna|r. Loot them for |cRXP_LOOT_Twilight Lexicon - Chapter 1|r
-    .complete 8279,1 --The Twilight Lexicon
-    .mob Twilight Keeper Mayna
-step
-    .goto Silithus,67.19,69.76
-    >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r
-    .turnin 8279 >>Turn in The Twilight Lexicon
-    .accept 8287 >>Accept A Terrible Purpose
-    .accept 8323 >>Accept True Believers
-    .target Hermit Ortell
-step
-    .goto Silithus,49.20,34.18
-    >>Talk to |cRXP_FRIENDLY_Commander Mar'alith|r
-    .turnin 8287 >>Turn in A Terrible Purpose
-    .target Commander Mar'alith
-step
-    .goto Silithus,39.23,44.56
-    >>Kill |cRXP_ENEMY_Twilight Keeper Havunth|r and |cRXP_ENEMY_Twilight Avenger|r and |cRXP_ENEMY_Twilight Geolord|r. Loot them for |cRXP_LOOT_Encrypted Twilight Text|r
-    .complete 8323,1 --True Believers
-    .mob Twilight Keeper Havunth
-    .mob Twilight Avenger
-    .mob Twilight Geolord
-step
-    .goto Silithus,67.19,69.76
-    >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r
-    .turnin 8323 >>Turn in True Believers
-    .target Hermit Ortell
+    .goto Burning Steppes,84.56,68.68
+    >>Talk to |cRXP_FRIENDLY_Oralius|r
+    .turnin 4283 >>Turn in FIFTY! YEP!
+    .target Oralius
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -2315,11 +2096,16 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 58-59 Ironforge
-#next 58-59 Stranglethorn Vale
+#next 58-59 Winterspring
 
 step
     #completewith next
     .zone Ironforge >>Travel to Ironforge
+step
+    .goto Ironforge,58.54,47.32
+    >>Talk to |cRXP_FRIENDLY_Cenarion Emissary Jademoon|r
+    .accept 8275 >>Accept Taking Back Silithus
+    .target Cenarion Emissary Jademoon
 step
     .goto Ironforge,74.09,48.22
     >>Talk to |cRXP_FRIENDLY_Bubulo Acerbus|r
@@ -2333,11 +2119,6 @@ step
     .accept 8505 >>Accept The Alliance Needs Purple Lotus!
     .target Master Nightsong
 step
-    .goto Ironforge,71.30,71.40
-    >>Talk to |cRXP_FRIENDLY_Sergeant Major Germaine|r
-    .accept 8509 >>Accept The Alliance Needs Arthas' Tears!
-    .target Sergeant Major Germaine
-step
     .goto Ironforge,70.30,74.30
     >>Talk to |cRXP_FRIENDLY_Private Draxlegauge|r
     .accept 8503 >>Accept The Alliance Needs Stranglekelp!
@@ -2347,11 +2128,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Private Porter|r
     .accept 8513 >>Accept The Alliance Needs Medium Leather!
     .target Private Porter
-step
-    .goto Ironforge,34.07,68.14
-    >>Talk to |cRXP_FRIENDLY_Argent Recruiter|r
-    .accept 9154 >>Accept Light's Hope Chapel
-    .target Argent Recruiter
 step
     .goto Ironforge,27.50,73.30
     >>Talk to |cRXP_FRIENDLY_Master Sergeant Fizzlebolt|r
@@ -2388,35 +2164,101 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 58-59 Stranglethorn Vale
-#next 59-60 Hillsbrad/Alterac
+#name 58-59 Winterspring
+#next 58-59 Tanaris
 
 step
     #completewith next
-    .zone Stranglethorn Vale >>Fly to Darkshire and ride south to the Rebel Camp in Stranglethorn Vale
+    .zone Winterspring >>Fly to Everlook in Winterspring
 step
-    .goto Stranglethorn Vale,14.50,15.83
-    >>Talk to |cRXP_FRIENDLY_Vinchaxa|r
-    .accept 8240 >>Accept A Bijou for Zanza
-    .turnin 8240 >>Turn in A Bijou for Zanza
-    .target Vinchaxa
+    .goto Winterspring,61.92,38.30
+    >>Talk to |cRXP_FRIENDLY_Witch Doctor Mau'ari|r
+    .accept 969 >>Accept Luck Be With You
+    .target Witch Doctor Mau'ari
 step
-    .goto Stranglethorn Vale,44.33,45.06
+    .goto Winterspring,61.63,38.61
+    >>Talk to |cRXP_FRIENDLY_Felnok Steelspring|r
+    .turnin 4808 >>Turn in Felnok Steelspring
+    .accept 4809 >>Accept Chillwind Horns
+    .target Felnok Steelspring
+step
+    .goto Winterspring,61.12,38.43
+    >>Talk to |cRXP_FRIENDLY_Harlo Wigglesworth|r
+    .accept 6606 >>Accept A Little Luck
+    .target Harlo Wigglesworth
+step
+    .goto Winterspring,61.92,38.30
+    >>Talk to |cRXP_FRIENDLY_Witch Doctor Mau'ari|r
+    .turnin 6606 >>Turn in A Little Luck
+    .target Witch Doctor Mau'ari
+step
+    .goto Winterspring,66.52,51.22
+    >>Kill |cRXP_ENEMY_Fledgling Chillwind|r and |cRXP_ENEMY_Chillwind Chimaera|r and |cRXP_ENEMY_Chillwind Ravager|r. Loot them for |cRXP_LOOT_Uncracked Chillwind Horn|r
+    .complete 4809,1 --Chillwind Horns
+    .mob Fledgling Chillwind
+    .mob Chillwind Chimaera
+    .mob Chillwind Ravager
+step
+    .goto Winterspring,61.84,67.99
+    >>Loot the |cRXP_PICK_Frostmaul Shards|r
+    .complete 969,1 --Luck Be With You
+step
+    .goto Winterspring,61.92,38.30
+    >>Talk to |cRXP_FRIENDLY_Witch Doctor Mau'ari|r
+    .turnin 969 >>Turn in Luck Be With You
+    .accept 975 >>Accept Cache of Mau'ari
+    .turnin 975 >>Turn in Cache of Mau'ari
+    .target Witch Doctor Mau'ari
+step
+    .goto Winterspring,61.63,38.61
+    >>Talk to |cRXP_FRIENDLY_Felnok Steelspring|r
+    .turnin 4809 >>Turn in Chillwind Horns
+    .target Felnok Steelspring
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 58-59 Tanaris
+#next 59-60 Ashenvale
+
+step
+    #completewith next
+    .zone Tanaris >>Fly to Gadgetzan in Tanaris
+step
+    .goto Tanaris,51.46,28.81
+    >>Talk to |cRXP_FRIENDLY_Krinkle Goodsteel|r
+    .turnin 5538 >>Turn in Mold Rhymes With...
+    .target Krinkle Goodsteel
+step
+    .goto Tanaris,50.89,26.96
+    >>Talk to |cRXP_FRIENDLY_Alchemist Pestlezugg|r
+    .turnin 4493 >>Turn in March of the Silithid
+    .target Alchemist Pestlezugg
+step
+    .goto Tanaris,52.71,45.92
+    >>Talk to |cRXP_FRIENDLY_Marvon Rivetseeker|r
+    .turnin 3445 >>Turn in The Sunken Temple
+    .target Marvon Rivetseeker
+step
+    .goto Tanaris,54.42,46.46
+    >>Loot the |cRXP_PICK_Purple Lotus|r
+    .complete 8505,1 --The Alliance Needs Purple Lotus!
+step
+    .goto Tanaris,60.76,39.14
     >>Loot the |cRXP_PICK_Silk Cloth|r
     >>Loot the |cRXP_PICK_Mageweave Cloth|r
-    >>Loot the |cRXP_PICK_Purple Lotus|r
+    .complete 7793,1 --A Donation of Silk
     .complete 7803,1 --A Donation of Silk
     .complete 7804,1 --A Donation of Mageweave
     .complete 7808,1 --A Donation of Silk
     .complete 7809,1 --A Donation of Mageweave
-    .complete 8505,1 --The Alliance Needs Purple Lotus!
 step
-    .goto Stranglethorn Vale,28.36,76.35
-    >>Talk to |cRXP_FRIENDLY_Oglethorpe Obnoticus|r
-    .turnin 8857 >>Turn in Secrets of the Colossus - Ashi
-    .target Oglethorpe Obnoticus
-step
-    .goto Stranglethorn Vale,27.82,85.71
+    .goto Tanaris,70.23,39.55
     >>Loot the |cRXP_PICK_Stranglekelp|r
     .complete 8503,1 --The Alliance Needs Stranglekelp!
 ]])
@@ -2428,30 +2270,21 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 59-60 Hillsbrad/Alterac
-#next 59-60 Eastern Plaguelands
+#name 59-60 Ashenvale
+#next 59-60 Ironforge
 
 step
     #completewith next
-    .zone Hillsbrad Foothills >>Fly to Southshore in Hillsbrad Foothills
+    .zone Ashenvale >>Fly to Astranaar in Ashenvale
 step
-    .goto Hillsbrad Foothills,51.47,58.35
-    >>Talk to |cRXP_FRIENDLY_Raleigh the Devout|r
-    .turnin -1052 >>Turn in Down the Scarlet Path
-    .target Raleigh the Devout
-step
-    .goto Hillsbrad Foothills,50.35,59.05
-    >>Talk to |cRXP_FRIENDLY_Phin Odelic|r
-    .turnin -661 >>Turn in Hints of a New Plague?
-    .target Phin Odelic
-step
-    .goto Hillsbrad Foothills,62.04,36.32
-    >>Kill |cRXP_ENEMY_Gray Bear|r. Loot them for |cRXP_LOOT_Medium Leather|r
+    .goto Ashenvale,50.77,53.40
+    >>Kill |cRXP_ENEMY_Ashenvale Bear|r. Loot them for |cRXP_LOOT_Medium Leather|r
     .complete 8513,1 --The Alliance Needs Medium Leather!
-    .mob Gray Bear
+    .mob Ashenvale Bear
 step
-    .goto Hillsbrad Foothills,45.16,28.29
+    .goto Ashenvale,74.41,73.38
     >>Loot the |cRXP_PICK_Wool Cloth|r
+    .complete 7791,1 --A Donation of Wool
     .complete 7802,1 --A Donation of Wool
     .complete 7807,1 --A Donation of Wool
 ]])
@@ -2463,89 +2296,8 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 59-60 Eastern Plaguelands
-#next 59-60 Ironforge
-
-step
-    #completewith next
-    .zone Eastern Plaguelands >>Fly to Light's Hope Chapel in Eastern Plaguelands
-step
-    .goto Eastern Plaguelands,71.51,49.66
-    >>Talk to |cRXP_FRIENDLY_Emmisary Whitebeard|r
-    .accept 9664 >>Accept Establishing New Outposts
-    .target Emmisary Whitebeard
-step
-    .goto Eastern Plaguelands,71.15,50.55
-    >>Talk to |cRXP_FRIENDLY_Keeper of the Rolls|r
-    .turnin 9154 >>Turn in Light's Hope Chapel
-    .target Keeper of the Rolls
-step
-    .goto Eastern Plaguelands,71.90,48.41
-    >>Talk to |cRXP_FRIENDLY_Lord Maxwell Tyrosus|r
-    .turnin 8859 >>Turn in Secrets of the Colossus - Zora
-    .target Lord Maxwell Tyrosus
-step
-    .goto Eastern Plaguelands,69.93,53.72
-    >>Talk to |cRXP_FRIENDLY_Caretaker Alen|r
-    .accept 5281 >>Accept The Restless Souls
-    .target Caretaker Alen
-step
-    .goto Eastern Plaguelands,59.04,39.41
-    >>Kill |cRXP_ENEMY_<TXT>Eastwall Capture Quest Doodad|r
-    .complete 9664,2 --Establishing New Outposts
-    .mob <TXT>Eastwall Capture Quest Doodad
-step
-    .goto Eastern Plaguelands,49.25,18.20
-    >>Kill |cRXP_ENEMY_<TXT>Northpass Capture Quest Doodad|r
-    .complete 9664,3 --Establishing New Outposts
-    .mob <TXT>Northpass Capture Quest Doodad
-step
-    .goto Eastern Plaguelands,18.16,25.06
-    >>Kill |cRXP_ENEMY_<TXT>Plaguewood Capture Quest Doodad|r
-    .complete 9664,4 --Establishing New Outposts
-    .mob <TXT>Plaguewood Capture Quest Doodad
-step
-    .goto Eastern Plaguelands,11.36,26.60
-    >>Talk to |cRXP_FRIENDLY_Egan|r
-    .turnin 5281 >>Turn in The Restless Souls
-    .target Egan
-step
-    .goto Eastern Plaguelands,25.63,66.91
-    >>Loot the |cRXP_PICK_Arthas' Tears|r
-    .complete 8509,1 --The Alliance Needs Arthas' Tears!
-step
-    .goto Eastern Plaguelands,22.90,72.96
-    >>Click the |cRXP_PICK_Torn Scroll|r
-    .accept 6024 >>Accept Hameya's Plea
-step
-    .goto Eastern Plaguelands,34.09,64.10
-    >>Kill |cRXP_ENEMY_<TXT>Crown Guard Capture Quest Doodad|r
-    .complete 9664,1 --Establishing New Outposts
-    .mob <TXT>Crown Guard Capture Quest Doodad
-step
-    .goto Eastern Plaguelands,71.51,49.66
-    >>Talk to |cRXP_FRIENDLY_Emmisary Whitebeard|r
-    .turnin 9664 >>Turn in Establishing New Outposts
-    .target Emmisary Whitebeard
-step
-    .goto Eastern Plaguelands,61.96,11.11
-    >>Kill |cRXP_ENEMY_Infiltrator Hameya|r. Loot them for |cRXP_LOOT_Hameya's Key|r
-    .complete 6024,1 --Hameya's Plea
-    .mob Infiltrator Hameya
-step
-    .goto Eastern Plaguelands,23.58,73.79
-    >>Click the |cRXP_PICK_Mound of Dirt|r
-    .turnin 6024 >>Turn in Hameya's Plea
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
 #name 59-60 Ironforge
+#next 59-60 Stormwind City
 
 step
     #completewith next
@@ -2563,15 +2315,15 @@ step
     .turnin 8505 >>Turn in The Alliance Needs Purple Lotus!
     .target Master Nightsong
 step
-    .goto Ironforge,71.30,71.40
-    >>Talk to |cRXP_FRIENDLY_Sergeant Major Germaine|r
-    .turnin 8509 >>Turn in The Alliance Needs Arthas' Tears!
-    .target Sergeant Major Germaine
-step
     .goto Ironforge,70.30,74.30
     >>Talk to |cRXP_FRIENDLY_Private Draxlegauge|r
     .turnin 8503 >>Turn in The Alliance Needs Stranglekelp!
     .target Private Draxlegauge
+step
+    .goto Ironforge,61.30,74.20
+    >>Talk to |cRXP_FRIENDLY_Field Marshal Snowfall|r
+    .turnin 8796 >>Turn in The Alliance Needs Your Help!
+    .target Field Marshal Snowfall
 step
     .goto Ironforge,58.70,75.00
     >>Talk to |cRXP_FRIENDLY_Private Porter|r
@@ -2584,4 +2336,227 @@ step
     .turnin 7803 >>Turn in A Donation of Silk
     .turnin 7804 >>Turn in A Donation of Mageweave
     .target Mistina Steelshield
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 59-60 Stormwind City
+#next 59-60 Eastern Plaguelands
+
+step
+    #completewith next
+    .zone Stormwind City >>Travel to Stormwind City
+step
+    .goto Stormwind City,53.93,81.69
+    >>Talk to |cRXP_FRIENDLY_Clavicus Knavingham|r
+    .turnin 7791 >>Turn in A Donation of Wool
+    .turnin 7793 >>Turn in A Donation of Silk
+    .turnin 7794 >>Turn in A Donation of Mageweave
+    .target Clavicus Knavingham
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 59-60 Eastern Plaguelands
+#next 59-60 Silithus
+
+step
+    #completewith next
+    .zone Eastern Plaguelands >>Fly to Light's Hope Chapel in Eastern Plaguelands
+step
+    .goto Eastern Plaguelands,71.51,49.66
+    >>Talk to |cRXP_FRIENDLY_Emmisary Whitebeard|r
+    .accept 9664 >>Accept Establishing New Outposts
+    .target Emmisary Whitebeard
+step
+    .goto Eastern Plaguelands,71.15,50.55
+    >>Talk to |cRXP_FRIENDLY_Keeper of the Rolls|r
+    .turnin 9154 >>Turn in Light's Hope Chapel
+    .target Keeper of the Rolls
+step
+    .goto Eastern Plaguelands,69.93,53.72
+    >>Talk to |cRXP_FRIENDLY_Caretaker Alen|r
+    .accept 5281 >>Accept The Restless Souls
+    .target Caretaker Alen
+step
+    .goto Eastern Plaguelands,34.09,64.10
+    >>Kill |cRXP_ENEMY_<TXT>Crown Guard Capture Quest Doodad|r
+    .complete 9664,1 --Establishing New Outposts
+    .mob <TXT>Crown Guard Capture Quest Doodad
+step
+    .goto Eastern Plaguelands,22.90,72.96
+    >>Click the |cRXP_PICK_Torn Scroll|r
+    .accept 6024 >>Accept Hameya's Plea
+step
+    .goto Eastern Plaguelands,11.36,26.60
+    >>Talk to |cRXP_FRIENDLY_Egan|r
+    .turnin 5281 >>Turn in The Restless Souls
+    .target Egan
+step
+    .goto Eastern Plaguelands,18.16,25.06
+    >>Kill |cRXP_ENEMY_<TXT>Plaguewood Capture Quest Doodad|r
+    .complete 9664,4 --Establishing New Outposts
+    .mob <TXT>Plaguewood Capture Quest Doodad
+step
+    .goto Eastern Plaguelands,49.25,18.20
+    >>Kill |cRXP_ENEMY_<TXT>Northpass Capture Quest Doodad|r
+    .complete 9664,3 --Establishing New Outposts
+    .mob <TXT>Northpass Capture Quest Doodad
+step
+    .goto Eastern Plaguelands,61.96,11.11
+    >>Kill |cRXP_ENEMY_Infiltrator Hameya|r. Loot them for |cRXP_LOOT_Hameya's Key|r
+    .complete 6024,1 --Hameya's Plea
+    .mob Infiltrator Hameya
+step
+    .goto Eastern Plaguelands,59.04,39.41
+    >>Kill |cRXP_ENEMY_<TXT>Eastwall Capture Quest Doodad|r
+    .complete 9664,2 --Establishing New Outposts
+    .mob <TXT>Eastwall Capture Quest Doodad
+step
+    .goto Eastern Plaguelands,71.51,49.66
+    >>Talk to |cRXP_FRIENDLY_Emmisary Whitebeard|r
+    .turnin 9664 >>Turn in Establishing New Outposts
+    .target Emmisary Whitebeard
+step
+    .goto Eastern Plaguelands,23.58,73.79
+    >>Click the |cRXP_PICK_Mound of Dirt|r
+    .turnin 6024 >>Turn in Hameya's Plea
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 59-60 Silithus
+
+step
+    #completewith next
+    .zone Silithus >>Fly to Cenarion Hold in Silithus
+step
+    .goto Silithus,49.20,34.18
+    >>Talk to |cRXP_FRIENDLY_Commander Mar'alith|r
+    .accept 8304 >>Accept Dearest Natalia
+    .target Commander Mar'alith
+step
+    .goto Silithus,48.57,37.78
+    >>Talk to |cRXP_FRIENDLY_Bor Wildmane|r
+    .accept 8318 >>Accept Secret Communication
+    .target Bor Wildmane
+step
+    .goto Silithus,51.15,38.29
+    >>Talk to |cRXP_FRIENDLY_Windcaller Proudhorn|r
+    .turnin 8275 >>Turn in Taking Back Silithus
+    .target Windcaller Proudhorn
+step
+    .goto Silithus,39.23,44.56
+    >>Kill |cRXP_ENEMY_Twilight Keeper Havunth|r and |cRXP_ENEMY_Twilight Avenger|r and |cRXP_ENEMY_Twilight Geolord|r. Loot them for |cRXP_LOOT_Encrypted Twilight Text|r
+    .complete 8318,1 --Secret Communication
+    .mob Twilight Keeper Havunth
+    .mob Twilight Avenger
+    .mob Twilight Geolord
+step
+    .goto Silithus,67.19,69.76
+    >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r
+    .accept 8279 >>Accept The Twilight Lexicon
+    .target Hermit Ortell
+step
+    .goto Silithus,48.57,37.78
+    >>Talk to |cRXP_FRIENDLY_Bor Wildmane|r
+    .turnin 8318 >>Turn in Secret Communication
+    .target Bor Wildmane
+step
+    .goto Silithus,48.62,37.87
+    >>Talk to |cRXP_FRIENDLY_Huum Wildmane|r
+    .accept 8320 >>Accept Twilight Geolords
+    .target Huum Wildmane
+step
+    .goto Silithus,49.98,36.35
+    >>Talk to |cRXP_FRIENDLY_Windcaller Kaldon|r
+    .accept 8800 >>Accept Cenarion Battlegear
+    .target Windcaller Kaldon
+step
+    .goto Silithus,51.23,38.86
+    >>Talk to |cRXP_FRIENDLY_Vargus|r
+    .turnin 8800 >>Turn in Cenarion Battlegear
+    .target Vargus
+step
+    .goto Silithus,40.86,42.22
+    >>Kill |cRXP_ENEMY_Twilight Keeper Havunth|r. Loot them for |cRXP_LOOT_Twilight Lexicon - Chapter 3|r
+    >>Kill |cRXP_ENEMY_Twilight Geolord|r
+    .complete 8279,3 --The Twilight Lexicon
+    .complete 8320,1 --Twilight Geolords
+    .mob Twilight Keeper Havunth
+    .mob Twilight Geolord
+step
+    .goto Silithus,48.62,37.87
+    >>Talk to |cRXP_FRIENDLY_Huum Wildmane|r
+    .turnin 8320 >>Turn in Twilight Geolords
+    .accept 8321 >>Accept Vyral the Vile
+    .target Huum Wildmane
+step
+    .goto Silithus,72.39,15.58
+    >>Kill |cRXP_ENEMY_Vyral the Vile|r. Loot them for |cRXP_LOOT_Vyral's Signet Ring|r
+    .complete 8321,1 --Vyral the Vile
+    .mob Vyral the Vile
+step
+    .goto Silithus,48.62,37.87
+    >>Talk to |cRXP_FRIENDLY_Huum Wildmane|r
+    .turnin 8321 >>Turn in Vyral the Vile
+    .target Huum Wildmane
+step
+    .goto Silithus,26.35,36.62
+    >>Kill |cRXP_ENEMY_Twilight Keeper Mayna|r. Loot them for |cRXP_LOOT_Twilight Lexicon - Chapter 1|r
+    .complete 8279,1 --The Twilight Lexicon
+    .mob Twilight Keeper Mayna
+step
+    .goto Silithus,16.09,86.37
+    >>Kill |cRXP_ENEMY_Twilight Keeper Exeter|r. Loot them for |cRXP_LOOT_Twilight Lexicon - Chapter 2|r
+    .complete 8279,2 --The Twilight Lexicon
+    .mob Twilight Keeper Exeter
+step
+    .goto Silithus,40.81,88.86
+    >>Kill |cRXP_ENEMY_Frankal Stonebridge|r
+    >>Kill |cRXP_ENEMY_Rutgar Glyphshaper|r
+    .complete 8304,1 --Dearest Natalia
+    .complete 8304,2 --Dearest Natalia
+    .mob Frankal Stonebridge
+    .mob Rutgar Glyphshaper
+step
+    .goto Silithus,67.19,69.76
+    >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r
+    .turnin 8279 >>Turn in The Twilight Lexicon
+    .accept 8287 >>Accept A Terrible Purpose
+    .accept 8323 >>Accept True Believers
+    .target Hermit Ortell
+step
+    .goto Silithus,49.20,34.18
+    >>Talk to |cRXP_FRIENDLY_Commander Mar'alith|r
+    .turnin 8287 >>Turn in A Terrible Purpose
+    .turnin 8304 >>Turn in Dearest Natalia
+    .target Commander Mar'alith
+step
+    .goto Silithus,39.23,44.56
+    >>Kill |cRXP_ENEMY_Twilight Keeper Havunth|r and |cRXP_ENEMY_Twilight Avenger|r and |cRXP_ENEMY_Twilight Geolord|r. Loot them for |cRXP_LOOT_Encrypted Twilight Text|r
+    .complete 8323,1 --True Believers
+    .mob Twilight Keeper Havunth
+    .mob Twilight Avenger
+    .mob Twilight Geolord
+step
+    .goto Silithus,67.19,69.76
+    >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r
+    .turnin 8323 >>Turn in True Believers
+    .target Hermit Ortell
 ]])

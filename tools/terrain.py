@@ -13,6 +13,7 @@ drawn by hand from the zone map; mob packs are summarised from spawn data
     blocked   polygons you can't walk through (mountains, outside the zone)
     open      polygons carved back out of blocked ones (a valley, a road)
     walls     polylines you can't cross (cliff edges drawn as a line)
+    land      polygons where the map's grey-blue isn't water (snow, dark forest)
     water     polygons you have to swim through (slow)
     packs     (x, y, radius, level, name): groups of hostile mobs
 
@@ -33,65 +34,29 @@ WATER_COST = 3.0    # swimming is about three times slower than running
 DANGER = {3: 3.0, 4: 10.0}   # levels above you -> extra cost per cell
 DANGER_MAX = 40.0                     # 5+ levels above: go almost any way around
 
-ZONES = {
-    "Duskwood": dict(
-        area=10, uimap=1431,
-        # yards per 1% of the map, for turning grid steps into walking time
-        yards=(26.6, 17.8),
-        blocked=[
-            # north of the river: Elwynn Forest
-            [(0, 0), (100, 0), (100, 9), (80, 9), (70, 6), (60, 8), (50, 8), (45, 10),
-             (40, 13), (30, 18), (20, 16), (15, 15), (12, 5), (8, 5), (8, 20), (3, 22), (0, 22)],
-            # west of the river: Westfall
-            [(0, 22), (3, 24), (4, 30), (5.5, 40), (6.5, 50), (7, 60), (9, 65), (11, 70),
-             (14, 76), (16, 82), (17, 100), (0, 100)],
-            # The Twilight Grove's ring of mountains
-            [(33.5, 25), (37, 22), (41, 20.5), (45, 18.5), (50, 19), (55, 21.5), (59, 25.5), (61, 32),
-             (60, 40), (59, 48), (58, 55), (52, 57), (46, 58.5), (40, 58.5), (35, 57),
-             (33.5, 50), (33, 35)],
-            # mountains north-east of Darkshire
-            [(74.5, 23), (78, 19), (85, 16), (92, 13), (100, 12), (100, 30), (90, 32),
-             (84, 29), (79, 28), (75.5, 27)],
-            # eastern edge
-            [(86, 32), (100, 30), (100, 100), (70, 100), (70, 77), (77, 73), (84, 70),
-             (85.5, 62), (84.5, 55), (86, 46)],
-            # southern mountains along Stranglethorn
-            [(17, 100), (17, 84), (22, 81), (28, 78.5), (34, 78), (40, 78.5), (46, 79),
-             (52, 79), (58, 79.5), (63, 80.5), (68, 78), (72, 74), (70, 100)],
-        ],
-        open=[
-            # the grove inside the ring, and the road up into it from the south
-            [(43, 31), (47, 29.5), (51, 31.5), (53, 37), (52, 42), (49, 46), (46, 46),
-             (44, 42), (43, 37)],
-            [(45.3, 44), (48.3, 44), (48.3, 59), (45.3, 59)],
-            # roads out of the zone: south to Stranglethorn, north-east to
-            # Elwynn, west over the bridge to Westfall
-            [(45, 66), (48, 66), (48.5, 100), (45.5, 100)],
-            [(72, 30), (72, 22), (78, 17), (85, 13.5), (92, 8), (94, 10), (86, 16), (79, 19.5),
-             (74.5, 23), (74.5, 30)],
-            [(0, 60.5), (13, 60), (13, 63), (0, 63.5)],
-        ],
-        walls=[
-            # the cliff on Darkshire's west side, down to the main road
-            [(71.5, 26), (70.5, 29), (69.5, 33), (69.5, 40), (69, 45), (69.5, 50),
-             (68.5, 54), (66, 57.5)],
-            # the ridge closing Brightwood Grove off from the main road
-            [(58, 55), (61, 57), (63.5, 58), (66, 57.5)],
-            # the hill north of the Tranquil Gardens Cemetery
-            [(75.5, 51.5), (78, 51), (80, 54), (79.5, 57)],
-        ],
-        water=[
-            # the Darkened Bank along the north edge
-            [(12, 15), (20, 16), (30, 18), (40, 13), (45, 10), (50, 8), (60, 8), (70, 6),
-             (80, 9), (100, 9), (100, 12), (80, 12.5), (70, 12.5), (60, 12), (50, 12),
-             (45, 13.5), (40, 16.5), (30, 22.5), (20, 21.5), (15, 21), (12, 21)],
-            # the river along the west edge
-            [(3, 22), (8, 20), (12, 21), (8, 27), (7, 30), (8, 40), (9, 50), (9.5, 60),
-             (11, 65), (13, 70), (16, 76), (19, 82), (19, 100), (17, 100), (16, 82),
-             (14, 76), (11, 70), (9, 65), (7, 60), (6.5, 50), (5.5, 40), (4, 30), (3, 24)],
-        ],
-    ),
-}
+def _load_zones():
+    """Each file in tools/terrain_zones/ describes one zone."""
+    import importlib.util
+    zones = {}
+    d = os.path.join(HERE, "terrain_zones")
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith(".py") or fn.startswith("_"):
+            continue
+        spec = importlib.util.spec_from_file_location("terrain_zone_" + fn[:-3], os.path.join(d, fn))
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        zones[m.NAME] = dict(
+            area=m.AREA, uimap=m.UIMAP,
+            # yards per 1% of the map, for turning grid steps into walking time
+            yards=(m.SIZE[0] / 100.0, m.SIZE[1] / 100.0),
+            blocked=getattr(m, "BLOCKED", []), open=getattr(m, "OPEN", []),
+            walls=getattr(m, "WALLS", []), water=getattr(m, "WATER", []),
+            auto=getattr(m, "AUTO", None), land=getattr(m, "LAND", []),
+            packs=[])
+    return zones
+
+
+ZONES = _load_zones()
 
 # Mob packs per zone, summarised from spawn data by --packs (tools/terrain_packs.py).
 try:
@@ -132,15 +97,20 @@ def _seg_cells(a, b):
 
 def build_grid(z):
     """Cell kinds: '.' open, '#' blocked, '~' water. grid[y][x]."""
-    g = [["." for _ in range(GRID)] for _ in range(GRID)]
+    auto = z.get("auto")
+    g = [list(auto[y]) if auto else ["." for _ in range(GRID)] for y in range(GRID)]
     for y in range(GRID):
         for x in range(GRID):
             cx, cy = x + 0.5, y + 0.5
-            if any(_inside(p, cx, cy) for p in z.get("blocked", ())) and \
-                    not any(_inside(p, cx, cy) for p in z.get("open", ())):
+            inside_open = any(_inside(p, cx, cy) for p in z.get("open", ()))
+            if any(_inside(p, cx, cy) for p in z.get("blocked", ())) and not inside_open:
                 g[y][x] = "#"
             elif any(_inside(p, cx, cy) for p in z.get("water", ())):
                 g[y][x] = "~"
+            elif inside_open:
+                g[y][x] = "."
+            elif g[y][x] == "~" and any(_inside(p, cx, cy) for p in z.get("land", ())):
+                g[y][x] = "."
     for wall in z.get("walls", ()):
         for a, b in zip(wall, wall[1:]):
             for x, y in _seg_cells(a, b):

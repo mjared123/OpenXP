@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.12",
+        date = "November 2026",
+        changes = {
+            "The arrow now walks around mountains, cliffs, lakes and high-level packs in every zone on the 21-60 routes, not just Duskwood",
+            "All 21-60 Alliance and Horde routes rebuilt with walking distances around the terrain: about 18% less walking in total and 13-16% less per quest",
+        },
+    },
+    {
         version = "1.3.11",
         date = "November 2026",
         changes = {

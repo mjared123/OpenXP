@@ -778,7 +778,7 @@ class Builder:
         return actions, turned_in
 
     SHARE = 3.0      # map units: other quests' objectives this close get done too
-    ROLLOUT_TOP = 5  # options tried out to the end when ordering steps
+    ROLLOUT_TOP = 3  # options tried out to the end when ordering steps
     HERE = 4.0       # map units: quest givers this close count as "in town"
 
     def simulate_terrain(self, section, cands, start_pos, t):
@@ -871,10 +871,10 @@ class Builder:
         def apply(st, opt, record=True):
             _, kind, ref, where = opt
             lvl = level_of(st["xp"])
-            # Time and XP on the way use the straight line, like zones without
-            # terrain do, so the zone isn't judged against the others on a
-            # different scale (the order still comes from walking distances).
-            d = math.dist(st["pos"], where)
+            # Walking distance around the terrain. Every zone on the routes
+            # has terrain, so they're all judged on the same scale (a zone
+            # without it, like Shen'dralas, still counts the straight line).
+            d = dist(st["pos"], where, int(lvl))
             x = TRAVEL_KILLS * d * mob_xp(int(lvl), lvl)
             st["xp"] += x
             st["kills"] += x
