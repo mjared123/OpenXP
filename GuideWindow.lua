@@ -2491,6 +2491,34 @@ local function IsGuideActive(guide,includeInternal)
     end
 end
 
+-- A long list of guides (like OpenXP 21-60, which has many short sections)
+-- runs off the screen and can't be clicked, so split it into level brackets:
+-- "Levels 20-29", "Levels 30-39", ... by each guide's first level number.
+local MENU_SPLIT_AT = 14
+function addon.SplitMenuByLevel(sub)
+    local list = sub and sub.menuList
+    if not list or #list <= MENU_SPLIT_AT then return end
+    local brackets, order = {}, {}
+    for _, entry in ipairs(list) do
+        local text = (entry.text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+        local level = tonumber(text:match("^%s*(%d+)"))
+        local key = level and math.floor(level / 10) * 10 or 999 -- no level: last
+        if not brackets[key] then
+            brackets[key] = {}
+            tinsert(order, key)
+        end
+        tinsert(brackets[key], entry)
+    end
+    if #order < 2 then return end
+    table.sort(order)
+    local split = {}
+    for _, key in ipairs(order) do
+        local text = key == 999 and L("Other") or fmt(L("Levels %d-%d"), math.max(key, 1), key + 9)
+        tinsert(split, {text = text, notCheckable = 1, hasArrow = true, menuList = brackets[key]})
+    end
+    sub.menuList = split
+end
+
 local function SwapNames(name)
     if addon.GuideNames and addon.GuideNames[name] then
         name = addon.GuideNames[name]
@@ -2656,7 +2684,9 @@ function RXPFrame:GenerateMenuTable(menu)
 
         if #subgroups > 0 then
             for _, category in ipairs(subgroups) do
-                tinsert(item.menuList, item.subtable[category.subgroup])
+                local sub = item.subtable[category.subgroup]
+                addon.SplitMenuByLevel(sub)
+                tinsert(item.menuList, sub)
             end
         else
             item.subtable = nil

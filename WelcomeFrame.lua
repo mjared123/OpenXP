@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.6-beta",
+        date = "November 2026",
+        changes = {
+            "The guide picker no longer runs off the screen: long guide lists (like OpenXP 21-60) are split into Levels 20-29, 30-39, 40-49 and 50-59, so every guide can be clicked",
+        },
+    },
+    {
         version = "1.3.5-beta",
         date = "November 2026",
         changes = {
