@@ -37,6 +37,9 @@ import sys
 
 from lupa import luajit21 as lupa
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import terrain as TERRAIN  # noqa: E402
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
@@ -246,6 +249,21 @@ def load_dump(path):
     return out
 
 
+def load_dump_cached(path, questiedb):
+    """load_dump(), keeping a copy next to the QuestieDB data: the saved
+    variable is gone after the addon clears it, and the copy still works."""
+    cache = os.path.join(questiedb, ".openxp-dump.pkl")
+    try:
+        d = load_dump(path)
+    except SystemExit:
+        if os.path.exists(cache):
+            print("no /oxp questdump in %s: using the copy from %s" % (path, cache))
+            return pickle.load(open(cache, "rb"))
+        raise
+    pickle.dump(d, open(cache, "wb"))
+    return d
+
+
 def merge_db(base, extra):
     """base with extra's rows on top (extra wins)."""
     if not extra:
@@ -329,6 +347,26 @@ def cluster_center(points, radius=4.0):
     # Snap to the closest real spawn so the arrow points at something real.
     return min(best, key=lambda p: math.dist(p, (x, y)))
 
+def dense_clusters(points, radius=4.0, keep=4):
+    """The densest spots among points, best first: [(point, count)]. Each
+    spot is a real spawn near the middle of its group; groups don't overlap,
+    and spots with under a third of the best one's mobs are left out."""
+    left = list(points)
+    out = []
+    while left and len(out) < keep:
+        best, best_n = None, []
+        for p in left:
+            n = [q for q in left if math.dist(p, q) <= radius]
+            if len(n) > len(best_n):
+                best, best_n = p, n
+        if out and len(best_n) < max(3, out[0][1] / 3):
+            break
+        x = sum(p[0] for p in best_n) / len(best_n)
+        y = sum(p[1] for p in best_n) / len(best_n)
+        out.append((min(best_n, key=lambda p: math.dist(p, (x, y))), len(best_n)))
+        left = [q for q in left if math.dist(q, (x, y)) > radius * 1.5]
+    return out
+
 # ---------------------------------------------------------------------------
 # Route building
 # ---------------------------------------------------------------------------
@@ -346,6 +384,8 @@ class Builder:
         self.minutes = 0.0
         self._cache = {}
         self._quests = None
+        self.alts = {}                      # (quest, zone, objective) -> dense spots
+        self.rollouts = False               # look ahead when ordering steps (slow)
 
     file_accepted = set()
 
@@ -445,14 +485,18 @@ class Builder:
         mapped into the section zone's frame for routing; place keeps the
         real (map name, x, y) for the .goto, or None for the home zone.
         """
+        seq = []  # each located objective's spawn points in the home zone
+
         def locate(fn):
             pts = fn(zone)
             if pts:
+                seq.append(pts)
                 return cluster_center(pts), None
             for area, zname, (k, dx, dy) in nearby:
                 pts = fn(area)
                 if pts:
                     c = cluster_center(pts)
+                    seq.append(None)
                     return (c[0] * k + dx, c[1] * k + dy), (zname, c[0], c[1])
             return None, None
 
@@ -529,6 +573,11 @@ class Builder:
                 return None
             idx += 1
             sites.append((idx, "explore", text, [], pt, place))
+        # Other dense spots for each objective, for routes that pick the spot
+        # that fits the way best (zones with terrain, see simulate_terrain).
+        for site, pts in zip(sites, seq):
+            if pts:
+                self.alts[(q.id, zone, site[0])] = [c for c, _n in dense_clusters(pts)]
         return sites
 
     def candidates(self, section, later_areas=(), carry_ahead=None):
@@ -635,6 +684,9 @@ class Builder:
         LEVELS_ABOVE over your level and are left out when gray. XP is added
         as you go, so later steps see your new level. Returns the actions.
         """
+        t = None if os.environ.get("OXP_NO_TERRAIN") else TERRAIN.for_zone(section["zone"])
+        if t is not None:
+            return self.simulate_terrain(section, cands, start_pos, t)
         accepted = set(q for q in self.accepted_before if q in cands)
         objectives_left = {qid: [s[0] for s in c["sites"]] for qid, c in cands.items()}
         turned_in = set()
@@ -724,6 +776,303 @@ class Builder:
         self.used |= turned_in
         self.done |= turned_in
         return actions, turned_in
+
+    SHARE = 3.0      # map units: other quests' objectives this close get done too
+    ROLLOUT_TOP = 5  # options tried out to the end when ordering steps
+
+    def simulate_terrain(self, section, cands, start_pos, t):
+        """simulate() for zones with walking terrain (tools/terrain.py).
+
+        Differences from the straight-line greedy walk:
+        - distances are walking distances around mountains and cliffs, with
+          packs well above your level counted as a long detour;
+        - each objective can be done at any of its dense spots, not just the
+          densest one, so it's done where the route already goes;
+        - at a spot, every quest in your log with an objective there gets it
+          done (spiders that are also by the wolves);
+        - with self.rollouts on, each step tries the best few next moves out
+          to the end of the visit and keeps the one with the most XP per
+          minute, so quests get picked up before the areas they share.
+        """
+        area = section["area"]
+        unit = (t.kx + t.ky) / 2.0
+        stop_at = section.get("until")
+
+        spots = {}  # (qid, objective) -> [point, ...], best first
+        for qid, c in cands.items():
+            for site in c["sites"]:
+                i, place = site[0], site[5]
+                pts = [site[4]]
+                if place is None:
+                    pts += [p for p in self.alts.get((qid, area, i)) or [] if math.dist(p, site[4]) > 1.0]
+                spots[(qid, i)] = pts
+
+        def dist(a, b, lvl):
+            return t.cost(a, b, lvl) / unit
+
+        st = dict(pos=start_pos, xp=self.xp, minutes=self.minutes, kills=0.0, quests=0.0,
+                  accepted=set(q for q in self.accepted_before if q in cands),
+                  left={qid: set(s[0] for s in c["sites"]) for qid, c in cands.items()},
+                  turned=set(), actions=[])
+
+        def prereqs_ok(st, q):
+            done = st["turned"]
+            group_ok = all((p in self.done) or (p in done) for p in q.preGroup)
+            single_ok = (not q.preSingle) or any((p in self.done) or (p in done) for p in q.preSingle)
+            return group_ok and single_ok
+
+        def options(st):
+            lvl = level_of(st["xp"])
+            il = int(lvl)
+            pos = st["pos"]
+            out = []
+            for qid, c in cands.items():
+                q = c["q"]
+                if qid in st["turned"]:
+                    continue
+                if qid not in st["accepted"]:
+                    if not c["start"] or len(st["accepted"]) >= QUEST_LOG_LIMIT or not prereqs_ok(st, q):
+                        continue
+                    if q.reqLevel > il or q.level > il + LEVELS_ABOVE or q.level <= il - GRAY_BELOW:
+                        continue
+                    if stop_at and lvl >= stop_at:
+                        continue
+                    out.append((dist(pos, c["start"][2], il) - 0.5, "accept", qid, c["start"][2]))
+                    continue
+                left = st["left"][qid]
+                if left:
+                    harder = 1 + SLOWER_PER_LEVEL * max(0, q.level - il)
+                    for s in c["sites"]:
+                        if s[0] in left:
+                            work = 3.0 if s[1] in ("kill", "loot") else 1.0
+                            for p in spots[(qid, s[0])]:
+                                out.append((dist(pos, p, il) + work * harder, "obj", (qid, s[0]), p))
+                elif c["finish"]:
+                    out.append((dist(pos, c["finish"][2], il) - 0.5, "turnin", qid, c["finish"][2]))
+            out.sort(key=lambda o: (o[0], 0 if o[1] != "obj" else 1))
+            return out
+
+        def do_obj(st, qid, i, where, harder, record):
+            q = cands[qid]["q"]
+            st["left"][qid].discard(i)
+            site = next(s for s in cands[qid]["sites"] if s[0] == i)
+            x = 0.0 if q.class_tag() else KILLS.get(site[1], 0) * mob_xp(max(1, q.level - 1), level_of(st["xp"]))
+            st["xp"] += x
+            st["kills"] += x
+            st["minutes"] += MINUTES_WORK.get(site[1], 1) * (0.0 if q.class_tag() else harder)
+            if record:
+                st["actions"].append(("obj", (qid, i), where))
+
+        def apply(st, opt, record=True):
+            _, kind, ref, where = opt
+            lvl = level_of(st["xp"])
+            d = dist(st["pos"], where, int(lvl))
+            x = TRAVEL_KILLS * d * mob_xp(int(lvl), lvl)
+            st["xp"] += x
+            st["kills"] += x
+            st["minutes"] += d * MINUTES_PER_UNIT
+            st["pos"] = where
+            if kind != "obj":
+                st["minutes"] += MINUTES_TALK
+            if kind == "accept":
+                st["accepted"].add(ref)
+                if record:
+                    st["actions"].append((kind, ref, where))
+            elif kind == "turnin":
+                st["accepted"].discard(ref)
+                st["turned"].add(ref)
+                q = cands[ref]["q"]
+                x = 0.0 if q.class_tag() else quest_xp(q.level, level_of(st["xp"]))
+                st["xp"] += x
+                st["quests"] += x
+                if record:
+                    st["actions"].append((kind, ref, where))
+            else:
+                qid, i = ref
+                il = int(lvl)
+                harder = 1 + SLOWER_PER_LEVEL * max(0, cands[qid]["q"].level - il)
+                do_obj(st, qid, i, where, harder, record)
+                # everything else in your log that can be done right here
+                for q2 in sorted(st["accepted"]):
+                    for i2 in sorted(st["left"][q2]):
+                        if any(math.dist(p, where) <= self.SHARE for p in spots[(q2, i2)]):
+                            h2 = 1 + SLOWER_PER_LEVEL * max(0, cands[q2]["q"].level - il)
+                            do_obj(st, q2, i2, where, h2, record)
+
+        def clone(st):
+            return dict(pos=st["pos"], xp=st["xp"], minutes=st["minutes"], kills=st["kills"],
+                        quests=st["quests"], accepted=set(st["accepted"]),
+                        left={k: set(v) for k, v in st["left"].items()},
+                        turned=set(st["turned"]), actions=None)
+
+        def finish(st):
+            while True:
+                opts = options(st)
+                if not opts:
+                    return st
+                apply(st, opts[0], record=False)
+
+        xp0, min0 = st["xp"], st["minutes"]
+        while True:
+            opts = options(st)
+            if not opts:
+                break
+            choice = opts[0]
+            if self.rollouts and len(opts) > 1:
+                tried, best = set(), None
+                for o in opts:
+                    key = (o[1], o[2], o[3])
+                    if key in tried:
+                        continue
+                    tried.add(key)
+                    trial = clone(st)
+                    apply(trial, o, record=False)
+                    finish(trial)
+                    spent = trial["minutes"] - min0
+                    rate = (trial["xp"] - xp0) / spent if spent > 0 else 0
+                    if best is None or rate > best[0] + 1e-9:
+                        best = (rate, o)
+                    if len(tried) >= self.ROLLOUT_TOP:
+                        break
+                choice = best[1]
+            apply(st, choice)
+
+        if self.rollouts:
+            acts, saved = self.improve_order(st["actions"], cands, spots, start_pos, xp0, t, level_of(xp0))
+            st["actions"] = acts
+            st["minutes"] -= saved / unit * MINUTES_PER_UNIT
+        self.xp, self.minutes = st["xp"], st["minutes"]
+        self.xp_from["kills"] += st["kills"]
+        self.xp_from["quests"] += st["quests"]
+        turned_in = st["turned"]
+        for qid in st["accepted"]:
+            if cands[qid]["obj_later"]:
+                self.accepted_before.add(qid)
+            elif cands[qid]["finish_later"] and not st["left"][qid]:
+                self.accepted_before.add(qid)
+                self.carried_ready.add(qid)
+        self.used |= turned_in
+        self.done |= turned_in
+        return st["actions"], turned_in
+
+    def improve_order(self, actions, cands, spots, start_pos, xp0, t, lvl0):
+        """Shorten the walk of a visit by moving steps around (or-opt) and
+        moving objectives to other dense spots, keeping every order rule:
+        accept before objectives before turn-in, follow-ups after the quest
+        before them, at most QUEST_LOG_LIMIT quests in the log, and no quest
+        picked up before your level allows it. Returns the new actions and
+        how many yards of walking that saved."""
+        if len(actions) < 3:
+            return actions, 0.0
+        acts = list(actions)
+        lvl_key = int(lvl0)
+
+        def cost(a, b):
+            return t.cost(a, b, lvl_key)
+
+        def total(seq):
+            pos, s = start_pos, 0.0
+            for a in seq:
+                s += cost(pos, a[2])
+                pos = a[2]
+            return s
+
+        # XP each step gives, from the order the planner made (close enough
+        # to check levels when steps move a little).
+        gain = []
+        for a in acts:
+            if a[0] == "turnin":
+                q = cands[a[1]]["q"]
+                gain.append(0.0 if q.class_tag() else quest_xp(q.level, lvl0))
+            elif a[0] == "obj":
+                q = cands[a[1][0]]["q"]
+                site = next(s for s in cands[a[1][0]]["sites"] if s[0] == a[1][1])
+                gain.append(0.0 if q.class_tag() else KILLS.get(site[1], 0) * mob_xp(max(1, q.level - 1), lvl0))
+            else:
+                gain.append(0.0)
+        gains = {id(a): g for a, g in zip(acts, gain)}
+        in_log0 = set(q for q in self.accepted_before if q in cands)
+        in_visit = set(a[1] for a in acts if a[0] == "turnin")
+
+        def valid(seq):
+            valid.why = None
+            xp = xp0
+            log = set(in_log0)
+            accepted, turned, done_obj = set(), set(), set()
+            for a in seq:
+                kind, ref = a[0], a[1]
+                if kind == "accept":
+                    q = cands[ref]["q"]
+                    il = int(level_of(xp))
+                    if q.reqLevel > il or q.level > il + LEVELS_ABOVE:
+                        valid.why = 'level'; return False
+                    for p in q.preGroup:
+                        if p in in_visit and p not in turned:
+                            return False
+                    if q.preSingle and not any(p in self.done or p in turned or p not in in_visit
+                                               for p in q.preSingle):
+                        return False
+                    log.add(ref)
+                    accepted.add(ref)
+                    if len(log) > QUEST_LOG_LIMIT:
+                        valid.why = 'log'; return False
+                elif kind == "obj":
+                    if ref[0] not in log:
+                        valid.why = 'objlog'; return False
+                    done_obj.add(ref)
+                else:
+                    if ref not in log:
+                        valid.why = 'turnlog'; return False
+                    for s in cands[ref]["sites"]:
+                        if (ref, s[0]) not in done_obj and any(
+                                b[0] == "obj" and b[1] == (ref, s[0]) for b in seq):
+                            return False
+                    log.discard(ref)
+                    turned.add(ref)
+                xp += gains.get(id(a), 0.0)
+            return True
+
+        best = total(acts)
+        start = best
+        improved = True
+        rounds = 0
+        while improved and rounds < 6:
+            improved = False
+            rounds += 1
+            # another dense spot for an objective
+            for i, a in enumerate(acts):
+                if a[0] != "obj":
+                    continue
+                for p in spots.get(a[1], ()):
+                    if p == a[2]:
+                        continue
+                    trial = acts[:i] + [(a[0], a[1], p)] + acts[i + 1:]
+                    c = total(trial)
+                    if c < best - 1.0:
+                        gains[id(trial[i])] = gains.get(id(a), 0.0)
+                        acts, best, improved = trial, c, True
+                        a = acts[i]
+            # move a block of 1-3 steps somewhere else
+            n = len(acts)
+            for size in (1, 2, 3):
+                i = 0
+                while i + size <= n:
+                    block = acts[i:i + size]
+                    rest = acts[:i] + acts[i + size:]
+                    moved = False
+                    for j in range(len(rest) + 1):
+                        if j == i:
+                            continue
+                        trial = rest[:j] + block + rest[j:]
+                        c = total(trial)
+                        if c < best - 1.0 and valid(trial):
+                            acts, best, improved, moved = trial, c, True, True
+                            break
+                        if c < best - 1.0 and os.environ.get("OXP_DEBUG_IMPROVE"):
+                            print("rejected", size, i, j, round(best - c), block[0][:2], valid.why)
+                    if not moved:
+                        i += 1
+        return acts, start - best
 
 # ---------------------------------------------------------------------------
 # Output
@@ -940,7 +1289,7 @@ def main():
     FACTION = getattr(first, "FACTION", "Alliance")
     db = load_db(args.questiedb)
     if args.dump:
-        db = merge_db(db, load_dump(args.dump))
+        db = merge_db(db, load_dump_cached(args.dump, args.questiedb))
     if hasattr(first, "HUBS"):
         return main_hubs(first, args, db)
     outputs = {os.path.abspath(os.path.join(ROOT, r.OUTPUT)) for r in routes}
@@ -1064,6 +1413,7 @@ def plan_hubs(builder, route):
         first = visits.get(hub["key"], 0) == 0
         section["intro"] = hub["first"] if first else hub["again"]
         section["grind"] = False
+        builder.rollouts = commit  # the slow, careful ordering only for the visit you take
         before_xp, before_min = builder.xp, builder.minutes
         start = builder.level()
         cands = builder.candidates(section, areas, carry_ahead=0)

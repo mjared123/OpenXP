@@ -12,5 +12,6 @@
     <Script file="DB/forever/SpiritHealerDB.lua"/>
     <Script file="DB/questDB.lua"/>
     <Script file="DB/pathHints.lua"/>
+    <Script file="DB/terrain.lua"/>
 
 </Ui>

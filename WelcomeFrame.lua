@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.9",
+        date = "November 2026",
+        changes = {
+            "Arrow walks around mountains, cliffs and rivers in Duskwood instead of pointing straight into them (more zones to come)",
+            "Arrow steers around packs of mobs 3 or more levels above you, like the Brightwood worgen at level 22, and takes the direct way again once you've outleveled them",
+        },
+    },
+    {
         version = "1.3.8",
         date = "November 2026",
         changes = {

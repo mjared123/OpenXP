@@ -234,7 +234,13 @@ function ph.Route(target, px, py, inst, ctx)
         end
         path = Best(list, px, py, tx, ty)
     end
-    if not path then return end
+    if not path then
+        -- nothing hand-made applies: go around mountains and high-level packs
+        local tr = addon.terrain
+        local pt = tr and not aP and not aT and tr.Route(target, px, py, inst, ctx)
+        if pt then return pt, L("Way around") end
+        return
+    end
 
     local pts = path.pts
     if state.path ~= path then
@@ -264,6 +270,7 @@ end
 
 function ph.Reset()
     state = {}
+    if addon.terrain then addon.terrain.Reset() end
 end
 
 ---------------------------------------------------------------------------
