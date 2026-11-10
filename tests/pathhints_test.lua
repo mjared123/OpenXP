@@ -162,6 +162,15 @@ try("a house is too small to learn", function()
     assert(#OXPData.openxpPaths.areas == 0)
 end)
 
+try("an inn is never learned as a cave", function()
+    IsResting = function() return true end
+    walk({{2500, 2500}, {2505, 2500}, {2510, 2500}})
+    walk({{2515, 2500}, {2520, 2500}, {2530, 2505}, {2545, 2510}, {2560, 2515}, {2570, 2530}}, true, "Scarlet Raven Tavern")
+    walk({{2518, 2500}, {2512, 2500}, {2505, 2500}})
+    IsResting = nil
+    assert(#OXPData.openxpPaths.areas == 0, "areas " .. #OXPData.openxpPaths.areas)
+end)
+
 try("a one-tick indoor flicker isn't a door", function()
     walk({{3000, 3000}, {3005, 3000}})
     walk({{3010, 3000}}, true)

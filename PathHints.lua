@@ -430,6 +430,7 @@ function ph.Learn(s, exitX, exitY)
     local saved = ph.Saved()
     if not saved then return end
     local b = s.box
+    if s.resting then return end -- inns and city buildings aren't caves
     if max(b[3] - b[1], b[4] - b[2]) < LEARN_MIN then return end
     local cx, cy = (b[1] + b[3]) / 2, (b[2] + b[4]) / 2
     for _, a in ipairs(addon.pathHintData or {}) do
@@ -507,6 +508,8 @@ function ph.LearnTick(x, y, inst, indoors)
 
     local v = learn.visit
     if v and learn.indoors then
+        -- an inn or a city: a building you rest in, never a cave
+        if IsResting and IsResting() then v.resting = true end
         local b = v.box
         b[1], b[2] = min(b[1], x), min(b[2], y)
         b[3], b[4] = max(b[3], x), max(b[4], y)

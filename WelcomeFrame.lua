@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.14",
+        date = "November 2026",
+        changes = {
+            "The arrow no longer learns inns and city buildings as caves (it sent you to \"Enter the cave\" for the Darkshire inn)",
+        },
+    },
+    {
         version = "1.3.13",
         date = "November 2026",
         changes = {
