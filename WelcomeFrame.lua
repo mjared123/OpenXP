@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.2-beta",
+        date = "November 2026",
+        changes = {
+            "Removed Season of Discovery quests that aren't in WoW Forever from the 21-60 routes, like Alonso's Dragonslayer quests in Ashenvale and the scroll and book quests. They came in through Questie's data",
+            "Routes rebuilt without them: Alliance 21-60 has 492 quests, Horde 22-60 has 444",
+        },
+    },
+    {
         version = "1.3.1-beta",
         date = "November 2026",
         changes = {

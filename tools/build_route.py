@@ -85,7 +85,7 @@ SLOWER_PER_LEVEL = 0.3
 MIN_OPEN = 3
 # A zone visit with fewer quests than this isn't worth the trip; the route
 # builder leaves it out and keeps its quests for a later visit.
-MIN_VISIT = 5
+MIN_VISIT = 4
 # How many of the best next zones get a look one visit further ahead.
 LOOKAHEAD = 8
 # ...but never more than this many levels.
@@ -423,6 +423,19 @@ class Builder:
             self._cache[key] = fn(q, zone)
         return self._cache[key]
 
+    def season_of_discovery(self, q):
+        """Season of Discovery quests that the installed Questie also knows,
+        so they show up in /oxp questdump, but aren't in WoW Forever (like
+        Alonso's Dragonslayer quests in Ashenvale). SoD quest ids sit in
+        76000-85999 and its new NPCs in 200000-249999; Forever's own new
+        quests and NPCs use higher ids."""
+        if 76000 <= q.id <= 85999 or q.name.startswith("Legacy Reward"):
+            return True
+        for who in (q.startedBy, q.finishedBy):
+            if any(200000 <= n <= 249999 for n in as_list(li(who, 1)) if isinstance(n, int)):
+                return True
+        return False
+
     def quests(self):
         if self._quests is None:
             self._quests = [Quest(qid, row) for qid, row in self.db["q"].items()]
@@ -549,6 +562,8 @@ class Builder:
                 continue  # holiday and world-event quests
             if q.name.startswith("[") or "<" in q.name:
                 continue  # placeholder / unused quests in the data
+            if self.season_of_discovery(q):
+                continue
             carried = qid in self.accepted_before
             if not carried and (q.level < lo or q.level > hi or q.reqLevel > hi):
                 continue

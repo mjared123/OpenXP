@@ -868,7 +868,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
 #name 36-37 Arathi Highlands
-#next 37-38 Dustwallow Marsh
+#next 37-38 Desolace
 
 step
     #completewith next
@@ -974,112 +974,8 @@ RXPGuides.RegisterGuide([[
 << Horde
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
-#name 37-38 Dustwallow Marsh
-#next 37-38 Thunder Bluff
-
-step
-    #completewith next
-    .zone Dustwallow Marsh >>Fly to Brackenwall Village in Dustwallow Marsh
-step
-    .goto Dustwallow Marsh,36.53,30.79
-    >>Talk to |cRXP_FRIENDLY_Do'gol|r
-    .accept 1322 >>Accept The Black Shield
-    .target Do'gol
-step
-    .goto Dustwallow Marsh,46.88,17.52
-    >>Talk to |cRXP_FRIENDLY_"Stinky" Ignatz|r
-    .accept 1270 >>Accept Stinky's Escape
-    .target "Stinky" Ignatz
-step
-    .goto Dustwallow Marsh,48.87,24.58
-    >>Help Stinky find Bogbean Leaves
-    .complete 1270,1 --Stinky's Escape
-step
-    .goto Dustwallow Marsh,29.83,48.24
-    >>Click the |cRXP_PICK_Theramore Guard Badge|r
-    .accept 1269 >>Accept Lieutenant Paval Reethe
-step
-    .goto Dustwallow Marsh,36.42,31.88
-    >>Talk to |cRXP_FRIENDLY_Krog|r
-    .turnin 1269 >>Turn in Lieutenant Paval Reethe
-    .target Krog
-step
-    .goto Dustwallow Marsh,40.96,36.69
-    >>Talk to |cRXP_FRIENDLY_Ogron|r
-    .accept 1273 >>Accept Questioning Reethe
-    .target Ogron
-step
-    .goto Dustwallow Marsh,42.47,38.07
-    >>Kill |cRXP_ENEMY_Paval Reethe|r
-    >>Question Reethe with Ogron
-    .complete 1273,1 --Questioning Reethe
-    .complete 1273,2 --Questioning Reethe
-    .mob Paval Reethe
-step
-    .goto Dustwallow Marsh,36.42,31.88
-    >>Talk to |cRXP_FRIENDLY_Krog|r
-    .turnin 1273 >>Turn in Questioning Reethe
-    .target Krog
-step
-    .goto Dustwallow Marsh,51.39,63.25
-    >>Kill |cRXP_ENEMY_Darkfang Creeper|r and |cRXP_ENEMY_Darkfang Spider|r and |cRXP_ENEMY_Darkfang Venomspitter|r. Loot them for |cRXP_LOOT_Acidic Venom Sac|r
-    .complete 1322,1 --The Black Shield
-    .mob Darkfang Creeper
-    .mob Darkfang Spider
-    .mob Darkfang Venomspitter
-step
-    .goto Dustwallow Marsh,36.53,30.79
-    >>Talk to |cRXP_FRIENDLY_Do'gol|r
-    .turnin 1322 >>Turn in The Black Shield
-    .accept 1323 >>Accept The Black Shield
-    .target Do'gol
-step
-    .goto Dustwallow Marsh,36.42,31.88
-    >>Talk to |cRXP_FRIENDLY_Krog|r
-    .turnin 1323 >>Turn in The Black Shield
-    .accept 1276 >>Accept The Black Shield
-    .target Krog
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Horde
-#group RestedXP Forever Guide (H)
-#subgroup OpenXP 21-60
-#name 37-38 Thunder Bluff
-#next 37-38 Desolace
-
-step
-    #completewith next
-    .zone Thunder Bluff >>Travel to Thunder Bluff
-step
-    .goto Thunder Bluff,69.85,30.91
-    >>Talk to |cRXP_FRIENDLY_Magatha Grimtotem|r
-    .turnin -5062 >>Turn in Sacred Fire
-    .target Magatha Grimtotem
-step
-    .goto Thunder Bluff,22.81,20.89
-    >>Talk to |cRXP_FRIENDLY_Apothecary Zamah|r
-    .turnin -1067 >>Turn in Return to Thunder Bluff
-    .target Apothecary Zamah
-step
-    .goto Thunder Bluff,54.01,80.77
-    >>Talk to |cRXP_FRIENDLY_Mosarn|r
-    .turnin 1276 >>Turn in The Black Shield
-    .target Mosarn
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Horde
-#group RestedXP Forever Guide (H)
-#subgroup OpenXP 21-60
 #name 37-38 Desolace
-#next 38-39 Badlands
+#next 38-39 Dustwallow Marsh
 
 step
     #completewith next
@@ -1186,33 +1082,10 @@ step
     >>Loot the |cRXP_PICK_Kodo Bone|r
     .complete 5501,1 --Bone Collector
 step
-    .goto Desolace,56.29,59.68
-    >>Talk to |cRXP_FRIENDLY_Gurda Wildmane|r
-    .accept 93225 >>Accept Carved Centaur Totems
-    .target Gurda Wildmane
-step
-    .goto Desolace,74.97,68.16
-    >>Talk to |cRXP_FRIENDLY_Warug|r
-    .accept 92743 >>Accept A Conqueror's Crown
-    .turnin 92743 >>Turn in A Conqueror's Crown
-    .target Warug
-step
-    .goto Desolace,64.18,91.63
-    >>Kill |cRXP_ENEMY_Magrami Spectre|r. Loot them for |cRXP_LOOT_Ghost-o-plasm|r
-    .complete 6134,1 --Ghost-o-plasm Round Up
-    .mob Magrami Spectre
-step
-    .goto Desolace,47.83,61.83
-    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
-    .turnin 6134 >>Turn in Ghost-o-plasm Round Up
-    .target Hornizz Brimbuzzle
-step
-    .goto Desolace,32.17,55.50
-    >>Kill |cRXP_ENEMY_Maraudine Scout|r and |cRXP_ENEMY_Maraudine Wrangler|r and |cRXP_ENEMY_Maraudine Mauler|r. Loot them for |cRXP_LOOT_Carved Centaur Totem|r
-    .complete 93225,1 --Carved Centaur Totems
-    .mob Maraudine Scout
-    .mob Maraudine Wrangler
-    .mob Maraudine Mauler
+    .goto Desolace,62.33,38.99
+    >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
+    .turnin 5501 >>Turn in Bone Collector
+    .target Bibbly F'utzbuckle
 step
     .goto Desolace,25.82,68.21
     >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
@@ -1241,9 +1114,19 @@ step
     .complete 5581,1 --Portals of the Legion
     .mob Demon Portal Guardian
 step
+    .goto Desolace,64.18,91.63
+    >>Kill |cRXP_ENEMY_Magrami Spectre|r. Loot them for |cRXP_LOOT_Ghost-o-plasm|r
+    .complete 6134,1 --Ghost-o-plasm Round Up
+    .mob Magrami Spectre
+step
+    .goto Desolace,47.83,61.83
+    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
+    .turnin 6134 >>Turn in Ghost-o-plasm Round Up
+    .target Hornizz Brimbuzzle
+step
     .goto Desolace,56.29,59.68
     >>Talk to |cRXP_FRIENDLY_Gurda Wildmane|r
-    .turnin 93225 >>Turn in Carved Centaur Totems
+    .accept 93225 >>Accept Carved Centaur Totems
     .target Gurda Wildmane
 step
     .goto Desolace,55.41,55.81
@@ -1251,19 +1134,106 @@ step
     .turnin 5386 >>Turn in Catch of the Day
     .target Nataka Longhorn
 step
-    .goto Desolace,62.33,38.99
-    >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
-    .turnin 5501 >>Turn in Bone Collector
-    .target Bibbly F'utzbuckle
-step
-    .goto Desolace,30.00,8.71
-    >>Click the |cRXP_PICK_Rackmore's Chest|r
-    .turnin 6161 >>Turn in Claim Rackmore's Treasure!
+    .goto Desolace,74.97,68.16
+    >>Talk to |cRXP_FRIENDLY_Warug|r
+    .accept 92743 >>Accept A Conqueror's Crown
+    .turnin 92743 >>Turn in A Conqueror's Crown
+    .target Warug
 step
     .goto Desolace,25.82,68.21
     >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
     .turnin 5581 >>Turn in Portals of the Legion
     .target Taiga Wisemane
+step
+    .goto Desolace,32.17,55.50
+    >>Kill |cRXP_ENEMY_Maraudine Scout|r and |cRXP_ENEMY_Maraudine Wrangler|r and |cRXP_ENEMY_Maraudine Mauler|r. Loot them for |cRXP_LOOT_Carved Centaur Totem|r
+    .complete 93225,1 --Carved Centaur Totems
+    .mob Maraudine Scout
+    .mob Maraudine Wrangler
+    .mob Maraudine Mauler
+step
+    .goto Desolace,56.29,59.68
+    >>Talk to |cRXP_FRIENDLY_Gurda Wildmane|r
+    .turnin 93225 >>Turn in Carved Centaur Totems
+    .target Gurda Wildmane
+step
+    .goto Desolace,30.00,8.71
+    >>Click the |cRXP_PICK_Rackmore's Chest|r
+    .turnin 6161 >>Turn in Claim Rackmore's Treasure!
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Horde
+#group RestedXP Forever Guide (H)
+#subgroup OpenXP 21-60
+#name 38-39 Dustwallow Marsh
+#next 38-39 Badlands
+
+step
+    #completewith next
+    .zone Dustwallow Marsh >>Fly to Brackenwall Village in Dustwallow Marsh
+step
+    .goto Dustwallow Marsh,36.53,30.79
+    >>Talk to |cRXP_FRIENDLY_Do'gol|r
+    .accept 1322 >>Accept The Black Shield
+    .target Do'gol
+step
+    .goto Dustwallow Marsh,46.88,17.52
+    >>Talk to |cRXP_FRIENDLY_"Stinky" Ignatz|r
+    .accept 1270 >>Accept Stinky's Escape
+    .target "Stinky" Ignatz
+step
+    .goto Dustwallow Marsh,48.87,24.58
+    >>Help Stinky find Bogbean Leaves
+    .complete 1270,1 --Stinky's Escape
+step
+    .goto Dustwallow Marsh,29.83,48.24
+    >>Click the |cRXP_PICK_Theramore Guard Badge|r
+    .accept 1269 >>Accept Lieutenant Paval Reethe
+step
+    .goto Dustwallow Marsh,36.42,31.88
+    >>Talk to |cRXP_FRIENDLY_Krog|r
+    .turnin 1269 >>Turn in Lieutenant Paval Reethe
+    .target Krog
+step
+    .goto Dustwallow Marsh,40.96,36.69
+    >>Talk to |cRXP_FRIENDLY_Ogron|r
+    .accept 1273 >>Accept Questioning Reethe
+    .target Ogron
+step
+    .goto Dustwallow Marsh,42.47,38.07
+    >>Kill |cRXP_ENEMY_Paval Reethe|r
+    >>Question Reethe with Ogron
+    .complete 1273,1 --Questioning Reethe
+    .complete 1273,2 --Questioning Reethe
+    .mob Paval Reethe
+step
+    .goto Dustwallow Marsh,36.42,31.88
+    >>Talk to |cRXP_FRIENDLY_Krog|r
+    .turnin 1273 >>Turn in Questioning Reethe
+    .target Krog
+step
+    .goto Dustwallow Marsh,51.39,63.25
+    >>Kill |cRXP_ENEMY_Darkfang Creeper|r and |cRXP_ENEMY_Darkfang Spider|r and |cRXP_ENEMY_Darkfang Venomspitter|r. Loot them for |cRXP_LOOT_Acidic Venom Sac|r
+    .complete 1322,1 --The Black Shield
+    .mob Darkfang Creeper
+    .mob Darkfang Spider
+    .mob Darkfang Venomspitter
+step
+    .goto Dustwallow Marsh,36.53,30.79
+    >>Talk to |cRXP_FRIENDLY_Do'gol|r
+    .turnin 1322 >>Turn in The Black Shield
+    .accept 1323 >>Accept The Black Shield
+    .target Do'gol
+step
+    .goto Dustwallow Marsh,36.42,31.88
+    >>Talk to |cRXP_FRIENDLY_Krog|r
+    .turnin 1323 >>Turn in The Black Shield
+    .accept 1276 >>Accept The Black Shield
+    .target Krog
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1414,12 +1384,6 @@ step
     .accept 698 >>Accept Lack of Surplus
     .target Dar
 step
-    .goto Swamp of Sorrows,25.10,54.21
-    >>Talk to |cRXP_FRIENDLY_Amaryllis Webb|r
-    .accept 93176 >>Accept My Little Friends
-    .turnin 93176 >>Turn in My Little Friends
-    .target Amaryllis Webb
-step
     .goto Swamp of Sorrows,25.98,31.40
     >>Talk to |cRXP_FRIENDLY_Magtoor|r
     .accept 1389 >>Accept Draenethyst Crystals
@@ -1467,7 +1431,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
 #name 39-40 Stranglethorn Vale
-#next 40-41 Badlands
+#next 40-41 Arathi Highlands
 
 step
     #completewith next
@@ -1532,32 +1496,10 @@ step
     .accept 607 >>Accept Return to MacKinley
     .target "Shaky" Phillipe
 step
-    .goto Stranglethorn Vale,28.59,75.90
-    >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
-    .accept 576 >>Accept Keep An Eye Out
-    .target Dizzy One-Eye
-step
     .goto Stranglethorn Vale,27.78,77.07
     >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
     .turnin 607 >>Turn in Return to MacKinley
     .target "Sea Wolf" MacKinley
-step
-    .goto Stranglethorn Vale,27.00,77.13
-    >>Talk to |cRXP_FRIENDLY_Kebok|r
-    .accept 209 >>Accept Skullsplitter Tusks
-    .target Kebok
-step
-    .goto Stranglethorn Vale,30.71,89.45
-    >>Kill |cRXP_ENEMY_Bloodsail Raider|r and |cRXP_ENEMY_Bloodsail Mage|r and |cRXP_ENEMY_Bloodsail Swashbuckler|r. Loot them for |cRXP_LOOT_Dizzy's Eye|r
-    .complete 576,1 --Keep An Eye Out
-    .mob Bloodsail Raider
-    .mob Bloodsail Mage
-    .mob Bloodsail Swashbuckler
-step
-    .goto Stranglethorn Vale,28.59,75.90
-    >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
-    .turnin 576 >>Turn in Keep An Eye Out
-    .target Dizzy One-Eye
 step
     .goto Stranglethorn Vale,41.67,43.91
     >>Kill |cRXP_ENEMY_Venture Co. Strip Miner|r and |cRXP_ENEMY_Venture Co. Foreman|r and |cRXP_ENEMY_Venture Co. Surveyor|r. Loot them for |cRXP_LOOT_Singing Blue Crystal|r
@@ -1565,13 +1507,6 @@ step
     .mob Venture Co. Strip Miner
     .mob Venture Co. Foreman
     .mob Venture Co. Surveyor
-step
-    .goto Stranglethorn Vale,45.00,38.06
-    >>Kill |cRXP_ENEMY_Skullsplitter Warrior|r and |cRXP_ENEMY_Skullsplitter Hunter|r and |cRXP_ENEMY_Skullsplitter Witch Doctor|r. Loot them for |cRXP_LOOT_Skullsplitter Tusk|r
-    .complete 209,1 --Skullsplitter Tusks
-    .mob Skullsplitter Warrior
-    .mob Skullsplitter Hunter
-    .mob Skullsplitter Witch Doctor
 step
     .goto Stranglethorn Vale,32.12,29.24
     >>Talk to |cRXP_FRIENDLY_Far Seer Mok'thardin|r
@@ -1665,18 +1600,47 @@ step
     .complete 571,1 --Mok'thardin's Enchantment
     .mob Elder Mistvale Gorilla
 step
-    .goto Stranglethorn Vale,27.00,77.13
-    >>Talk to |cRXP_FRIENDLY_Kebok|r
-    .turnin 209 >>Turn in Skullsplitter Tusks
-    .target Kebok
+    .goto Stranglethorn Vale,28.59,75.90
+    >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
+    .accept 576 >>Accept Keep An Eye Out
+    .target Dizzy One-Eye
 step
     .goto Stranglethorn Vale,27.12,77.21
     >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
     .turnin 600 >>Turn in Venture Company Mining
     .target Crank Fizzlebub
 step
+    .goto Stranglethorn Vale,27.00,77.13
+    >>Talk to |cRXP_FRIENDLY_Kebok|r
+    .accept 209 >>Accept Skullsplitter Tusks
+    .target Kebok
+step
+    .goto Stranglethorn Vale,30.71,89.45
+    >>Kill |cRXP_ENEMY_Bloodsail Raider|r and |cRXP_ENEMY_Bloodsail Mage|r and |cRXP_ENEMY_Bloodsail Swashbuckler|r. Loot them for |cRXP_LOOT_Dizzy's Eye|r
+    .complete 576,1 --Keep An Eye Out
+    .mob Bloodsail Raider
+    .mob Bloodsail Mage
+    .mob Bloodsail Swashbuckler
+step
+    .goto Stranglethorn Vale,28.59,75.90
+    >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
+    .turnin 576 >>Turn in Keep An Eye Out
+    .target Dizzy One-Eye
+step
+    .goto Stranglethorn Vale,45.00,38.06
+    >>Kill |cRXP_ENEMY_Skullsplitter Warrior|r and |cRXP_ENEMY_Skullsplitter Hunter|r and |cRXP_ENEMY_Skullsplitter Witch Doctor|r. Loot them for |cRXP_LOOT_Skullsplitter Tusk|r
+    .complete 209,1 --Skullsplitter Tusks
+    .mob Skullsplitter Warrior
+    .mob Skullsplitter Hunter
+    .mob Skullsplitter Witch Doctor
+step
     .goto Stranglethorn Vale,32.12,29.24
     >>Talk to |cRXP_FRIENDLY_Far Seer Mok'thardin|r
     .turnin 571 >>Turn in Mok'thardin's Enchantment
     .target Far Seer Mok'thardin
+step
+    .goto Stranglethorn Vale,27.00,77.13
+    >>Talk to |cRXP_FRIENDLY_Kebok|r
+    .turnin 209 >>Turn in Skullsplitter Tusks
+    .target Kebok
 ]])
