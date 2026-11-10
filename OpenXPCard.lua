@@ -217,6 +217,85 @@ progress:SetHeight(2)
 progress:SetWidth(1)
 progress:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 1)
 
+---------------------------------------------------------------------------
+-- Status tags: a small rounded-looking pill on steps you're past
+---------------------------------------------------------------------------
+
+local STATUS = {
+    done = {text = "DONE", color = C.green, tip = "You finished this step."},
+    skipped = {text = "SKIPPED", color = C.faint, tip = "You moved past this step without finishing it."},
+    chain = {text = "CHAIN MISSED", color = C.gold,
+             tip = "An earlier quest in this chain was skipped, so this one can't be picked up yet."},
+}
+card.STATUS = STATUS
+
+local function MakePill(parent)
+    local pill = CreateFrame("Frame", nil, parent)
+    pill:SetHeight(14)
+    pill.bg = pill:CreateTexture(nil, "BACKGROUND")
+    pill.bg:SetPoint("TOPLEFT", 1, 0)
+    pill.bg:SetPoint("BOTTOMRIGHT", -1, 0)
+    pill.bg:SetTexture(WHITE)
+    -- 1px end caps, inset vertically, fake the rounded ends
+    pill.l = pill:CreateTexture(nil, "BACKGROUND")
+    pill.l:SetPoint("TOPLEFT", 0, -1)
+    pill.l:SetPoint("BOTTOMLEFT", 0, 1)
+    pill.l:SetWidth(1)
+    pill.l:SetTexture(WHITE)
+    pill.r = pill:CreateTexture(nil, "BACKGROUND")
+    pill.r:SetPoint("TOPRIGHT", 0, -1)
+    pill.r:SetPoint("BOTTOMRIGHT", 0, 1)
+    pill.r:SetWidth(1)
+    pill.r:SetTexture(WHITE)
+    pill.text = pill:CreateFontString(nil, "OVERLAY")
+    pill.text:SetPoint("CENTER", 0, 0)
+    function pill:SetStatus(status)
+        local st = status and STATUS[status]
+        if not st then self:Hide(); return end
+        self.text:SetFont(FONT, 9, "")
+        self.text:SetText(L(st.text))
+        self.text:SetTextColor(st.color[1], st.color[2], st.color[3], 1)
+        for _, t in ipairs({self.bg, self.l, self.r}) do
+            t:SetVertexColor(st.color[1], st.color[2], st.color[3], 0.16)
+        end
+        self:SetWidth((self.text:GetStringWidth() or 30) + 12)
+        self:Show()
+    end
+    pill:Hide()
+    return pill
+end
+card.MakePill = MakePill
+
+---------------------------------------------------------------------------
+-- History: scroll the mouse wheel up over the card to see the steps you've
+-- passed, each tagged Done, Skipped or Chain missed. Click one to go back.
+---------------------------------------------------------------------------
+
+local HIST_ROWS = 6
+local HIST_ROW_H = 20
+local hist = CreateFrame("Frame", nil, f)
+hist:SetPoint("TOPLEFT", progressBg, "BOTTOMLEFT", 0, 0)
+hist:SetPoint("TOPRIGHT", progressBg, "BOTTOMRIGHT", 0, 0)
+hist:SetHeight(1)
+hist.bg = hist:CreateTexture(nil, "BACKGROUND")
+hist.bg:SetAllPoints()
+hist.bg:SetColorTexture(0, 0, 0, 0.18)
+hist.label = hist:CreateFontString(nil, "OVERLAY")
+hist.label:SetPoint("TOPLEFT", PAD, -8)
+hist.label:SetTextColor(unpack(C.dim))
+hist.hint = hist:CreateFontString(nil, "OVERLAY")
+hist.hint:SetPoint("TOPRIGHT", -PAD, -8)
+hist.hint:SetTextColor(unpack(C.faint))
+hist.sep = hist:CreateTexture(nil, "ARTWORK")
+hist.sep:SetPoint("BOTTOMLEFT")
+hist.sep:SetPoint("BOTTOMRIGHT")
+hist.sep:SetHeight(1)
+hist.sep:SetColorTexture(1, 1, 1, 0.07)
+hist.rows = {}
+hist:Hide()
+card.hist = hist
+card.histOffset = 0
+
 local body = CreateFrame("Frame", nil, f)
 body:SetPoint("TOPLEFT", progressBg, "BOTTOMLEFT", 0, 0)
 body:SetPoint("TOPRIGHT", progressBg, "BOTTOMRIGHT", 0, 0)
@@ -833,7 +912,8 @@ local function GetWarn(b)
             if not (m and addon.currentGuide) then return end
             if m.accept then
                 card.returnTo = {guide = addon.currentGuide, step = m.step, quest = m.quest}
-                addon.SetStep(m.accept)
+                card.hold = nil
+                card.ManualSetStep(m.accept)
             else
                 card.StartDetour(m.quest, {m.quest}, "have")
             end
@@ -856,7 +936,11 @@ local function GetWarn(b)
         end)
     w.skip = TextButton(w, L("Skip this step"), L("Move on without this quest"), function()
         local m = b.missing
-        if m and addon.currentGuide then addon.SetStep(m.step + 1) end
+        if m and addon.currentGuide then
+            card.MarkStatus(addon.currentGuide, m.step, "skipped")
+            card.hold = nil
+            card.ManualSetStep(m.step + 1)
+        end
     end)
     b.warn = w
     return w
@@ -1257,37 +1341,201 @@ local function CurrentStep()
     return addon.GetGuideProgress and addon.GetGuideProgress() or 1
 end
 
--- Back one step. The engine jumps straight past a step it thinks is done or
--- that is a background (#sticky) step, so a plain "step - 1" could bounce
--- right back to where you were. Walk back until a step actually sticks.
+---------------------------------------------------------------------------
+-- Moving around the guide by hand
+---------------------------------------------------------------------------
+-- The engine moves you forward on its own whenever the step you're on is
+-- done, or its quest chain can't be done. That's right while you play, but
+-- it means "go back to step 10" bounced straight forward again whenever
+-- step 10 was already finished. A step you pick by hand now holds: the
+-- engine can't move you past it until you press Next, pick another step,
+-- or (for a step that wasn't done yet) a few seconds have passed.
+
+local MISSING_PREREQ = "Step skipped: Missing pre-requisites"
+local HOLD_SECONDS = 3
+
+local function Now() return GetTime and GetTime() or 0 end
+
+local function StatusRecords(guide)
+    if not (guide and guide.name and OXPCData) then return {} end
+    OXPCData.openxpStepStatus = OXPCData.openxpStepStatus or {}
+    local t = OXPCData.openxpStepStatus[guide.name]
+    if not t then
+        t = {}
+        OXPCData.openxpStepStatus[guide.name] = t
+    end
+    return t
+end
+
+local function QuestElementDone(e)
+    local id = tonumber(e.questId)
+    if not id or id <= 0 then return nil end
+    local turnedIn = addon.IsQuestTurnedIn and addon.IsQuestTurnedIn(id)
+    if e.tag == "accept" then
+        return turnedIn or (addon.IsOnQuest and addon.IsOnQuest(id)) or false
+    elseif e.tag == "turnin" then
+        return turnedIn or false
+    elseif e.tag == "complete" then
+        return turnedIn or (addon.IsQuestComplete and addon.IsQuestComplete(id)) or e.completed or false
+    end
+end
+
+-- What happened to a step you're past: "done", "skipped" (you skipped it)
+-- or "chain" (an earlier quest in its chain was missed, so it can't be done).
+-- Steps ahead of you only get a status when they're already marked.
+function card.StepStatus(guide, index, current)
+    local step = guide and guide.steps and guide.steps[index]
+    if not step then return end
+    current = current or CurrentStep()
+    local rec = StatusRecords(guide)[index]
+    for _, e in ipairs(step.elements or {}) do
+        if e.tooltipText == L(MISSING_PREREQ) or e.tooltipText == MISSING_PREREQ then return "chain" end
+    end
+    local anyQuest, allDone, blocked = false, true, false
+    for _, e in ipairs(step.elements or {}) do
+        local d = QuestElementDone(e)
+        if d ~= nil then
+            anyQuest = true
+            if not d then
+                allDone = false
+                local id = tonumber(e.questId)
+                if card.QuestBlocked and (card.QuestBlocked(id)) then blocked = true end
+            end
+        end
+    end
+    if anyQuest and allDone then return "done" end
+    if rec == "chain" or blocked then return "chain" end
+    if rec == "skipped" then return "skipped" end
+    if step.completed then return "done" end
+    local skipped = OXPCData and OXPCData.stepSkip and OXPCData.stepSkip[index]
+    if skipped then return "skipped" end
+    if index < current then
+        return anyQuest and "skipped" or "done"
+    end
+end
+
+function card.MarkStatus(guide, index, status)
+    if guide and index then StatusRecords(guide)[index] = status end
+end
+
+-- Should the engine be allowed to move to step n right now?
+function card.AllowStep(n)
+    local hold = card.hold
+    if not hold or card.manual then return true end
+    local guide = addon.currentGuide
+    if not guide or guide.name ~= hold.guide then
+        card.hold = nil
+        return true
+    end
+    if not n or n <= hold.index then return true end
+    if not hold.done and Now() - hold.t > HOLD_SECONDS then
+        card.hold = nil
+        return true
+    end
+    -- Nothing would be on screen (step above your level and so on): let go
+    local active = addon.RXPFrame and addon.RXPFrame.activeSteps
+    if CurrentStep() ~= hold.index or not active or #active == 0 then
+        card.hold = nil
+        return true
+    end
+    return false
+end
+
+function card.GuardSetStep()
+    if not addon.SetStep or addon.SetStep == card.guardedSetStep then return end
+    local orig = addon.SetStep
+    card.guardedSetStep = function(n, n2, ...)
+        local target = type(n) == "table" and n2 or n
+        if not card.AllowStep(target) then return end
+        return orig(n, n2, ...)
+    end
+    addon.SetStep = card.guardedSetStep
+end
+
+local function ManualSetStep(n)
+    card.manual = true
+    local ok, err = pcall(addon.SetStep, n)
+    card.manual = false
+    if not ok then error(err, 0) end
+end
+card.ManualSetStep = ManualSetStep
+
+-- Go to any step and stay there
+function card.JumpTo(index)
+    local guide = addon.currentGuide
+    if not (guide and guide.steps and index) then return end
+    -- a background (#sticky) step can't be the current one; land on the next real step
+    while guide.steps[index] and (guide.steps[index].sticky or guide.steps[index].hidewindow) and index < #guide.steps do
+        index = index + 1
+    end
+    local step = guide.steps[index]
+    if not step then return end
+    local from = CurrentStep()
+    local status = card.StepStatus(guide, index, from)
+    step.completed = nil
+    if OXPCData and OXPCData.stepSkip then OXPCData.stepSkip[index] = nil end
+    card.hold = {guide = guide.name, index = index, t = Now(), from = math.max(from, (card.hold and card.hold.from) or 0),
+                 done = status ~= nil}
+    if card.histOffset then card.histOffset = 0 end
+    ManualSetStep(index)
+    if card.FillStepList then card.FillStepList() end
+    card.Refresh(true)
+    return CurrentStep() == index
+end
+
+-- Back one step: the nearest earlier step that can be shown
 function card.GoBack()
     local guide = addon.currentGuide
     if not (guide and guide.steps) then return end
     local from = CurrentStep()
-    for target = from - 1, math.max(1, from - 40), -1 do
+    local level = UnitLevel and UnitLevel("player") or 60
+    for target = from - 1, math.max(1, from - 60), -1 do
         local step = guide.steps[target]
-        if step and not step.sticky and not step.hidewindow then
-            step.completed = nil
-            if OXPCData and OXPCData.stepSkip then OXPCData.stepSkip[target] = nil end
-            addon.SetStep(target)
-            if CurrentStep() < from then return true end
+        if step and not step.sticky and not step.hidewindow and (step.level or 0) <= level then
+            return card.JumpTo(target)
         end
     end
 end
 
+-- Next: move on. A step you never finished is remembered as skipped.
+function card.GoNext()
+    local guide = addon.currentGuide
+    if not guide then return end
+    local cur = CurrentStep()
+    local status = card.StepStatus(guide, cur, cur)
+    if status ~= "done" and status ~= "chain" then card.MarkStatus(guide, cur, "skipped") end
+    card.hold = nil
+    ManualSetStep(cur + 1)
+    card.Refresh(true)
+end
+
+-- Back to the furthest step you'd reached before looking back
+function card.Resume()
+    local hold = card.hold
+    card.hold = nil
+    if hold and hold.from and hold.from > CurrentStep() then
+        ManualSetStep(hold.from)
+    end
+    card.Refresh(true)
+end
+
 bar.prev = MakeButton(bar, "prev", L("Back one step"), function() card.GoBack() end)
 bar.prev:SetPoint("LEFT", 6, 0)
-bar.next = MakeButton(bar, "next", L("Skip this step"), function()
-    if addon.currentGuide then addon.SetStep(CurrentStep() + 1) end
-end)
+bar.next = MakeButton(bar, "next", L("Next step (an unfinished step is marked Skipped)"), function() card.GoNext() end)
 bar.next:SetPoint("LEFT", bar.prev, "RIGHT", 2, 0)
 bar.find = MakeButton(bar, "target", L("Jump to the right guide and step for your level, zone and quests"),
-                      function() if addon.smartStart then addon.smartStart.Run() end end, L("Find my place"))
+                      function()
+                          card.hold = nil
+                          if addon.smartStart then addon.smartStart.Run() end
+                      end, L("Find my place"))
 bar.find:SetPoint("LEFT", bar.next, "RIGHT", 6, 0)
 bar.stop = MakeButton(bar, "prev", L("Stop the quest chain and go back to the guide"),
                       function() card.StopDetour() end, L("Back to guide"))
 bar.stop:SetPoint("LEFT", bar.next, "RIGHT", 6, 0)
 bar.stop:Hide()
+bar.resume = MakeButton(bar, "next", L("Go back to the step you were on"), function() card.Resume() end, L("Back to step"))
+bar.resume:SetPoint("LEFT", bar.next, "RIGHT", 6, 0)
+bar.resume:Hide()
 bar.collapse = MakeButton(bar, "up", L("Collapse to one line"), function() card.SetCollapsed(true) end)
 bar.collapse:SetPoint("RIGHT", -20, 0)
 bar.settings = MakeButton(bar, "gear", L("Settings"), function() addon.settings.OpenSettings() end)
@@ -1362,6 +1610,112 @@ local function Visible()
     return true
 end
 
+local function HistRow(i)
+    local row = hist.rows[i]
+    if row then return row end
+    row = CreateFrame("Button", nil, hist)
+    row:SetHeight(HIST_ROW_H)
+    row.hl = row:CreateTexture(nil, "BACKGROUND")
+    row.hl:SetAllPoints()
+    row.hl:SetColorTexture(1, 1, 1, 0)
+    row.num = row:CreateFontString(nil, "OVERLAY")
+    row.num:SetPoint("LEFT", PAD - 2, 0)
+    row.num:SetWidth(26)
+    row.num:SetJustifyH("RIGHT")
+    row.pill = MakePill(row)
+    row.pill:SetPoint("RIGHT", -PAD + 2, 0)
+    row.text = row:CreateFontString(nil, "OVERLAY")
+    row.text:SetPoint("LEFT", row.num, "RIGHT", 8, 0)
+    row.text:SetPoint("RIGHT", row.pill, "LEFT", -8, 0)
+    row.text:SetJustifyH("LEFT")
+    row.text:SetWordWrap(false)
+    row:SetScript("OnEnter", function(self)
+        self.hl:SetColorTexture(1, 1, 1, 0.07)
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetText(fmt(L("Step %d"), self.index or 0), 1, 1, 1)
+        if self.full then GameTooltip:AddLine(self.full, 0.85, 0.85, 0.85, true) end
+        local st = self.status and STATUS[self.status]
+        if st then GameTooltip:AddLine(L(st.tip), st.color[1], st.color[2], st.color[3], true) end
+        GameTooltip:AddLine(L("Click to go back to this step"), 0.6, 0.6, 0.6)
+        GameTooltip:Show()
+    end)
+    row:SetScript("OnLeave", function(self)
+        self.hl:SetColorTexture(1, 1, 1, 0)
+        GameTooltip:Hide()
+    end)
+    row:SetScript("OnClick", function(self) if self.index then card.JumpTo(self.index) end end)
+    hist.rows[i] = row
+    return row
+end
+
+-- Steps before the current one that the card can show
+function card.PreviousSteps(guide, current)
+    local out = {}
+    for i = 1, math.min((current or 1) - 1, guide and guide.steps and #guide.steps or 0) do
+        local step = guide.steps[i]
+        if step and not step.hidewindow and not step.sticky then tinsert(out, i) end
+    end
+    return out
+end
+
+function card.ScrollHistory(delta)
+    local guide = addon.currentGuide
+    if not guide or card.detour then return end
+    local prev = card.PreviousSteps(guide, CurrentStep())
+    card.histOffset = math.max(0, math.min(#prev, (card.histOffset or 0) + (delta > 0 and 1 or -1) * (IsShiftKeyDown and IsShiftKeyDown() and HIST_ROWS or 1)))
+    card.Refresh(true)
+end
+
+-- Lays out the history rows; returns their height (0 when hidden)
+function card.LayoutHistory(guide, current)
+    local offset = card.histOffset or 0
+    if offset <= 0 or card.detour then hist:Hide(); return 0 end
+    local prev = card.PreviousSteps(guide, current)
+    offset = math.min(offset, #prev)
+    card.histOffset = offset
+    if offset == 0 then hist:Hide(); return 0 end
+    local first = #prev - offset + 1
+    local last = math.min(#prev, first + HIST_ROWS - 1)
+    SetFont(hist.label, -2)
+    SetFont(hist.hint, -2)
+    hist.label:SetText(L("EARLIER STEPS"))
+    hist.hint:SetText(Width() >= 280 and L("scroll down to return") or "")
+    local y = 26
+    local n = 0
+    for k = first, last do
+        n = n + 1
+        local index = prev[k]
+        local step = guide.steps[index]
+        local row = HistRow(n)
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT", hist, "TOPLEFT", 0, -y)
+        row:SetPoint("TOPRIGHT", hist, "TOPRIGHT", 0, -y)
+        local title = StepContent(step)
+        local text = StripCodes(title or "")
+        text = (text:gsub("\n.*", ""))
+        row.index, row.full = index, text
+        row.status = card.StepStatus(guide, index, current)
+        SetFont(row.num, -2)
+        SetFont(row.text, -1)
+        row.num:SetText(index)
+        row.num:SetTextColor(unpack(C.faint))
+        row.text:SetText(text)
+        local dim = row.status == "done" or row.status == "skipped"
+        row.text:SetTextColor(unpack(dim and C.dim or C.text))
+        row.pill:SetStatus(row.status)
+        row:Show()
+        y = y + HIST_ROW_H
+    end
+    for k = n + 1, #hist.rows do hist.rows[k]:Hide() end
+    y = y + 6
+    hist:SetHeight(y)
+    hist:Show()
+    return y
+end
+
+f:EnableMouseWheel(true)
+f:SetScript("OnMouseWheel", function(_, delta) card.ScrollHistory(delta) end)
+
 -- A cheap fingerprint of everything the card draws. Refresh only lays the
 -- card out again when it changes (or every few seconds as a safety net),
 -- so an idle card costs a string build four times a second.
@@ -1374,6 +1728,7 @@ function card.Signature()
         card.width or 0, card.height or 0, p.windowScale or 1, p.guideFontSize or 0,
         p.openxpCardCollapsed and 1 or 0, p.lockFrames and 1 or 0,
         card.detour and (card.detour.index or 0) or -1, card.sizing and 1 or 0,
+        card.histOffset or 0, card.hold and card.hold.index or 0,
     }
     local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
     for _, step in ipairs(active) do
@@ -1443,7 +1798,7 @@ function card.Refresh(force)
     end
 
     if p and p.openxpCardCollapsed then
-        header:Hide(); progressBg:Hide(); progress:Hide(); body:Hide(); upNext:Hide(); bar:Hide()
+        header:Hide(); progressBg:Hide(); progress:Hide(); body:Hide(); upNext:Hide(); bar:Hide(); hist:Hide()
         mini:Show()
         SetFont(mini.text, 2)
         SetFont(mini.count, 0)
@@ -1470,14 +1825,18 @@ function card.Refresh(force)
     end
     bar.collapse:ClearAllPoints()
     bar.collapse:SetPoint("RIGHT", slim and -18 or -20, 0)
-    for _, btn in ipairs({bar.find, bar.stop}) do
+    for _, btn in ipairs({bar.find, bar.stop, bar.resume}) do
         btn:SetWidth(wide and 116 or bw)
         btn.label:SetShown(wide)
         btn.icon:ClearAllPoints()
         if wide then btn.icon:SetPoint("LEFT", 10, 0) else btn.icon:SetPoint("CENTER") end
     end
-    bar.find:SetShown(not detourStep)
+    local hold = card.hold
+    local looking = not detourStep and hold and hold.from and hold.from > current
+    if looking then bar.resume.label:SetText(fmt(L("Back to %d"), hold.from)) end
+    bar.find:SetShown(not detourStep and not looking)
     bar.stop:SetShown(detourStep ~= nil)
+    bar.resume:SetShown(looking and true or false)
     header:Show(); progressBg:Show(); progress:Show(); body:Show(); upNext:Show(); bar:Show()
 
     local zone, range = SplitGuideName(guide)
@@ -1499,6 +1858,11 @@ function card.Refresh(force)
     local frac = total > 0 and current / total or 0
     if detourStep then frac = detourIndex / math.max(#card.detour.ids, 1) end
     progress:SetWidth(math.max(1, (Width() - 2) * frac))
+
+    local histH = card.LayoutHistory(guide, current)
+    body:ClearAllPoints()
+    body:SetPoint("TOPLEFT", histH > 0 and hist or progressBg, "BOTTOMLEFT", 0, 0)
+    body:SetPoint("TOPRIGHT", histH > 0 and hist or progressBg, "BOTTOMRIGHT", 0, 0)
 
     local y = 0
     for i = 1, MAX_BLOCKS do
@@ -1522,7 +1886,7 @@ function card.Refresh(force)
 
     -- One "up next" line by default; a taller card shows more of the route
     local lineH = FontSize(0) + 6
-    local baseHeight = 1 + 28 + 2 + y + 4 + 34 + 38 + 1
+    local baseHeight = 1 + 28 + 2 + histH + y + 4 + 34 + 38 + 1
     local want = card.sizing and (f:GetHeight() or 0) or (card.height or 0)
     local extra = math.max(0, math.floor((want - baseHeight) / lineH))
     local count = math.min(MAX_UPNEXT, 1 + extra)
@@ -1573,7 +1937,7 @@ function card.Refresh(force)
     upNext:SetHeight(math.max(upHeight, 1))
 
     if not card.sizing then
-        local content = 1 + 28 + 2 + y + 4 + upHeight + 38 + 1
+        local content = 1 + 28 + 2 + histH + y + 4 + upHeight + 38 + 1
         f:SetHeight(math.max(content, card.height or 0))
     end
 end
@@ -1627,7 +1991,8 @@ function Tick()
                 card.returnTo = nil
             elseif addon.IsOnQuest and addon.IsOnQuest(r.quest) then
                 card.returnTo = nil
-                addon.SetStep(r.step)
+                card.hold = nil
+                card.ManualSetStep(r.step)
             end
         end
         local ok, err = pcall(card.Refresh)
@@ -1776,6 +2141,7 @@ function card.Enable()
     f:SetScale((p and p.windowScale) or 1)
     card.ParkClassicWindow()
     card.SetupArrow()
+    card.GuardSetStep()
     pcall(card.RestoreStep)
     card.Refresh(true)
     -- Once per character: point out that Questie adds chains and levels
@@ -1836,7 +2202,7 @@ function card.BuildStepList()
     list:SetBackdropColor(unpack(C.bg))
     list:SetBackdropBorderColor(unpack(C.border))
     list:SetFrameStrata("DIALOG")
-    list:SetWidth(300)
+    list:SetWidth(340)
     list:EnableMouse(true)
     list:EnableMouseWheel(true)
     list.offset = 0
@@ -1858,9 +2224,11 @@ function card.BuildStepList()
         row.num:SetPoint("LEFT", 6, 0)
         row.num:SetWidth(30)
         row.num:SetJustifyH("RIGHT")
+        row.pill = MakePill(row)
+        row.pill:SetPoint("RIGHT", -6, 0)
         row.text = row:CreateFontString(nil, "OVERLAY")
         row.text:SetPoint("LEFT", row.num, "RIGHT", 8, 0)
-        row.text:SetPoint("RIGHT", -6, 0)
+        row.text:SetPoint("RIGHT", row.pill, "LEFT", -6, 0)
         row.text:SetJustifyH("LEFT")
         row.text:SetWordWrap(false)
         row:SetScript("OnEnter", function(self) self.hl:SetColorTexture(1, 1, 1, 0.08) end)
@@ -1877,23 +2245,6 @@ function card.BuildStepList()
     end)
     list:Hide()
     return list
-end
-
--- Jump to a step. Going back clears "done" and skips on the steps after it,
--- so the engine doesn't bounce straight forward again.
-function card.JumpTo(index)
-    local guide = addon.currentGuide
-    if not (guide and guide.steps and index) then return end
-    if index < CurrentStep() then
-        for i = index, CurrentStep() do
-            local step = guide.steps[i]
-            if step then step.completed = nil end
-            if OXPCData and OXPCData.stepSkip then OXPCData.stepSkip[i] = nil end
-        end
-    end
-    addon.SetStep(index)
-    card.FillStepList()
-    card.Refresh(true)
 end
 
 function card.FillStepList()
@@ -1914,7 +2265,9 @@ function card.FillStepList()
             SetFont(row.text, -1)
             row.num:SetText(i)
             row.text:SetText(StepSummary(step))
-            local done = step.completed or (OXPCData and OXPCData.stepSkip and OXPCData.stepSkip[i])
+            local status = not row.current and card.StepStatus(guide, i, cur) or nil
+            row.pill:SetStatus(status)
+            local done = status == "done" or status == "skipped"
             local color = row.current and C.blue or done and C.faint or C.text
             row.text:SetTextColor(unpack(color))
             row.num:SetTextColor(unpack(row.current and C.blue or C.dim))

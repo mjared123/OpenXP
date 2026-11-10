@@ -334,23 +334,53 @@ try("other panels get the card look", function()
     card.Refresh(true)
     card.width = nil
 end)
-try("back button walks past steps that bounce forward", function()
+try("going back to a finished step holds there until you press Next", function()
     addon.currentGuide = {name = "19-21 Darkshore/Ashenvale", steps = steps}
     local cur = 42
     for i = 21, 45 do steps[i] = steps[i] or {index = i, elements = {}} end
     steps[41].sticky = true
     steps[40].completed = true
     addon.GetGuideProgress = function() return cur end
-    addon.SetStep = function(n)
-        calls.setStep = n
-        -- engine: sticky or completed steps jump forward
-        if steps[n].sticky or steps[n].completed then cur = 42 else cur = n end
-    end
+    addon.RXPFrame.activeSteps = {steps[40]}
+    addon.SetStep = function(n) calls.setStep = n; cur = n end
+    card.guardedSetStep = nil
+    card.GuardSetStep()
     OXPCData.stepSkip = {}
     assert(card.GoBack(), "could not go back")
     assert(cur == 40, "should land on 40, got " .. cur)
+    -- the engine sees the step is done and tries to move on: held
+    addon.SetStep(41)
+    assert(cur == 40, "engine bounced forward to " .. cur)
+    assert(card.hold and card.hold.from == 42, "should remember step 42")
+    card.Refresh(true)
+    -- Back to 42
+    card.Resume()
+    assert(cur == 42, "resume went to " .. cur)
+    -- Next marks an unfinished step as skipped
+    card.JumpTo(43)
+    card.GoNext()
+    assert(cur == 44 and card.StepStatus(addon.currentGuide, 43, 44) == "skipped", "not marked skipped")
     steps[41].sticky = nil
+    card.hold = nil
     addon.SetStep = function(n) calls.setStep = n end
+end)
+try("history rows show done, skipped and chain missed", function()
+    addon.currentGuide = {name = "hist", steps = steps}
+    addon.GetGuideProgress = function() return 6 end
+    steps[2].completed = true
+    OXPCData.stepSkip = {[3] = true}
+    card.MarkStatus(addon.currentGuide, 4, "chain")
+    assert(card.StepStatus(addon.currentGuide, 2, 6) == "done")
+    assert(card.StepStatus(addon.currentGuide, 3, 6) == "skipped")
+    assert(card.StepStatus(addon.currentGuide, 4, 6) == "chain")
+    card.ScrollHistory(1); card.ScrollHistory(1); card.ScrollHistory(1)
+    assert(card.histOffset == 3, "offset " .. tostring(card.histOffset))
+    assert(card.hist.rows[1] and card.hist.rows[1].status ~= nil, "no rows")
+    card.ScrollHistory(-1); card.ScrollHistory(-1); card.ScrollHistory(-1)
+    assert(card.histOffset == 0)
+    steps[2].completed = nil
+    OXPCData.stepSkip = {}
+    addon.GetGuideProgress = function() return 1 end
 end)
 try("skipped-to step survives a reload", function()
     addon.currentGuide = {name = "19-21 Darkshore/Ashenvale", steps = steps}

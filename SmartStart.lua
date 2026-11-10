@@ -331,7 +331,10 @@ function SS.Run(quiet)
     local start, skip, blocked = SS.PlanSteps(current, SS.Prerequisites())
     for index in pairs(skip) do
         OXPCData.stepSkip[index] = true
+        -- every step Smart start skips is one whose quest chain was missed
+        if addon.card and addon.card.MarkStatus then addon.card.MarkStatus(current, index, "chain") end
     end
+    if addon.card then addon.card.hold = nil end
     addon.SetStep(start)
 
     if not quiet then
