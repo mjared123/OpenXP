@@ -382,7 +382,7 @@ function tr.AreaTarget(element)
 end
 
 ---------------------------------------------------------------------------
--- Drawing: smooth purple areas and the purple route, on the world map and
+-- Drawing: smooth blue areas and the purple route, on the world map and
 -- the minimap
 ---------------------------------------------------------------------------
 -- Areas are smoothed outlines filled with thin horizontal lines (WoW has no
@@ -391,8 +391,8 @@ end
 -- round mountains and high-level packs the way the arrow goes, with small
 -- chevrons showing the direction.
 
-local AREA_FILL = {0.55, 0.35, 1.0, 0.32}
-local AREA_EDGE = {0.70, 0.50, 1.0, 0.95}
+local AREA_FILL = {0.20, 0.55, 1.0, 0.30}
+local AREA_EDGE = {0.35, 0.70, 1.0, 0.95}
 local ROUTE_GLOW = {0.75, 0.20, 1.0, 0.30}
 local ROUTE_CORE = {0.90, 0.45, 1.0, 1.0}
 local PIN_SIZE = 12
@@ -708,7 +708,7 @@ function tr.DrawMap()
         for _, p in ipairs(RoutePoints(map, px * 100, py * 100, stops, PlayerLevel())) do
             pts[#pts + 1] = {P(p[1], p[2])}
         end
-        RouteLeg(wmc, pts, 3.5 / scale)
+        RouteLeg(wmc, pts, 2 / scale)
     end
 end
 
@@ -779,7 +779,7 @@ function tr.DrawMinimap()
         local x, y = P(p[1], p[2])
         if x then route[#route + 1] = {x, y} end
     end
-    RouteLeg(mmc, route, 2.5, clip)
+    RouteLeg(mmc, route, 1.5, clip)
 end
 
 tr.draw = {Fill = Fill, ClipSegment = ClipSegment, Smooth = Smooth, Upcoming = Upcoming, RoutePoints = RoutePoints}

@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.19",
+        date = "November 2026",
+        changes = {
+            "Kill and loot areas are blue; the purple route line is thinner",
+        },
+    },
+    {
         version = "1.3.18",
         date = "November 2026",
         changes = {
