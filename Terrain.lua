@@ -439,7 +439,8 @@ end
 local function Clear(c)
     for i = 1, #c.lines do c.lines[i]:Hide() end
     for i = 1, #c.tex do c.tex[i]:Hide() end
-    c.nl, c.nt = 0, 0
+    for i = 1, #(c.rects or {}) do c.rects[i]:Hide() end
+    c.nl, c.nt, c.nr = 0, 0, 0
 end
 
 -- x, y in pixels from the frame's top left (y down)
@@ -457,6 +458,26 @@ local function Line(c, color, thickness, x1, y1, x2, y2, layer)
     l:SetStartPoint("TOPLEFT", c.frame, x1, -y1)
     l:SetEndPoint("TOPLEFT", c.frame, x2, -y2)
     l:Show()
+end
+
+-- a flat rectangle: x, y its top left, in pixels. Not snapped to the pixel
+-- grid, so rows laid edge to edge blend into one even fill with no seams.
+local function Rect(c, color, x, y, w, h)
+    c.nr = (c.nr or 0) + 1
+    c.rects = c.rects or {}
+    local t = c.rects[c.nr]
+    if not t then
+        t = c.frame:CreateTexture(nil, "ARTWORK")
+        t:SetTexture(WHITE)
+        if t.SetSnapToPixelGrid then t:SetSnapToPixelGrid(false) end
+        if t.SetTexelSnappingBias then t:SetTexelSnappingBias(0) end
+        c.rects[c.nr] = t
+    end
+    t:SetVertexColor(color[1], color[2], color[3], color[4])
+    t:ClearAllPoints()
+    t:SetPoint("TOPLEFT", c.frame, "TOPLEFT", x, -y)
+    t:SetSize(w, h)
+    t:Show()
 end
 
 local function Tex(c, texture, color, size, x, y)
@@ -480,9 +501,10 @@ local function Fill(c, pts, color, step, clip)
     local y0, y1 = math.huge, -math.huge
     for _, p in ipairs(pts) do y0, y1 = min(y0, p[2]), max(y1, p[2]) end
     if clip then y0, y1 = max(y0, clip[2] - clip[3]), min(y1, clip[2] + clip[3]) end
+    local top = y0
     local y = y0 + step / 2
     local xs = {}
-    while y < y1 do
+    while top < y1 do
         xs = {}
         local j = #pts
         for i = 1, #pts do
@@ -501,9 +523,10 @@ local function Fill(c, pts, color, step, clip)
         end
         for k = 1, #xs - 1, 2 do
             local a, b = max(xs[k], lo), min(xs[k + 1], hi)
-            if b > a then Line(c, color, step + 0.5, a, y, b, y, "ARTWORK") end
+            if b > a then Rect(c, color, a, top, b - a, min(step, y1 - top)) end
         end
-        y = y + step
+        top = top + step
+        y = top + step / 2
     end
 end
 

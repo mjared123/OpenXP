@@ -147,21 +147,21 @@ local function Fake(extra)
     end})
 end
 
-try("fill: horizontal lines inside the shape, cut to a circle", function()
+try("fill: rows of flat rectangles inside the shape, cut to a circle", function()
     local lines = {}
     local c = {frame = Fake(), lines = {}, tex = {}, nl = 0, nt = 0}
-    c.frame.CreateLine = function()
-        local l = Fake()
-        l.SetStartPoint = function(_, _, _, x, y) l.x1, l.y1 = x, y end
-        l.SetEndPoint = function(_, _, _, x, y) l.x2 = x; lines[#lines + 1] = l end
-        return l
+    c.frame.CreateTexture = function()
+        local t = Fake()
+        t.SetPoint = function(_, _, _, _, x, y) t.x1, t.y1 = x, -y end
+        t.SetSize = function(_, w) t.x2 = t.x1 + w; lines[#lines + 1] = t end
+        return t
     end
     tr.draw.Fill(c, {{0, 0}, {100, 0}, {100, 100}, {0, 100}}, {1, 1, 1, 1}, 10)
     assert(#lines == 10, "ten rows: " .. #lines)
     assert(lines[1].x1 == 0 and lines[1].x2 == 100)
     lines = {}
-    c.nl = 0
-    c.lines = {}
+    c.nr = 0
+    c.rects = {}
     tr.draw.Fill(c, {{0, 0}, {100, 0}, {100, 100}, {0, 100}}, {1, 1, 1, 1}, 10, {50, 50, 20})
     for _, l in ipairs(lines) do
         assert(l.x1 >= 29.9 and l.x2 <= 70.1, "inside the circle")

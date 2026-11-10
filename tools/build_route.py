@@ -333,15 +333,31 @@ def spawns_in(entity, zone, spawn_index):
     return [tuple(p) for p in as_list(sp.get(zone)) if p and len(p) == 2 and p[0] >= 0]
 
 
+class Spawns(list):
+    """Spawn points, with a weight for some (`w`: point -> weight). Mobs
+    well below the quest's level count for less when looking for the best
+    spot: they die fast but they're worth little."""
+    def __init__(self, pts=(), w=None):
+        super().__init__(pts)
+        self.w = w or {}
+
+
+def _weight(points):
+    w = getattr(points, "w", None) or {}
+    return lambda q: w.get(q, 1.0)
+
+
 def cluster_center(points, radius=4.0):
     """Densest spot: the point with the most neighbours within radius, averaged."""
     if not points:
         return None
+    wt = _weight(points)
     best, best_n = None, -1
     for p in points:
         n = [q for q in points if math.dist(p, q) <= radius]
-        if len(n) > best_n:
-            best, best_n = n, len(n)
+        score = sum(wt(q) for q in n)
+        if score > best_n:
+            best, best_n = n, score
     x = sum(p[0] for p in best) / len(best)
     y = sum(p[1] for p in best) / len(best)
     # Snap to the closest real spawn so the arrow points at something real.
@@ -351,19 +367,23 @@ def dense_clusters(points, radius=4.0, keep=4):
     """The densest spots among points, best first: [(point, count)]. Each
     spot is a real spawn near the middle of its group; groups don't overlap,
     and spots with under a third of the best one's mobs are left out."""
+    wt = _weight(points)
     left = list(points)
     out = []
     while left and len(out) < keep:
-        best, best_n = None, []
+        best, best_n, best_s = None, [], 0
         for p in left:
             n = [q for q in left if math.dist(p, q) <= radius]
-            if len(n) > len(best_n):
-                best, best_n = p, n
-        if out and len(best_n) < max(3, out[0][1] / 3):
+            score = sum(wt(q) for q in n)
+            if score > best_s:
+                best, best_n, best_s = p, n, score
+        # other spots only when they're nearly as good: a thin spot means
+        # waiting for respawns
+        if out and best_s < max(3, out[0][1] * 0.8):
             break
         x = sum(p[0] for p in best_n) / len(best_n)
         y = sum(p[1] for p in best_n) / len(best_n)
-        out.append((min(best_n, key=lambda p: math.dist(p, (x, y))), len(best_n)))
+        out.append((min(best_n, key=lambda p: math.dist(p, (x, y))), best_s))
         left = [q for q in left if math.dist(q, (x, y)) > radius * 1.5]
     return out
 
@@ -553,12 +573,22 @@ class Builder:
                 return None
             droppers = [self.npc(nid) for nid in as_list(li(item, 2))]
             droppers = [n for n in droppers if n and (li(n, 6) or 0) not in (1, 2, 3)]
+            # Leave out droppers more than 2 levels above the quest (the
+            # Fetid Corpses for Ghoul Fangs), unless nothing else drops it.
+            def top(n):
+                return li(n, 5) or li(n, 4) or 0
+            fair = [n for n in droppers if top(n) <= q.level + 2]
+            droppers = fair or droppers
             objs = [self.db["o"].get(oid) for oid in as_list(li(item, 3))]
 
             def item_pts(z):
-                pts = []
+                pts = Spawns()
                 for n in droppers:
-                    pts += spawns_in(n, z, 7)
+                    low = top(n) < q.level - 3
+                    for p in spawns_in(n, z, 7):
+                        pts.append(p)
+                        if low:
+                            pts.w[p] = 0.5
                 for o in objs:
                     pts += spawns_in(o, z, 4)
                 return pts
@@ -566,7 +596,11 @@ class Builder:
             if not pt:
                 return None
             area = zone if place is None else next(a for a, zn, _ in nearby if zn == place[0])
-            mobs = [li(n, 1) for n in droppers if spawns_in(n, area, 7)]
+            spot = pt if place is None else (place[1], place[2])
+            # name the mobs that live at this spot, most first
+            near = [(sum(1 for p in spawns_in(n, area, 7) if math.dist(p, spot) <= 7.0), li(n, 1)) for n in droppers]
+            mobs = [nm for c, nm in sorted(near, key=lambda t: -t[0]) if c > 0]
+            mobs = mobs or [li(n, 1) for n in droppers if spawns_in(n, area, 7)]
             sites.append((idx, "loot", li(item, 1), mobs[:3], pt, place))
         # reputation (4) objectives are never part of a leveling route
         if li(obj, 4):

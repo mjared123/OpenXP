@@ -14,6 +14,16 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.21",
+        date = "November 2026",
+        changes = {
+            "Loot spots skip mobs more than 2 levels above the quest (no more level 29 Fetid Corpses for Ghoul Fangs) and favour mobs near your level",
+            "Thin spots where you'd wait for respawns are no longer picked: Vial of Spider Venom is now the Black Widow Hatchlings by Raven Hill",
+            "Loot steps name the mobs that actually live at the spot",
+            "Blue areas are filled solid, without the stripes",
+        },
+    },
+    {
         version = "1.3.20",
         date = "November 2026",
         changes = {

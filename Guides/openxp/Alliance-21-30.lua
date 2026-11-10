@@ -36,11 +36,11 @@ step
     .mob Dal Bloodclaw
 step
     .goto Ashenvale,20.59,42.20
-    >>Kill |cRXP_ENEMY_Saltspittle Puddlejumper|r and |cRXP_ENEMY_Saltspittle Warrior|r and |cRXP_ENEMY_Saltspittle Muckdweller|r. Loot them for |cRXP_LOOT_Glowing Gem|r
+    >>Kill |cRXP_ENEMY_Saltspittle Puddlejumper|r and |cRXP_ENEMY_Saltspittle Warrior|r and |cRXP_ENEMY_Saltspittle Oracle|r. Loot them for |cRXP_LOOT_Glowing Gem|r
     .complete -1023,1 --Raene's Cleansing
     .mob Saltspittle Puddlejumper
     .mob Saltspittle Warrior
-    .mob Saltspittle Muckdweller
+    .mob Saltspittle Oracle
 step
     .goto Ashenvale,33.33,67.98
     >>Loot the |cRXP_PICK_Handful of Stardust|r
@@ -99,21 +99,11 @@ step
     .accept 245 >>Accept Eight-Legged Menaces
     .target Watcher Dodds
 step
-    .goto Duskwood,21.10,55.60
-    >>Loot the |cRXP_PICK_Raven Hill Tome|r
-    .complete 96139,1 --The Valor Family
-step
     .goto Duskwood,18.38,56.37
     >>Talk to |cRXP_FRIENDLY_Jitters|r
     .turnin 163 >>Turn in Raven Hill
     .accept 5 >>Accept Jitters' Growling Gut
     .target Jitters
-step
-    .goto Duskwood,10.75,55.39
-    .area Duskwood,8.85,62.27,9.23,48.18,12.47,49.82,12.43,60.62
-    >>Kill |cRXP_ENEMY_Pygmy Venom Web Spider|r
-    .complete 245,1 --Eight-Legged Menaces
-    .mob Pygmy Venom Web Spider
 step
     .goto Duskwood,7.78,34.07
     >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
@@ -125,14 +115,14 @@ step
     .accept 226 >>Accept Wolves at Our Heels
     .target Lars
 step
-    .goto Duskwood,11.02,32.27
-    .area Duskwood,9.92,33.29,14.12,26.14,14.72,25.81,17.63,29.48,10.88,34.89
+    .goto Duskwood,19.32,28.05
+    .area Duskwood,11.91,31.34,12.34,27.73,14.23,25.39,19.54,23.93,21.63,24.43,24.04,25.10,22.63,31.47
     >>Kill |cRXP_ENEMY_Rabid Dire Wolf|r
     .complete 226,2 --Wolves at Our Heels
     .mob Rabid Dire Wolf
 step
-    .goto Duskwood,22.58,25.95
-    .area Duskwood,15.13,22.28,29.65,25.90,30.54,28.82,21.05,30.12
+    .goto Duskwood,30.49,25.57
+    .area Duskwood,23.90,26.22,32.73,21.15,36.35,20.49,37.12,24.34,34.58,27.85,28.17,29.50
     >>Kill |cRXP_ENEMY_Starving Dire Wolf|r
     .complete 226,1 --Wolves at Our Heels
     .mob Starving Dire Wolf
@@ -141,6 +131,16 @@ step
     >>Talk to |cRXP_FRIENDLY_Lars|r
     .turnin 226 >>Turn in Wolves at Our Heels
     .target Lars
+step
+    .goto Duskwood,10.75,55.39
+    .area Duskwood,8.85,62.27,9.23,48.18,12.47,49.82,12.43,60.62
+    >>Kill |cRXP_ENEMY_Pygmy Venom Web Spider|r
+    .complete 245,1 --Eight-Legged Menaces
+    .mob Pygmy Venom Web Spider
+step
+    .goto Duskwood,21.10,55.60
+    >>Loot the |cRXP_PICK_Raven Hill Tome|r
+    .complete 96139,1 --The Valor Family
 step
     .goto Duskwood,28.11,31.46
     >>Talk to |cRXP_FRIENDLY_Abercrombie|r
@@ -202,11 +202,11 @@ step
 step
     .goto Duskwood,68.62,20.24
     .area Duskwood,61.03,18.12,68.03,14.46,76.14,16.94,75.27,20.05,74.24,22.07,72.16,24.97,63.56,23.15,61.05,20.54
-    >>Kill |cRXP_ENEMY_Venom Web Spider|r and |cRXP_ENEMY_Pygmy Venom Web Spider|r and |cRXP_ENEMY_Green Recluse|r. Loot them for |cRXP_LOOT_Gooey Spider Leg|r
+    >>Kill |cRXP_ENEMY_Green Recluse|r and |cRXP_ENEMY_Venom Web Spider|r and |cRXP_ENEMY_Pygmy Venom Web Spider|r. Loot them for |cRXP_LOOT_Gooey Spider Leg|r
     .complete 93,1 --Dusky Crab Cakes
+    .mob Green Recluse
     .mob Venom Web Spider
     .mob Pygmy Venom Web Spider
-    .mob Green Recluse
 step
     .goto Duskwood,73.75,43.48
     >>Talk to |cRXP_FRIENDLY_Chef Grual|r
@@ -230,10 +230,35 @@ step
     .turnin 240 >>Turn in Return to Jitters
     .target Jitters
 step
+    .goto Duskwood,73.78,44.49
+    >>Talk to |cRXP_FRIENDLY_Tavernkeep Smitts|r
+    .turnin 158 >>Turn in Zombie Juice
+    .accept 156 >>Accept Gather Rot Blossoms
+    .target Tavernkeep Smitts
+step
+    .goto Duskwood,75.79,45.32
+    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
+    .accept 101 >>Accept The Totem of Infliction
+    .target Madame Eva
+step
+    .goto Duskwood,78.96,69.68
+    .area Duskwood,75.83,67.13,77.49,65.61,79.91,64.56,83.41,67.91,83.34,72.71,81.45,75.19,77.81,77.10,75.69,73.08
+    >>Kill |cRXP_ENEMY_Skeletal Warrior|r and |cRXP_ENEMY_Skeletal Mage|r. Loot them for |cRXP_LOOT_Skeleton Finger|r
+    .complete 101,3 --The Totem of Infliction
+    .mob Skeletal Warrior
+    .mob Skeletal Mage
+step
     .goto Duskwood,49.85,77.71
     >>Click the |cRXP_PICK_Mound of loose dirt|r
     .turnin 95 >>Turn in Sven's Revenge
     .accept 230 >>Accept Sven's Camp
+step
+    .goto Duskwood,20.65,46.40
+    .area Duskwood,12.90,46.49,15.11,41.82,23.52,39.27,25.84,41.05,24.43,47.72,22.50,49.46,15.31,49.41,13.21,48.63
+    >>Kill |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Fiend|r. Loot them for |cRXP_LOOT_Rot Blossom|r
+    .complete 156,1 --Gather Rot Blossoms
+    .mob Skeletal Horror
+    .mob Skeletal Fiend
 step
     .goto Duskwood,7.78,34.07
     >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
@@ -241,17 +266,31 @@ step
     .accept 262 >>Accept The Shadowy Figure
     .target Sven Yorgen
 step
+    .goto Duskwood,22.41,35.66
+    .area Duskwood,20.22,35.21,21.68,31.16,26.65,31.64,26.45,40.07,24.25,40.64,22.63,40.58,20.67,39.39,20.25,38.19
+    >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Rotted One|r. Loot them for |cRXP_LOOT_Ghoul Fang|r
+    .complete 101,1 --The Totem of Infliction
+    .mob Flesh Eater
+    .mob Bone Chewer
+    .mob Rotted One
+step
+    .goto Duskwood,30.11,51.19
+    .area Duskwood,24.89,52.97,25.26,46.02,27.59,43.28,34.34,44.71,36.75,55.65,31.61,58.59
+    >>Kill |cRXP_ENEMY_Black Widow Hatchling|r. Loot them for |cRXP_LOOT_Vial of Spider Venom|r
+    .complete 101,2 --The Totem of Infliction
+    .mob Black Widow Hatchling
+step
     .goto Duskwood,75.79,45.32
     >>Talk to |cRXP_FRIENDLY_Madame Eva|r
-    .accept 101 >>Accept The Totem of Infliction
+    .turnin 101 >>Turn in The Totem of Infliction
     .turnin 262 >>Turn in The Shadowy Figure
     .accept 265 >>Accept The Shadowy Search Continues
     .target Madame Eva
 step
     .goto Duskwood,73.78,44.49
     >>Talk to |cRXP_FRIENDLY_Tavernkeep Smitts|r
-    .turnin 158 >>Turn in Zombie Juice
-    .accept 156 >>Accept Gather Rot Blossoms
+    .turnin 156 >>Turn in Gather Rot Blossoms
+    .accept 159 >>Accept Juice Delivery
     .target Tavernkeep Smitts
 step
     .goto Duskwood,72.54,46.87
@@ -260,58 +299,27 @@ step
     .accept 266 >>Accept Inquire at the Inn
     .target Clerk Daltry
 step
+    .goto Duskwood,73.54,46.82
+    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
+    .accept 57 >>Accept The Night Watch
+    .target Commander Althea Ebonlocke
+step
     .goto Duskwood,73.78,44.49
     >>Talk to |cRXP_FRIENDLY_Tavernkeep Smitts|r
     .turnin 266 >>Turn in Inquire at the Inn
     .accept 453 >>Accept Finding the Shadowy Figure
     .target Tavernkeep Smitts
 step
-    .goto Duskwood,68.62,20.24
-    .area Duskwood,61.03,18.12,68.03,14.46,76.14,16.94,75.27,20.05,74.24,22.07,72.16,24.97,63.56,23.15,61.05,20.54
-    >>Kill |cRXP_ENEMY_Venom Web Spider|r and |cRXP_ENEMY_Pygmy Venom Web Spider|r and |cRXP_ENEMY_Green Recluse|r. Loot them for |cRXP_LOOT_Vial of Spider Venom|r
-    .complete 101,2 --The Totem of Infliction
-    .mob Venom Web Spider
-    .mob Pygmy Venom Web Spider
-    .mob Green Recluse
+    .goto Duskwood,28.11,31.46
+    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
+    .turnin 159 >>Turn in Juice Delivery
+    .target Abercrombie
 step
-    .goto Duskwood,77.86,33.54
-    .area Duskwood,74.25,37.92,74.32,33.90,76.31,29.02,79.93,29.94,82.77,31.95,79.43,37.39,75.77,38.54
-    >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Fang|r
-    .complete 101,1 --The Totem of Infliction
-    .mob Flesh Eater
-    .mob Bone Chewer
-    .mob Brain Eater
-step
-    .goto Duskwood,80.64,59.42
-    .area Duskwood,78.19,56.45,81.24,54.71,82.76,55.85,82.56,61.76,81.14,63.23,79.10,63.26
-    >>Kill |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Fiend|r. Loot them for |cRXP_LOOT_Rot Blossom|r
-    .complete 156,1 --Gather Rot Blossoms
-    .mob Skeletal Horror
+    .goto Duskwood,22.93,43.46
+    .area Duskwood,14.76,42.55,23.30,39.14,25.27,44.18,22.08,48.90
+    >>Kill |cRXP_ENEMY_Skeletal Fiend|r
+    .complete 57,1 --The Night Watch
     .mob Skeletal Fiend
-step
-    .goto Duskwood,78.96,69.68
-    .area Duskwood,75.83,67.13,77.49,65.61,79.91,64.56,83.41,67.91,83.34,72.71,81.45,75.19,77.81,77.10,75.69,73.08
-    >>Kill |cRXP_ENEMY_Skeletal Warrior|r and |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Mage|r. Loot them for |cRXP_LOOT_Skeleton Finger|r
-    .complete 101,3 --The Totem of Infliction
-    .mob Skeletal Warrior
-    .mob Skeletal Horror
-    .mob Skeletal Mage
-step
-    .goto Duskwood,73.78,44.49
-    >>Talk to |cRXP_FRIENDLY_Tavernkeep Smitts|r
-    .turnin 156 >>Turn in Gather Rot Blossoms
-    .accept 159 >>Accept Juice Delivery
-    .target Tavernkeep Smitts
-step
-    .goto Duskwood,73.54,46.82
-    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
-    .accept 57 >>Accept The Night Watch
-    .target Commander Althea Ebonlocke
-step
-    .goto Duskwood,75.79,45.32
-    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
-    .turnin 101 >>Turn in The Totem of Infliction
-    .target Madame Eva
 step
     .goto Duskwood,18.38,56.37
     >>Talk to |cRXP_FRIENDLY_Jitters|r
@@ -320,23 +328,15 @@ step
     .target Jitters
 step
     .goto Duskwood,17.65,47.14
-    .area Duskwood,12.80,41.39,13.90,41.02,23.37,41.34,25.23,43.63,24.44,47.71,22.55,49.42,15.41,49.50,13.25,48.70
+    .area Duskwood,13.02,41.12,22.35,41.90,24.53,47.39,22.84,49.06,15.49,49.56,13.20,48.61,12.88,46.27
     >>Kill |cRXP_ENEMY_Skeletal Horror|r
-    >>Kill |cRXP_ENEMY_Skeletal Fiend|r
     .complete 57,2 --The Night Watch
-    .complete 57,1 --The Night Watch
     .mob Skeletal Horror
-    .mob Skeletal Fiend
 step
     .goto Duskwood,7.78,34.07
     >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
     .turnin 268 >>Turn in Return to Sven
     .target Sven Yorgen
-step
-    .goto Duskwood,28.11,31.46
-    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
-    .turnin 159 >>Turn in Juice Delivery
-    .target Abercrombie
 step
     .goto Duskwood,73.54,46.82
     >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
@@ -421,56 +421,20 @@ step
     .turnin 98197 >>Turn in Spoils of War
     .target Valstag Ironjaw
 step
+    .goto Wetlands,15.26,39.83
+    >>Kill |cRXP_ENEMY_Bluegill Murloc|r
+    >>Kill |cRXP_ENEMY_Gobbler|r. Loot them for |cRXP_LOOT_Gobbler's Head|r
+    .complete 279,1 --Claws from the Deep
+    .complete 279,2 --Claws from the Deep
+    .mob Bluegill Murloc
+    .mob Gobbler
+step
     .goto Wetlands,24.11,50.43
     >>Kill |cRXP_ENEMY_Mottled Raptor|r and |cRXP_ENEMY_Mottled Screecher|r and |cRXP_ENEMY_Mottled Scytheclaw|r. Loot them for |cRXP_LOOT_Stone of Relu|r
     .complete 943,1 --The Absent Minded Prospector
     .mob Mottled Raptor
     .mob Mottled Screecher
     .mob Mottled Scytheclaw
-step
-    .goto Wetlands,18.07,39.84
-    >>Kill |cRXP_ENEMY_Gobbler|r. Loot them for |cRXP_LOOT_Gobbler's Head|r
-    >>Kill |cRXP_ENEMY_Bluegill Murloc|r
-    .complete 279,2 --Claws from the Deep
-    .complete 279,1 --Claws from the Deep
-    .mob Gobbler
-    .mob Bluegill Murloc
-step
-    .goto Wetlands,8.32,58.57
-    >>Talk to |cRXP_FRIENDLY_Karl Boran|r
-    .turnin 279 >>Turn in Claws from the Deep
-    .accept 281 >>Accept Reclaiming Goods
-    .target Karl Boran
-step
-    .goto Wetlands,8.55,55.74
-    >>Talk to |cRXP_FRIENDLY_James Halloran|r
-    .accept 98072 >>Accept Crocs of the Sky
-    .target James Halloran
-step
-    .goto Wetlands,10.85,55.90
-    >>Talk to |cRXP_FRIENDLY_Harlo Barnaby|r
-    .accept 472 >>Accept Fall of Dun Modr
-    .target Harlo Barnaby
-step
-    .goto Wetlands,13.52,41.38
-    >>Click the |cRXP_PICK_Damaged Crate|r
-    .turnin 281 >>Turn in Reclaiming Goods
-    .accept 284 >>Accept The Search Continues
-step
-    .goto Wetlands,13.60,38.22
-    >>Click the |cRXP_PICK_Sealed Barrel|r
-    .turnin 284 >>Turn in The Search Continues
-    .accept 285 >>Accept Search More Hovels
-step
-    .goto Wetlands,13.94,34.81
-    >>Click the |cRXP_PICK_Half-buried Barrel|r
-    .turnin 285 >>Turn in Search More Hovels
-    .accept 286 >>Accept Return the Statuette
-step
-    .goto Wetlands,8.32,58.57
-    >>Talk to |cRXP_FRIENDLY_Karl Boran|r
-    .turnin 286 >>Turn in Return the Statuette
-    .target Karl Boran
 step
     .goto Wetlands,38.18,50.89
     >>Talk to |cRXP_FRIENDLY_Ormer Ironbraid|r
@@ -518,25 +482,99 @@ step
     .accept 276 >>Accept Tramping Paws
     .target Rethiel the Greenwarden
 step
+    .goto Wetlands,44.73,25.38
+    >>Kill |cRXP_ENEMY_Black Ooze|r and |cRXP_ENEMY_Crimson Ooze|r and |cRXP_ENEMY_Monstrous Ooze|r. Loot them for |cRXP_LOOT_Sida's Bag|r
+    .complete 470,1 --Digging Through the Ooze
+    .mob Black Ooze
+    .mob Crimson Ooze
+    .mob Monstrous Ooze
+step
+    .goto Wetlands,24.16,48.27
+    >>Kill |cRXP_ENEMY_Mottled Raptor|r
+    .complete 294,1 --Ormer's Revenge
+    .mob Mottled Raptor
+step
+    .goto Wetlands,24.22,52.53
+    >>Kill |cRXP_ENEMY_Mottled Screecher|r
+    .complete 294,2 --Ormer's Revenge
+    .mob Mottled Screecher
+step
+    .goto Wetlands,11.50,52.17
+    >>Talk to |cRXP_FRIENDLY_Tarrel Rockweaver|r
+    .turnin 306 >>Turn in In Search of The Excavation Team
+    .target Tarrel Rockweaver
+step
+    .goto Wetlands,10.85,55.90
+    >>Talk to |cRXP_FRIENDLY_Harlo Barnaby|r
+    .accept 472 >>Accept Fall of Dun Modr
+    .target Harlo Barnaby
+step
+    .goto Wetlands,11.80,57.99
+    >>Talk to |cRXP_FRIENDLY_Sida|r
+    .turnin 470 >>Turn in Digging Through the Ooze
+    .target Sida
+step
+    .goto Wetlands,10.84,60.43
+    >>Talk to |cRXP_FRIENDLY_Archaeologist Flagongut|r
+    .turnin 943 >>Turn in The Absent Minded Prospector
+    .target Archaeologist Flagongut
+step
+    .goto Wetlands,8.32,58.57
+    >>Talk to |cRXP_FRIENDLY_Karl Boran|r
+    .turnin 279 >>Turn in Claws from the Deep
+    .accept 281 >>Accept Reclaiming Goods
+    .target Karl Boran
+step
+    .goto Wetlands,8.55,55.74
+    >>Talk to |cRXP_FRIENDLY_James Halloran|r
+    .turnin 469 >>Turn in Daily Delivery
+    .accept 98072 >>Accept Crocs of the Sky
+    .target James Halloran
+step
     .goto Wetlands,49.80,18.26
     >>Talk to |cRXP_FRIENDLY_Longbraid the Grim|r
     .turnin 472 >>Turn in Fall of Dun Modr
     .target Longbraid the Grim
 step
-    .goto Wetlands,44.73,25.38
-    >>Kill |cRXP_ENEMY_Crimson Ooze|r and |cRXP_ENEMY_Black Ooze|r and |cRXP_ENEMY_Monstrous Ooze|r. Loot them for |cRXP_LOOT_Sida's Bag|r
-    .complete 470,1 --Digging Through the Ooze
-    .mob Crimson Ooze
-    .mob Black Ooze
-    .mob Monstrous Ooze
+    .goto Wetlands,49.01,61.42
+    >>Kill |cRXP_ENEMY_Leech Stalker|r and |cRXP_ENEMY_Cave Stalker|r. Loot them for |cRXP_LOOT_Unruptured Stalker Gland|r
+    .complete 98282,1 --Alchemical Hazards
+    .mob Leech Stalker
+    .mob Cave Stalker
 step
-    .goto Wetlands,29.46,42.39
-    >>Kill |cRXP_ENEMY_Mottled Raptor|r
-    >>Kill |cRXP_ENEMY_Mottled Screecher|r
-    .complete 294,1 --Ormer's Revenge
-    .complete 294,2 --Ormer's Revenge
-    .mob Mottled Raptor
-    .mob Mottled Screecher
+    .goto Wetlands,61.68,72.15
+    >>Kill |cRXP_ENEMY_Mosshide Mongrel|r
+    >>Kill |cRXP_ENEMY_Mosshide Gnoll|r
+    .complete 276,2 --Tramping Paws
+    .complete 276,1 --Tramping Paws
+    .mob Mosshide Mongrel
+    .mob Mosshide Gnoll
+step
+    .goto Wetlands,65.99,45.94
+    >>Kill |cRXP_ENEMY_Crimson Whelp|r and |cRXP_ENEMY_Lost Whelp|r and |cRXP_ENEMY_Red Whelp|r. Loot them for |cRXP_LOOT_Pristine Crimson Scale|r
+    .complete 98072,1 --Crocs of the Sky
+    .mob Crimson Whelp
+    .mob Lost Whelp
+    .mob Red Whelp
+step
+    .goto Wetlands,56.37,40.40
+    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
+    .turnin 276 >>Turn in Tramping Paws
+    .accept 277 >>Accept Fire Taboo
+    .target Rethiel the Greenwarden
+step
+    .goto Wetlands,43.06,32.88
+    >>Kill |cRXP_ENEMY_Mosshide Fenrunner|r and |cRXP_ENEMY_Mosshide Brute|r and |cRXP_ENEMY_Mosshide Trapper|r. Loot them for |cRXP_LOOT_Crude Flint|r
+    .complete 277,1 --Fire Taboo
+    .mob Mosshide Fenrunner
+    .mob Mosshide Brute
+    .mob Mosshide Trapper
+step
+    .goto Wetlands,56.37,40.40
+    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
+    .turnin 277 >>Turn in Fire Taboo
+    .accept 275 >>Accept Blisters on The Land
+    .target Rethiel the Greenwarden
 step
     .goto Wetlands,38.18,50.89
     >>Talk to |cRXP_FRIENDLY_Ormer Ironbraid|r
@@ -557,77 +595,30 @@ step
     .turnin 295 >>Turn in Ormer's Revenge
     .target Ormer Ironbraid
 step
-    .goto Wetlands,55.31,63.74
-    >>Kill |cRXP_ENEMY_Leech Stalker|r and |cRXP_ENEMY_Cave Stalker|r. Loot them for |cRXP_LOOT_Unruptured Stalker Gland|r
-    .complete 98282,1 --Alchemical Hazards
-    .mob Leech Stalker
-    .mob Cave Stalker
-step
-    .goto Wetlands,61.72,61.45
-    >>Kill |cRXP_ENEMY_Mosshide Mongrel|r
-    .complete 276,2 --Tramping Paws
-    .mob Mosshide Mongrel
-step
-    .goto Wetlands,63.91,63.80
-    >>Kill |cRXP_ENEMY_Mosshide Gnoll|r
-    .complete 276,1 --Tramping Paws
-    .mob Mosshide Gnoll
-step
-    .goto Wetlands,65.99,45.94
-    >>Kill |cRXP_ENEMY_Red Whelp|r and |cRXP_ENEMY_Lost Whelp|r and |cRXP_ENEMY_Flamesnorting Whelp|r. Loot them for |cRXP_LOOT_Pristine Crimson Scale|r
-    .complete 98072,1 --Crocs of the Sky
-    .mob Red Whelp
-    .mob Lost Whelp
-    .mob Flamesnorting Whelp
-step
-    .goto Wetlands,56.37,40.40
-    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
-    .turnin 276 >>Turn in Tramping Paws
-    .accept 277 >>Accept Fire Taboo
-    .target Rethiel the Greenwarden
-step
-    .goto Wetlands,62.74,57.05
-    >>Kill |cRXP_ENEMY_Mosshide Mistweaver|r and |cRXP_ENEMY_Mosshide Fenrunner|r and |cRXP_ENEMY_Mosshide Trapper|r. Loot them for |cRXP_LOOT_Crude Flint|r
-    .complete 277,1 --Fire Taboo
-    .mob Mosshide Mistweaver
-    .mob Mosshide Fenrunner
-    .mob Mosshide Trapper
-step
-    .goto Wetlands,56.37,40.40
-    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
-    .turnin 277 >>Turn in Fire Taboo
-    .accept 275 >>Accept Blisters on The Land
-    .target Rethiel the Greenwarden
-step
-    .goto Wetlands,37.41,33.39
+    .goto Wetlands,25.33,35.52
     >>Kill |cRXP_ENEMY_Fen Creeper|r
     .complete 275,1 --Blisters on The Land
     .mob Fen Creeper
 step
-    .goto Wetlands,56.37,40.40
-    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
-    .turnin 275 >>Turn in Blisters on The Land
-    .target Rethiel the Greenwarden
+    .goto Wetlands,13.52,41.38
+    >>Click the |cRXP_PICK_Damaged Crate|r
+    .turnin 281 >>Turn in Reclaiming Goods
+    .accept 284 >>Accept The Search Continues
 step
-    .goto Wetlands,11.50,52.17
-    >>Talk to |cRXP_FRIENDLY_Tarrel Rockweaver|r
-    .turnin 306 >>Turn in In Search of The Excavation Team
-    .target Tarrel Rockweaver
+    .goto Wetlands,13.60,38.22
+    >>Click the |cRXP_PICK_Sealed Barrel|r
+    .turnin 284 >>Turn in The Search Continues
+    .accept 285 >>Accept Search More Hovels
 step
-    .goto Wetlands,11.80,57.99
-    >>Talk to |cRXP_FRIENDLY_Sida|r
-    .turnin 470 >>Turn in Digging Through the Ooze
-    .target Sida
+    .goto Wetlands,13.94,34.81
+    >>Click the |cRXP_PICK_Half-buried Barrel|r
+    .turnin 285 >>Turn in Search More Hovels
+    .accept 286 >>Accept Return the Statuette
 step
     .goto Wetlands,11.88,58.82
     >>Talk to |cRXP_FRIENDLY_Caitlin Grassman|r
     .turnin 98282 >>Turn in Alchemical Hazards
     .target Caitlin Grassman
-step
-    .goto Wetlands,10.84,60.43
-    >>Talk to |cRXP_FRIENDLY_Archaeologist Flagongut|r
-    .turnin 943 >>Turn in The Absent Minded Prospector
-    .target Archaeologist Flagongut
 step
     .goto Wetlands,9.86,57.49
     >>Talk to |cRXP_FRIENDLY_Captain Stoutfist|r
@@ -636,9 +627,13 @@ step
     .turnin 98221 >>Turn in From the Ashes
     .target Captain Stoutfist
 step
+    .goto Wetlands,8.32,58.57
+    >>Talk to |cRXP_FRIENDLY_Karl Boran|r
+    .turnin 286 >>Turn in Return the Statuette
+    .target Karl Boran
+step
     .goto Wetlands,8.55,55.74
     >>Talk to |cRXP_FRIENDLY_James Halloran|r
-    .turnin 469 >>Turn in Daily Delivery
     .turnin 98072 >>Turn in Crocs of the Sky
     .accept 98240 >>Accept Crimson Crate Delivery
     .target James Halloran
@@ -676,17 +671,22 @@ step
     .mob Highland Razormaw
     .mob Elder Razormaw
 step
+    .goto Wetlands,56.37,40.40
+    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
+    .turnin 275 >>Turn in Blisters on The Land
+    .target Rethiel the Greenwarden
+step
     .goto Wetlands,49.36,42.13
     >>Talk to |cRXP_FRIENDLY_Howin Kindfeather|r
     .turnin 98245 >>Turn in Razormaw Needling
     .target Howin Kindfeather
 step
     .goto Wetlands,46.79,45.31
-    >>Kill |cRXP_ENEMY_Dragonmaw Raider|r and |cRXP_ENEMY_Dragonmaw Swamprunner|r and |cRXP_ENEMY_Dragonmaw Centurion|r. Loot them for |cRXP_LOOT_Dragonmaw War Banner|r
+    >>Kill |cRXP_ENEMY_Dragonmaw Raider|r and |cRXP_ENEMY_Dragonmaw Bonewarder|r and |cRXP_ENEMY_Dragonmaw Swamprunner|r. Loot them for |cRXP_LOOT_Dragonmaw War Banner|r
     .complete 464,1 --War Banners
     .mob Dragonmaw Raider
+    .mob Dragonmaw Bonewarder
     .mob Dragonmaw Swamprunner
-    .mob Dragonmaw Centurion
 step
     .goto Wetlands,9.86,57.49
     >>Talk to |cRXP_FRIENDLY_Captain Stoutfist|r
@@ -735,8 +735,8 @@ step
     .accept 221 >>Accept Worgen in the Woods
     .target Calor
 step
-    .goto Duskwood,65.60,67.23
-    .area Duskwood,63.00,74.77,64.67,64.50,65.69,64.42,68.61,68.51,66.62,75.41,63.40,75.12
+    .goto Duskwood,63.70,75.48
+    .area Duskwood,58.89,74.67,59.67,72.89,64.97,67.76,66.71,67.82,68.38,78.49,66.38,78.74,60.14,77.15,59.18,75.92
     >>Kill |cRXP_ENEMY_Nightbane Dark Runner|r
     .complete 221,1 --Worgen in the Woods
     .mob Nightbane Dark Runner
@@ -748,10 +748,10 @@ step
 step
     .goto Duskwood,24.14,36.05
     .area Duskwood,16.36,34.17,19.79,28.76,24.79,27.61,26.25,29.38,28.37,34.26,26.02,40.38,22.71,40.59,21.19,39.71
-    >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Rib|r
+    >>Kill |cRXP_ENEMY_Plague Spreader|r and |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Rib|r
     .complete 133,1 --Ghoulish Effigy
+    .mob Plague Spreader
     .mob Flesh Eater
-    .mob Bone Chewer
     .mob Brain Eater
 step
     .goto Duskwood,75.75,47.57
@@ -1050,15 +1050,15 @@ step
     .complete 555,2 --Soothing Turtle Bisque
     .mob Micha Yance
 step
-    .goto Hillsbrad Foothills,47.40,64.70
-    >>Kill |cRXP_ENEMY_Torn Fin Tidehunter|r
-    .complete 536,1 --Down the Coast
-    .mob Torn Fin Tidehunter
-step
     .goto Hillsbrad Foothills,43.95,68.65
     >>Kill |cRXP_ENEMY_Torn Fin Oracle|r
     .complete 536,2 --Down the Coast
     .mob Torn Fin Oracle
+step
+    .goto Hillsbrad Foothills,40.67,69.86
+    >>Kill |cRXP_ENEMY_Torn Fin Tidehunter|r
+    .complete 536,1 --Down the Coast
+    .mob Torn Fin Tidehunter
 step
     .goto Hillsbrad Foothills,51.89,58.68
     >>Talk to |cRXP_FRIENDLY_Chef Jessen|r
@@ -1072,10 +1072,10 @@ step
     .target Lieutenant Farren Orinelle
 step
     .goto Hillsbrad Foothills,43.36,68.20
-    >>Kill |cRXP_ENEMY_Torn Fin Muckdweller|r and |cRXP_ENEMY_Torn Fin Coastrunner|r and |cRXP_ENEMY_Torn Fin Oracle|r. Loot them for |cRXP_LOOT_Murloc Head|r
+    >>Kill |cRXP_ENEMY_Torn Fin Coastrunner|r and |cRXP_ENEMY_Torn Fin Muckdweller|r and |cRXP_ENEMY_Torn Fin Oracle|r. Loot them for |cRXP_LOOT_Murloc Head|r
     .complete 559,1 --Farren's Proof
-    .mob Torn Fin Muckdweller
     .mob Torn Fin Coastrunner
+    .mob Torn Fin Muckdweller
     .mob Torn Fin Oracle
 step
     .goto Hillsbrad Foothills,51.46,58.39
