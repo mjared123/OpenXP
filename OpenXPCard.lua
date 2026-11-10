@@ -2351,7 +2351,7 @@ end)
 -- get the card's look: dark body, 1px border, a slim title tab
 ---------------------------------------------------------------------------
 
-local PANELS = {"RXPTargetFrame", "RXPItemFrame", "RXPLevelSplits"}
+local PANELS = {"RXPItemFrame", "RXPLevelSplits"} -- the target list styles itself (Targeting.lua)
 local PANEL_BACKDROP = {bgFile = WHITE, edgeFile = WHITE, edgeSize = 1,
                         insets = {left = 1, right = 1, top = 1, bottom = 1}}
 

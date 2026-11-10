@@ -1,13 +1,11 @@
-## Interface: 11509, 38002, 50504, 120007, 120105, 16001
-## Interface-Mists: 50504
-## Interface-TBC: 20506
+## Interface: 11509, 16001
 ## Interface-Classic: 11509
 ## Title: OpenXP
 ## Title-zhCN: OpenXP
 ## IconTexture: Interface\AddOns\OpenXP\Textures\openxp_logo-64
 ## Notes: Free, community-made leveling guides (based on RestedXP Guides, CC BY-NC-SA 4.0)
 ## Author: OpenXP contributors (based on RestedXP Guides by RestedXP)
-## Version: 1.0.0
+## Version: 1.1.0
 ## Category: Quests
 ## Category-deDE: Quests
 ## Category-esES: Misiones
@@ -36,11 +34,6 @@ GuideWindow.lua
 Help.lua
 SettingsPanel.lua
 
-DB/mainline.xml [AllowLoadGameType standard]
-DB/mop.xml [AllowLoadGameType mists]
-DB/cata.xml [AllowLoadGameType cata]
-DB/wotlk.xml [AllowLoadGameType wrath]
-DB/tbc.xml [AllowLoadGameType tbc]
 DB/classic.xml [AllowLoadGameType vanilla]
 DB/forever.xml [AllowLoadGameType camelot]
 
@@ -62,13 +55,9 @@ WelcomeFrame.lua
 OpenXPCard.lua
 OpenXPTooltips.lua
 
-Guides/GuideList-Mainline.xml [AllowLoadGameType standard]
-Guides/GuideList-cata.xml [AllowLoadGameType cata]
-Guides/GuideList-mop.xml [AllowLoadGameType mists]
 Guides/GuideList-classic.xml [AllowLoadGameType vanilla]
 Guides/GuideList-forever.xml [AllowLoadGameType camelot]
 
-Guides/GuideList-tbc.xml [AllowLoadGameType tbc]
 
 
 
@@ -78,8 +67,6 @@ Guides/GuideList-tbc.xml [AllowLoadGameType tbc]
 
 
 Talents.lua [AllowLoadGameType cata,vanilla,camelot,tbc]
-Guides/Talents/cata.xml [AllowLoadGameType cata]
-Guides/Talents/tbc.xml [AllowLoadGameType tbc]
 Guides/Talents/classic.xml [AllowLoadGameType vanilla,camelot]
 
 ItemUpgrades.lua [AllowLoadGameType tbc,vanilla,camelot,cata]

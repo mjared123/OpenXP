@@ -19,8 +19,8 @@ local GameTooltip = _G.GameTooltip
 local L = addon.locale.Get
 
 addon.targeting = addon:NewModule("Targeting", "AceEvent-3.0")
-addon.targeting.macroName = "RXPTargeting"
-addon.targeting.followMacroName = "RXPFollow"
+addon.targeting.macroName = "OpenXPTargets"
+addon.targeting.followMacroName = "OpenXPFollow"
 
 local announcedTargets = {}
 local macroTargets = {}
@@ -803,19 +803,38 @@ end
 
 function addon.targeting:CanCreateMacro() return GetNumMacros() < 119 end
 
+-- OpenXP look: dark body, 1px border, header strip like the guide card
+local OXP_WHITE = "Interface/Buttons/WHITE8X8"
+local OXP_FONT = "Fonts\\ARIALN.TTF"
+local OXP_BACKDROP = {bgFile = OXP_WHITE, edgeFile = OXP_WHITE, edgeSize = 1,
+                      insets = {left = 1, right = 1, top = 1, bottom = 1}}
+local OXP_ROW_W, OXP_ROW_H, OXP_HEAD_H = 200, 24, 24
+
 local function UpdateV1IconFrameVisuals(self)
     self:SetScale(addon.settings.profile.activeTargetScale or 1)
 
     addon.targeting:RenderTargetFrameBackground()
 
+    self.title:ClearAllPoints()
+    self.title:SetPoint("TOPLEFT", self, "TOPLEFT", 1, -1)
+    self.title:SetPoint("TOPRIGHT", self, "TOPRIGHT", -1, -1)
+    self.title:SetHeight(OXP_HEAD_H - 2)
     self.title:ClearBackdrop()
-    self.title:SetBackdrop(addon.RXPFrame.backdrop.edge)
-    self.title:SetBackdropColor(unpack(addon.colors.background))
+    self.title:SetBackdrop({bgFile = OXP_WHITE})
+    self.title:SetBackdropColor(1, 1, 1, 0.04)
 
-    self.title.text:SetFont(addon.font, 9, "")
-    self.title.text:SetTextColor(unpack(addon.activeTheme.textColor))
+    self.title.text:ClearAllPoints()
+    self.title.text:SetPoint("LEFT", self.title, "LEFT", 10, 0)
+    self.title.text:SetFont(OXP_FONT, 11, "")
+    self.title.text:SetText(L("QUEST TARGETS"))
+    self.title.text:SetTextColor(0.62, 0.64, 0.70)
 
-    self.title:SetSize(self.title.text:GetStringWidth() + 10, 19)
+    if not self.title.keyHint then
+        self.title.keyHint = self.title:CreateFontString(nil, "OVERLAY")
+        self.title.keyHint:SetPoint("RIGHT", self.title, "RIGHT", -10, 0)
+        self.title.keyHint:SetFont(OXP_FONT, 10, "")
+        self.title.keyHint:SetTextColor(0.54, 0.56, 0.61)
+    end
 end
 
 local function UpdateV2IconFrameVisuals(self)
@@ -902,12 +921,11 @@ function addon.targeting:RenderTargetFrameBackground()
 
     local f = self.activeTargetFrame
     if not f.v2 then
-        if addon.settings.profile.hideActiveTargetsBackground then
-            f:ClearBackdrop()
-        else
-            f:ClearBackdrop()
-            f:SetBackdrop(addon.RXPFrame.backdrop.edge)
-            f:SetBackdropColor(unpack(addon.colors.background))
+        f:ClearBackdrop()
+        if not addon.settings.profile.hideActiveTargetsBackground then
+            f:SetBackdrop(OXP_BACKDROP)
+            f:SetBackdropColor(16 / 255, 17 / 255, 21 / 255, 0.9)
+            f:SetBackdropBorderColor(150 / 255, 160 / 255, 180 / 255, 0.35)
         end
         return
     end
@@ -1048,8 +1066,10 @@ local function GetUnitTexture(self, name, unit)
 
         addon.targeting.activeIcons[f] = true
 
-        f:SetParent(self)
-        f:SetAllPoints(self)
+        local holder = self.iconHolder or self
+        f:SetParent(holder)
+        f:ClearAllPoints()
+        f:SetAllPoints(holder)
         f:Show()
 
         self.placeholder:Hide()
@@ -1065,65 +1085,121 @@ local function GetUnitTexture(self, name, unit)
     end
 end
 
-local buttonsPerRow = 4
-local function GetTargetGridMetrics(count, rightPadding)
-    return count > 0 and mmin(count, buttonsPerRow) * 27 + rightPadding or 0, ceil(count / buttonsPerRow)
+-- Rows: [colour bar][portrait] Name ............ key
+local function RowifyTargets(targetFrame, btn, buttons, kind)
+    btn:ClearAllPoints()
+    btn:SetSize(OXP_ROW_W - 2, OXP_ROW_H)
+    btn.kind = kind
+
+    btn.hl = btn.hl or btn:CreateTexture(nil, "BACKGROUND")
+    btn.hl:SetAllPoints()
+    btn.hl:SetColorTexture(1, 1, 1, 0)
+
+    btn.bar = btn:CreateTexture(nil, "ARTWORK")
+    btn.bar:SetPoint("TOPLEFT", 0, -3)
+    btn.bar:SetPoint("BOTTOMLEFT", 0, 3)
+    btn.bar:SetWidth(2)
+    if kind == "enemy" then
+        btn.bar:SetColorTexture(1, 112 / 255, 67 / 255, 1)
+    else
+        btn.bar:SetColorTexture(61 / 255, 187 / 255, 122 / 255, 1)
+    end
+
+    btn.iconHolder = CreateFrame("Frame", nil, btn)
+    btn.iconHolder:SetSize(18, 18)
+    btn.iconHolder:SetPoint("LEFT", 10, 0)
+
+    btn.key = btn:CreateFontString(nil, "OVERLAY")
+    btn.key:SetPoint("RIGHT", -10, 0)
+    btn.key:SetFont(OXP_FONT, 10, "")
+    btn.key:SetTextColor(0.54, 0.56, 0.61)
+
+    btn.label = btn:CreateFontString(nil, "OVERLAY")
+    btn.label:SetPoint("LEFT", btn.iconHolder, "RIGHT", 8, 0)
+    btn.label:SetPoint("RIGHT", btn.key, "LEFT", -6, 0)
+    btn.label:SetJustifyH("LEFT")
+    btn.label:SetWordWrap(false)
+    btn.label:SetFont(OXP_FONT, 12, "")
+    btn.label:SetTextColor(0.92, 0.93, 0.95)
 end
 
-local function RowifyTargets(targetFrame, btn, buttons, kind)
-    local buttonKindCount = #buttons
-
-    btn:ClearAllPoints()
-
-    -- isNewRow == 0 when new row
-    local isNewRow = (buttonKindCount - 1) % buttonsPerRow
-
-    if buttonKindCount == 1 then
-        if kind == "enemy" then
-            btn:SetPoint("TOPLEFT", targetFrame, "TOPLEFT", 6, -15)
-        else -- Friendly
-            btn:SetPoint("BOTTOMLEFT", targetFrame, "BOTTOMLEFT", 6, 6)
-        end
-
-        return
+local function SectionLabel(targetFrame, key, text)
+    targetFrame.sections = targetFrame.sections or {}
+    local fs = targetFrame.sections[key]
+    if not fs then
+        fs = targetFrame:CreateFontString(nil, "OVERLAY")
+        fs:SetFont(OXP_FONT, 10, "")
+        fs:SetTextColor(0.54, 0.56, 0.61)
+        targetFrame.sections[key] = fs
     end
+    fs:SetText(text)
+    return fs
+end
 
-    if kind == "enemy" then
-        if isNewRow == 0 then
-            btn:SetPoint("TOP", buttons[buttonKindCount - buttonsPerRow], "BOTTOM", 0, 0)
-        else
-            btn:SetPoint("CENTER", buttons[buttonKindCount - 1], "CENTER", 27, 0)
-        end
-    else -- Friendly, build from bottom up to simplify height logic
-        if isNewRow == 0 then
-            btn:SetPoint("BOTTOM", buttons[buttonKindCount - buttonsPerRow], "TOP", 0, 0)
-        else
-            btn:SetPoint("CENTER", buttons[buttonKindCount - 1], "CENTER", 27, 0)
-        end
-    end
+local function ShortKey(binding)
+    local key = GetBindingKey and GetBindingKey(binding)
+    if not key then return "" end
+    local text = GetBindingText and GetBindingText(key, "KEY_", true) or key
+    return text
 end
 
 local function ResizeTargetsFrame(targetFrame, friendlyCount, enemyCount)
-    local enemyWidth, enemyRows = GetTargetGridMetrics(enemyCount, 10)
-    local friendlyWidth, friendlyRows = GetTargetGridMetrics(friendlyCount, 10)
-    local soloFriendlyRow = enemyRows == 0 and friendlyRows == 1
-    local contentOffset = targetFrame.v2 and 0 or 3
-
-    targetFrame:SetWidth(mmax(targetFrame.title:GetWidth() + 10, friendlyWidth, enemyWidth))
-    targetFrame:SetHeight(18 + (enemyRows + friendlyRows) * 25 + (enemyRows > 0 and friendlyRows > 0 and 5 or 0))
-
-    if enemyRows > 0 then
-        local firstEnemyButton = targetFrame.enemyTargetButtons[1]
-        firstEnemyButton:ClearAllPoints()
-        firstEnemyButton:SetPoint("TOPLEFT", targetFrame, "TOPLEFT", 6, -15 + contentOffset)
+    local y = OXP_HEAD_H + 4
+    local function place(buttons, count, key, text, binding)
+        local label = SectionLabel(targetFrame, key, text)
+        if count == 0 then label:Hide(); return end
+        label:ClearAllPoints()
+        label:SetPoint("TOPLEFT", targetFrame, "TOPLEFT", 11, -y)
+        label:Show()
+        y = y + 16
+        for i = 1, count do
+            local btn = buttons[i]
+            btn:ClearAllPoints()
+            btn:SetPoint("TOPLEFT", targetFrame, "TOPLEFT", 1, -y)
+            if btn.key then btn.key:SetText(ShortKey(binding .. i .. ":LeftButton")) end
+            y = y + OXP_ROW_H
+        end
+        y = y + 4
     end
-
-    if friendlyRows > 0 then
-        local firstFriendlyButton = targetFrame.friendlyTargetButtons[1]
-        firstFriendlyButton:ClearAllPoints()
-        firstFriendlyButton:SetPoint("BOTTOMLEFT", targetFrame, "BOTTOMLEFT", 6,
-                                    (soloFriendlyRow and 4 or 6) + contentOffset)
+    place(targetFrame.enemyTargetButtons, enemyCount, "enemy", L("KILL"), "CLICK RXPTargetFrame_EnemyButton")
+    place(targetFrame.friendlyTargetButtons, friendlyCount, "friendly", L("TALK TO"), "CLICK RXPTargetFrame_FriendlyButton")
+    targetFrame:SetWidth(OXP_ROW_W)
+    targetFrame:SetHeight(y + 2)
+    if targetFrame.title.keyHint then
+        local k = ShortKey("CLICK OpenXPTargetMobs:LeftButton")
+        targetFrame.title.keyHint:SetText(k ~= "" and (L("nearest") .. " " .. k) or "")
     end
+end
+
+-- Two keybindable buttons: target a quest mob / target a quest NPC.
+-- Each runs /targetexact for every name on the list (the last one in
+-- range wins), rebuilt whenever the list changes out of combat.
+local OXP_MAX_QUICK = 8
+local quickMobs = CreateFrame("Button", "OpenXPTargetMobs", UIParent, "SecureActionButtonTemplate")
+quickMobs:SetAttribute("type", "macro")
+quickMobs:SetAttribute("macrotext", "")
+if quickMobs.RegisterForClicks then quickMobs:RegisterForClicks("AnyUp", "AnyDown") end
+local quickNpcs = CreateFrame("Button", "OpenXPTargetNPCs", UIParent, "SecureActionButtonTemplate")
+quickNpcs:SetAttribute("type", "macro")
+quickNpcs:SetAttribute("macrotext", "")
+if quickNpcs.RegisterForClicks then quickNpcs:RegisterForClicks("AnyUp", "AnyDown") end
+_G["BINDING_NAME_CLICK OpenXPTargetMobs:LeftButton"] = L("Target a quest mob")
+_G["BINDING_NAME_CLICK OpenXPTargetNPCs:LeftButton"] = L("Target a quest NPC")
+
+function addon.targeting:QuickTargetMacro(names)
+    local lines, n = {}, 0
+    for _, name in ipairs(names) do
+        n = n + 1
+        if n > OXP_MAX_QUICK then break end
+        tinsert(lines, "/targetexact " .. name)
+    end
+    return table.concat(lines, "\n")
+end
+
+function addon.targeting:UpdateQuickTargets(enemies, friends)
+    if InCombatLockdown() then return end
+    quickMobs:SetAttribute("macrotext", self:QuickTargetMacro(enemies))
+    quickNpcs:SetAttribute("macrotext", self:QuickTargetMacro(friends))
 end
 
 function addon.targeting:UpdateTargetFrame(selector)
@@ -1175,7 +1251,6 @@ function addon.targeting:UpdateTargetFrame(selector)
                               "SecureActionButtonTemplate")
 
             btn:SetAttribute("type", "macro")
-            btn:SetSize(25, 25)
 
             if btn.RegisterForClicks then btn:RegisterForClicks("AnyUp", "AnyDown") end
 
@@ -1183,7 +1258,7 @@ function addon.targeting:UpdateTargetFrame(selector)
 
             RowifyTargets(targetFrame, btn, enemyTargetButtons, "enemy")
 
-            btn.icon = btn:CreateTexture(nil, "BACKGROUND")
+            btn.icon = btn.iconHolder:CreateTexture(nil, "ARTWORK")
             btn.placeholder = btn.icon
             btn.placeholder.isDefault = true
             btn.GetUnitTexture = GetUnitTexture
@@ -1200,8 +1275,7 @@ function addon.targeting:UpdateTargetFrame(selector)
             ht = btn:CreateTexture(nil, "HIGHLIGHT")
 
             ht:SetAllPoints(true)
-            ht:SetTexture("Interface\\Buttons\\ButtonHilight-Square")
-            ht:SetBlendMode("ADD")
+            ht:SetColorTexture(1, 1, 1, 0.07)
         end
 
         self:ConfigureTargetButton(btn, targetName, enemyKind, enemyTargetButtonIndex,
@@ -1214,6 +1288,7 @@ function addon.targeting:UpdateTargetFrame(selector)
 
         btn:GetUnitTexture(targetName, selector)
         btn.targetData = {name = targetName, kind = enemyKind}
+        if btn.label then btn.label:SetText(targetName) end
 
         -- If target or mouseover, set portrait
         if selector and UnitName(selector) == targetName and btn.icon.isDefault then
@@ -1243,7 +1318,6 @@ function addon.targeting:UpdateTargetFrame(selector)
             btn = CreateFrame("Button", "RXPTargetFrame_FriendlyButton" .. friendlyTargetButtonIndex, targetFrame,
                               "SecureActionButtonTemplate")
             btn:SetAttribute("type", "macro")
-            btn:SetSize(25, 25)
 
             if btn.RegisterForClicks then btn:RegisterForClicks("AnyUp", "AnyDown") end
 
@@ -1251,7 +1325,7 @@ function addon.targeting:UpdateTargetFrame(selector)
 
             RowifyTargets(targetFrame, btn, friendlyTargetButtons, "friendly")
 
-            btn.icon = btn:CreateTexture(nil, "BACKGROUND")
+            btn.icon = btn.iconHolder:CreateTexture(nil, "ARTWORK")
 
             icon = btn.icon
 
@@ -1268,8 +1342,7 @@ function addon.targeting:UpdateTargetFrame(selector)
             ht = btn:CreateTexture(nil, "HIGHLIGHT")
 
             ht:SetAllPoints(true)
-            ht:SetTexture("Interface\\Buttons\\ButtonHilight-Square")
-            ht:SetBlendMode("ADD")
+            ht:SetColorTexture(1, 1, 1, 0.07)
         end
 
         self:ConfigureTargetButton(btn, targetName, "friendly", friendlyTargetButtonIndex,
@@ -1283,6 +1356,7 @@ function addon.targeting:UpdateTargetFrame(selector)
         btn:GetUnitTexture(targetName, selector)
 
         btn.targetData = {name = targetName, kind = "friendly"}
+        if btn.label then btn.label:SetText(targetName) end
 
         -- If target or mouseover, set portrait
         if selector and btn.placeholder.isDefault and UnitName(selector) == targetName then
@@ -1308,6 +1382,11 @@ function addon.targeting:UpdateTargetFrame(selector)
     end
 
     self.activeTargetCount = friendlyTargetButtonIndex + enemyTargetButtonIndex
+
+    local enemyNames = {}
+    for name in pairs(enemiesList) do tinsert(enemyNames, name) end
+    table.sort(enemyNames)
+    self:UpdateQuickTargets(enemyNames, friendlyList)
 
     ResizeTargetsFrame(targetFrame, friendlyTargetButtonIndex, enemyTargetButtonIndex)
 

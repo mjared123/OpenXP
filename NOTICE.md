@@ -27,3 +27,6 @@ RestedXP name were written by RestedXP and are kept here with credit.
 - Added quest tooltips for mobs and NPCs (`OpenXPTooltips.lua`), quest icons on map pins, auto loot and max camera distance options, and turned Sell Junk on by default.
 - Gave OpenXP its own addon message channel so it doesn't exchange version checks with RestedXP.
 - The release zip (`tools/package.py`) only includes the files that load on WoW Forever and Classic Era.
+- Removed the files that only load on other WoW versions (Retail, TBC, Wrath, Cata, MoP, Season of Discovery), guides that no Forever or Classic Era guide list loads, unused textures and RestedXP's developer scripts. They remain in RestedXP's repository.
+- Rebuilt the Active Targets frame as a "Quest Targets" list in OpenXP's style, with key bindings to target a quest mob or NPC.
+- Added step history to the guide card with Done / Skipped / Chain missed tags, and made manual step changes stick.

@@ -11,6 +11,19 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.0",
+        date = "November 2026",
+        changes = {
+            "Scroll the mouse wheel up over the guide card to see earlier steps. Each one is tagged Done, Skipped or Chain missed. Click a step to go back to it",
+            "Going back to a step now stays there, even if that step is already done. Press Next or Back to step N to carry on",
+            "Next marks a step you didn't finish as Skipped",
+            "The step list (click the step counter) shows the same tags",
+            "New Quest Targets list in the card's style: a row per mob or NPC with its portrait, name and key binding",
+            "Two new key bindings: Target a quest mob and Target a quest NPC (Key Bindings > OpenXP)",
+            "Removed files for other WoW versions (Retail, TBC, Wrath, Cata, MoP, SoD) and unused guides and textures",
+        },
+    },
+    {
         version = "1.0.0",
         date = "November 2026",
         changes = {

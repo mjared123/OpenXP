@@ -8,10 +8,10 @@ _G["BINDING_NAME_" .. format("CLICK RXPItemFrameButton%d:LeftButton",i)] =
     format("Active Item Button %d",i)
 
 _G["BINDING_NAME_" .. format("CLICK RXPTargetFrame_FriendlyButton%d:LeftButton",i)] =
-    format("Active Friendly Target Button %d",i)
+    format("Quest NPC %d (Quest Targets list)",i)
 
 _G["BINDING_NAME_" .. format("CLICK RXPTargetFrame_EnemyButton%d:LeftButton",i)] =
-    format("Active Enemy Target Button %d",i)
+    format("Quest mob %d (Quest Targets list)",i)
 end
 
 L.delimiter = ' '

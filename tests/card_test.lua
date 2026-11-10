@@ -321,15 +321,15 @@ try("narrowest card (220) lays out with slim buttons", function()
     card.width = nil
 end)
 try("other panels get the card look", function()
-    local panel = obj("RXPTargetFrame")
+    local panel = obj("RXPItemFrame")
     panel.title = obj("title")
     panel.title.text = obj("fs")
     panel.title.text.GetFont = function() return "Fonts\\FRIZQT__.TTF", 9 end
-    panel.title.text:SetText("Active Targets")
-    RXPTargetFrame = panel
+    panel.title.text:SetText("Active Items")
+    RXPItemFrame = panel
     card.SkinPanels()
-    assert(panel.title.text:GetText() == "ACTIVE TARGETS", "title not restyled")
-    RXPTargetFrame = nil
+    assert(panel.title.text:GetText() == "ACTIVE ITEMS", "title not restyled")
+    RXPItemFrame = nil
     card.width = 200
     card.Refresh(true)
     card.width = nil
