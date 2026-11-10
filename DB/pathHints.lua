@@ -106,5 +106,15 @@ addon.pathHintData = {
 
     -- Zone to zone passes (a mountain range between two zones). from/to are
     -- map ids; twoWay uses the points in reverse for the other direction.
-    passes = {},
+    passes = {
+        -- Ashenvale <-> Stonetalon Mountains through the Talondeep Path
+        -- tunnel. The only way in from Ashenvale: the border is mountains.
+        -- Points from the Horde 12-22 guide's Talondeep steps: the camp just
+        -- outside the Ashenvale end (Ashenvale 40.4, 61.4), the tunnel, and
+        -- the Stonetalon end (Stonetalon 78.3, 42.5).
+        {
+            name = "the Talondeep Path", inst = 1, from = 1440, to = 1442,
+            pts = {{-632.70, 2311.50, 40}, {-606.63, 1573.79, 25}, {-577.33, 1532.43, 25}},
+        },
+    },
 }

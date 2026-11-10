@@ -301,14 +301,88 @@ local origDraw = addon.DrawArrow
 if origDraw then
     addon.DrawArrow = function(self, ...)
         self = self or addon.arrowFrame
-        local real = self and self.element
-        local via = real and ph.ForArrow(real)
-        if self then self.oxpVia = via end
-        if not via then return origDraw(self, ...) end
-        self.element = via
+        if not self then return origDraw(self, ...) end
+        local real = self.element
+        local go = ph.go
+        local target = go or real
+        local via = target and ph.ForArrow(target)
+        self.oxpVia = via or go
+        local draw = via or go
+        if not draw then return origDraw(self, ...) end
+        local wrong = self.wrongContinent
+        if go then self.wrongContinent = false end
+        self.element = draw
         local ok, err = pcall(origDraw, self, ...)
         self.element = real
+        self.wrongContinent = wrong
         if not ok then error(err, 0) end
+    end
+end
+
+---------------------------------------------------------------------------
+-- /oxp path to <zone | x y>: point the arrow somewhere the guide isn't
+---------------------------------------------------------------------------
+
+local function FindZone(name)
+    name = name:lower()
+    local best
+    for zoneName, id in pairs(addon.mapId or {}) do
+        if type(zoneName) == "string" and type(id) == "number" then
+            local z = zoneName:lower()
+            if z == name then return zoneName, id end
+            if not best and z:find(name, 1, true) == 1 then best = {zoneName, id} end
+        end
+    end
+    if best then return best[1], best[2] end
+end
+
+function ph.GoTo(args)
+    local x, y = args:match("^(%d+%.?%d*)[,%s]+(%d+%.?%d*)$")
+    local go
+    if x then
+        local zone = HBD:GetPlayerZone()
+        local wx, wy, inst = zone and HBD:GetWorldCoordinatesFromZone(tonumber(x) / 100, tonumber(y) / 100, zone)
+        if not wx then return Print(L("Couldn't place %s, %s on this map."), x, y) end
+        go = {wx = wx, wy = wy, instance = inst, zone = zone, arrow = true,
+              title = fmt("%s, %s", x, y)}
+    else
+        local name, id = FindZone(args)
+        if not id then return Print(L("No zone called \"%s\". Try the full name, like /oxp path to Stonetalon Mountains."), args) end
+        if HBD:GetPlayerZone() == id then return Print(L("You're already in %s."), name) end
+        local wx, wy, inst = HBD:GetWorldCoordinatesFromZone(0.5, 0.5, id)
+        if not wx then return Print(L("Couldn't find %s on the map."), name) end
+        go = {wx = wx, wy = wy, instance = inst, zone = id, untilZone = id, arrow = true, title = name}
+    end
+    ph.go = go
+    ph.Reset()
+    local af = addon.arrowFrame
+    if af and not af:IsShown() then af:Show() end
+    Print(L("The arrow now leads to %s, through any passes and tunnels it knows. /oxp path stop puts it back on the guide."),
+          go.title)
+end
+
+function ph.StopGo(arrived)
+    if not ph.go then return end
+    local title = ph.go.title
+    ph.go = nil
+    ph.Reset()
+    if arrived then Print(L("You've reached %s. The arrow is back on the guide."), title) end
+    if addon.UpdateGotoSteps then pcall(addon.UpdateGotoSteps) end
+end
+
+local function GoTick()
+    local go = ph.go
+    if not go then return end
+    if go.untilZone then
+        if HBD:GetPlayerZone() == go.untilZone then return ph.StopGo(true) end
+    else
+        local x, y, inst = HBD:GetPlayerWorldPosition()
+        if x and inst == go.instance and Dist(x, y, go.wx, go.wy) <= REACH then return ph.StopGo(true) end
+    end
+    local af = addon.arrowFrame
+    if af and not af:IsShown() and ph.IsOn() and not (addon.settings and addon.settings.profile
+                                                      and addon.settings.profile.disableArrow) then
+        af:Show()
     end
 end
 
@@ -432,6 +506,7 @@ ticker:SetScript("OnUpdate", function(_, elapsed)
     if tickWait < 0.5 then return end
     tickWait = 0
     if type(OXPData) ~= "table" then return end
+    GoTick()
     if (IsInInstance and IsInInstance()) or (UnitOnTaxi and UnitOnTaxi("player"))
         or (UnitIsDeadOrGhost and UnitIsDeadOrGhost("player")) then
         return ph.LearnTick(nil)
@@ -568,6 +643,13 @@ function ph.Command(args)
         Undo()
     elseif cmd == "clear" then
         Clear()
+    elseif cmd == "to" or cmd == "go" then
+        if rest == "" then return Print(L("Where to? For example /oxp path to Stonetalon Mountains, or /oxp path to 36.4 7.2 on this map.")) end
+        ph.GoTo(rest)
+    elseif cmd == "stop" then
+        if not ph.go then return Print(L("The arrow is already following the guide.")) end
+        ph.StopGo()
+        Print(L("The arrow is back on the guide."))
     elseif cmd == "off" or cmd == "on" then
         if saved then saved.off = cmd == "off" end
         ph.Reset()
@@ -583,6 +665,7 @@ function ph.Command(args)
               ph.IsOn() and L("on") or L("off"), #(addon.pathHintData or {}), learned, recorded)
         Print(L("/oxp path add [name] - save where you stand as a stepping stone toward the arrow's target"))
         Print(L("/oxp path done - finish the path   /oxp path undo - drop the last stone"))
+        Print(L("/oxp path to <zone> or <x y> - lead the arrow there (/oxp path stop to go back to the guide)"))
         Print(L("/oxp path clear - forget saved paths near you   /oxp path off|on"))
     end
 end

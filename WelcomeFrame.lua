@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.4-beta",
+        date = "November 2026",
+        changes = {
+            "The arrow knows the way from Ashenvale into Stonetalon Mountains: through the Talondeep Path tunnel, instead of straight at the mountains on the border",
+            "New /oxp path to <zone> (or /oxp path to <x> <y> on your map): the arrow leads you there, through any tunnels and passes it knows, then goes back to the guide. For example /oxp path to Stonetalon",
+        },
+    },
+    {
         version = "1.3.3-beta",
         date = "November 2026",
         changes = {

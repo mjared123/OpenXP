@@ -17,6 +17,10 @@ local HBD = {
     GetPlayerZone = function() return player.zone end,
     GetPlayerZonePosition = function() return 0.5, 0.5, player.zone end,
     GetZoneCoordinatesFromWorld = function() return 0.4, 0.4 end,
+    GetWorldCoordinatesFromZone = function(_, x, y, zone)
+        if zone == 1442 then return 3245.83 - x * 4883.33, 2916.67 - y * 3256.25, 1 end
+        if zone == 1440 then return 1700 - x * 5766.67, 4672.92 - y * 3843.75, 1 end
+    end,
 }
 LibStub = function() return HBD end
 OXPData = {}
@@ -24,11 +28,12 @@ OXPData = {}
 local printed = {}
 local drawn
 local addon = {
+    mapId = {["Ashenvale"] = 1440, ["Stonetalon Mountains"] = 1442, ["Elwynn Forest"] = 1429},
     locale = {Get = function(s) return s end},
     comms = {PrettyPrint = function(msg, ...) printed[#printed + 1] = string.format(msg, ...) end},
 }
 addon.DrawArrow = function(self) drawn = self.element end
-addon.arrowFrame = {}
+addon.arrowFrame = {IsShown = function() return true end, Show = function() end}
 assert(loadfile(ROOT .. "/DB/pathHints.lua"))("OpenXP", addon)
 assert(loadfile(ROOT .. "/PathHints.lua"))("OpenXP", addon)
 local ph = addon.pathHints
@@ -227,6 +232,47 @@ try("saved data has no loops (SavedVariables can't write them)", function()
         end
     end
     check(OXPData, 0)
+end)
+
+try("Ashenvale to Stonetalon goes through the Talondeep Path", function()
+    -- Stonetalon Peak flight master, Stonetalon 36.4, 7.2
+    local peak = {wx = 3245.83 - 0.364 * 4883.33, wy = 2916.67 - 0.072 * 3256.25, instance = 1, zone = 1442}
+    player.inst, player.zone = 1, 1440
+    at(1700 - 0.366 * 5766.67, 4672.92 - 0.497 * 3843.75) -- Astranaar
+    local pt, label = route(peak)
+    assert(near(pt, -632.70, 2311.50), "Ashenvale end of the tunnel first")
+    assert(label == "Go through the Talondeep Path", label)
+    at(-630, 2300)
+    assert(near(route(peak), -606.63, 1573.79), "through the tunnel")
+    player.zone = 1442 -- out in Stonetalon
+    at(-570, 1520)
+    assert(route(peak) == nil, "then straight on")
+    player.inst, player.zone = 0, 1429
+end)
+
+try("/oxp path to Stonetalon leads the arrow there, through the tunnel", function()
+    local af = addon.arrowFrame
+    af.element = yip -- the guide's target, on another continent
+    af.wrongContinent = true
+    player.inst, player.zone = 1, 1440
+    at(1700 - 0.366 * 5766.67, 4672.92 - 0.497 * 3843.75) -- Astranaar
+    ph.Command("to stonetalon")
+    assert(ph.go and ph.go.untilZone == 1442, "zone found by its start")
+    addon.DrawArrow(af)
+    assert(near({drawn.wx, drawn.wy}, -632.70, 2311.50), "tunnel first")
+    assert(af.element == yip and af.wrongContinent == true, "guide target kept")
+    player.zone = 1442
+    at(-570, 1520)
+    addon.DrawArrow(af)
+    assert(drawn == ph.go, "inside Stonetalon: straight on")
+    ph.Command("stop")
+    assert(ph.go == nil)
+    ph.Command("to Nowhere Land")
+    assert(ph.go == nil)
+    ph.Command("to 36.4 7.2")
+    assert(ph.go and math.abs(ph.go.wx - (3245.83 - 0.364 * 4883.33)) < 0.1, "x y on this map")
+    ph.Command("stop")
+    player.inst, player.zone = 0, 1429
 end)
 
 print(fails == 0 and "path hint tests passed" or (fails .. " failed"))
