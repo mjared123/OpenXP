@@ -426,15 +426,10 @@ class Builder:
     def season_of_discovery(self, q):
         """Season of Discovery quests that the installed Questie also knows,
         so they show up in /oxp questdump, but aren't in WoW Forever (like
-        Alonso's Dragonslayer quests in Ashenvale). SoD quest ids sit in
-        76000-85999 and its new NPCs in 200000-249999; Forever's own new
-        quests and NPCs use higher ids."""
-        if 76000 <= q.id <= 85999 or q.name.startswith("Legacy Reward"):
-            return True
-        for who in (q.startedBy, q.finishedBy):
-            if any(200000 <= n <= 249999 for n in as_list(li(who, 1)) if isinstance(n, int)):
-                return True
-        return False
+        Alonso's Dragonslayer quests in Ashenvale). SoD's quest ids sit in
+        76000-85999. NPC ids aren't a safe test: Forever's own new NPCs
+        (Skyborne, Undead paladins) use the same 200000+ range."""
+        return 76000 <= q.id <= 85999 or q.name.startswith("Legacy Reward")
 
     def quests(self):
         if self._quests is None:

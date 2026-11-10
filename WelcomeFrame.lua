@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.3-beta",
+        date = "November 2026",
+        changes = {
+            "Put back a few WoW Forever quests that 1.3.2 wrongly left out with the Season of Discovery ones (their quest givers have new NPC ids like Season of Discovery's). Alliance 21-60 has 498 quests, Horde 22-60 has 444",
+        },
+    },
+    {
         version = "1.3.2-beta",
         date = "November 2026",
         changes = {

@@ -25,6 +25,11 @@ step
     .accept 4512 >>Accept A Little Slime Goes a Long Way
     .target Laris Geardawdle
 step
+    .goto Ironforge,71.50,15.74
+    >>Talk to |cRXP_FRIENDLY_Curator Thorius|r
+    .turnin -3368 >>Turn in Suntara Stones
+    .target Curator Thorius
+step
     .goto Ironforge,77.54,11.82
     >>Talk to |cRXP_FRIENDLY_Historian Karnik|r
     .accept 3448 >>Accept Passing the Burden
@@ -279,32 +284,6 @@ step << Druid
     .mob Ironhide Devilsaur
     .mob Tyrant Devilsaur
 step
-    .goto Un'Goro Crater,71.64,75.96
-    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
-    .turnin 9051 >>Turn in Toxic Test << Druid
-    .accept 4290 >>Accept The Fare of Lar'korwi
-    .target Torwa Pathfinder
-step
-    .goto Un'Goro Crater,68.74,56.71
-    >>Loot the |cRXP_PICK_Piece of Threshadon Carcass|r
-    .complete 4290,1 --The Fare of Lar'korwi
-step
-    .goto Un'Goro Crater,71.64,75.96
-    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
-    .turnin 4290 >>Turn in The Fare of Lar'korwi
-    .accept 4291 >>Accept The Scent of Lar'korwi
-    .target Torwa Pathfinder
-step
-    .goto Un'Goro Crater,66.00,62.00
-    >>Kill |cRXP_ENEMY_Lar'korwi Mate|r. Loot them for |cRXP_LOOT_Ravasaur Pheromone Gland|r
-    .complete 4291,1 --The Scent of Lar'korwi
-    .mob Lar'korwi Mate
-step
-    .goto Un'Goro Crater,71.64,75.96
-    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
-    .turnin 4291 >>Turn in The Scent of Lar'korwi
-    .target Torwa Pathfinder
-step
     .goto Un'Goro Crater,46.38,13.44
     >>Talk to |cRXP_FRIENDLY_Karna Remtravel|r
     .accept 4243 >>Accept Chasing A-Me 01
@@ -338,6 +317,32 @@ step
     .complete 4284,3 --Crystals of Power
     .complete 4284,4 --Crystals of Power
     .complete 4284,1 --Crystals of Power
+step
+    .goto Un'Goro Crater,71.64,75.96
+    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
+    .accept 4290 >>Accept The Fare of Lar'korwi
+    .turnin 9051 >>Turn in Toxic Test << Druid
+    .target Torwa Pathfinder
+step
+    .goto Un'Goro Crater,68.74,56.71
+    >>Loot the |cRXP_PICK_Piece of Threshadon Carcass|r
+    .complete 4290,1 --The Fare of Lar'korwi
+step
+    .goto Un'Goro Crater,71.64,75.96
+    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
+    .turnin 4290 >>Turn in The Fare of Lar'korwi
+    .accept 4291 >>Accept The Scent of Lar'korwi
+    .target Torwa Pathfinder
+step
+    .goto Un'Goro Crater,66.00,62.00
+    >>Kill |cRXP_ENEMY_Lar'korwi Mate|r. Loot them for |cRXP_LOOT_Ravasaur Pheromone Gland|r
+    .complete 4291,1 --The Scent of Lar'korwi
+    .mob Lar'korwi Mate
+step
+    .goto Un'Goro Crater,71.64,75.96
+    >>Talk to |cRXP_FRIENDLY_Torwa Pathfinder|r
+    .turnin 4291 >>Turn in The Scent of Lar'korwi
+    .target Torwa Pathfinder
 step
     .goto Un'Goro Crater,38.45,66.06
     >>Loot the |cRXP_PICK_Research Equipment|r
@@ -923,11 +928,21 @@ step
     >>Talk to |cRXP_FRIENDLY_Crier Goodman|r
     .accept 5066 >>Accept A Call to Arms: The Plaguelands!
     .target Crier Goodman
+step
+    .goto Stormwind City,51.79,93.64
+    >>Talk to |cRXP_FRIENDLY_Angus Stern|r
+    .turnin -212 >>Turn in A Meal Served Cold
+    .target Angus Stern
 step << Druid
     .goto Stormwind City,36.11,64.39
     >>Talk to |cRXP_FRIENDLY_Theridran|r
     .accept 9063 >>Accept Torwa Pathfinder
     .target Theridran
+step << Paladin
+    .goto Stormwind City,50.48,47.49
+    >>Talk to |cRXP_FRIENDLY_Duthorian Rall|r
+    .turnin -4485 >>Turn in The Tome of Nobility
+    .target Duthorian Rall
 step
     .goto Stormwind City,57.17,48.07
     >>Talk to |cRXP_FRIENDLY_Royal Factor Bathrilor|r
@@ -940,11 +955,6 @@ step
     .turnin 5048 >>Turn in Good Natured Emma
     .accept 5050 >>Accept Good Luck Charm
     .target Ol' Emma
-step
-    .goto Stormwind City,75.83,36.72
-    >>Talk to |cRXP_FRIENDLY_Major Samuelson|r
-    .turnin -563 >>Turn in Reassignment
-    .target Major Samuelson
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1331,7 +1341,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 54-55 Un'Goro Crater
-#next 55-56 Winterspring
+#next 55-56 Darnassus
 
 step
     #completewith next
@@ -1458,8 +1468,53 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
+#name 55-56 Darnassus
+#next 55-56 Winterspring
+
+step
+    #completewith next
+    .zone Darnassus >>Travel to Darnassus
+step
+    .goto Darnassus,34.81,9.26
+    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
+    .turnin 3789 >>Turn in Assisting Arch Druid Staghelm
+    .target Arch Druid Fandral Staghelm
+step
+    .goto Darnassus,31.49,8.23
+    >>Talk to |cRXP_FRIENDLY_Jenal|r
+    .turnin 3764 >>Turn in Un'Goro Soil
+    .target Jenal
+step
+    .goto Darnassus,34.81,9.26
+    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
+    .accept 3781 >>Accept Morrowgrain Research
+    .target Arch Druid Fandral Staghelm
+step
+    .goto Darnassus,35.37,8.40
+    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
+    .turnin 3781 >>Turn in Morrowgrain Research
+    .target Mathrengyl Bearwalker
+step
+    .goto Darnassus,47.81,81.97
+    >>Talk to |cRXP_FRIENDLY_Herald Moonstalker|r
+    .accept 1047 >>Accept The New Frontier
+    .target Herald Moonstalker
+step
+    .goto Darnassus,34.81,9.26
+    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
+    .turnin 1047 >>Turn in The New Frontier
+    .target Arch Druid Fandral Staghelm
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
 #name 55-56 Winterspring
-#next 55-56 Darnassus
+#next 55-56 Western Plaguelands
 
 step
     #completewith next
@@ -1566,51 +1621,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Donova Snowden|r
     .turnin 4842 >>Turn in Strange Sources
     .target Donova Snowden
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 55-56 Darnassus
-#next 55-56 Western Plaguelands
-
-step
-    #completewith next
-    .zone Darnassus >>Travel to Darnassus
-step
-    .goto Darnassus,34.81,9.26
-    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
-    .turnin 3789 >>Turn in Assisting Arch Druid Staghelm
-    .target Arch Druid Fandral Staghelm
-step
-    .goto Darnassus,31.49,8.23
-    >>Talk to |cRXP_FRIENDLY_Jenal|r
-    .turnin 3764 >>Turn in Un'Goro Soil
-    .target Jenal
-step
-    .goto Darnassus,34.81,9.26
-    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
-    .accept 3781 >>Accept Morrowgrain Research
-    .target Arch Druid Fandral Staghelm
-step
-    .goto Darnassus,35.37,8.40
-    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
-    .turnin 3781 >>Turn in Morrowgrain Research
-    .target Mathrengyl Bearwalker
-step
-    .goto Darnassus,47.81,81.97
-    >>Talk to |cRXP_FRIENDLY_Herald Moonstalker|r
-    .accept 1047 >>Accept The New Frontier
-    .target Herald Moonstalker
-step
-    .goto Darnassus,34.81,9.26
-    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
-    .turnin 1047 >>Turn in The New Frontier
-    .target Arch Druid Fandral Staghelm
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -2274,6 +2284,11 @@ step
     .complete 7809,1 --A Donation of Mageweave
     .complete 8505,1 --The Alliance Needs Purple Lotus!
 step
+    .goto Stranglethorn Vale,27.78,77.07
+    >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
+    .turnin -2874 >>Turn in Deliver to MacKinley
+    .target "Sea Wolf" MacKinley
+step
     .goto Stranglethorn Vale,27.82,85.71
     >>Loot the |cRXP_PICK_Stranglekelp|r
     .complete 8503,1 --The Alliance Needs Stranglekelp!
@@ -2329,6 +2344,8 @@ RXPGuides.RegisterGuide([[
 step
     #completewith next
     .zone Ironforge >>Travel to Ironforge
+step
+    .xp 59 >>Kill mobs on the way, or run Lower Blackrock Spire or Stratholme, until you're level 59: the quests here are a bit high for you before that
 step
     .goto Ironforge,74.09,48.22
     >>Talk to |cRXP_FRIENDLY_Bubulo Acerbus|r
@@ -2423,10 +2440,44 @@ step
     .turnin 8304 >>Turn in Dearest Natalia
     .target Commander Mar'alith
 step
+    .goto Silithus,49.98,36.35
+    >>Talk to |cRXP_FRIENDLY_Windcaller Kaldon|r
+    .accept 8800 >>Accept Cenarion Battlegear
+    .target Windcaller Kaldon
+step
+    .goto Silithus,48.62,37.87
+    >>Talk to |cRXP_FRIENDLY_Huum Wildmane|r
+    .accept 8320 >>Accept Twilight Geolords
+    .target Huum Wildmane
+step
+    .goto Silithus,51.23,38.86
+    >>Talk to |cRXP_FRIENDLY_Vargus|r
+    .turnin 8800 >>Turn in Cenarion Battlegear
+    .target Vargus
+step
     .goto Silithus,26.35,36.62
     >>Kill |cRXP_ENEMY_Twilight Keeper Mayna|r. Loot them for |cRXP_LOOT_Twilight Lexicon - Chapter 1|r
+    >>Kill |cRXP_ENEMY_Twilight Geolord|r
     .complete 8279,1 --The Twilight Lexicon
+    .complete 8320,1 --Twilight Geolords
     .mob Twilight Keeper Mayna
+    .mob Twilight Geolord
+step
+    .goto Silithus,48.62,37.87
+    >>Talk to |cRXP_FRIENDLY_Huum Wildmane|r
+    .turnin 8320 >>Turn in Twilight Geolords
+    .accept 8321 >>Accept Vyral the Vile
+    .target Huum Wildmane
+step
+    .goto Silithus,72.39,15.58
+    >>Kill |cRXP_ENEMY_Vyral the Vile|r. Loot them for |cRXP_LOOT_Vyral's Signet Ring|r
+    .complete 8321,1 --Vyral the Vile
+    .mob Vyral the Vile
+step
+    .goto Silithus,48.62,37.87
+    >>Talk to |cRXP_FRIENDLY_Huum Wildmane|r
+    .turnin 8321 >>Turn in Vyral the Vile
+    .target Huum Wildmane
 step
     .goto Silithus,67.19,69.76
     >>Talk to |cRXP_FRIENDLY_Hermit Ortell|r

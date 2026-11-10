@@ -1170,7 +1170,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
 #name 38-39 Dustwallow Marsh
-#next 38-39 Badlands
+#next 38-39 Arathi Highlands
 
 step
     #completewith next
@@ -1243,115 +1243,77 @@ RXPGuides.RegisterGuide([[
 << Horde
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
-#name 38-39 Badlands
+#name 38-39 Arathi Highlands
 #next 39-40 Swamp of Sorrows
 
 step
     #completewith next
-    .zone Badlands >>Travel to Kargath in Badlands
+    .zone Arathi Highlands >>Fly to Hammerfall in Arathi Highlands
 step
-    .goto Badlands,3.99,44.78
-    >>Talk to |cRXP_FRIENDLY_Gorrik|r
-    .fp Kargath >>Get the Kargath flight path
-    .target Gorrik
+    .goto Arathi Highlands,33.87,80.55
+    >>Talk to |cRXP_FRIENDLY_Professor Phizzlethorpe|r
+    .accept 665 >>Accept Sunken Treasure
+    .target Professor Phizzlethorpe
 step
-    .goto Badlands,2.42,46.06
-    >>Talk to |cRXP_FRIENDLY_Jarkal Mossmeld|r
-    .accept 2258 >>Accept Badlands Reagent Run
-    .target Jarkal Mossmeld
+    .goto Arathi Highlands,34.00,80.80
+    >>Talk to |cRXP_FRIENDLY_Captain Steelgut|r
+    .accept 664 >>Accept Drowned Sorrows
+    .target Captain Steelgut
 step
-    .goto Badlands,6.49,47.20
-    >>Talk to |cRXP_FRIENDLY_Neeka Bloodscar|r
-    .accept 1419 >>Accept Coyote Thieves
-    .accept 1420 >>Accept Report to Helgrum
-    .target Neeka Bloodscar
+    .goto Arathi Highlands,32.80,81.48
+    >>Talk to |cRXP_FRIENDLY_First Mate Nilzlix|r
+    .accept 662 >>Accept Deep Sea Salvage
+    .target First Mate Nilzlix
 step
-    .goto Badlands,25.95,44.87
-    >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
-    .accept 710 >>Accept Study of the Elements: Rock
-    .target Lotwil Veriatus
+    .goto Arathi Highlands,33.87,80.60
+    >>Defend Professor Phizzlethorpe
+    .complete 665,1 --Sunken Treasure
 step
-    .goto Badlands,21.20,45.88
-    >>Kill |cRXP_ENEMY_Lesser Rock Elemental|r. Loot them for |cRXP_LOOT_Small Stone Shard|r
-    .complete 710,1 --Study of the Elements: Rock
-    .mob Lesser Rock Elemental
+    .goto Arathi Highlands,33.86,80.45
+    >>Talk to |cRXP_FRIENDLY_Doctor Draxlegauge|r
+    .turnin 665 >>Turn in Sunken Treasure
+    .accept 666 >>Accept Sunken Treasure
+    .target Doctor Draxlegauge
 step
-    .goto Badlands,25.95,44.87
-    >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
-    .turnin 710 >>Turn in Study of the Elements: Rock
-    .accept 711 >>Accept Study of the Elements: Rock
-    .target Lotwil Veriatus
+    .goto Arathi Highlands,23.39,85.09
+    >>Loot the |cRXP_PICK_Maiden's Folly Charts|r
+    >>Loot the |cRXP_PICK_Maiden's Folly Log|r
+    >>Kill |cRXP_ENEMY_Daggerspine Raider|r
+    >>Loot the |cRXP_PICK_Elven Gem|r
+    >>Loot the |cRXP_PICK_Spirit of Silverpine Log|r
+    >>Loot the |cRXP_PICK_Spirit of Silverpine Charts|r
+    >>Kill |cRXP_ENEMY_Daggerspine Sorceress|r
+    .complete 662,1 --Deep Sea Salvage
+    .complete 662,2 --Deep Sea Salvage
+    .complete 664,1 --Drowned Sorrows
+    .complete 666,1 --Sunken Treasure
+    .complete 662,4 --Deep Sea Salvage
+    .complete 662,3 --Deep Sea Salvage
+    .complete 664,2 --Drowned Sorrows
+    .mob Daggerspine Raider
+    .mob Daggerspine Sorceress
 step
-    .goto Badlands,42.39,52.93
-    >>Talk to |cRXP_FRIENDLY_Rigglefuzz|r
-    .accept 703 >>Accept Barbecued Buzzard Wings
-    .accept 705 >>Accept Pearl Diving
-    .target Rigglefuzz
+    .goto Arathi Highlands,32.80,81.48
+    >>Talk to |cRXP_FRIENDLY_First Mate Nilzlix|r
+    .turnin 662 >>Turn in Deep Sea Salvage
+    .target First Mate Nilzlix
 step
-    .goto Badlands,55.56,53.83
-    >>Kill |cRXP_ENEMY_Crag Coyote|r and |cRXP_ENEMY_Feral Crag Coyote|r and |cRXP_ENEMY_Elder Crag Coyote|r. Loot them for |cRXP_LOOT_Crag Coyote Fang|r
-    >>Kill |cRXP_ENEMY_Crag Coyote|r and |cRXP_ENEMY_Feral Crag Coyote|r and |cRXP_ENEMY_Elder Crag Coyote|r. Loot them for |cRXP_LOOT_Coyote Jawbone|r
-    .complete 2258,2 --Badlands Reagent Run
-    .complete 1419,1 --Coyote Thieves
-    .mob Crag Coyote
-    .mob Feral Crag Coyote
-    .mob Elder Crag Coyote
+    .goto Arathi Highlands,34.00,80.80
+    >>Talk to |cRXP_FRIENDLY_Captain Steelgut|r
+    .turnin 664 >>Turn in Drowned Sorrows
+    .target Captain Steelgut
 step
-    .goto Badlands,51.39,76.87
-    >>Talk to |cRXP_FRIENDLY_Theldurin the Lost|r
-    .accept 709 >>Accept Solution to Doom
-    .target Theldurin the Lost
+    .goto Arathi Highlands,33.86,80.45
+    >>Talk to |cRXP_FRIENDLY_Doctor Draxlegauge|r
+    .turnin 666 >>Turn in Sunken Treasure
+    .accept 668 >>Accept Sunken Treasure
+    .target Doctor Draxlegauge
 step
-    .goto Badlands,43.32,84.20
-    >>Kill |cRXP_ENEMY_Rock Elemental|r. Loot them for |cRXP_LOOT_Large Stone Slab|r
-    .complete 711,1 --Study of the Elements: Rock
-    .mob Rock Elemental
-step
-    .goto Badlands,17.18,60.02
-    >>Kill |cRXP_ENEMY_Starving Buzzard|r and |cRXP_ENEMY_Buzzard|r and |cRXP_ENEMY_Giant Buzzard|r. Loot them for |cRXP_LOOT_Buzzard Gizzard|r
-    >>Kill |cRXP_ENEMY_Starving Buzzard|r and |cRXP_ENEMY_Buzzard|r and |cRXP_ENEMY_Giant Buzzard|r. Loot them for |cRXP_LOOT_Buzzard Wing|r
-    .complete 2258,1 --Badlands Reagent Run
-    .complete 703,1 --Barbecued Buzzard Wings
-    .mob Starving Buzzard
-    .mob Buzzard
-    .mob Giant Buzzard
-step
-    .goto Badlands,6.49,47.20
-    >>Talk to |cRXP_FRIENDLY_Neeka Bloodscar|r
-    .turnin 1419 >>Turn in Coyote Thieves
-    .target Neeka Bloodscar
-step
-    .goto Badlands,25.95,44.87
-    >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
-    .turnin 711 >>Turn in Study of the Elements: Rock
-    .target Lotwil Veriatus
-step
-    .goto Badlands,42.39,52.93
-    >>Talk to |cRXP_FRIENDLY_Rigglefuzz|r
-    .turnin 703 >>Turn in Barbecued Buzzard Wings
-    .target Rigglefuzz
-step
-    .goto Badlands,39.34,18.82
-    >>Loot the |cRXP_PICK_Tablet of Ryun'eh|r
-    .complete 709,1 --Solution to Doom
-step
-    .goto Badlands,51.39,76.87
-    >>Talk to |cRXP_FRIENDLY_Theldurin the Lost|r
-    .turnin 709 >>Turn in Solution to Doom
-    .accept 728 >>Accept To the Undercity for Yagyin's Digest
-    .target Theldurin the Lost
-step
-    .goto Badlands,4.11,79.91
-    >>Kill |cRXP_ENEMY_Rock Elemental|r and |cRXP_ENEMY_Lesser Rock Elemental|r and |cRXP_ENEMY_Greater Rock Elemental|r. Loot them for |cRXP_LOOT_Rock Elemental Shard|r
-    .complete 2258,3 --Badlands Reagent Run
-    .mob Rock Elemental
-    .mob Lesser Rock Elemental
-    .mob Greater Rock Elemental
-step
-    .goto Badlands,2.42,46.06
-    >>Talk to |cRXP_FRIENDLY_Jarkal Mossmeld|r
-    .turnin 2258 >>Turn in Badlands Reagent Run
-    .target Jarkal Mossmeld
+    .goto Arathi Highlands,32.28,81.38
+    >>Talk to |cRXP_FRIENDLY_Shakes O'Breen|r
+    .turnin 668 >>Turn in Sunken Treasure
+    .accept 669 >>Accept Sunken Treasure
+    .target Shakes O'Breen
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1376,13 +1338,18 @@ step
     .goto Swamp of Sorrows,47.74,55.20
     >>Talk to |cRXP_FRIENDLY_Helgrum the Swift|r
     .accept 1418 >>Accept Neeka Bloodscar
-    .turnin 1420 >>Turn in Report to Helgrum
     .target Helgrum the Swift
 step
     .goto Swamp of Sorrows,44.70,57.21
     >>Talk to |cRXP_FRIENDLY_Dar|r
     .accept 698 >>Accept Lack of Surplus
     .target Dar
+step
+    .goto Swamp of Sorrows,25.10,54.21
+    >>Talk to |cRXP_FRIENDLY_Amaryllis Webb|r
+    .accept 93176 >>Accept My Little Friends
+    .turnin 93176 >>Turn in My Little Friends
+    .target Amaryllis Webb
 step
     .goto Swamp of Sorrows,25.98,31.40
     >>Talk to |cRXP_FRIENDLY_Magtoor|r
@@ -1431,7 +1398,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
 #name 39-40 Stranglethorn Vale
-#next 40-41 Arathi Highlands
+#next 40-41 Badlands
 
 step
     #completewith next
@@ -1441,6 +1408,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
     .accept 600 >>Accept Venture Company Mining
     .target Crank Fizzlebub
+step
+    .goto Stranglethorn Vale,27.17,77.01
+    >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
+    .turnin 669 >>Turn in Sunken Treasure
+    .target Fleet Master Seahorn
 step
     .goto Stranglethorn Vale,27.78,77.07
     >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
@@ -1518,18 +1490,9 @@ step
     .accept 584 >>Accept Bloodscalp Clan Heads
     .target Nimboya
 step
-    .goto Stranglethorn Vale,32.27,27.71
-    >>Talk to |cRXP_FRIENDLY_Kin'weelay|r
-    .accept 598 >>Accept Split Bone Necklace
-    .target Kin'weelay
-step
     .goto Stranglethorn Vale,32.22,27.60
     >>Click the |cRXP_PICK_Bubbling Cauldron|r
     .accept 1261 >>Accept Marg Speaks
-step
-    .goto Stranglethorn Vale,25.30,26.40
-    >>Loot the |cRXP_PICK_Blue Pearl|r
-    .complete 705,1 --Pearl Diving
 step
     .goto Stranglethorn Vale,35.66,10.81
     >>Talk to |cRXP_FRIENDLY_Hemet Nesingwary|r
@@ -1548,6 +1511,11 @@ step
     >>Click the |cRXP_PICK_Bubbling Cauldron|r
     .turnin 584 >>Turn in Bloodscalp Clan Heads
     .accept 585 >>Accept Speaking with Nezzliok
+step
+    .goto Stranglethorn Vale,32.27,27.71
+    >>Talk to |cRXP_FRIENDLY_Kin'weelay|r
+    .accept 598 >>Accept Split Bone Necklace
+    .target Kin'weelay
 step
     .goto Stranglethorn Vale,42.21,36.11
     >>Loot the |cRXP_PICK_Ziata'jai Trophy|r
