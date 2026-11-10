@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.22",
+        date = "November 2026",
+        changes = {
+            "OpenXP is now for WoW Forever only: the Classic Era guides and data are gone, making the download smaller",
+        },
+    },
+    {
         version = "1.3.21",
         date = "November 2026",
         changes = {
