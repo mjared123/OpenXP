@@ -57,16 +57,6 @@ step
     .goto Ashenvale,53.54,46.22
     >>Talk to |cRXP_FRIENDLY_Shael'dryn|r
     .turnin 1024 >>Turn in Raene's Cleansing
-    .accept 1026 >>Accept Raene's Cleansing
-    .target Shael'dryn
-step
-    .goto Ashenvale,54.42,35.40
-    >>Loot the |cRXP_PICK_Iron Shaft|r
-    .complete 1026,1 --Raene's Cleansing
-step
-    .goto Ashenvale,53.54,46.22
-    >>Talk to |cRXP_FRIENDLY_Shael'dryn|r
-    .turnin 1026 >>Turn in Raene's Cleansing
     .target Shael'dryn
 step
     .goto Ashenvale,54.65,61.50
@@ -87,10 +77,10 @@ step
     >>Talk to |cRXP_FRIENDLY_Alonso|r
     .accept 78132 >>Accept Dragonslayer's Helm
     .turnin 78132 >>Turn in Dragonslayer's Helm
-    .accept 78133 >>Accept Dragonslayer's Shield
-    .turnin 78133 >>Turn in Dragonslayer's Shield
     .accept 78134 >>Accept Dragonslayer's Lance
     .turnin 78134 >>Turn in Dragonslayer's Lance
+    .accept 78133 >>Accept Dragonslayer's Shield
+    .turnin 78133 >>Turn in Dragonslayer's Shield
     .target Alonso
 step
     .goto Ashenvale,33.33,67.98
@@ -130,7 +120,6 @@ step
     .goto Stonetalon Mountains,37.10,8.10
     >>Talk to |cRXP_FRIENDLY_Keeper Albagorm|r
     .turnin -1056 >>Turn in Journey to Stonetalon Peak
-    .accept 1057 >>Accept Reclaiming the Charred Vale
     .target Keeper Albagorm
 step
     .goto Stonetalon Mountains,48.70,39.86
@@ -191,29 +180,6 @@ step
     .turnin 1071 >>Turn in A Gnome's Respite
     .target Gaxim Rustfizzle
 step
-    .goto Stonetalon Mountains,34.69,68.03
-    >>Kill |cRXP_ENEMY_Bloodfury Roguefeather|r
-    .complete 1057,4 --Reclaiming the Charred Vale
-    .mob Bloodfury Roguefeather
-step
-    .goto Stonetalon Mountains,30.12,69.67
-    >>Kill |cRXP_ENEMY_Bloodfury Slayer|r
-    .complete 1057,3 --Reclaiming the Charred Vale
-    .mob Bloodfury Slayer
-step
-    .goto Stonetalon Mountains,30.80,61.32
-    >>Kill |cRXP_ENEMY_Bloodfury Harpy|r
-    >>Kill |cRXP_ENEMY_Bloodfury Ambusher|r
-    .complete 1057,1 --Reclaiming the Charred Vale
-    .complete 1057,2 --Reclaiming the Charred Vale
-    .mob Bloodfury Harpy
-    .mob Bloodfury Ambusher
-step
-    .goto Stonetalon Mountains,37.10,8.10
-    >>Talk to |cRXP_FRIENDLY_Keeper Albagorm|r
-    .turnin 1057 >>Turn in Reclaiming the Charred Vale
-    .target Keeper Albagorm
-step
     .goto Stonetalon Mountains,35.79,5.74
     >>Talk to |cRXP_FRIENDLY_Innkeeper Faralia|r
     .turnin 86574 >>Turn in Stonetalon Supply Run
@@ -265,7 +231,6 @@ step
     .accept 464 >>Accept War Banners
     .accept 98221 >>Accept From the Ashes
     .turnin 98221 >>Turn in From the Ashes
-    .accept 98230 >>Accept This Land Was Their Land
     .target Captain Stoutfist
 step
     .goto Wetlands,10.10,56.90
@@ -281,7 +246,6 @@ step
     .goto Wetlands,8.55,55.74
     >>Talk to |cRXP_FRIENDLY_James Halloran|r
     .accept 98072 >>Accept Crocs of the Sky
-    .accept 98240 >>Accept Crimson Crate Delivery
     .target James Halloran
 step
     .goto Wetlands,8.32,58.57
@@ -370,13 +334,6 @@ step
     .mob Dragonmaw Swamprunner
     .mob Dragonmaw Centurion
 step
-    .goto Wetlands,49.36,42.13
-    >>Talk to |cRXP_FRIENDLY_Howin Kindfeather|r
-    .turnin 98230 >>Turn in This Land Was Their Land
-    .turnin 98240 >>Turn in Crimson Crate Delivery
-    .accept 98245 >>Accept Razormaw Needling
-    .target Howin Kindfeather
-step
     .goto Wetlands,49.92,39.37
     >>Talk to |cRXP_FRIENDLY_Einar Stonegrip|r
     .accept 469 >>Accept Daily Delivery
@@ -395,16 +352,34 @@ step
     .mob Lost Whelp
     .mob Flamesnorting Whelp
 step
-    .goto Wetlands,68.68,31.29
-    >>Kill |cRXP_ENEMY_Highland Razormaw|r and |cRXP_ENEMY_Elder Razormaw|r. Loot them for |cRXP_LOOT_Razormaw Incisor|r
-    .complete 98245,1 --Razormaw Needling
-    .mob Highland Razormaw
-    .mob Elder Razormaw
+    .goto Wetlands,61.72,61.45
+    >>Kill |cRXP_ENEMY_Mosshide Mongrel|r
+    .complete 276,2 --Tramping Paws
+    .mob Mosshide Mongrel
 step
-    .goto Wetlands,49.36,42.13
-    >>Talk to |cRXP_FRIENDLY_Howin Kindfeather|r
-    .turnin 98245 >>Turn in Razormaw Needling
-    .target Howin Kindfeather
+    .goto Wetlands,61.89,71.88
+    >>Kill |cRXP_ENEMY_Mosshide Gnoll|r
+    .complete 276,1 --Tramping Paws
+    .mob Mosshide Gnoll
+step
+    .goto Wetlands,49.01,61.42
+    >>Kill |cRXP_ENEMY_Leech Stalker|r and |cRXP_ENEMY_Cave Stalker|r. Loot them for |cRXP_LOOT_Unruptured Stalker Gland|r
+    .complete 98282,1 --Alchemical Hazards
+    .mob Leech Stalker
+    .mob Cave Stalker
+step
+    .goto Wetlands,56.37,40.40
+    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
+    .turnin 276 >>Turn in Tramping Paws
+    .accept 277 >>Accept Fire Taboo
+    .target Rethiel the Greenwarden
+step
+    .goto Wetlands,43.06,32.88
+    >>Kill |cRXP_ENEMY_Mosshide Mistweaver|r and |cRXP_ENEMY_Mosshide Fenrunner|r and |cRXP_ENEMY_Mosshide Trapper|r. Loot them for |cRXP_LOOT_Crude Flint|r
+    .complete 277,1 --Fire Taboo
+    .mob Mosshide Mistweaver
+    .mob Mosshide Fenrunner
+    .mob Mosshide Trapper
 step
     .goto Wetlands,44.73,25.38
     >>Kill |cRXP_ENEMY_Crimson Ooze|r and |cRXP_ENEMY_Black Ooze|r and |cRXP_ENEMY_Monstrous Ooze|r. Loot them for |cRXP_LOOT_Sida's Bag|r
@@ -417,6 +392,17 @@ step
     >>Talk to |cRXP_FRIENDLY_Longbraid the Grim|r
     .turnin 472 >>Turn in Fall of Dun Modr
     .target Longbraid the Grim
+step
+    .goto Wetlands,56.37,40.40
+    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
+    .turnin 277 >>Turn in Fire Taboo
+    .accept 275 >>Accept Blisters on The Land
+    .target Rethiel the Greenwarden
+step
+    .goto Wetlands,25.33,35.52
+    >>Kill |cRXP_ENEMY_Fen Creeper|r
+    .complete 275,1 --Blisters on The Land
+    .mob Fen Creeper
 step
     .goto Wetlands,24.16,48.27
     >>Kill |cRXP_ENEMY_Mottled Raptor|r
@@ -454,6 +440,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Archaeologist Flagongut|r
     .turnin 943 >>Turn in The Absent Minded Prospector
     .target Archaeologist Flagongut
+step
+    .goto Wetlands,11.88,58.82
+    >>Talk to |cRXP_FRIENDLY_Caitlin Grassman|r
+    .turnin 98282 >>Turn in Alchemical Hazards
+    .target Caitlin Grassman
 step
     .goto Wetlands,11.80,57.99
     >>Talk to |cRXP_FRIENDLY_Sida|r
@@ -497,63 +488,7 @@ step
     .goto Wetlands,38.18,50.89
     >>Talk to |cRXP_FRIENDLY_Ormer Ironbraid|r
     .turnin 295 >>Turn in Ormer's Revenge
-    .accept 296 >>Accept Ormer's Revenge
     .target Ormer Ironbraid
-step
-    .goto Wetlands,33.26,51.51
-    >>Kill |cRXP_ENEMY_Sarltooth|r. Loot them for |cRXP_LOOT_Sarltooth's Talon|r
-    .complete 296,1 --Ormer's Revenge
-    .mob Sarltooth
-step
-    .goto Wetlands,38.18,50.89
-    >>Talk to |cRXP_FRIENDLY_Ormer Ironbraid|r
-    .turnin 296 >>Turn in Ormer's Revenge
-    .target Ormer Ironbraid
-step
-    .goto Wetlands,49.01,61.42
-    >>Kill |cRXP_ENEMY_Leech Stalker|r and |cRXP_ENEMY_Cave Stalker|r. Loot them for |cRXP_LOOT_Unruptured Stalker Gland|r
-    .complete 98282,1 --Alchemical Hazards
-    .mob Leech Stalker
-    .mob Cave Stalker
-step
-    .goto Wetlands,61.72,61.45
-    >>Kill |cRXP_ENEMY_Mosshide Mongrel|r
-    .complete 276,2 --Tramping Paws
-    .mob Mosshide Mongrel
-step
-    .goto Wetlands,61.89,71.88
-    >>Kill |cRXP_ENEMY_Mosshide Gnoll|r
-    .complete 276,1 --Tramping Paws
-    .mob Mosshide Gnoll
-step
-    .goto Wetlands,56.37,40.40
-    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
-    .turnin 276 >>Turn in Tramping Paws
-    .accept 277 >>Accept Fire Taboo
-    .target Rethiel the Greenwarden
-step
-    .goto Wetlands,43.06,32.88
-    >>Kill |cRXP_ENEMY_Mosshide Mistweaver|r and |cRXP_ENEMY_Mosshide Fenrunner|r and |cRXP_ENEMY_Mosshide Trapper|r. Loot them for |cRXP_LOOT_Crude Flint|r
-    .complete 277,1 --Fire Taboo
-    .mob Mosshide Mistweaver
-    .mob Mosshide Fenrunner
-    .mob Mosshide Trapper
-step
-    .goto Wetlands,56.37,40.40
-    >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r
-    .turnin 277 >>Turn in Fire Taboo
-    .accept 275 >>Accept Blisters on The Land
-    .target Rethiel the Greenwarden
-step
-    .goto Wetlands,25.33,35.52
-    >>Kill |cRXP_ENEMY_Fen Creeper|r
-    .complete 275,1 --Blisters on The Land
-    .mob Fen Creeper
-step
-    .goto Wetlands,11.88,58.82
-    >>Talk to |cRXP_FRIENDLY_Caitlin Grassman|r
-    .turnin 98282 >>Turn in Alchemical Hazards
-    .target Caitlin Grassman
 step
     .goto Wetlands,56.37,40.40
     >>Talk to |cRXP_FRIENDLY_Rethiel the Greenwarden|r

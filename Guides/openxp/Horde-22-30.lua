@@ -33,7 +33,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Apothecary Lydon|r
     .accept 496 >>Accept Elixir of Suffering
     .accept 501 >>Accept Elixir of Pain
-    .accept 509 >>Accept Elixir of Agony
     .turnin -1065 >>Turn in Journey to Tarren Mill
     .accept 1066 >>Accept Blood of Innocents
     .target Apothecary Lydon
@@ -42,10 +41,6 @@ step << Rogue
     >>Talk to |cRXP_FRIENDLY_Serge Hinott|r
     .turnin -2479 >>Turn in Hinott's Assistance
     .target Serge Hinott
-step
-    .goto Hillsbrad Foothills,62.56,19.66
-    >>Click the |cRXP_PICK_Dangerous!|r
-    .accept 567 >>Accept Dangerous!
 step
     .goto Hillsbrad Foothills,62.33,20.45
     >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
@@ -93,25 +88,15 @@ step
     .mob Hillsbrad Farmhand
     .mob Farmer Getz
 step
-    .goto Hillsbrad Foothills,32.62,39.79
-    >>Kill |cRXP_ENEMY_Citizen Wilkes|r
-    .complete 567,2 --Dangerous!
-    .mob Citizen Wilkes
+    .goto Hillsbrad Foothills,33.22,34.76
+    >>Kill |cRXP_ENEMY_Farmer Ray|r
+    .complete 527,3 --Battle of Hillsbrad
+    .mob Farmer Ray
 step
-    .goto Hillsbrad Foothills,29.51,42.41
-    >>Kill |cRXP_ENEMY_Clerk Horrace Whitesteed|r
-    .complete 567,1 --Dangerous!
-    .mob Clerk Horrace Whitesteed
-step
-    .goto Hillsbrad Foothills,35.88,46.57
-    >>Kill |cRXP_ENEMY_Farmer Kalaba|r
-    .complete 567,4 --Dangerous!
-    .mob Farmer Kalaba
-step
-    .goto Hillsbrad Foothills,31.80,52.70
-    >>Kill |cRXP_ENEMY_Miner Hackett|r
-    .complete 567,3 --Dangerous!
-    .mob Miner Hackett
+    .goto Hillsbrad Foothills,20.79,47.40
+    >>Talk to |cRXP_FRIENDLY_Deathstalker Lesh|r
+    .accept 494 >>Accept Time To Strike
+    .target Deathstalker Lesh
 step
     .goto Hillsbrad Foothills,31.77,63.58
     >>Kill |cRXP_ENEMY_Elder Moss Creeper|r and |cRXP_ENEMY_Giant Moss Creeper|r and |cRXP_ENEMY_Forest Moss Creeper|r. Loot them for |cRXP_LOOT_Creeper Ichor|r
@@ -120,41 +105,12 @@ step
     .mob Giant Moss Creeper
     .mob Forest Moss Creeper
 step
-    .goto Hillsbrad Foothills,20.79,47.40
-    >>Talk to |cRXP_FRIENDLY_Deathstalker Lesh|r
-    .accept 494 >>Accept Time To Strike
-    .target Deathstalker Lesh
-step
-    .goto Hillsbrad Foothills,33.22,34.76
-    >>Kill |cRXP_ENEMY_Farmer Ray|r
-    .complete 527,3 --Battle of Hillsbrad
-    .mob Farmer Ray
-step
-    .goto Hillsbrad Foothills,61.44,19.06
-    >>Talk to |cRXP_FRIENDLY_Apothecary Lydon|r
-    .turnin 496 >>Turn in Elixir of Suffering
-    .accept 499 >>Accept Elixir of Suffering
-    .turnin 501 >>Turn in Elixir of Pain
-    .accept 502 >>Accept Elixir of Pain
-    .target Apothecary Lydon
-step
-    .goto Hillsbrad Foothills,61.55,19.14
-    >>Talk to |cRXP_FRIENDLY_Umpi|r
-    .turnin 499 >>Turn in Elixir of Suffering
-    .target Umpi
-step
-    .goto Hillsbrad Foothills,62.33,20.45
-    >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
-    .turnin 494 >>Turn in Time To Strike
-    .turnin 527 >>Turn in Battle of Hillsbrad
-    .accept 528 >>Accept Battle of Hillsbrad
-    .turnin 567 >>Turn in Dangerous!
-    .target High Executor Darthalia
-step
-    .goto Hillsbrad Foothills,62.11,19.70
-    >>Talk to |cRXP_FRIENDLY_Deathguard Samsa|r
-    .accept 546 >>Accept Souvenirs of Death
-    .target Deathguard Samsa
+    .goto Hillsbrad Foothills,63.58,53.11
+    >>Talk to |cRXP_FRIENDLY_Deathstalker Masoj|r
+    .accept 98095 >>Accept Valuable Vantages
+    .turnin 98095 >>Turn in Valuable Vantages
+    .turnin 98094 >>Turn in Scout Support
+    .target Deathstalker Masoj
 step
     .goto Hillsbrad Foothills,75.33,41.50
     >>Rescue Drull
@@ -162,15 +118,11 @@ step
 step
     .goto Hillsbrad Foothills,78.18,43.19
     >>Kill |cRXP_ENEMY_Syndicate Watchman|r
-    >>Kill |cRXP_ENEMY_Farmer Ray|r and |cRXP_ENEMY_Syndicate Shadow Mage|r and |cRXP_ENEMY_Syndicate Rogue|r. Loot them for |cRXP_LOOT_Hillsbrad Human Skull|r
     >>Kill |cRXP_ENEMY_Syndicate Shadow Mage|r. Loot them for |cRXP_LOOT_Vial of Innocent Blood|r
     .complete 549,2 --WANTED: Syndicate Personnel
-    .complete 546,1 --Souvenirs of Death
     .complete 1066,1 --Blood of Innocents
     .mob Syndicate Watchman
-    .mob Farmer Ray
     .mob Syndicate Shadow Mage
-    .mob Syndicate Rogue
 step
     .goto Hillsbrad Foothills,79.79,39.65
     >>Rescue Tog'thar
@@ -181,49 +133,65 @@ step
     .complete 549,1 --WANTED: Syndicate Personnel
     .mob Syndicate Rogue
 step
-    .goto Hillsbrad Foothills,63.58,53.11
-    >>Talk to |cRXP_FRIENDLY_Deathstalker Masoj|r
-    .turnin 98094 >>Turn in Scout Support
-    .accept 98095 >>Accept Valuable Vantages
-    .turnin 98095 >>Turn in Valuable Vantages
-    .target Deathstalker Masoj
+    .goto Hillsbrad Foothills,63.24,20.66
+    >>Talk to |cRXP_FRIENDLY_Krusk|r
+    .turnin 498 >>Turn in The Rescue
+    .target Krusk
 step
-    .goto Hillsbrad Foothills,64.56,61.25
-    >>Loot the |cRXP_PICK_Mudsnout Blossoms|r
-    .complete 509,1 --Elixir of Agony
+    .goto Hillsbrad Foothills,62.33,20.45
+    >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
+    .turnin 494 >>Turn in Time To Strike
+    .turnin 527 >>Turn in Battle of Hillsbrad
+    .accept 528 >>Accept Battle of Hillsbrad
+    .turnin 549 >>Turn in WANTED: Syndicate Personnel
+    .target High Executor Darthalia
 step
-    .goto Hillsbrad Foothills,34.76,46.11
-    >>Kill |cRXP_ENEMY_Hillsbrad Peasant|r
-    .complete 528,1 --Battle of Hillsbrad
-    .mob Hillsbrad Peasant
-step
-    .goto Hillsbrad Foothills,32.66,35.32
-    >>Talk to |cRXP_FRIENDLY_Stanley|r
-    .turnin 502 >>Turn in Elixir of Pain
-    .target Stanley
+    .goto Hillsbrad Foothills,62.11,19.70
+    >>Talk to |cRXP_FRIENDLY_Deathguard Samsa|r
+    .accept 546 >>Accept Souvenirs of Death
+    .target Deathguard Samsa
 step
     .goto Hillsbrad Foothills,61.44,19.06
     >>Talk to |cRXP_FRIENDLY_Apothecary Lydon|r
-    .turnin 509 >>Turn in Elixir of Agony
+    .turnin 496 >>Turn in Elixir of Suffering
+    .accept 499 >>Accept Elixir of Suffering
+    .turnin 501 >>Turn in Elixir of Pain
+    .accept 502 >>Accept Elixir of Pain
     .turnin 1066 >>Turn in Blood of Innocents
     .target Apothecary Lydon
+step
+    .goto Hillsbrad Foothills,61.55,19.14
+    >>Talk to |cRXP_FRIENDLY_Umpi|r
+    .turnin 499 >>Turn in Elixir of Suffering
+    .target Umpi
+step
+    .goto Hillsbrad Foothills,78.73,43.51
+    >>Kill |cRXP_ENEMY_Farmer Ray|r and |cRXP_ENEMY_Syndicate Shadow Mage|r and |cRXP_ENEMY_Syndicate Rogue|r. Loot them for |cRXP_LOOT_Hillsbrad Human Skull|r
+    .complete 546,1 --Souvenirs of Death
+    .mob Farmer Ray
+    .mob Syndicate Shadow Mage
+    .mob Syndicate Rogue
 step
     .goto Hillsbrad Foothills,62.11,19.70
     >>Talk to |cRXP_FRIENDLY_Deathguard Samsa|r
     .turnin 546 >>Turn in Souvenirs of Death
     .target Deathguard Samsa
 step
+    .goto Hillsbrad Foothills,32.66,35.32
+    >>Talk to |cRXP_FRIENDLY_Stanley|r
+    .turnin 502 >>Turn in Elixir of Pain
+    .target Stanley
+step
+    .goto Hillsbrad Foothills,34.76,46.11
+    >>Kill |cRXP_ENEMY_Hillsbrad Peasant|r
+    .complete 528,1 --Battle of Hillsbrad
+    .mob Hillsbrad Peasant
+step
     .goto Hillsbrad Foothills,62.33,20.45
     >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
     .turnin 528 >>Turn in Battle of Hillsbrad
     .accept 529 >>Accept Battle of Hillsbrad
-    .turnin 549 >>Turn in WANTED: Syndicate Personnel
     .target High Executor Darthalia
-step
-    .goto Hillsbrad Foothills,63.24,20.66
-    >>Talk to |cRXP_FRIENDLY_Krusk|r
-    .turnin 498 >>Turn in The Rescue
-    .target Krusk
 step
     .goto Hillsbrad Foothills,32.11,44.42
     >>Kill |cRXP_ENEMY_Hillsbrad Apprentice Blacksmith|r
@@ -256,20 +224,6 @@ step
     .goto Hillsbrad Foothills,62.33,20.45
     >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
     .turnin 532 >>Turn in Battle of Hillsbrad
-    .accept 539 >>Accept Battle of Hillsbrad
-    .target High Executor Darthalia
-step
-    .goto Hillsbrad Foothills,31.21,56.01
-    >>Kill |cRXP_ENEMY_Hillsbrad Miner|r
-    >>Kill |cRXP_ENEMY_Foreman Bonds|r
-    .complete 539,2 --Battle of Hillsbrad
-    .complete 539,1 --Battle of Hillsbrad
-    .mob Hillsbrad Miner
-    .mob Foreman Bonds
-step
-    .goto Hillsbrad Foothills,62.33,20.45
-    >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
-    .turnin 539 >>Turn in Battle of Hillsbrad
     .target High Executor Darthalia
 ]])
 
@@ -328,10 +282,10 @@ step
     >>Talk to |cRXP_FRIENDLY_Alonso|r
     .accept 78132 >>Accept Dragonslayer's Helm
     .turnin 78132 >>Turn in Dragonslayer's Helm
-    .accept 78133 >>Accept Dragonslayer's Shield
-    .turnin 78133 >>Turn in Dragonslayer's Shield
     .accept 78134 >>Accept Dragonslayer's Lance
     .turnin 78134 >>Turn in Dragonslayer's Lance
+    .accept 78133 >>Accept Dragonslayer's Shield
+    .turnin 78133 >>Turn in Dragonslayer's Shield
     .target Alonso
 step
     .goto Ashenvale,35.90,36.64
@@ -586,20 +540,16 @@ step
     >>Talk to |cRXP_FRIENDLY_Jandia|r
     .accept 98070 >>Accept Stop the Screeching
     .target Jandia
-step << Shaman
-    .goto Thousand Needles,46.14,51.71
-    >>Talk to |cRXP_FRIENDLY_Rau Cliffrunner|r
-    .accept 79364 >>Accept Eyes on the Sky
-    .target Rau Cliffrunner
 step
     .goto Thousand Needles,56.36,50.39
     >>Loot the |cRXP_PICK_Alien Egg|r
     .complete 4821,1 --Alien Egg
-step << Shaman
-    .goto Thousand Needles,53.54,42.65
-    >>Talk to |cRXP_FRIENDLY_Prate Cloudseer|r
-    .turnin 79364 >>Turn in Eyes on the Sky
-    .target Prate Cloudseer
+step
+    .goto Thousand Needles,44.64,50.29
+    >>Talk to |cRXP_FRIENDLY_Hagar Lightninghoof|r
+    .turnin 4821 >>Turn in Alien Egg
+    .accept 4865 >>Accept Serpent Wild
+    .target Hagar Lightninghoof
 step
     .goto Thousand Needles,43.65,39.34
     >>Kill |cRXP_ENEMY_Galak Windchaser|r
@@ -629,6 +579,11 @@ step
     .turnin 5881 >>Turn in Calling in the Reserves
     .target Grish Longrunner
 step
+    .goto Thousand Needles,21.54,32.35
+    >>Talk to |cRXP_FRIENDLY_Motega Firemane|r
+    .turnin 4865 >>Turn in Serpent Wild
+    .target Motega Firemane
+step
     .goto Thousand Needles,12.19,36.13
     >>Loot the |cRXP_PICK_Highperch Wyvern Egg|r
     .complete 4767,1 --Wind Rider
@@ -646,11 +601,10 @@ step
     .complete 98070,3 --Stop the Screeching
     .mob Screeching Windcaller
 step
-    .goto Thousand Needles,44.64,50.29
-    >>Talk to |cRXP_FRIENDLY_Hagar Lightninghoof|r
-    .turnin 4821 >>Turn in Alien Egg
-    .accept 4865 >>Accept Serpent Wild
-    .target Hagar Lightninghoof
+    .goto Thousand Needles,44.93,48.92
+    >>Talk to |cRXP_FRIENDLY_Elu|r
+    .turnin 4767 >>Turn in Wind Rider
+    .target Elu
 step
     .goto Thousand Needles,45.67,50.74
     >>Talk to |cRXP_FRIENDLY_Cliffwatcher Longhorn|r
@@ -665,11 +619,6 @@ step
     .turnin 98070 >>Turn in Stop the Screeching
     .target Jandia
 step
-    .goto Thousand Needles,44.93,48.92
-    >>Talk to |cRXP_FRIENDLY_Elu|r
-    .turnin 4767 >>Turn in Wind Rider
-    .target Elu
-step
     .goto Thousand Needles,39.34,41.53
     >>Loot the |cRXP_PICK_Secret Note #3|r
     .complete 5064,3 --Grimtotem Spying
@@ -681,11 +630,6 @@ step
     .goto Thousand Needles,31.79,32.58
     >>Loot the |cRXP_PICK_Secret Note #1|r
     .complete 5064,1 --Grimtotem Spying
-step
-    .goto Thousand Needles,21.54,32.35
-    >>Talk to |cRXP_FRIENDLY_Motega Firemane|r
-    .turnin 4865 >>Turn in Serpent Wild
-    .target Motega Firemane
 step
     .goto Thousand Needles,45.67,50.74
     >>Talk to |cRXP_FRIENDLY_Cliffwatcher Longhorn|r
@@ -712,11 +656,6 @@ step
     .accept 1176 >>Accept Load Lightening
     .target Pozzik
 step
-    .goto Thousand Needles,81.63,77.95
-    >>Talk to |cRXP_FRIENDLY_Trackmaster Zherin|r
-    .accept 1175 >>Accept A Bump in the Road
-    .target Trackmaster Zherin
-step
     .goto Thousand Needles,71.48,74.67
     >>Kill |cRXP_ENEMY_Scorpid Terror|r and |cRXP_ENEMY_Scorpid Reaver|r. Loot them for |cRXP_LOOT_Salty Scorpid Venom|r
     .complete 1104,1 --Salt Flat Venom
@@ -727,14 +666,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Fizzle Brassbolts|r
     .turnin 1104 >>Turn in Salt Flat Venom
     .target Fizzle Brassbolts
-step
-    .goto Thousand Needles,77.53,87.98
-    >>Kill |cRXP_ENEMY_Saltstone Gazer|r
-    >>Kill |cRXP_ENEMY_Saltstone Crystalhide|r
-    .complete 1175,3 --A Bump in the Road
-    .complete 1175,2 --A Bump in the Road
-    .mob Saltstone Gazer
-    .mob Saltstone Crystalhide
 step
     .goto Thousand Needles,87.95,65.32
     >>Kill |cRXP_ENEMY_Salt Flats Scavenger|r and |cRXP_ENEMY_Salt Flats Vulture|r. Loot them for |cRXP_LOOT_Hollow Vulture Bone|r
@@ -749,12 +680,9 @@ step
     .mob Sparkleshell Snapper
     .mob Sparkleshell Borer
 step
-    .goto Thousand Needles,75.49,57.37
-    >>Kill |cRXP_ENEMY_Saltstone Basilisk|r
+    .goto Thousand Needles,73.40,57.80
     >>Loot the |cRXP_PICK_Rocket Car Parts|r
-    .complete 1175,1 --A Bump in the Road
     .complete 1110,1 --Rocket Car Parts
-    .mob Saltstone Basilisk
 step
     .goto Thousand Needles,80.18,75.88
     >>Talk to |cRXP_FRIENDLY_Pozzik|r
@@ -770,9 +698,4 @@ step
     >>Talk to |cRXP_FRIENDLY_Kravel Koalbeard|r
     .turnin 1110 >>Turn in Rocket Car Parts
     .target Kravel Koalbeard
-step
-    .goto Thousand Needles,81.63,77.95
-    >>Talk to |cRXP_FRIENDLY_Trackmaster Zherin|r
-    .turnin 1175 >>Turn in A Bump in the Road
-    .target Trackmaster Zherin
 ]])

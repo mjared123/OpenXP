@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.2.3-beta",
+        date = "November 2026",
+        changes = {
+            "The 21-60 guides no longer send you to quests far above your level. A quest now has to be at most 2 levels above where its section ends (for example, the 21-23 Ashenvale section no longer has the level 27 Raene's Cleansing)",
+            "The 40-60 guides were rebuilt with WoW Forever's quests included, like 21-40 were in 1.2.0",
+        },
+    },
+    {
         version = "1.2.2-beta",
         date = "November 2026",
         changes = {

@@ -383,7 +383,13 @@ class Builder:
                 continue  # placeholder / unused quests in the data
             carried = qid in self.accepted_before
             if not carried:
-                if q.level < lo - 3 or q.level > hi + 3 or q.reqLevel > hi:
+                # at most two levels above where the section ends: a level 21-23
+                # section shouldn't send you to level 27 quests
+                top = section.get("max_quest_level")
+                if top is None:
+                    m = re.match(r"(\d+)-(\d+)", section["name"])
+                    top = (int(m.group(2)) if m else hi) + 2
+                if q.level < lo - 3 or q.level > top or q.reqLevel > hi:
                     continue
             start = None if carried else self.starter(q, zone)
             if not carried and not start:
