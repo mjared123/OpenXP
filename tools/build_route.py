@@ -927,6 +927,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--questiedb", required=True)
     ap.add_argument("--dump", help="OpenXP.lua saved variables with /oxp questdump data")
+    ap.add_argument("--log", help="write every zone choice and its numbers to this JSON file")
     ap.add_argument("routes", nargs="+",
                     help="route files, in level order; they're built as one run so "
                          "your level carries from one file into the next")
@@ -1044,6 +1045,11 @@ def main():
 # "kill mobs or run a dungeon to level N" step and tries again.
 # ---------------------------------------------------------------------------
 
+# Every zone choice the planner made, with the numbers for each option
+# (written out with --log, for explaining the route).
+DECISIONS = []
+
+
 def plan_hubs(builder, route):
     hubs = route.HUBS
     areas = [h["area"] for h in hubs]
@@ -1084,11 +1090,18 @@ def plan_hubs(builder, route):
         else:
             options = [h for h in hubs if h["key"] != cur["key"]]
         scored = []
+        log = {"level": builder.level(), "from": cur["key"] if cur else None, "options": {}}
         for hub in options:
             saved = builder.snapshot()
             section, cands, actions, done, start, worth, rate = visit(hub, False)
+            gain, spent = visit.last
             builder.restore(saved)
             need = 3 if hub.get("city") else MIN_VISIT
+            later = sorted(c["q"].level for c in cands.values()
+                           if not c["carried"] and c["q"].id not in done)
+            log["options"][hub["key"]] = dict(
+                worth=worth, gain=gain, spent=spent, rate=rate, need=need,
+                quests=len(done), waiting=later[:6])
             if os.environ.get("OXP_DEBUG"):
                 print("  try %-14s lv %.1f worth %2d rate %4.0f" % (hub["key"], builder.level(), worth, rate))
             if cur is not None and worth < need:
@@ -1106,6 +1119,7 @@ def plan_hubs(builder, route):
             visits[hub["key"]] = w + 1
             gain2 = spent2 = 0.0
             best2 = 0.0
+            best_next = None
             for hub2 in hubs:
                 if hub2["key"] == hub["key"]:
                     continue
@@ -1115,15 +1129,20 @@ def plan_hubs(builder, route):
                 builder.restore(saved2)
                 if worth2 >= (3 if hub2.get("city") else MIN_VISIT) and rate2 > best2:
                     best2, gain2, spent2 = rate2, g2, s2
+                    best_next = hub2["key"]
             visits[hub["key"]] = w
             builder.restore(saved)
             combined = (gain1 + gain2) / (spent1 + spent2) if spent1 + spent2 else 0
+            log["options"][hub["key"]].update(combined=combined, next=best_next)
             if best is None or combined > best[2]:
                 best = (hub, rate, combined)
         lvl = builder.level()
+        log["grind_rate"] = GRIND_KILLS_PER_MINUTE * mob_xp(int(lvl), lvl)
         if best is not None and cur is not None and \
                 best[1] < WORTH_IT * GRIND_KILLS_PER_MINUTE * mob_xp(int(lvl), lvl):
             best = None
+        log["chosen"] = best[0]["key"] if best else None
+        DECISIONS.append(log)
         if best is None:
             if pending_grind >= 6:
                 break
@@ -1142,6 +1161,9 @@ def plan_hubs(builder, route):
             section["_grind_to"] = int(start)
         plan.append(dict(section=section, cands=cands, actions=actions, done=done,
                          start=start, end=builder.level(), grind=pending_grind, rate=rate))
+        log["quests"] = [(a[1], cands[a[1]]["q"].name, cands[a[1]]["q"].level)
+                         for a in actions if a[0] == "turnin"]
+        log["start"], log["end"] = start, builder.level()
         builder.accepted_before -= done
         pending_grind = 0.0
         cur = hub
@@ -1180,6 +1202,9 @@ def main_hubs(route, args, db):
     builder.used |= set(getattr(route, "SKIP", ()))
     builder.xp = xp_at_level(route.START_LEVEL)
     plan, report = plan_hubs(builder, route)
+    if args.log:
+        import json
+        json.dump(DECISIONS, open(args.log, "w"), indent=1)
     # Split into files by the level each section starts at.
     files = []
     for top, path, header in route.OUTPUTS:
