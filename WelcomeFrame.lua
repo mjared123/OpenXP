@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.6-beta",
+        date = "November 2026",
+        changes = {
+            "Bag items a quest needs now say so on their tooltip, with the quest and how many you have (like Gooey Spider Legs 2/6), so you don't sell them. This includes items the guide tells you to save for a quest you'll pick up later",
+            "Enemy tooltips now show your progress on item drops they give (like Gooey Spider Legs from spiders), not just kills",
+            "If Questie is installed with its tooltips turned off, OpenXP shows the quest progress on enemies instead",
+        },
+    },
+    {
         version = "1.1.5-beta",
         date = "November 2026",
         changes = {

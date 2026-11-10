@@ -519,6 +519,7 @@ local function QGet(kind, id)
     ok, obj = pcall(fn, db, id)
     if ok and type(obj) == "table" then card.questieStyle = "colon"; return obj end
 end
+card.QGet = QGet -- also used by the tooltips (OpenXPTooltips.lua)
 
 local function UiMap(areaId)
     if zoneDB and zoneDB.GetUiMapIdByAreaId then

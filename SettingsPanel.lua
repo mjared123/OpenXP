@@ -3219,7 +3219,7 @@ function addon.settings:CreateAceOptionsPanel()
                     },
                     openxpTooltips = {
                         name = L("Quest tooltips"),
-                        desc = L("Mob tooltips show the quests they count for and your progress. NPC tooltips show which guide step needs them."),
+                        desc = L("Item tooltips show which quests need the item and how many you have, so you don't sell it. Mob tooltips show the quests they count for (kills and drops) and your progress. NPC tooltips show which guide step needs them."),
                         type = "toggle",
                         width = optionsWidth,
                         order = 5.51,
