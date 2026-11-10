@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.13",
+        date = "November 2026",
+        changes = {
+            "If you updated OpenXP without restarting WoW, it now tells you to restart: new files like the terrain arrow only load after a full restart, not a /reload",
+        },
+    },
+    {
         version = "1.3.12",
         date = "November 2026",
         changes = {

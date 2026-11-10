@@ -290,8 +290,16 @@ local function Context()
 end
 
 -- The stepping stone to show instead of target, as an arrow element, or nil
+local warnedRestart
+
 function ph.ForArrow(target)
     if not target or target == proxy or not ph.IsOn() then return end
+    -- New files in an update (like Terrain.lua) only load after WoW restarts;
+    -- a /reload keeps the old file list and the arrow goes straight again.
+    if not addon.terrain and not warnedRestart then
+        warnedRestart = true
+        Print(L("OpenXP was updated with new files. Exit and restart WoW (a /reload isn't enough) so the arrow can walk around mountains and cliffs."))
+    end
     local now = GetTime()
     if target ~= lastTarget or now - lastCheck >= THROTTLE then
         lastCheck, lastTarget = now, target
