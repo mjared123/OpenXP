@@ -6,7 +6,12 @@ only loads on other game versions (Retail, TBC, Wrath, Cata, MoP, SoD), checks
 that every file the Forever/Classic load path references is still there, and
 zips it.
 
-    python3 tools/package.py <out.zip> [git-ref]
+    python3 tools/package.py [out.zip | out-dir] [git-ref]
+
+With no name (or a folder), the zip is called OpenXP-<version>.zip, using the
+## Version line from OpenXP.toc (for example OpenXP-1.1.5-beta.zip). The build
+stops if the .toc version and the newest WelcomeFrame.lua changelog entry
+don't match, so a release can't ship with the wrong number.
 """
 import os, re, shutil, subprocess, sys, tempfile, zipfile
 
@@ -101,8 +106,29 @@ def drop_unloaded(root, seen):
     return dropped
 
 
+def check_version(root):
+    """Return the .toc version; exit if the .toc files or changelog disagree."""
+    versions = set()
+    for toc in ("OpenXP.toc", "OpenXP_Vanilla.toc"):
+        tp = os.path.join(root, toc)
+        if os.path.exists(tp):
+            m = re.search(r"^## Version:\s*(\S+)", open(tp, encoding="utf-8").read(), re.M)
+            if m:
+                versions.add(m.group(1))
+    if len(versions) != 1:
+        sys.exit("the .toc files disagree on ## Version: %s" % sorted(versions))
+    version = versions.pop()
+    wf = os.path.join(root, "WelcomeFrame.lua")
+    if os.path.exists(wf):
+        m = re.search(r'version\s*=\s*"([^"]+)"', open(wf, encoding="utf-8").read())
+        if m and m.group(1) != version:
+            sys.exit("OpenXP.toc says %s but the newest WelcomeFrame.lua changelog entry is %s"
+                     % (version, m.group(1)))
+    return version
+
+
 def main():
-    out = os.path.abspath(sys.argv[1])
+    arg = sys.argv[1] if len(sys.argv) > 1 else "."
     ref = sys.argv[2] if len(sys.argv) > 2 else "HEAD"
     repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     tmp = tempfile.mkdtemp()
@@ -110,6 +136,10 @@ def main():
     os.makedirs(root)
     tar = subprocess.run(["git", "-C", repo, "archive", ref], check=True, capture_output=True).stdout
     subprocess.run(["tar", "-x", "-C", root], input=tar, check=True)
+    version = check_version(root)
+    out = os.path.abspath(arg)
+    if os.path.isdir(out):
+        out = os.path.join(out, "OpenXP-%s.zip" % version)
     for d in DROP:
         p = os.path.join(root, d)
         if os.path.isdir(p):

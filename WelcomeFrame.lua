@@ -5,11 +5,22 @@
 
 local addonName, addon = ...
 
-local OPENXP_VERSION = "0.9.9"
+-- The version comes from the .toc (## Version), so it is only set in one place.
+-- OpenXP is in beta, so versions look like 1.1.5-beta.
+local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or _G.GetAddOnMetadata
+local OPENXP_VERSION = (GetAddOnMetadata and GetAddOnMetadata(addonName, "Version")) or "dev"
 addon.openxpVersion = OPENXP_VERSION
 
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
+    {
+        version = "1.1.5-beta",
+        date = "November 2026",
+        changes = {
+            "OpenXP is in beta testing, so version numbers now end in -beta",
+            "The version shown on the guide footer and this window now matches the installed version (it was stuck on 0.9.9)",
+        },
+    },
     {
         version = "1.1.4",
         date = "November 2026",
