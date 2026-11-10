@@ -11,13 +11,15 @@
 local addonName, addon = ...
 
 local GITHUB = "https://github.com/mjared123/OpenXP"
-local CURSEFORGE = "https://www.curseforge.com/wow/addons/openxp"
+-- The project number keeps working if the page name changes; CurseForge
+-- redirects it to the project page (comments and ratings are on that page).
+local CURSEFORGE = "https://www.curseforge.com/projects/1792509"
 
 local feedback = {
     links = {
         bug = GITHUB .. "/issues/new?template=bug_report.yml",
         suggestion = GITHUB .. "/issues/new?template=suggestion.yml",
-        comment = CURSEFORGE .. "/comments",
+        comment = CURSEFORGE,
         rate = CURSEFORGE,
     },
 }
