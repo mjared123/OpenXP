@@ -393,8 +393,7 @@ end
 
 local AREA_FILL = {0.20, 0.55, 1.0, 0.30}
 local AREA_EDGE = {0.35, 0.70, 1.0, 0.95}
-local ROUTE_GLOW = {0.75, 0.20, 1.0, 0.30}
-local ROUTE_CORE = {0.90, 0.45, 1.0, 1.0}
+local ROUTE_CORE = {0.72, 0.42, 1.0, 0.92}
 local PIN_SIZE = 12
 local PIN_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
 local WHITE = "Interface\\Buttons\\WHITE8X8"
@@ -534,29 +533,56 @@ local function Outline(c, pts, color, thickness, clip)
     end
 end
 
+-- Round off a polyline's corners (Chaikin), keeping both ends where they are
+local function SmoothOpen(pts, rounds)
+    for _ = 1, rounds do
+        if #pts < 3 then return pts end
+        local out = {pts[1]}
+        for i = 1, #pts - 1 do
+            local a, b = pts[i], pts[i + 1]
+            if i > 1 then out[#out + 1] = {a[1] * 0.75 + b[1] * 0.25, a[2] * 0.75 + b[2] * 0.25} end
+            if i < #pts - 1 then out[#out + 1] = {a[1] * 0.25 + b[1] * 0.75, a[2] * 0.25 + b[2] * 0.75} end
+        end
+        out[#out + 1] = pts[#pts]
+        pts = out
+    end
+    return pts
+end
+
+local ROUND = "Interface\\CHARACTERFRAME\\TempPortraitAlphaMask"
+
+-- One clean line: rounded corners, round joints so the pieces meet without
+-- gaps, a small open chevron now and then for the direction, and a dot
+-- where it ends.
 local function RouteLeg(c, pts, thickness, clip)
+    if #pts < 2 then return end
+    pts = SmoothOpen(pts, 2)
+    local travelled, nextMark = 0, thickness * 40
     for i = 1, #pts - 1 do
         local ax, ay, bx, by = ClipSegment(pts[i][1], pts[i][2], pts[i + 1][1], pts[i + 1][2], clip)
         if ax then
-            Line(c, ROUTE_GLOW, thickness * 3, ax, ay, bx, by, "ARTWORK")
             Line(c, ROUTE_CORE, thickness, ax, ay, bx, by)
-            -- a chevron every so often, pointing the way you go
+            Tex(c, ROUND, ROUTE_CORE, thickness, bx, by) -- joint
             local dx, dy = bx - ax, by - ay
             local len = sqrt(dx * dx + dy * dy)
-            local gap = thickness * 18
-            if len > gap then
+            if len > 0 then
                 local ux, uy = dx / len, dy / len
-                local size = thickness * 2.2
-                local d = gap / 2
-                while d < len - gap / 3 do
+                local size = thickness * 2.5
+                while nextMark < travelled + len do
+                    local d = nextMark - travelled
                     local mx, my = ax + ux * d, ay + uy * d
-                    local bxx, byy = mx - ux * size, my - uy * size
-                    Line(c, ROUTE_CORE, thickness * 0.8, bxx - uy * size, byy + ux * size, mx, my)
-                    Line(c, ROUTE_CORE, thickness * 0.8, bxx + uy * size, byy - ux * size, mx, my)
-                    d = d + gap
+                    local tx, ty = mx - ux * size, my - uy * size
+                    Line(c, ROUTE_CORE, thickness * 0.75, tx - uy * size, ty + ux * size, mx, my)
+                    Line(c, ROUTE_CORE, thickness * 0.75, tx + uy * size, ty - ux * size, mx, my)
+                    nextMark = nextMark + thickness * 60
                 end
+                travelled = travelled + len
             end
         end
+    end
+    local last = pts[#pts]
+    if not clip or ClipSegment(last[1], last[2], last[1] + 0.01, last[2], clip) then
+        Tex(c, ROUND, ROUTE_CORE, thickness * 2.6, last[1], last[2])
     end
 end
 
