@@ -75,7 +75,7 @@ HUBS = [
     # Eastern Kingdoms
     hub("wetlands", "Wetlands", 11, A.MENETHIL, E, "Menethil Harbor", "Shellei Brondir"),
     hub("redridge", "Redridge Mountains", 44, A.LAKESHIRE, E, "Lakeshire", "Ariena Stormfeather"),
-    # areas=True: kill and loot steps are areas to walk round (a test in
+    # areas=True: kill and loot steps are areas drawn on the map (a test in
     # Duskwood before the other zones get it)
     hub("duskwood", "Duskwood", 10, A.DARKSHIRE, E, "Darkshire", "Felicia Maline", areas=True),
     hub("hillsbrad", "Hillsbrad Foothills", 267, A.SOUTHSHORE, E, "Southshore", "Darla Harris",

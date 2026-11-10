@@ -2553,6 +2553,25 @@ function addon.functions.line(self, text, zone, ...)
     end
 end
 
+-- .area <map>,x1,y1,x2,y2,...: the area to kill and loot in (OpenXP). It's
+-- drawn on the world map and minimap, and the arrow says "Here" anywhere
+-- inside it (Terrain.lua).
+function addon.functions.area(self, text, zone, ...)
+    if type(self) == "string" then
+        local mapID = zone and (addon.GetMapId(zone) or tonumber(zone))
+        local args, pts = {...}, {}
+        for i = 1, #args - 1, 2 do
+            local x, y = tonumber(args[i]), tonumber(args[i + 1])
+            if x and y then pts[#pts + 1] = {x, y} end
+        end
+        if not mapID or #pts < 3 then
+            return addon.error(L("Error parsing guide") .. " " .. (addon.currentGuideName or _G.NONE) ..
+                                   ": Invalid area\n" .. self, zone)
+        end
+        return {area = pts, areaZone = mapID, textOnly = true, text = text}
+    end
+end
+
 function addon.functions.loop(self, text, range, zone, ...)
     if type(self) == "string" then
         local element = {}

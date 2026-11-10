@@ -320,9 +320,12 @@ if origDraw then
         local real = self.element
         local go = ph.go
         local target = go or real
-        local via = target and ph.ForArrow(target)
-        self.oxpVia = via or go
-        local draw = via or go
+        -- a kill/loot area (.area): "Here" anywhere inside, else its edge
+        local area = not go and addon.terrain and addon.terrain.AreaTarget and addon.terrain.AreaTarget(real)
+        if area then target = area end
+        local via = target and not (area and area.inside) and ph.ForArrow(target)
+        self.oxpVia = via or go or area
+        local draw = via or go or area
         if not draw then return origDraw(self, ...) end
         local wrong = self.wrongContinent
         if go then self.wrongContinent = false end

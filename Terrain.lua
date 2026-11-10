@@ -15,6 +15,7 @@ local _, addon = ...
 local HBD = LibStub("HereBeDragons-2.0")
 local floor, sqrt, max, min, abs = math.floor, math.sqrt, math.max, math.min, math.abs
 
+local L = addon.locale and addon.locale.Get
 local tr = {}
 addon.terrain = tr
 
@@ -298,23 +299,103 @@ function tr.Route(target, px, py, inst, ctx)
 end
 
 ---------------------------------------------------------------------------
--- World map: the way around, and where the step's mobs are
+-- Kill/loot areas, and the route drawn on the maps
 ---------------------------------------------------------------------------
 -- (Kept in this file rather than a new one: WoW only loads new addon files
 -- after a full restart, and this way a /reload is enough.)
 --
--- While the world map shows the zone you're in, two things are drawn on it:
--- - the way the arrow is taking you round mountains and packs, as a line
---   from you through each corner to the target;
--- - a small mark on every spawn of the mobs (and objects) the current step's
---   objectives need, read from Questie when it's installed.
+-- A step can carry an area (.area in the guide): the place to kill and loot
+-- in. Inside it the arrow says "Here"; outside, it leads to the nearest edge.
+-- The area is shaded on the world map and the minimap.
+--
+-- The way to the arrow's target is drawn on the world map as a glowing
+-- purple line, round mountains and packs the same way the arrow goes.
+-- The spawns of what the current step needs get a small mark too (from
+-- Questie's data when it's installed).
 
-local MAP_TICK = 0.5
-local PATH_COLOR = {0.35, 0.85, 1, 0.9}
+local MAP_TICK = 0.25
+local ROUTE_GLOW = {0.62, 0.18, 1.0, 0.35}
+local ROUTE_CORE = {0.85, 0.45, 1.0, 1.0}
+local AREA_FILL = {0.25, 0.6, 1.0, 0.22}
+local AREA_EDGE = {0.35, 0.75, 1.0, 0.9}
 local PIN_SIZE = 12
 local PIN_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
+local WHITE = "Interface\\Buttons\\WHITE8X8"
 
-local drawn = {lines = {}, pins = {}}
+local function InsidePoly(poly, x, y)
+    local c, j = false, #poly
+    for i = 1, #poly do
+        local xi, yi, xj, yj = poly[i][1], poly[i][2], poly[j][1], poly[j][2]
+        if (yi > y) ~= (yj > y) and x < (xj - xi) * (y - yi) / (yj - yi) + xi then c = not c end
+        j = i
+    end
+    return c
+end
+tr.InsidePoly = InsidePoly
+
+-- nearest point on the polygon's edge to (x, y), in map coordinates
+local function NearestEdge(poly, x, y, kx, ky)
+    local best, bx, by
+    local j = #poly
+    for i = 1, #poly do
+        local ax, ay, cx, cy = poly[j][1], poly[j][2], poly[i][1], poly[i][2]
+        local vx, vy = (cx - ax) * kx, (cy - ay) * ky
+        local len2 = vx * vx + vy * vy
+        local t = len2 > 0 and max(0, min(1, ((x - ax) * kx * vx + (y - ay) * ky * vy) / len2)) or 0
+        local px, py = ax + (cx - ax) * t, ay + (cy - ay) * t
+        local dx, dy = (px - x) * kx, (py - y) * ky
+        local d = dx * dx + dy * dy
+        if not best or d < best then best, bx, by = d, px, py end
+        j = i
+    end
+    return bx, by
+end
+
+local function StepArea(step)
+    for _, e in ipairs(step and step.elements or {}) do
+        if e.area and e.areaZone then return e end
+    end
+end
+tr.StepArea = StepArea
+
+-- The arrow's target for a step with an area: a stand-in at your feet while
+-- you're inside ("Here"), or at the nearest edge while you're outside. nil
+-- when the step has no area or you're in another zone.
+local here, edge = {inside = true}, {}
+function tr.AreaTarget(element)
+    local a = element and StepArea(element.step)
+    if not a then return end
+    local px, py, map = HBD:GetPlayerZonePosition()
+    if not px or map ~= a.areaZone then return end
+    px, py = px * 100, py * 100
+    local wx, wy, inst
+    local t
+    if InsidePoly(a.area, px, py) then
+        t = here
+        wx, wy, inst = HBD:GetPlayerWorldPosition()
+        t.title = L and L("In the area") or "In the area"
+    else
+        t = edge
+        local g = Grid(map)
+        local ex, ey = NearestEdge(a.area, px, py, g and g.kx or 1, g and g.ky or 1)
+        -- a step inside the edge, so arriving counts as being in the area
+        local cx, cy = 0, 0
+        for _, p in ipairs(a.area) do cx, cy = cx + p[1], cy + p[2] end
+        cx, cy = cx / #a.area, cy / #a.area
+        local dx, dy = cx - ex, cy - ey
+        local d = sqrt(dx * dx + dy * dy)
+        if d > 0 then ex, ey = ex + dx / d * 0.6, ey + dy / d * 0.6 end
+        wx, wy, inst = HBD:GetWorldCoordinatesFromZone(ex / 100, ey / 100, map)
+        t.title = element.title
+    end
+    if not wx then return end
+    t.wx, t.wy, t.instance, t.zone, t.step, t.real = wx, wy, inst, map, element.step, element
+    return t
+end
+
+---------------------------------------------------------------------------
+-- Drawing
+---------------------------------------------------------------------------
 
 local function Canvas()
     local wm = _G.WorldMapFrame
@@ -324,6 +405,9 @@ local function Canvas()
 end
 
 local overlay
+local pool = {lines = {}, glows = {}, fills = {}, pins = {}, dots = {}}
+local used = {}
+
 local function Overlay(canvas)
     if not overlay then
         overlay = CreateFrame("Frame", nil, canvas)
@@ -336,36 +420,83 @@ local function Overlay(canvas)
     return overlay
 end
 
+local function Take(kind, make)
+    used[kind] = (used[kind] or 0) + 1
+    local list = pool[kind]
+    local o = list[used[kind]]
+    if not o then
+        o = make()
+        list[used[kind]] = o
+    end
+    o:Show()
+    return o
+end
+
 local function HideAll()
-    for _, l in ipairs(drawn.lines) do l:Hide() end
-    for _, p in ipairs(drawn.pins) do p:Hide() end
-end
-
-local function Line(i)
-    local l = drawn.lines[i]
-    if not l then
-        l = overlay:CreateLine(nil, "OVERLAY")
-        l:SetColorTexture(unpack(PATH_COLOR))
-        drawn.lines[i] = l
+    for kind, list in pairs(pool) do
+        for i = 1, #list do list[i]:Hide() end
+        used[kind] = 0
     end
-    l:SetThickness(3)
-    return l
 end
 
-local function Pin(i)
-    local p = drawn.pins[i]
-    if not p then
-        p = overlay:CreateTexture(nil, "OVERLAY")
-        p:SetTexture(PIN_TEXTURE)
-        p:SetSize(PIN_SIZE, PIN_SIZE)
-        p:SetAlpha(0.85)
-        drawn.pins[i] = p
+local function DrawLine(kind, color, thickness, x1, y1, x2, y2, w, h)
+    local l = Take(kind, function()
+        local line = overlay:CreateLine(nil, kind == "glows" and "ARTWORK" or "OVERLAY")
+        line:SetTexture(WHITE)
+        return line
+    end)
+    l:SetVertexColor(unpack(color))
+    l:SetThickness(thickness)
+    l:SetStartPoint("TOPLEFT", overlay, x1 / 100 * w, -y1 / 100 * h)
+    l:SetEndPoint("TOPLEFT", overlay, x2 / 100 * w, -y2 / 100 * h)
+end
+
+local function DrawDot(kind, color, size, x, y, w, h, texture)
+    local t = Take(kind, function() return overlay:CreateTexture(nil, "OVERLAY") end)
+    t:SetTexture(texture or WHITE)
+    t:SetVertexColor(unpack(color))
+    t:SetSize(size, size)
+    t:ClearAllPoints()
+    t:SetPoint("CENTER", overlay, "TOPLEFT", x / 100 * w, -y / 100 * h)
+end
+
+local function DrawArea(a, w, h, scale)
+    local poly = a.area
+    -- shade: one square per 1% cell inside the outline
+    local x0, y0, x1, y1 = 100, 100, 0, 0
+    for _, p in ipairs(poly) do
+        x0, y0, x1, y1 = min(x0, p[1]), min(y0, p[2]), max(x1, p[1]), max(y1, p[2])
     end
-    return p
+    for y = floor(y0), floor(y1) do
+        for x = floor(x0), floor(x1) do
+            if InsidePoly(poly, x + 0.5, y + 0.5) then
+                local f = Take("fills", function() return overlay:CreateTexture(nil, "ARTWORK") end)
+                f:SetTexture(WHITE)
+                f:SetVertexColor(unpack(AREA_FILL))
+                f:SetSize(w / 100 + 0.5, h / 100 + 0.5)
+                f:ClearAllPoints()
+                f:SetPoint("TOPLEFT", overlay, "TOPLEFT", x / 100 * w, -y / 100 * h)
+            end
+        end
+    end
+    local j = #poly
+    for i = 1, #poly do
+        DrawLine("lines", AREA_EDGE, 3 / scale, poly[j][1], poly[j][2], poly[i][1], poly[i][2], w, h)
+        j = i
+    end
 end
 
--- Spawn points (0-100 map coordinates) of what the active steps' objectives
--- need on this map, from Questie.
+-- the way from (ax, ay) to (bx, by): corners after the start, ending at the target
+local routeCache = {}
+local function Route(map, ax, ay, bx, by, level)
+    local key = map .. ":" .. floor(ax) .. ":" .. floor(ay) .. ":" .. floor(bx * 10) .. ":" .. floor(by * 10) .. ":" .. level
+    if routeCache.key ~= key then
+        routeCache.key = key
+        routeCache.pts = tr.FindPath(map, ax, ay, bx, by, level) or {{bx, by}}
+    end
+    return routeCache.pts
+end
+
 local spawnCache = {}
 local function ObjectiveSpawns(questId, objIndex, area)
     local key = questId .. ":" .. objIndex .. ":" .. area
@@ -395,8 +526,8 @@ local function ObjectiveSpawns(questId, objIndex, area)
     local pts = {}
     for _, src in ipairs(sources) do
         local obj = QGet(src[1], src[2])
-        local here = obj and type(obj.spawns) == "table" and obj.spawns[area]
-        for _, pt in ipairs(here or {}) do
+        local spots = obj and type(obj.spawns) == "table" and obj.spawns[area]
+        for _, pt in ipairs(spots or {}) do
             if pt[1] and pt[1] >= 0 then pts[#pts + 1] = {pt[1], pt[2]} end
         end
     end
@@ -405,17 +536,9 @@ local function ObjectiveSpawns(questId, objIndex, area)
 end
 tr.ObjectiveSpawns = ObjectiveSpawns
 
-local function ActiveObjectives()
-    local out = {}
+local function ActiveSteps()
     local frame = addon.RXPFrame
-    for _, step in pairs(frame and frame.activeSteps or {}) do
-        for _, e in ipairs(step.elements or {}) do
-            if e.questId and e.obj and not e.completed and not e.skip then
-                out[#out + 1] = {e.questId, e.obj}
-            end
-        end
-    end
-    return out
+    return frame and frame.activeSteps or {}
 end
 
 function tr.DrawMap()
@@ -424,47 +547,97 @@ function tr.DrawMap()
     Overlay(canvas)
     HideAll()
     local d = addon.terrainData and addon.terrainData[map]
-    if not d then return end
     local w, h = canvas:GetWidth(), canvas:GetHeight()
     local scale = _G.WorldMapFrame.GetCanvasScale and _G.WorldMapFrame:GetCanvasScale() or 1
 
-    -- the way around
-    local pts = state.pts
-    if pts and state.map == map and state.idx and state.idx < #pts then
-        local px, py = HBD:GetPlayerZonePosition()
-        local mapNow = HBD:GetPlayerZone()
-        if px and mapNow == map then
-            local prev = {px * 100, py * 100}
-            local n = 0
-            for k = state.idx, #pts do
-                local p = pts[k]
-                n = n + 1
-                local l = Line(n)
-                l:SetThickness(3 / scale)
-                l:SetStartPoint("TOPLEFT", overlay, prev[1] / 100 * w, -prev[2] / 100 * h)
-                l:SetEndPoint("TOPLEFT", overlay, p[1] / 100 * w, -p[2] / 100 * h)
-                l:Show()
-                prev = p
+    -- kill/loot areas of the active steps
+    for _, step in pairs(ActiveSteps()) do
+        local a = StepArea(step)
+        if a and a.areaZone == map then DrawArea(a, w, h, scale) end
+    end
+
+    -- the spawns the active steps need
+    if d and d.area then
+        local seen = {}
+        for _, step in pairs(ActiveSteps()) do
+            for _, e in ipairs(step.elements or {}) do
+                if e.questId and e.obj and not e.completed and not e.skip then
+                    for _, pt in ipairs(ObjectiveSpawns(e.questId, e.obj, d.area)) do
+                        local key = floor(pt[1] * 10) .. "," .. floor(pt[2] * 10)
+                        if not seen[key] then
+                            seen[key] = true
+                            DrawDot("pins", {1, 1, 1, 0.9}, PIN_SIZE / scale, pt[1], pt[2], w, h, PIN_TEXTURE)
+                        end
+                    end
+                end
             end
         end
     end
 
-    -- the mobs and objects the current step needs
-    if d.area then
-        local n = 0
-        local seen = {}
-        for _, qo in ipairs(ActiveObjectives()) do
-            for _, pt in ipairs(ObjectiveSpawns(qo[1], qo[2], d.area)) do
-                local key = floor(pt[1] * 10) .. "," .. floor(pt[2] * 10)
-                if not seen[key] then
-                    seen[key] = true
-                    n = n + 1
-                    local p = Pin(n)
-                    p:SetSize(PIN_SIZE / scale, PIN_SIZE / scale)
-                    p:ClearAllPoints()
-                    p:SetPoint("CENTER", overlay, "TOPLEFT", pt[1] / 100 * w, -pt[2] / 100 * h)
-                    p:Show()
-                end
+    -- the way to where the arrow points, from where you stand
+    local af = addon.arrowFrame
+    local real = af and af.element
+    local px, py, pmap = HBD:GetPlayerZonePosition()
+    if not (real and px and pmap == map) or (af.IsShown and not af:IsShown()) then return end
+    local target = tr.AreaTarget and tr.AreaTarget(real) or real
+    if target.inside or not target.wx then return end
+    local bx, by = HBD:GetZoneCoordinatesFromWorld(target.wx, target.wy, map)
+    if not bx then return end
+    px, py, bx, by = px * 100, py * 100, bx * 100, by * 100
+    local pts = d and d.rows and Route(map, px, py, bx, by, PlayerLevel()) or {{bx, by}}
+    local ax, ay = px, py
+    for _, p in ipairs(pts) do
+        DrawLine("glows", ROUTE_GLOW, 12 / scale, ax, ay, p[1], p[2], w, h)
+        DrawLine("lines", ROUTE_CORE, 4 / scale, ax, ay, p[1], p[2], w, h)
+        DrawDot("dots", ROUTE_CORE, 8 / scale, p[1], p[2], w, h)
+        ax, ay = p[1], p[2]
+    end
+end
+
+---------------------------------------------------------------------------
+-- Minimap: the area, shaded
+---------------------------------------------------------------------------
+
+local HBDPins = LibStub("HereBeDragons-Pins-2.0", true)
+local MINI_OWNER = "OpenXPAreas"
+local miniDots, miniShown = {}, nil
+
+local function MiniDot(i)
+    local f = miniDots[i]
+    if not f then
+        f = CreateFrame("Frame")
+        f:SetSize(9, 9)
+        local t = f:CreateTexture(nil, "OVERLAY")
+        t:SetAllPoints()
+        t:SetTexture(WHITE)
+        t:SetVertexColor(AREA_FILL[1], AREA_FILL[2], AREA_FILL[3], 0.45)
+        miniDots[i] = f
+    end
+    return f
+end
+
+function tr.DrawMinimap()
+    if not HBDPins then return end
+    local a
+    for _, step in pairs(ActiveSteps()) do
+        a = StepArea(step)
+        if a then break end
+    end
+    if a == miniShown then return end
+    HBDPins:RemoveAllMinimapIcons(MINI_OWNER)
+    miniShown = a
+    if not a then return end
+    local poly = a.area
+    local x0, y0, x1, y1 = 100, 100, 0, 0
+    for _, p in ipairs(poly) do
+        x0, y0, x1, y1 = min(x0, p[1]), min(y0, p[2]), max(x1, p[1]), max(y1, p[2])
+    end
+    local n = 0
+    for y = floor(y0), floor(y1) do
+        for x = floor(x0), floor(x1) do
+            if InsidePoly(poly, x + 0.5, y + 0.5) then
+                n = n + 1
+                HBDPins:AddMinimapIconMap(MINI_OWNER, MiniDot(n), a.areaZone, (x + 0.5) / 100, (y + 0.5) / 100, false, false)
             end
         end
     end
@@ -479,5 +652,7 @@ if CreateFrame and C_Timer and C_Timer.NewTicker then
         elseif overlay then
             HideAll()
         end
+        local ok, err = pcall(tr.DrawMinimap)
+        if not ok and addon.comms and addon.comms.PrettyDebug then addon.comms.PrettyDebug(tostring(err)) end
     end)
 end

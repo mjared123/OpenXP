@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.17",
+        date = "November 2026",
+        changes = {
+            "Duskwood test: kill and loot steps show their area shaded on the world map and minimap. Anywhere inside it the arrow says Here; outside, it leads you to the nearest edge",
+            "World map: a glowing purple line shows the way to your next step, around mountains and high-level packs",
+        },
+    },
+    {
         version = "1.3.16",
         date = "November 2026",
         changes = {

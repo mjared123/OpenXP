@@ -113,4 +113,22 @@ try("spawn marks: the mobs an item objective drops from, on this map", function(
     addon.card = nil
 end)
 
+try("kill area: Here inside it, the nearest edge from outside", function()
+    local me = {x = 10, y = 55}
+    HBD.GetPlayerZonePosition = function() return me.x / 100, me.y / 100, 1431 end
+    HBD.GetPlayerWorldPosition = function() return me.x * 10, me.y * 10, 0 end
+    local step = {}
+    step.elements = {{area = {{8.85, 62.27}, {9.23, 48.18}, {12.47, 49.82}, {12.43, 60.62}}, areaZone = 1431}}
+    local goto = {wx = 107.5, wy = 553.9, instance = 0, step = step}
+    local t = tr.AreaTarget(goto)
+    assert(t and t.inside, "inside the spiders' area")
+    me.x, me.y = 20, 55
+    t = tr.AreaTarget(goto)
+    assert(t and not t.inside, "outside")
+    local x, y = HBD:GetZoneCoordinatesFromWorld(t.wx, t.wy, 1431)
+    assert(tr.InsidePoly(step.elements[1].area, x * 100, y * 100), "leads just inside the edge")
+    assert(math.abs(x * 100 - 12) < 1, "the near (east) edge: " .. x * 100)
+    assert(tr.AreaTarget({wx = 1, wy = 1, instance = 0, step = {elements = {}}}) == nil, "no area: nil")
+end)
+
 return fails
