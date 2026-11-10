@@ -1,7 +1,7 @@
 """OpenXP Alliance route, levels 30-40.
 
 Arathi -> Hillsbrad -> Stranglethorn -> Dustwallow -> Desolace ->
-Stranglethorn again. Same section format as alliance_21_30.py.
+Shen'dralas -> Stranglethorn again. Same section format as alliance_21_30.py.
 """
 
 GROUP = "RestedXP Forever Guide (A)"
@@ -77,6 +77,13 @@ SECTIONS = [
         zone="Desolace", area=405, levels=(34, 40), start=(64.66, 10.54),
         intro=travel("Desolace", "Fly from Thalanaar to Stonetalon Peak and ride south to Nijel's Point in Desolace")
         + fp("Nijel's Point", "Desolace", 64.66, 10.54, "Baritanas Skyriver"),
+    ),
+    dict(
+        # Forever's new zone, walked into from southern Desolace through the
+        # Valley of Bones (no flight master). Its first quests start in Desolace.
+        name="39-40 Shen'dralas",
+        zone="Shen'dralas", area=16651, levels=(36, 43), start=(35.6, 12.0),
+        intro=travel("Shen'dralas", "Ride south from Nijel's Point through the Valley of Bones into Shen'dralas"),
     ),
     dict(
         name="39-40 Stranglethorn Vale",

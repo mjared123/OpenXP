@@ -94,6 +94,9 @@ addon.mapId = {
     ["Kalimdor"] = 1414,
     ["Eastern Kingdoms"] = 1415,
     ["Zephras Isle"] = 2521,
+    ["Riverglades"] = 2548,
+    ["Darkspear Islands"] = 2524,
+    ["Shen'dralas"] = 2652,
 }
 
 addon.ignoredMaps = {

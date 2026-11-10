@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.2.1-beta",
+        date = "November 2026",
+        changes = {
+            "New section for Shen'dralas, Forever's new zone south of Desolace (Alliance 39-40, Horde 38-39). It's short for now: it has the quests whose givers are known so far, and will grow as more of the zone is mapped",
+            "The arrow now knows the Shen'dralas, Riverglades and Darkspear Islands maps",
+        },
+    },
+    {
         version = "1.2.0-beta",
         date = "November 2026",
         changes = {

@@ -477,6 +477,11 @@ step
     .accept 5381 >>Accept Hand of Iruxos
     .target Taiga Wisemane
 step
+    .goto Desolace,36.22,79.25
+    >>Talk to |cRXP_FRIENDLY_Uthek the Wise|r
+    .accept 93034 >>Accept Valley of Bones
+    .target Uthek the Wise
+step
     .goto Desolace,47.83,61.83
     >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
     .accept 6134 >>Accept Ghost-o-plasm Round Up
@@ -696,7 +701,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
 #name 36-38 Dustwallow Marsh
-#next 38-40 Badlands
+#next 38-39 Shen'dralas
 
 step
     #completewith next
@@ -911,6 +916,30 @@ step
     >>Talk to |cRXP_FRIENDLY_"Swamp Eye" Jarl|r
     .turnin 1206 >>Turn in Jarl Needs Eyes
     .target "Swamp Eye" Jarl
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Horde
+#group RestedXP Forever Guide (H)
+#subgroup OpenXP 21-60
+#name 38-39 Shen'dralas
+#next 38-40 Badlands
+
+step
+    #completewith next
+    .zone Shen'dralas >>Fly to Shadowprey Village in Desolace and head east through the Valley of Bones into Shen'dralas
+step
+    .goto Shen'dralas,21.20,23.20
+    >>Talk to |cRXP_FRIENDLY_Nerlokh|r
+    .accept 93035 >>Accept Ravaging Ravagers
+    .turnin 93035 >>Turn in Ravaging Ravagers
+    .turnin 93034 >>Turn in Valley of Bones
+    .accept 93037 >>Accept Outing Outcasts
+    .turnin 93037 >>Turn in Outing Outcasts
+    .target Nerlokh
 ]])
 
 RXPGuides.RegisterGuide([[

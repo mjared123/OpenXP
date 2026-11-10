@@ -941,7 +941,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 38-39 Desolace
-#next 39-40 Stranglethorn Vale
+#next 39-40 Shen'dralas
 
 step
     #completewith next
@@ -1032,6 +1032,7 @@ step
     >>Talk to |cRXP_FRIENDLY_Warug|r
     .accept 92743 >>Accept A Conqueror's Crown
     .turnin 92743 >>Turn in A Conqueror's Crown
+    .accept 92841 >>Accept Valley of Bones
     .target Warug
 step
     .goto Desolace,63.03,90.00
@@ -1048,6 +1049,11 @@ step
     .mob Kolkar Centaur
     .mob Kolkar Scout
     .mob Kolkar Mauler
+step
+    .goto Desolace,36.22,79.25
+    >>Talk to |cRXP_FRIENDLY_Uthek the Wise|r
+    .accept 93034 >>Accept Valley of Bones
+    .target Uthek the Wise
 step
     .goto Desolace,47.83,61.83
     >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
@@ -1125,6 +1131,37 @@ step
     .goto Desolace,30.00,8.71
     >>Click the |cRXP_PICK_Rackmore's Chest|r
     .turnin 6161 >>Turn in Claim Rackmore's Treasure!
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 39-40 Shen'dralas
+#next 39-40 Stranglethorn Vale
+
+step
+    #completewith next
+    .zone Shen'dralas >>Ride south from Nijel's Point through the Valley of Bones into Shen'dralas
+step
+    .goto Shen'dralas,35.60,12.00
+    >>Talk to |cRXP_FRIENDLY_Orgrul|r
+    .accept 92844 >>Accept Mountain of Bones
+    .turnin 92844 >>Turn in Mountain of Bones
+    .turnin 92841 >>Turn in Valley of Bones
+    .target Orgrul
+step
+    .goto Shen'dralas,21.20,23.20
+    >>Talk to |cRXP_FRIENDLY_Nerlokh|r
+    .accept 93035 >>Accept Ravaging Ravagers
+    .turnin 93035 >>Turn in Ravaging Ravagers
+    .turnin 93034 >>Turn in Valley of Bones
+    .accept 93037 >>Accept Outing Outcasts
+    .turnin 93037 >>Turn in Outing Outcasts
+    .target Nerlokh
 ]])
 
 RXPGuides.RegisterGuide([[
