@@ -14,6 +14,16 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.0-beta",
+        date = "November 2026",
+        changes = {
+            "New 21-60 routes for both factions (WoW Forever). The route builder now plays the route in its head: it tracks your level as you go, picks the next zone by the most XP per minute, and comes back to zones as their higher quests open up, like the well-known leveling routes do",
+            "Quests join the route only once they're at most 2 levels above you, quests above your level count as slower, and gray quests are left out",
+            "About 60% more quests: Alliance 21-60 has 505 turn-ins (was 318), Horde 22-60 has 427 (was 221). New stops include the Swamp of Sorrows, Blasted Lands, Alterac, the Barrens and quick capital-city stops for chain quests",
+            "Section names now show the levels you'll really be at. When the next quests are a bit high, a step tells you to kill mobs on the way or run a dungeon that fits your level",
+        },
+    },
+    {
         version = "1.2.3-beta",
         date = "November 2026",
         changes = {

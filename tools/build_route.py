@@ -1,22 +1,32 @@
 #!/usr/bin/env python3
-"""Generate OpenXP leveling guide sections from quest data.
+"""Generate OpenXP leveling guides from quest data.
 
-Reads Questie's WoW Forever data (github.com/Questie/QuestieDB, data/Forever)
-and a route plan (tools/routes/*.py), and writes guide files in the
-RestedXP/OpenXP guide format.
+Reads Questie's quest data (github.com/Questie/QuestieDB, plus /oxp questdump
+for WoW Forever's new quests) and a route file (tools/routes/*.py), and
+writes guide files in the RestedXP/OpenXP guide format.
 
-For each section of the plan it picks the zone's Alliance quests that fit the
-level range, drops ones that need a dungeon, elites, professions, reputation or
-quests we never pick up, and then walks the zone greedily: always do the
-nearest available thing (accept, quest objective, or turn in), respecting
-quest chains and the quest log limit. Steps at the same spot are merged.
+The route builder plays the route in its head. It tracks your XP as you go
+(quest XP and kills, both estimated), so a quest only joins the route once
+it's at most LEVELS_ABOVE over your level, gray quests are left out, and
+objectives above your level count as slower. Inside a zone it always does the
+cheapest next thing (accept, objective, or turn in), respecting quest chains
+and the quest log limit; steps at the same spot are merged.
 
-The output is a first draft. It's meant to be played, then hand-tuned.
+Route files come in two kinds:
+- HUBS (alliance.py, horde.py): the places you can quest from. The builder
+  picks the zone order itself, going where the next visit gives the most XP
+  per minute (with a one-visit lookahead, so a boat trip counts what's on the
+  other side), and comes back to zones as their higher quests open up.
+- SECTIONS (the *_classic.py files): a fixed zone order.
+
+The output is a draft meant to be played, then tuned.
 
 Usage:
-    python3 tools/build_route.py --questiedb PATH/TO/QuestieDB tools/routes/alliance_21_30.py
+    python3 tools/build_route.py --questiedb PATH/TO/QuestieDB --dump OpenXP.lua tools/routes/alliance.py
+    python3 tools/build_route.py --questiedb PATH/TO/QuestieDB tools/routes/alliance_21_30_classic.py
 """
 import argparse
+import copy
 import glob
 import importlib.util
 import math
@@ -38,6 +48,113 @@ CLASS_BITS = {
 }
 ALL_CLASSES = sum(CLASS_BITS.values())
 QUEST_LOG_LIMIT = 20
+# Quests whose objectives are in another zone are picked up only when the
+# route reaches that zone within this many sections.
+CARRY_AHEAD = 6
+
+# ---------------------------------------------------------------------------
+# Level model
+#
+# The route builder plays the route in its head: it tracks the XP you'd have
+# at every step, so a quest only joins the route once you're close enough to
+# its level, gray quests are left out, and harder quests count as slower.
+# Quest XP and kill XP are estimates (Questie's data has no XP rewards), good
+# enough to tell a 3-quest zone from a 30-quest one and to name sections by
+# the levels you'll really be.
+# ---------------------------------------------------------------------------
+
+# XP to go from level L to L+1 (Classic), index L.
+XP_TO_NEXT = [0, 400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600, 8800,
+              10100, 11400, 12900, 14400, 16000, 17700, 19400, 21300, 23200,
+              25200, 27300, 29400, 31700, 34000, 36400, 38900, 41400, 44300,
+              47400, 50800, 54500, 58600, 62800, 67100, 71600, 76100, 80800,
+              85700, 90700, 95800, 101000, 106300, 111800, 117500, 123200,
+              129100, 135100, 141200, 147500, 153900, 160400, 167100, 173900,
+              180800, 187900, 195000, 202300, 209800]
+MAX_LEVEL = 60
+# Accept a quest only once it's at most this many levels above you.
+LEVELS_ABOVE = 2
+# Leave a quest out when it's this many levels below you or more (gray: about
+# a tenth of the XP).
+GRAY_BELOW = 6
+# Each level a quest is above you makes its objectives this much slower:
+# mobs hit harder, resist more and take longer to kill.
+SLOWER_PER_LEVEL = 0.3
+# A visit starts once at least this many of its quests are open to you;
+# below that the guide asks you to level a little first.
+MIN_OPEN = 3
+# A zone visit with fewer quests than this isn't worth the trip; the route
+# builder leaves it out and keeps its quests for a later visit.
+MIN_VISIT = 5
+# How many of the best next zones get a look one visit further ahead.
+LOOKAHEAD = 8
+# ...but never more than this many levels.
+MAX_GRIND = 1.5
+# Rough minutes, to compare zones by XP per minute: per map-percent walked
+# (about 8 minutes across a zone on foot), per objective, per talk.
+MINUTES_PER_UNIT = 0.08
+MINUTES_PER_UNIT_MOUNTED = 0.05
+MINUTES_WORK = {"kill": 5.0, "loot": 6.0, "credit": 2.0, "use": 1.0, "explore": 0.5}
+MINUTES_TALK = 0.2
+# Getting to the next zone: same continent (flight), other continent (boat
+# and flights), plus a zone's own extra ride when it has no flight master.
+MINUTES_HOP = 8.0
+MINUTES_SEA = 20.0
+# Stopping in a capital costs a flight in and out plus the walk inside.
+MINUTES_CITY = 12.0
+# Quest XP per minute below this share of what grinding mobs gives isn't
+# worth the trip; the planner levels a little instead.
+GRIND_KILLS_PER_MINUTE = 2.0
+WORTH_IT = 0.6
+# Rough kills per objective, for the kill XP estimate.
+KILLS = {"kill": 10, "loot": 12, "credit": 4, "use": 3, "explore": 1}
+# Mobs you kill on the way, per map-percent you travel inside a zone.
+TRAVEL_KILLS = 0.15
+
+
+def xp_at_level(level):
+    """Total XP at the start of a level (can be fractional)."""
+    whole = int(level)
+    base = sum(XP_TO_NEXT[1:whole])
+    if whole < MAX_LEVEL:
+        base += (level - whole) * XP_TO_NEXT[whole]
+    return base
+
+
+def level_of(xp):
+    """Level (with fraction) for a total XP."""
+    lvl = 1
+    while lvl < MAX_LEVEL and xp >= XP_TO_NEXT[lvl]:
+        xp -= XP_TO_NEXT[lvl]
+        lvl += 1
+    return lvl + (xp / XP_TO_NEXT[lvl] if lvl < MAX_LEVEL else 0)
+
+
+def quest_xp(qlevel, level):
+    """Estimated XP for turning in a quest of qlevel at level."""
+    base = max(150, 110 * qlevel - 1000) if qlevel >= 12 else 40 * qlevel + 100
+    gap = int(level) - qlevel
+    if gap <= 5:
+        return base
+    return base * {6: 0.8, 7: 0.6, 8: 0.4, 9: 0.2}.get(gap, 0.1)
+
+
+def _zero_diff(level):
+    for top, zd in ((7, 5), (9, 6), (11, 7), (15, 8), (19, 9), (29, 11), (39, 12),
+                    (44, 13), (49, 14), (54, 15), (59, 16)):
+        if level <= top:
+            return zd
+    return 17
+
+
+def mob_xp(mob_level, level):
+    """XP for one kill of a normal mob (Classic formula)."""
+    level = int(level)
+    base = 5 * level + 45
+    if mob_level >= level:
+        return base * (1 + 0.05 * min(mob_level - level, 4))
+    zd = _zero_diff(level)
+    return max(0.0, base * (1 - (level - mob_level) / zd))
 
 # ---------------------------------------------------------------------------
 # Data loading
@@ -224,8 +341,33 @@ class Builder:
         self.used = set()                   # quests already placed by this route
         self.objectives_done = set()        # carried quests whose objectives are done
         self.carried_ready = set()
+        self.xp = 0.0
+        self.xp_from = {"quests": 0.0, "kills": 0.0}
+        self.minutes = 0.0
+        self._cache = {}
+        self._quests = None
 
     file_accepted = set()
+
+    def level(self):
+        return level_of(self.xp)
+
+    _STATE = ("done", "used", "accepted_before", "objectives_done", "carried_ready", "xp_from")
+
+    def snapshot(self):
+        return {k: copy.copy(getattr(self, k)) for k in self._STATE}, (self.xp, self.minutes)
+
+    def restore(self, saved):
+        state, (self.xp, self.minutes) = saved
+        for k, v in state.items():
+            setattr(self, k, v)
+
+    def objective_xp(self, q, kind):
+        if q.class_tag():
+            return 0.0  # class quests: in the guide, but not in the level estimate
+        x = KILLS.get(kind, 0) * mob_xp(max(1, q.level - 1), self.level())
+        self.xp_from["kills"] += x
+        return x
 
     def npc(self, nid):
         return self.db["n"].get(nid)
@@ -240,6 +382,9 @@ class Builder:
         return f is None or ("A" if FACTION == "Alliance" else "H") in f
 
     def starter(self, q, zone):
+        return self._memo("s", q, zone, self._starter)
+
+    def _starter(self, q, zone):
         sb = q.startedBy
         for nid in as_list(li(sb, 1)):
             pts = spawns_in(self.npc(nid), zone, 7)
@@ -252,6 +397,9 @@ class Builder:
         return None
 
     def finisher(self, q, zone):
+        return self._memo("f", q, zone, self._finisher)
+
+    def _finisher(self, q, zone):
         fb = q.finishedBy
         for nid in as_list(li(fb, 1)):
             pts = spawns_in(self.npc(nid), zone, 7)
@@ -264,6 +412,23 @@ class Builder:
         return None
 
     def objective_sites(self, q, zone, nearby=()):
+        key = ("o", q.id, zone, tuple(nearby))
+        if key not in self._cache:
+            self._cache[key] = self._objective_sites(q, zone, nearby)
+        return self._cache[key]
+
+    def _memo(self, kind, q, zone, fn):
+        key = (kind, q.id, zone)
+        if key not in self._cache:
+            self._cache[key] = fn(q, zone)
+        return self._cache[key]
+
+    def quests(self):
+        if self._quests is None:
+            self._quests = [Quest(qid, row) for qid, row in self.db["q"].items()]
+        return self._quests
+
+    def _objective_sites(self, q, zone, nearby=()):
         """List of (index, kind, label, mobs, point, place) for each objective,
         or None if an objective can't be done here (dungeon, far zone, elite).
 
@@ -358,7 +523,7 @@ class Builder:
             sites.append((idx, "explore", text, [], pt, place))
         return sites
 
-    def candidates(self, section, later_areas=()):
+    def candidates(self, section, later_areas=(), carry_ahead=None):
         """Quests to do in this section.
 
         Includes quests started here and finished here, quests started here
@@ -367,52 +532,69 @@ class Builder:
         finish here.
         """
         zone = section["area"]
-        lo, hi = section["levels"]
+        # Wide window around where you'll be; simulate() decides the rest
+        # step by step from your level at that moment.
+        lvl = int(self.level())
+        lo, hi = lvl - GRAY_BELOW + 1, lvl + 10
         out = {}
-        for qid, row in self.db["q"].items():
-            q = Quest(qid, row)
+        for q in self.quests():
+            qid = q.id
             if not q.for_faction() or not q.name:
                 continue
             if qid in self.done or qid in self.used:
                 continue
-            if q.specialFlags & 3 or q.reqSkill or q.reqRep:
+            if q.specialFlags & 1 or q.reqSkill or q.reqRep:  # 1: repeatable
                 continue
             if q.zone in EVENT_SORTS:
                 continue  # holiday and world-event quests
             if q.name.startswith("[") or "<" in q.name:
                 continue  # placeholder / unused quests in the data
             carried = qid in self.accepted_before
-            if not carried:
-                # at most two levels above where the section ends: a level 21-23
-                # section shouldn't send you to level 27 quests
-                top = section.get("max_quest_level")
-                if top is None:
-                    m = re.match(r"(\d+)-(\d+)", section["name"])
-                    top = (int(m.group(2)) if m else hi) + 2
-                if q.level < lo - 3 or q.level > top or q.reqLevel > hi:
-                    continue
+            if not carried and (q.level < lo or q.level > hi or q.reqLevel > hi):
+                continue
             start = None if carried else self.starter(q, zone)
             if not carried and not start:
                 continue
             finish = self.finisher(q, zone)
             finish_later = None
-            if not finish:
-                if carried:
-                    continue  # turned in somewhere else
-                for later in later_areas:
-                    if self.finisher(q, later):
-                        finish_later = later
-                        break
-                if not finish_later:
-                    continue
-            if qid in self.objectives_done or (carried and qid in self.carried_ready):
-                sites = []
-            else:
-                sites = self.objective_sites(q, zone, section.get("nearby", ()))
+            obj_later = None
+            nearby = section.get("nearby", ())
+
+            def first_finish(areas):
+                return next((a for a in areas if self.finisher(q, a)), None)
+
+            if carried:
+                ready = qid in self.carried_ready or qid in self.objectives_done
+                sites = [] if ready else self.objective_sites(q, zone, nearby)
                 if sites is None:
-                    continue
+                    continue  # its objectives are somewhere else: stays in the log
+                if not finish:
+                    if not sites:
+                        continue  # nothing to do here: it rides on to its turn-in
+                    finish_later = first_finish(later_areas)
+                    if not finish_later:
+                        continue
+            else:
+                sites = self.objective_sites(q, zone, nearby)
+                if sites is not None:
+                    if not finish:
+                        finish_later = first_finish(later_areas)
+                        if not finish_later:
+                            continue
+                else:
+                    # Picked up here, done in a zone the route goes to soon,
+                    # turned in there or later.
+                    ahead = later_areas[:carry_ahead or CARRY_AHEAD] if carry_ahead != 0 else later_areas
+                    for i, a in enumerate(ahead):
+                        if a != zone and self.objective_sites(q, a) is not None \
+                                and first_finish(later_areas[i:]):
+                            obj_later = a
+                            break
+                    if not obj_later:
+                        continue
+                    sites, finish = [], None
             out[qid] = dict(q=q, start=start, finish=finish, sites=sites,
-                            carried=carried, finish_later=finish_later)
+                            carried=carried, finish_later=finish_later, obj_later=obj_later)
         # Drop quests whose prerequisites we never do, repeatedly (chains).
         changed = True
         while changed:
@@ -436,38 +618,52 @@ class Builder:
         return out
 
     def simulate(self, section, cands, start_pos):
-        """Greedy nearest-action walk. Returns list of actions."""
-        zone = section["area"]
+        """Greedy walk: always do the cheapest available thing next.
+
+        Cost is the distance, plus the work of an objective, which grows with
+        each level the quest is above you. Quests join once they're at most
+        LEVELS_ABOVE over your level and are left out when gray. XP is added
+        as you go, so later steps see your new level. Returns the actions.
+        """
         accepted = set(q for q in self.accepted_before if q in cands)
         objectives_left = {qid: [s[0] for s in c["sites"]] for qid, c in cands.items()}
         turned_in = set()
         pos = start_pos
         actions = []
+        stop_at = section.get("until")  # stop taking new quests at this level
 
         def prereqs_ok(q):
-            group_ok = all(p in self.done or p in turned_in for p in q.preGroup if p in cands or p not in self.done) \
-                if q.preGroup else True
-            if q.preGroup:
-                group_ok = all((p in self.done) or (p in turned_in) for p in q.preGroup)
+            group_ok = all((p in self.done) or (p in turned_in) for p in q.preGroup)
             single_ok = (not q.preSingle) or any((p in self.done) or (p in turned_in) for p in q.preSingle)
             return group_ok and single_ok
 
         while True:
+            lvl = self.level()
             options = []
             for qid, c in cands.items():
                 q = c["q"]
                 if qid in turned_in:
                     continue
                 if qid not in accepted:
-                    if c["start"] and prereqs_ok(q) and len(accepted) < QUEST_LOG_LIMIT:
-                        d = math.dist(pos, c["start"][2])
-                        options.append((d - 0.5, "accept", qid, c["start"][2]))
+                    if not c["start"] or len(accepted) >= QUEST_LOG_LIMIT or not prereqs_ok(q):
+                        continue
+                    if q.reqLevel > int(lvl) or q.level > int(lvl) + LEVELS_ABOVE:
+                        continue  # not yet: comes back once you've levelled
+                    if q.level <= int(lvl) - GRAY_BELOW:
+                        continue  # gray: not worth the walk
+                    if stop_at and lvl >= stop_at:
+                        continue
+                    d = math.dist(pos, c["start"][2])
+                    options.append((d - 0.5, "accept", qid, c["start"][2]))
                     continue
                 left = objectives_left[qid]
                 if left:
+                    harder = 1 + SLOWER_PER_LEVEL * max(0, q.level - int(lvl))
                     for s in c["sites"]:
                         if s[0] in left:
-                            options.append((math.dist(pos, s[4]), "obj", (qid, s[0]), s[4]))
+                            work = 3.0 if s[1] in ("kill", "loot") else 1.0
+                            cost = math.dist(pos, s[4]) + work * harder
+                            options.append((cost, "obj", (qid, s[0]), s[4]))
                 elif c["finish"]:
                     d = math.dist(pos, c["finish"][2])
                     options.append((d - 0.5, "turnin", qid, c["finish"][2]))
@@ -475,24 +671,44 @@ class Builder:
                 break
             options.sort(key=lambda o: (o[0], 0 if o[1] != "obj" else 1))
             _, kind, ref, where = options[0]
+            x = TRAVEL_KILLS * math.dist(pos, where) * mob_xp(int(lvl), lvl)
+            self.xp += x
+            self.xp_from["kills"] += x
+            self.minutes += math.dist(pos, where) * (MINUTES_PER_UNIT_MOUNTED if lvl >= 40 else MINUTES_PER_UNIT)
             pos = where
+            if kind != "obj":
+                self.minutes += MINUTES_TALK
             if kind == "accept":
                 accepted.add(ref)
             elif kind == "obj":
                 qid, i = ref
+                q = cands[qid]["q"]
                 objectives_left[qid].remove(i)
+                site = next(s for s in cands[qid]["sites"] if s[0] == i)
+                self.xp += self.objective_xp(q, site[1])
+                harder = 1 + SLOWER_PER_LEVEL * max(0, q.level - int(lvl))
+                if q.class_tag():
+                    harder = 0.0
+                self.minutes += MINUTES_WORK.get(site[1], 1) * harder
                 # Other objectives of the same quest at the same spot get done too.
                 for s in cands[qid]["sites"]:
                     if s[0] in objectives_left[qid] and math.dist(s[4], where) < 2.5:
                         objectives_left[qid].remove(s[0])
+                        self.xp += self.objective_xp(q, s[1])
+                        self.minutes += MINUTES_WORK.get(s[1], 1) * harder
                         actions.append(("obj", (qid, s[0]), where))
             elif kind == "turnin":
                 accepted.discard(ref)
                 turned_in.add(ref)
+                x = 0.0 if cands[ref]["q"].class_tag() else quest_xp(cands[ref]["q"].level, self.level())
+                self.xp += x
+                self.xp_from["quests"] += x
             actions.append((kind, ref, where))
         # Quests finished in a later zone travel on in the quest log.
         for qid in accepted:
-            if cands[qid]["finish_later"] and not objectives_left[qid]:
+            if cands[qid]["obj_later"]:
+                self.accepted_before.add(qid)
+            elif cands[qid]["finish_later"] and not objectives_left[qid]:
                 self.accepted_before.add(qid)
                 self.carried_ready.add(qid)
         self.used |= turned_in
@@ -523,6 +739,13 @@ def render_section(builder, section, cands, actions, group, nxt):
     lines.append("")
     for t in section.get("intro", []):
         lines.append(t)
+    grind_to = section.get("_grind_to")
+    if grind_to:
+        lines.append("step")
+        dungeon = next((d for lo, hi, d in DUNGEONS if lo <= grind_to <= hi), None)
+        lines.append("    .xp %d >>Kill mobs on the way%s until you're level %d: "
+                     "the quests here are a bit high for you before that" % (
+                         grind_to, (", or run " + dungeon + ",") if dungeon else "", grind_to))
 
     # Merge consecutive accept/turnin actions at the same spot into one step.
     i = 0
@@ -625,13 +848,25 @@ def render_section(builder, section, cands, actions, group, nxt):
     return "\n".join(lines)
 
 
+# Dungeons worth suggesting when the route asks you to level a little.
+DUNGEONS = [
+    (24, 31, "the Scarlet Monastery Graveyard and Library"),
+    (32, 40, "the Scarlet Monastery Armory and Cathedral"),
+    (41, 44, "Uldaman"),
+    (45, 48, "Zul'Farrak"),
+    (49, 51, "Maraudon"),
+    (52, 54, "the Sunken Temple"),
+    (55, 58, "Blackrock Depths"),
+    (59, 60, "Lower Blackrock Spire or Stratholme"),
+]
+
 # Quest sorts for holidays, world events and PvP, never part of a route.
 EVENT_SORTS = {-22, -284, -364, -366, -369, -370, -376, -1002, -1003, -1005, -1006, -25, -41}
 
 CLASS_GUIDE = r"Warrior|Paladin|Hunter|Rogue|Priest|Mage|Warlock|Druid|Shaman"
 
 
-def free_guide_quests(skip=None):
+def free_guide_quests(skip=None, skip_all=()):
     """Quests accepted / turned in by the Alliance guides before this one:
     the free ones in Guides/forever and OpenXP's earlier level ranges."""
     accepted, turned = set(), set()
@@ -651,6 +886,8 @@ def free_guide_quests(skip=None):
             continue  # class-only routes; most players never ran them
         if skip and os.path.abspath(path) == os.path.abspath(skip):
             continue
+        if os.path.abspath(path) in skip_all:
+            continue
         if skip and os.path.dirname(path).endswith(os.path.join("Guides", out_dir)) and base > os.path.basename(skip):
             continue  # later level ranges
         text = open(path, encoding="utf-8").read()
@@ -659,46 +896,303 @@ def free_guide_quests(skip=None):
     return accepted, turned
 
 
+def load_route(path):
+    spec = importlib.util.spec_from_file_location(os.path.basename(path)[:-3], path)
+    route = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(route)
+    return route
+
+
+def section_name(section, start, end):
+    """"23-25 Wetlands": the levels you're really at, from the simulation."""
+    if section.get("name"):
+        return section["name"]
+    a, b = int(start), int(end)
+    if b <= a:
+        b = a + 1
+    return "%d-%d %s" % (a, b, section.get("label", section["zone"]))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--questiedb", required=True)
     ap.add_argument("--dump", help="OpenXP.lua saved variables with /oxp questdump data")
-    ap.add_argument("route")
+    ap.add_argument("routes", nargs="+",
+                    help="route files, in level order; they're built as one run so "
+                         "your level carries from one file into the next")
     args = ap.parse_args()
 
-    spec = importlib.util.spec_from_file_location("route", args.route)
-    route = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(route)
-
+    routes = [load_route(p) for p in args.routes]
+    first = routes[0]
     global GAME, FACTION
-    GAME = getattr(route, "GAME", "Forever")
-    FACTION = getattr(route, "FACTION", "Alliance")
+    GAME = getattr(first, "GAME", "Forever")
+    FACTION = getattr(first, "FACTION", "Alliance")
     db = load_db(args.questiedb)
     if args.dump:
         db = merge_db(db, load_dump(args.dump))
-    accepted, turned = free_guide_quests(os.path.join(ROOT, route.OUTPUT))
+    if hasattr(first, "HUBS"):
+        return main_hubs(first, args, db)
+    outputs = {os.path.abspath(os.path.join(ROOT, r.OUTPUT)) for r in routes}
+    if len(routes) == 1:
+        accepted, turned = free_guide_quests(os.path.join(ROOT, first.OUTPUT))
+    else:
+        accepted, turned = free_guide_quests(skip_all=outputs)
     builder = Builder(db, done_before=turned, carried=accepted - turned)
-    # Quests a route leaves out on purpose (rare drops, page collections...)
-    builder.used |= set(getattr(route, "SKIP", ()))
+    for r in routes:
+        # Quests a route leaves out on purpose (rare drops, page collections...)
+        builder.used |= set(getattr(r, "SKIP", ()))
+    start_level = getattr(first, "START_LEVEL", None) or first.SECTIONS[0]["levels"][0]
+    builder.xp = xp_at_level(start_level)
 
-    sections = route.SECTIONS
-    out = [route.HEADER.rstrip(), ""]
+    # Play every section in order first, so names and #next links can use the
+    # levels you'll really be at.
+    plan = []  # (route, section, cands, actions, done, start, end)
+    all_sections = [(r, s) for r in routes for s in r.SECTIONS]
     report = []
-    for n, section in enumerate(sections):
-        later = [s["area"] for s in sections[n + 1:]]
+    seen = set()
+    for n, (r, section) in enumerate(all_sections):
+        section = dict(section)
+        later = [s["area"] for _, s in all_sections[n + 1:]]
+        saved = builder.snapshot()
+        at = section.get("at") or 0
+        if not at and not section.get("city") and section.get("grind", True):
+            # Too few of the zone's quests are open to you yet: kill mobs on
+            # the way or run a dungeon first, as the big guides do, instead of
+            # walking into a zone of orange and red quests.
+            here = [c["q"] for c in builder.candidates(section, later).values()
+                    if not c["carried"]]
+            need = sorted(max(q.reqLevel, q.level - LEVELS_ABOVE) for q in here)
+            now = builder.level()
+            if need and sum(1 for x in need if x <= int(now)) < MIN_OPEN:
+                at = min(need[min(MIN_OPEN, len(need)) - 1], now + MAX_GRIND)
+                if not any(x <= int(at) for x in need):
+                    at = 0  # nothing opens soon: do what's there and move on
+        grind = 0.0
+        if at and builder.level() < at - 0.25:
+            grind = at - builder.level()
+            section["_grind_to"] = int(at)
+            builder.xp = xp_at_level(at)
+            builder.xp_from["grind"] = builder.xp_from.get("grind", 0) + grind
+        start = builder.level()
         cands = builder.candidates(section, later)
         actions, done = builder.simulate(section, cands, section["start"])
-        nxt = sections[n + 1]["name"] if n + 1 < len(sections) else getattr(route, "NEXT", None)
-        out.append(render_section(builder, section, cands, actions, route.GROUP, nxt))
-        out.append("")
-        report.append("%-36s %3d quests, %4d actions" % (section["name"], len(done), len(actions)))
+        end = builder.level()
+        name = section_name(section, start, end)
+        k = 2
+        while name in seen:
+            name = "%s (part %d)" % (section_name(section, start, end), k)
+            k += 1
+        if section.get("city") and not actions:
+            continue  # nothing to do in town this time
+        worth = len({a[1] if a[0] != "obj" else a[1][0] for a in actions if a[0] != "accept"})
+        if plan and not section.get("city") and not section.get("keep") and worth < MIN_VISIT:
+            # Not worth the trip: forget it, its quests wait for a later visit.
+            builder.restore(saved)
+            report.append("%-36s skipped: only %d quests at level %.1f" % (
+                section.get("label", section["zone"]), worth, start - grind))
+            continue
+        seen.add(name)
+        section["name"] = name
+        plan.append([r, section, cands, actions])
+        report.append("%-36s %3d quests %5.1f -> %5.1f%s" % (
+            name, len(done), start, end, ("   grind %.1f lv" % grind) if grind else ""))
         # carried quests that got turned in are no longer carried
         builder.accepted_before -= done
-    path = os.path.join(ROOT, route.OUTPUT)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    open(path, "w", encoding="utf-8").write("\n".join(out))
+
+    for r in routes:
+        builder.file_accepted = set()
+        out = [r.HEADER.rstrip(), ""]
+        mine = [i for i, p in enumerate(plan) if p[0] is r]
+        for i in mine:
+            _, section, cands, actions = plan[i]
+            if i + 1 < len(plan):
+                nxt = plan[i + 1][1]["name"]
+            else:
+                nxt = getattr(r, "NEXT", None)
+            out.append(render_section(builder, section, cands, actions, r.GROUP, nxt))
+            out.append("")
+        path = os.path.join(ROOT, r.OUTPUT)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        open(path, "w", encoding="utf-8").write("\n".join(out))
+        print("wrote", os.path.relpath(path, ROOT))
     print("\n".join(report))
-    print("wrote", os.path.relpath(path, ROOT))
+    total = sum(1 for p in plan for a in p[3] if a[0] == "turnin")
+    print("%d turn-ins, level %.1f -> %.1f; XP from quests %.0fk, kills %.0fk; %.1f levels of grinding" % (
+        total, start_level, builder.level(), builder.xp_from["quests"] / 1000,
+        builder.xp_from["kills"] / 1000, builder.xp_from.get("grind", 0)))
+
+
+# ---------------------------------------------------------------------------
+# Automatic zone order
+#
+# A route file with HUBS lists the places you can quest from (zone, hub
+# town, how to get there) instead of a fixed order. The planner then plays
+# the route: at every step it tries each hub, sees how much XP the visit
+# would give and how long it would take (travel, walking, objectives,
+# slower for quests above your level), and goes where the XP per minute is
+# best. When no zone has enough quests open for you, it adds a short
+# "kill mobs or run a dungeon to level N" step and tries again.
+# ---------------------------------------------------------------------------
+
+def plan_hubs(builder, route):
+    hubs = route.HUBS
+    areas = [h["area"] for h in hubs]
+    visits = {}
+    plan, report = [], []
+    cur = None
+    pending_grind = 0.0
+
+    def visit(hub, commit, frm=None):
+        frm = cur if frm is None else frm
+        section = dict(hub)
+        first = visits.get(hub["key"], 0) == 0
+        section["intro"] = hub["first"] if first else hub["again"]
+        section["grind"] = False
+        before_xp, before_min = builder.xp, builder.minutes
+        start = builder.level()
+        cands = builder.candidates(section, areas, carry_ahead=0)
+        actions, done = builder.simulate(section, cands, section["start"])
+        worth = len({qid for qid in (a[1] if a[0] != "obj" else a[1][0] for a in actions if a[0] != "accept")
+                     if not cands[qid]["q"].class_tag()})
+        hop = 0.0 if frm is None or frm["key"] == hub["key"] else (
+            MINUTES_HOP if frm["continent"] == hub["continent"] else MINUTES_SEA)
+        hop += hub.get("ride", 0) if first else 0
+        if hub.get("city") and hop:
+            hop = max(hop, MINUTES_CITY)
+        spent = hop + builder.minutes - before_min
+        gain = builder.xp - before_xp
+        rate = gain / spent if spent > 0 else 0
+        visit.last = (gain, spent)
+        return section, cands, actions, done, start, worth, rate
+
+    first_hub = next(h for h in hubs if h["key"] == route.FIRST)
+    steps = 0
+    while builder.level() < MAX_LEVEL - 0.02 and steps < 200:
+        steps += 1
+        if cur is None:
+            options = [first_hub]
+        else:
+            options = [h for h in hubs if h["key"] != cur["key"]]
+        scored = []
+        for hub in options:
+            saved = builder.snapshot()
+            section, cands, actions, done, start, worth, rate = visit(hub, False)
+            builder.restore(saved)
+            need = 3 if hub.get("city") else MIN_VISIT
+            if os.environ.get("OXP_DEBUG"):
+                print("  try %-14s lv %.1f worth %2d rate %4.0f" % (hub["key"], builder.level(), worth, rate))
+            if cur is not None and worth < need:
+                continue
+            scored.append((rate, hub))
+        scored.sort(key=lambda x: -x[0])
+        best = None
+        # Look one visit ahead for the best few, so a trip across the sea
+        # counts what you can do once you're there.
+        for rate, hub in scored[:LOOKAHEAD]:
+            saved = builder.snapshot()
+            visit(hub, False)
+            gain1, spent1 = visit.last
+            w = visits.get(hub["key"], 0)
+            visits[hub["key"]] = w + 1
+            gain2 = spent2 = 0.0
+            best2 = 0.0
+            for hub2 in hubs:
+                if hub2["key"] == hub["key"]:
+                    continue
+                saved2 = builder.snapshot()
+                _, _, _, _, _, worth2, rate2 = visit(hub2, False, frm=hub)
+                g2, s2 = visit.last
+                builder.restore(saved2)
+                if worth2 >= (3 if hub2.get("city") else MIN_VISIT) and rate2 > best2:
+                    best2, gain2, spent2 = rate2, g2, s2
+            visits[hub["key"]] = w
+            builder.restore(saved)
+            combined = (gain1 + gain2) / (spent1 + spent2) if spent1 + spent2 else 0
+            if best is None or combined > best[2]:
+                best = (hub, rate, combined)
+        lvl = builder.level()
+        if best is not None and cur is not None and \
+                best[1] < WORTH_IT * GRIND_KILLS_PER_MINUTE * mob_xp(int(lvl), lvl):
+            best = None
+        if best is None:
+            if pending_grind >= 6:
+                break
+            # Nothing worth a trip at this level: level up a bit first.
+            lvl = builder.level()
+            target = xp_at_level(lvl + 0.5)
+            builder.minutes += (target - builder.xp) / (GRIND_KILLS_PER_MINUTE * mob_xp(int(lvl), lvl))
+            builder.xp = target
+            pending_grind += 0.5
+            builder.xp_from["grind"] = builder.xp_from.get("grind", 0) + 0.5
+            continue
+        hub = best[0]
+        section, cands, actions, done, start, worth, rate = visit(hub, True)
+        visits[hub["key"]] = visits.get(hub["key"], 0) + 1
+        if pending_grind:
+            section["_grind_to"] = int(start)
+        plan.append(dict(section=section, cands=cands, actions=actions, done=done,
+                         start=start, end=builder.level(), grind=pending_grind, rate=rate))
+        builder.accepted_before -= done
+        pending_grind = 0.0
+        cur = hub
+
+    # Quests picked up but never finished on the route: leave them out.
+    turned = set()
+    for p in plan:
+        turned |= p["done"]
+    for p in plan:
+        p["actions"] = [a for a in p["actions"]
+                        if (a[1][0] if a[0] == "obj" else a[1]) in turned]
+    # Names from the levels you're at; drop stops left empty.
+    seen = set()
+    out = []
+    for p in plan:
+        if not p["actions"] and not p["grind"]:
+            continue
+        sec = p["section"]
+        base = section_name(sec, p["start"], p["end"])
+        name, k = base, 2
+        while name in seen:
+            name, k = "%s (part %d)" % (base, k), k + 1
+        seen.add(name)
+        sec["name"] = name
+        out.append(p)
+        report.append("%-36s %3d quests %5.1f -> %5.1f  %4.0f xp/min%s" % (
+            name, len(p["done"]), p["start"], p["end"], p["rate"],
+            ("   grind %.1f lv" % p["grind"]) if p["grind"] else ""))
+    return out, report
+
+
+def main_hubs(route, args, db):
+    accepted, turned = free_guide_quests(
+        skip_all={os.path.abspath(os.path.join(ROOT, o[1])) for o in route.OUTPUTS})
+    builder = Builder(db, done_before=turned, carried=accepted - turned)
+    builder.used |= set(getattr(route, "SKIP", ()))
+    builder.xp = xp_at_level(route.START_LEVEL)
+    plan, report = plan_hubs(builder, route)
+    # Split into files by the level each section starts at.
+    files = []
+    for top, path, header in route.OUTPUTS:
+        files.append((path, header, [p for p in plan if p.get("_file") is None and p["start"] < top]))
+        for p in files[-1][2]:
+            p["_file"] = path
+    order = [p for _, _, ps in files for p in ps]
+    for path, header, ps in files:
+        builder.file_accepted = set()
+        out = [header.rstrip(), ""]
+        for p in ps:
+            i = order.index(p)
+            nxt = order[i + 1]["section"]["name"] if i + 1 < len(order) else None
+            out.append(render_section(builder, p["section"], p["cands"], p["actions"], route.GROUP, nxt))
+            out.append("")
+        full = os.path.join(ROOT, path)
+        open(full, "w", encoding="utf-8").write("\n".join(out))
+        print("wrote", path, "(%d sections)" % len(ps))
+    print("\n".join(report))
+    total = sum(len(p["done"]) for p in plan)
+    print("%d turn-ins, level %.1f -> %.1f; XP from quests %.0fk, kills %.0fk; %.1f levels of grinding; %.0f hours" % (
+        total, route.START_LEVEL, builder.level(), builder.xp_from["quests"] / 1000,
+        builder.xp_from["kills"] / 1000, builder.xp_from.get("grind", 0), builder.minutes / 60))
 
 
 if __name__ == "__main__":

@@ -79,7 +79,7 @@ OpenXP reads the installed Questie while you play.
    (`/oxp questdump clear` removes it again).
 3. `python tools/audit_guides.py --questiedb PATH\QuestieDB --questie "PATH\AddOns\Questie" --dump PATH\OpenXP.lua`
    lists, zone by zone, the quests each faction can do that no guide picks up.
-4. `python tools/build_route.py --questiedb PATH\QuestieDB --dump PATH\OpenXP.lua tools/routes/<route>.py` drafts a route.
+4. `python tools/build_route.py --questiedb PATH\QuestieDB --dump PATH\OpenXP.lua tools/routes/alliance.py` (or `horde.py`) builds the 21-60 route; the builder picks the zone order by XP per minute.
 
 ## Tests
 

@@ -185,24 +185,36 @@ g = SS.PickGuide(guides, 20, "")
 local lo = g and tonumber(g.name:match("^(%d+)"))
 check(g and lo and lo >= 16, "level 20 picks a 16+ section, got " .. tostring(g and g.name))
 
--- 6. OpenXP 21-30: a level 25 in the Wetlands lands in the Wetlands section,
--- and the 20-21 guides chain into the 21-30 file.
-reset(); state.level = 25; state.zone = "Wetlands"
-g = SS.PickGuide(guides, 25, "Wetlands")
-check(g and g.name == "24-26 Wetlands", "level 25 in Wetlands picks 24-26 Wetlands, got " .. tostring(g and g.name))
+-- 6. OpenXP 21-60: the section names come from the route builder's level
+-- simulation, so read them from the files. Every section parses, the 1-20
+-- guides chain into the first one, and a player in a zone at a level one of
+-- its sections covers lands in that zone.
 local names = {}
 for _, gg in ipairs(guides) do names[gg.name] = true end
-for _, n in ipairs({"21-23 Stonetalon/Ashenvale", "23-24 Stonetalon Mountains", "24-26 Wetlands",
-                    "26-28 Redridge Mountains", "28-30 Duskwood", "30-32 Hillsbrad Foothills",
-                    "39-40 Stranglethorn Vale", "40-41 Badlands", "50-51 Un'Goro Crater",
-                    "58-60 Silithus"}) do
-    check(names[n], "21-30 section parsed: " .. n)
+local zoneSections = {}
+for _, file in ipairs({"Alliance-21-30.lua", "Alliance-30-40.lua", "Alliance-40-50.lua", "Alliance-50-60.lua"}) do
+    local text = readfile(ROOT .. "/Guides/openxp/" .. file)
+    for n in text:gmatch("#name ([^\n]+)") do
+        check(names[n], file .. " section parsed: " .. n)
+        local lo, hi, zone = n:match("^(%d+)%-(%d+) (.-)$")
+        zone = zone and zone:gsub(" %(part %d+%)$", "")
+        if zone and not zoneSections[zone] then
+            zoneSections[zone] = {lo = tonumber(lo), hi = tonumber(hi), name = n}
+        end
+    end
 end
-
--- Level 55 in the Western Plaguelands lands in that section.
-reset(); state.level = 56; state.zone = "Western Plaguelands"
-g = SS.PickGuide(guides, 56, "Western Plaguelands")
-check(g and g.name == "56-57 Western Plaguelands", "level 56 in WPL picks 56-57 Western Plaguelands, got " .. tostring(g and g.name))
+for nxt in readfile(ROOT .. "/Guides/forever/Alliance-11-20.lua"):gmatch("#next RestedXP Forever Guide %(A%)\\([^\n]+)") do
+    check(names[nxt], "the 1-20 guide chains into a 21-60 section that exists: " .. nxt)
+end
+for _, zone in ipairs({"Wetlands", "Western Plaguelands"}) do
+    local z = zoneSections[zone]
+    check(z, "the route has a " .. zone .. " section")
+    if z then
+        reset(); state.level = z.lo; state.zone = zone
+        g = SS.PickGuide(guides, z.lo, zone)
+        check(g and g.name:find(zone, 1, true), "level " .. z.lo .. " in " .. zone .. " picks a " .. zone .. " section, got " .. tostring(g and g.name))
+    end
+end
 
 -- 7. Every quest an OpenXP file completes or turns in with a plain id is
 -- accepted earlier in that file (carried quests use skip-if-missing ids),
@@ -211,6 +223,30 @@ for _, file in ipairs({"Alliance-21-30.lua", "Alliance-30-40.lua", "Alliance-40-
     local text = readfile(ROOT .. "/Guides/openxp/" .. file)
     for nxt in text:gmatch("#next ([^\n]+)") do
         check(names[nxt:gsub("^.*\\", "")], file .. " #next points at a missing section: " .. nxt)
+    end
+    local accepted, bad = {}, {}
+    for line in text:gmatch("[^\n]+") do
+        local tag, id = line:match("^%s+%.(%a+)%s+(%d+)")
+        if tag == "accept" then accepted[id] = true
+        elseif (tag == "turnin" or tag == "complete") and not accepted[id] then table.insert(bad, id) end
+    end
+    check(#bad == 0, file .. " quests used before accepted: " .. table.concat(bad, ","))
+end
+
+-- 8. Same checks for the Horde 22-60 files, and the Barrens guide chains
+-- into the first one.
+local hnames = {}
+local hfiles = {"Horde-22-30.lua", "Horde-30-40.lua", "Horde-40-50.lua", "Horde-50-60.lua"}
+for _, file in ipairs(hfiles) do
+    for n in readfile(ROOT .. "/Guides/openxp/" .. file):gmatch("#name ([^\n]+)") do hnames[n] = true end
+end
+local barrensNext
+for n in readfile(ROOT .. "/Guides/forever/Horde-12-22_Barrens.lua"):gmatch("#next ([^\n]+)") do barrensNext = n end
+check(hnames[barrensNext], "the Barrens guide chains into a 22-60 section that exists: " .. tostring(barrensNext))
+for _, file in ipairs(hfiles) do
+    local text = readfile(ROOT .. "/Guides/openxp/" .. file)
+    for nxt in text:gmatch("#next ([^\n]+)") do
+        check(hnames[nxt], file .. " #next points at a missing section: " .. nxt)
     end
     local accepted, bad = {}, {}
     for line in text:gmatch("[^\n]+") do
