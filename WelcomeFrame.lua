@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.10",
+        date = "November 2026",
+        changes = {
+            "Duskwood steps rebuilt with walking distances around the mountains: quests are picked up before the areas they share (Eight-Legged Menaces before the wolves), objectives use the densest spot on your way, and Darkshire's quests are all grabbed before you leave",
+            "About 7% less walking and much less time near mobs well above your level in 21-24 Duskwood, with the same quests",
+        },
+    },
+    {
         version = "1.3.9",
         date = "November 2026",
         changes = {

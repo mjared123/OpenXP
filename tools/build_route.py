@@ -255,7 +255,7 @@ def load_dump_cached(path, questiedb):
     cache = os.path.join(questiedb, ".openxp-dump.pkl")
     try:
         d = load_dump(path)
-    except SystemExit:
+    except (SystemExit, OSError):
         if os.path.exists(cache):
             print("no /oxp questdump in %s: using the copy from %s" % (path, cache))
             return pickle.load(open(cache, "rb"))
@@ -779,13 +779,14 @@ class Builder:
 
     SHARE = 3.0      # map units: other quests' objectives this close get done too
     ROLLOUT_TOP = 5  # options tried out to the end when ordering steps
+    HERE = 4.0       # map units: quest givers this close count as "in town"
 
     def simulate_terrain(self, section, cands, start_pos, t):
         """simulate() for zones with walking terrain (tools/terrain.py).
 
         Differences from the straight-line greedy walk:
         - distances are walking distances around mountains and cliffs, with
-          packs well above your level counted as a long detour;
+          the arrow walks around packs well above your level;
         - each objective can be done at any of its dense spots, not just the
           densest one, so it's done where the route already goes;
         - at a spot, every quest in your log with an objective there gets it
@@ -808,7 +809,11 @@ class Builder:
                 spots[(qid, i)] = pts
 
         def dist(a, b, lvl):
-            return t.cost(a, b, lvl) / unit
+            # Walking distance around the terrain only. Packs above your
+            # level are left to the arrow, which walks around them: counted
+            # here they'd make every quest whose mobs live in a pack look far
+            # away, and the route would criss-cross the zone to avoid them.
+            return t.cost(a, b, None) / unit
 
         st = dict(pos=start_pos, xp=self.xp, minutes=self.minutes, kills=0.0, quests=0.0,
                   accepted=set(q for q in self.accepted_before if q in cands),
@@ -866,7 +871,10 @@ class Builder:
         def apply(st, opt, record=True):
             _, kind, ref, where = opt
             lvl = level_of(st["xp"])
-            d = dist(st["pos"], where, int(lvl))
+            # Time and XP on the way use the straight line, like zones without
+            # terrain do, so the zone isn't judged against the others on a
+            # different scale (the order still comes from walking distances).
+            d = math.dist(st["pos"], where)
             x = TRAVEL_KILLS * d * mob_xp(int(lvl), lvl)
             st["xp"] += x
             st["kills"] += x
@@ -918,7 +926,12 @@ class Builder:
             if not opts:
                 break
             choice = opts[0]
-            if self.rollouts and len(opts) > 1:
+            # Quest givers right where you stand: always talk to them before
+            # leaving (you'd never walk off from a town without its quests).
+            here = [o for o in opts if o[1] != "obj" and o[0] <= self.HERE]
+            if here:
+                choice = here[0]
+            elif self.rollouts and len(opts) > 1:
                 tried, best = set(), None
                 for o in opts:
                     key = (o[1], o[2], o[3])
@@ -938,9 +951,8 @@ class Builder:
             apply(st, choice)
 
         if self.rollouts:
-            acts, saved = self.improve_order(st["actions"], cands, spots, start_pos, xp0, t, level_of(xp0))
+            acts, _saved = self.improve_order(st["actions"], cands, spots, start_pos, xp0, t, level_of(xp0))
             st["actions"] = acts
-            st["minutes"] -= saved / unit * MINUTES_PER_UNIT
         self.xp, self.minutes = st["xp"], st["minutes"]
         self.xp_from["kills"] += st["kills"]
         self.xp_from["quests"] += st["quests"]
@@ -968,7 +980,7 @@ class Builder:
         lvl_key = int(lvl0)
 
         def cost(a, b):
-            return t.cost(a, b, lvl_key)
+            return t.cost(a, b, None)
 
         def total(seq):
             pos, s = start_pos, 0.0

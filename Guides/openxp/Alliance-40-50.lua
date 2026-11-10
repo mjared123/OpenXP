@@ -13,202 +13,8 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 40-41 Desolace
-#next 41-42 Feralas
-
-step
-    #completewith next
-    .zone Desolace >>Fly to Nijel's Point in Desolace
-step
-    .goto Desolace,66.66,10.93
-    >>Talk to |cRXP_FRIENDLY_Captain Pentigast|r
-    .accept 93224 >>Accept Carved Centaur Totems
-    .target Captain Pentigast
-step
-    .goto Desolace,66.52,7.91
-    >>Talk to |cRXP_FRIENDLY_Brother Anton|r
-    .accept 261 >>Accept Down the Scarlet Path
-    .target Brother Anton
-step
-    .goto Desolace,62.33,38.99
-    >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
-    .accept 5501 >>Accept Bone Collector
-    .target Bibbly F'utzbuckle
-step
-    .goto Desolace,38.88,27.16
-    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
-    .accept 6027 >>Accept Book of the Ancients
-    .target Azore Aldamort
-step
-    .goto Desolace,28.24,6.67
-    >>Kill |cRXP_ENEMY_Lord Kragaru|r. Loot them for |cRXP_LOOT_Book of the Ancients|r
-    .complete 6027,1 --Book of the Ancients
-    .mob Lord Kragaru
-step
-    .goto Desolace,38.88,27.16
-    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
-    .turnin 6027 >>Turn in Book of the Ancients
-    .target Azore Aldamort
-step
-    .goto Desolace,33.95,53.50
-    >>Talk to |cRXP_FRIENDLY_Melizza Brimbuzzle|r
-    .accept 6132 >>Accept Get Me Out of Here!
-    .target Melizza Brimbuzzle
-step
-    .goto Desolace,32.17,55.50
-    >>Kill |cRXP_ENEMY_Maraudine Scout|r and |cRXP_ENEMY_Maraudine Wrangler|r and |cRXP_ENEMY_Maraudine Mauler|r. Loot them for |cRXP_LOOT_Carved Centaur Totem|r
-    .complete 93224,1 --Carved Centaur Totems
-    .mob Maraudine Scout
-    .mob Maraudine Wrangler
-    .mob Maraudine Mauler
-step
-    .goto Desolace,40.15,61.58
-    >>Melizza Brimbuzzle escorted to safety
-    .complete 6132,1 --Get Me Out of Here!
-step
-    .goto Desolace,47.83,61.83
-    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
-    .turnin 6132 >>Turn in Get Me Out of Here!
-    .accept 6134 >>Accept Ghost-o-plasm Round Up
-    .target Hornizz Brimbuzzle
-step
-    .goto Desolace,50.79,58.70
-    >>Loot the |cRXP_PICK_Kodo Bone|r
-    .complete 5501,1 --Bone Collector
-step
-    .goto Desolace,45.40,75.29
-    >>Talk to |cRXP_FRIENDLY_Rigger Gizelton|r
-    .accept 5943 >>Accept Gizelton Caravan
-    .target Rigger Gizelton
-step
-    .goto Desolace,36.22,79.25
-    >>Talk to |cRXP_FRIENDLY_Uthek the Wise|r
-    .accept 93034 >>Accept Valley of Bones
-    .target Uthek the Wise
-step
-    .goto Desolace,55.69,67.79
-    >>Escort Gizelton Caravan past Mannoroc Coven
-    .complete 5943,1 --Gizelton Caravan
-step
-    .goto Desolace,60.86,61.86
-    >>Talk to |cRXP_FRIENDLY_Smeed Scrabblescrew|r
-    .turnin 5943 >>Turn in Gizelton Caravan
-    .target Smeed Scrabblescrew
-step
-    .goto Desolace,74.97,68.16
-    >>Talk to |cRXP_FRIENDLY_Warug|r
-    .accept 92743 >>Accept A Conqueror's Crown
-    .turnin 92743 >>Turn in A Conqueror's Crown
-    .accept 92841 >>Accept Valley of Bones
-    .target Warug
-step
-    .goto Desolace,63.03,90.00
-    >>Kill |cRXP_ENEMY_Undead Ravager|r
-    >>Kill |cRXP_ENEMY_Magrami Spectre|r. Loot them for |cRXP_LOOT_Ghost-o-plasm|r
-    .complete 261,1 --Down the Scarlet Path
-    .complete 6134,1 --Ghost-o-plasm Round Up
-    .mob Undead Ravager
-    .mob Magrami Spectre
-step
-    .goto Desolace,47.83,61.83
-    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
-    .turnin 6134 >>Turn in Ghost-o-plasm Round Up
-    .target Hornizz Brimbuzzle
-step
-    .goto Desolace,62.33,38.99
-    >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
-    .turnin 5501 >>Turn in Bone Collector
-    .target Bibbly F'utzbuckle
-step
-    .goto Desolace,66.66,10.93
-    >>Talk to |cRXP_FRIENDLY_Captain Pentigast|r
-    .turnin 93224 >>Turn in Carved Centaur Totems
-    .target Captain Pentigast
-step
-    .goto Desolace,66.52,7.91
-    >>Talk to |cRXP_FRIENDLY_Brother Anton|r
-    .turnin 261 >>Turn in Down the Scarlet Path
-    .target Brother Anton
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 41-42 Feralas
-#next 41-42 Shen'dralas
-
-step
-    #completewith next
-    .zone Feralas >>Travel to Feathermoon Stronghold in Feralas (boat from the Forgotten Coast)
-step
-    .goto Feralas,30.24,43.25
-    >>Talk to |cRXP_FRIENDLY_Fyldren Moonfeather|r
-    .fp Feathermoon Stronghold >>Get the Feathermoon Stronghold flight path
-    .target Fyldren Moonfeather
-step
-    .goto Feralas,30.28,46.17
-    >>Talk to |cRXP_FRIENDLY_Shandris Feathermoon|r
-    .accept 2866 >>Accept The Ruins of Solarsal
-    .target Shandris Feathermoon
-step
-    .goto Feralas,30.38,46.17
-    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
-    .accept 4124 >>Accept The Missing Courier
-    .target Latronicus Moonspear
-step
-    .goto Feralas,31.86,45.13
-    >>Talk to |cRXP_FRIENDLY_Ginro Hearthkindle|r
-    .turnin 4124 >>Turn in The Missing Courier
-    .accept 4125 >>Accept The Missing Courier
-    .target Ginro Hearthkindle
-step
-    .goto Feralas,26.31,52.34
-    >>Click the |cRXP_PICK_Solarsal Gazebo|r
-    .turnin 2866 >>Turn in The Ruins of Solarsal
-    .accept 2867 >>Accept Return to Feathermoon Stronghold
-step
-    .goto Feralas,30.28,46.17
-    >>Talk to |cRXP_FRIENDLY_Shandris Feathermoon|r
-    .turnin 2867 >>Turn in Return to Feathermoon Stronghold
-    .accept 3130 >>Accept Against the Hatecrest
-    .target Shandris Feathermoon
-step
-    .goto Feralas,30.38,46.17
-    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
-    .turnin 3130 >>Turn in Against the Hatecrest
-    .accept 2869 >>Accept Against the Hatecrest
-    .target Latronicus Moonspear
-step
-    .goto Feralas,45.44,64.96
-    >>Click the |cRXP_PICK_Wrecked Row Boat|r
-    .turnin 4125 >>Turn in The Missing Courier
-step
-    .goto Feralas,27.10,68.07
-    >>Kill |cRXP_ENEMY_Hatecrest Warrior|r and |cRXP_ENEMY_Hatecrest Wave Rider|r and |cRXP_ENEMY_Hatecrest Serpent Guard|r. Loot them for |cRXP_LOOT_Hatecrest Naga Scale|r
-    .complete 2869,1 --Against the Hatecrest
-    .mob Hatecrest Warrior
-    .mob Hatecrest Wave Rider
-    .mob Hatecrest Serpent Guard
-step
-    .goto Feralas,30.38,46.17
-    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
-    .turnin 2869 >>Turn in Against the Hatecrest
-    .target Latronicus Moonspear
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 41-42 Shen'dralas
-#next 41-42 Stormwind City
+#name 40-41 Shen'dralas
+#next 41-42 Stranglethorn Vale
 
 step
     #completewith next
@@ -216,7 +22,7 @@ step
 step
     .goto Shen'dralas,35.60,12.00
     >>Talk to |cRXP_FRIENDLY_Orgrul|r
-    .turnin 92841 >>Turn in Valley of Bones
+    .turnin -92841 >>Turn in Valley of Bones
     .accept 92844 >>Accept Mountain of Bones
     .turnin 92844 >>Turn in Mountain of Bones
     .target Orgrul
@@ -225,11 +31,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Nerlokh|r
     .accept 93035 >>Accept Ravaging Ravagers
     .turnin 93035 >>Turn in Ravaging Ravagers
+    .accept 93041 >>Accept Facing the Truth
     .accept 93037 >>Accept Outing Outcasts
     .turnin 93037 >>Turn in Outing Outcasts
     .accept 93128 >>Accept Khan Jehn
-    .turnin 93034 >>Turn in Valley of Bones
-    .accept 93041 >>Accept Facing the Truth
+    .turnin -93034 >>Turn in Valley of Bones
     .target Nerlokh
 ]])
 
@@ -240,8 +46,304 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 41-42 Stormwind City
-#next 41-42 Badlands
+#name 41-42 Stranglethorn Vale
+#next 42-43 Stormwind City
+
+step
+    #completewith next
+    .zone Stranglethorn Vale >>Fly to Darkshire and ride south to the Rebel Camp in Stranglethorn Vale
+step
+    .goto Stranglethorn Vale,38.02,3.33
+    >>Talk to |cRXP_FRIENDLY_Sergeant Yohwa|r
+    .accept 574 >>Accept Special Forces
+    .target Sergeant Yohwa
+step
+    .goto Stranglethorn Vale,37.83,3.56
+    >>Talk to |cRXP_FRIENDLY_Brother Nimetz|r
+    .accept 207 >>Accept Kurzen's Mystery
+    .target Brother Nimetz
+step
+    .goto Stranglethorn Vale,35.55,10.55
+    >>Talk to |cRXP_FRIENDLY_Sir S. J. Erlgadin|r
+    .accept 192 >>Accept Panther Mastery
+    .target Sir S. J. Erlgadin
+step
+    .goto Stranglethorn Vale,35.66,10.81
+    >>Talk to |cRXP_FRIENDLY_Hemet Nesingwary|r
+    .accept 196 >>Accept Raptor Mastery
+    .target Hemet Nesingwary
+step
+    .goto Stranglethorn Vale,29.48,19.14
+    >>Loot the |cRXP_PICK_The First Troll Legend|r
+    .complete 207,1 --Kurzen's Mystery
+step
+    .goto Stranglethorn Vale,24.77,22.88
+    >>Loot the |cRXP_PICK_The Second Troll Legend|r
+    .complete 207,2 --Kurzen's Mystery
+step
+    .goto Stranglethorn Vale,25.30,26.40
+    >>Loot the |cRXP_PICK_Blue Pearl|r
+    .complete -705,1 --Pearl Diving
+step
+    .goto Stranglethorn Vale,22.95,12.02
+    >>Loot the |cRXP_PICK_The Third Troll Legend|r
+    .complete 207,3 --Kurzen's Mystery
+step
+    .goto Stranglethorn Vale,24.70,8.93
+    >>Loot the |cRXP_PICK_The Fourth Troll Legend|r
+    .complete 207,4 --Kurzen's Mystery
+step
+    .goto Stranglethorn Vale,37.83,3.56
+    >>Talk to |cRXP_FRIENDLY_Brother Nimetz|r
+    .turnin 207 >>Turn in Kurzen's Mystery
+    .accept 205 >>Accept Troll Witchery
+    .target Brother Nimetz
+step
+    .goto Stranglethorn Vale,45.93,7.90
+    >>Kill |cRXP_ENEMY_Kurzen Headshrinker|r
+    >>Kill |cRXP_ENEMY_Kurzen Commando|r
+    .complete 574,2 --Special Forces
+    .complete 574,1 --Special Forces
+    .mob Kurzen Headshrinker
+    .mob Kurzen Commando
+step
+    .goto Stranglethorn Vale,38.04,3.01
+    >>Talk to |cRXP_FRIENDLY_Lieutenant Doren|r
+    .turnin 574 >>Turn in Special Forces
+    .target Lieutenant Doren
+step
+    .goto Stranglethorn Vale,39.22,37.91
+    >>Kill |cRXP_ENEMY_Shadowmaw Panther|r
+    .complete 192,1 --Panther Mastery
+    .mob Shadowmaw Panther
+step
+    .goto Stranglethorn Vale,45.00,38.06
+    >>Kill |cRXP_ENEMY_Skullsplitter Witch Doctor|r and |cRXP_ENEMY_Skullsplitter Mystic|r. Loot them for |cRXP_LOOT_Skullsplitter Fetish|r
+    .complete 205,1 --Troll Witchery
+    .mob Skullsplitter Witch Doctor
+    .mob Skullsplitter Mystic
+step
+    .goto Stranglethorn Vale,30.14,43.56
+    >>Kill |cRXP_ENEMY_Jungle Stalker|r
+    .complete 196,1 --Raptor Mastery
+    .mob Jungle Stalker
+step
+    .goto Stranglethorn Vale,28.10,76.22
+    >>Talk to |cRXP_FRIENDLY_First Mate Crazz|r
+    .accept 595 >>Accept The Bloodsail Buccaneers
+    .target First Mate Crazz
+step
+    .goto Stranglethorn Vale,27.78,77.07
+    >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
+    .accept 606 >>Accept Scaring Shaky
+    .target "Sea Wolf" MacKinley
+step
+    .goto Stranglethorn Vale,27.17,77.01
+    >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
+    .turnin -669 >>Turn in Sunken Treasure
+    .target Fleet Master Seahorn
+step
+    .goto Stranglethorn Vale,27.12,77.21
+    >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
+    .accept 600 >>Accept Venture Company Mining
+    .target Crank Fizzlebub
+step
+    .goto Stranglethorn Vale,27.04,77.17
+    >>Talk to |cRXP_FRIENDLY_Nixxrax Fillamug|r
+    .turnin -98463 >>Turn in Talk of the Town
+    .target Nixxrax Fillamug
+step
+    .goto Stranglethorn Vale,27.00,77.13
+    >>Talk to |cRXP_FRIENDLY_Kebok|r
+    .accept 209 >>Accept Skullsplitter Tusks
+    .target Kebok
+step
+    .goto Stranglethorn Vale,26.95,77.21
+    >>Talk to |cRXP_FRIENDLY_Krazek|r
+    .turnin -627 >>Turn in Favor for Krazek
+    .accept 622 >>Accept Return to Corporal Kaleb
+    .target Krazek
+step
+    .goto Stranglethorn Vale,26.76,76.38
+    >>Talk to |cRXP_FRIENDLY_Privateer Bloads|r
+    .accept 617 >>Accept Akiris by the Bundle
+    .target Privateer Bloads
+step
+    .goto Stranglethorn Vale,27.28,69.52
+    >>Click the |cRXP_PICK_Bloodsail Correspondence|r
+    .turnin 595 >>Turn in The Bloodsail Buccaneers
+    .accept 597 >>Accept The Bloodsail Buccaneers
+step
+    .goto Stranglethorn Vale,28.10,76.22
+    >>Talk to |cRXP_FRIENDLY_First Mate Crazz|r
+    .turnin 597 >>Turn in The Bloodsail Buccaneers
+    .accept 599 >>Accept The Bloodsail Buccaneers
+    .target First Mate Crazz
+step
+    .goto Stranglethorn Vale,28.59,75.90
+    >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
+    .accept 576 >>Accept Keep An Eye Out
+    .target Dizzy One-Eye
+step
+    .goto Stranglethorn Vale,27.17,77.01
+    >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
+    .turnin 599 >>Turn in The Bloodsail Buccaneers
+    .accept 604 >>Accept The Bloodsail Buccaneers
+    .target Fleet Master Seahorn
+step
+    .goto Stranglethorn Vale,26.92,77.35
+    >>Talk to |cRXP_FRIENDLY_Deeg|r
+    .accept 587 >>Accept Up to Snuff
+    .target Deeg
+step
+    .goto Stranglethorn Vale,27.18,82.66
+    >>Kill |cRXP_ENEMY_Bloodsail Swashbuckler|r
+    >>Loot the |cRXP_PICK_Bloodsail Charts|r
+    >>Loot the |cRXP_PICK_Bloodsail Orders|r
+    .complete 604,1 --The Bloodsail Buccaneers
+    .complete 604,2 --The Bloodsail Buccaneers
+    .complete 604,3 --The Bloodsail Buccaneers
+    .mob Bloodsail Swashbuckler
+step
+    .goto Stranglethorn Vale,27.17,77.01
+    >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
+    .turnin 604 >>Turn in The Bloodsail Buccaneers
+    .target Fleet Master Seahorn
+step
+    .goto Stranglethorn Vale,33.03,66.12
+    >>Kill |cRXP_ENEMY_Elder Mistvale Gorilla|r. Loot them for |cRXP_LOOT_Mistvale Giblets|r
+    .complete 606,1 --Scaring Shaky
+    .mob Elder Mistvale Gorilla
+step
+    .goto Stranglethorn Vale,26.90,73.59
+    >>Talk to |cRXP_FRIENDLY_"Shaky" Phillipe|r
+    .turnin 606 >>Turn in Scaring Shaky
+    .accept 607 >>Accept Return to MacKinley
+    .target "Shaky" Phillipe
+step
+    .goto Stranglethorn Vale,27.78,77.07
+    >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
+    .turnin 607 >>Turn in Return to MacKinley
+    .target "Sea Wolf" MacKinley
+step
+    .goto Stranglethorn Vale,30.71,89.45
+    >>Kill |cRXP_ENEMY_Bloodsail Raider|r and |cRXP_ENEMY_Bloodsail Mage|r and |cRXP_ENEMY_Bloodsail Swashbuckler|r. Loot them for |cRXP_LOOT_Snuff|r
+    >>Kill |cRXP_ENEMY_Bloodsail Raider|r and |cRXP_ENEMY_Bloodsail Mage|r and |cRXP_ENEMY_Bloodsail Swashbuckler|r. Loot them for |cRXP_LOOT_Dizzy's Eye|r
+    .complete 587,1 --Up to Snuff
+    .complete 576,1 --Keep An Eye Out
+    .mob Bloodsail Raider
+    .mob Bloodsail Mage
+    .mob Bloodsail Swashbuckler
+step
+    .goto Stranglethorn Vale,26.92,77.35
+    >>Talk to |cRXP_FRIENDLY_Deeg|r
+    .turnin 587 >>Turn in Up to Snuff
+    .target Deeg
+step
+    .goto Stranglethorn Vale,27.12,77.21
+    >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
+    .accept 621 >>Accept Zanzil's Secret
+    .target Crank Fizzlebub
+step
+    .goto Stranglethorn Vale,27.78,77.07
+    >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
+    .accept 609 >>Accept Voodoo Dues
+    .target "Sea Wolf" MacKinley
+step
+    .goto Stranglethorn Vale,28.59,75.90
+    >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
+    .turnin 576 >>Turn in Keep An Eye Out
+    .target Dizzy One-Eye
+step
+    .goto Stranglethorn Vale,26.20,62.42
+    >>Kill |cRXP_ENEMY_Naga Explorer|r and |cRXP_ENEMY_Brinescale Skirmisher|r. Loot them for |cRXP_LOOT_Akiris Reed|r
+    .complete 617,1 --Akiris by the Bundle
+    .mob Naga Explorer
+    .mob Brinescale Skirmisher
+step
+    .goto Stranglethorn Vale,26.76,76.38
+    >>Talk to |cRXP_FRIENDLY_Privateer Bloads|r
+    .turnin 617 >>Turn in Akiris by the Bundle
+    .target Privateer Bloads
+step
+    .goto Stranglethorn Vale,39.55,58.29
+    >>Kill |cRXP_ENEMY_Zanzil Zombie|r and |cRXP_ENEMY_Zanzil Hunter|r and |cRXP_ENEMY_Zanzil Witch Doctor|r. Loot them for |cRXP_LOOT_Zanzil's Mixture|r
+    >>Kill |cRXP_ENEMY_Chucky "Ten Thumbs"|r. Loot them for |cRXP_LOOT_Chucky's Huge Ring|r
+    .complete 621,1 --Zanzil's Secret
+    .complete 609,3 --Voodoo Dues
+    .mob Zanzil Zombie
+    .mob Zanzil Hunter
+    .mob Zanzil Witch Doctor
+    .mob Chucky "Ten Thumbs"
+step
+    .goto Stranglethorn Vale,34.92,51.84
+    >>Kill |cRXP_ENEMY_Maury "Club Foot" Wilkins|r. Loot them for |cRXP_LOOT_Maury's Clubbed Foot|r
+    >>Kill |cRXP_ENEMY_Jon-Jon the Crow|r. Loot them for |cRXP_LOOT_Jon-Jon's Golden Spyglass|r
+    .complete 609,1 --Voodoo Dues
+    .complete 609,2 --Voodoo Dues
+    .mob Maury "Club Foot" Wilkins
+    .mob Jon-Jon the Crow
+step
+    .goto Stranglethorn Vale,41.67,43.91
+    >>Kill |cRXP_ENEMY_Venture Co. Strip Miner|r and |cRXP_ENEMY_Venture Co. Foreman|r and |cRXP_ENEMY_Venture Co. Surveyor|r. Loot them for |cRXP_LOOT_Singing Blue Crystal|r
+    .complete 600,1 --Venture Company Mining
+    .mob Venture Co. Strip Miner
+    .mob Venture Co. Foreman
+    .mob Venture Co. Surveyor
+step
+    .goto Stranglethorn Vale,45.00,38.06
+    >>Kill |cRXP_ENEMY_Skullsplitter Warrior|r and |cRXP_ENEMY_Skullsplitter Hunter|r and |cRXP_ENEMY_Skullsplitter Witch Doctor|r. Loot them for |cRXP_LOOT_Skullsplitter Tusk|r
+    .complete 209,1 --Skullsplitter Tusks
+    .mob Skullsplitter Warrior
+    .mob Skullsplitter Hunter
+    .mob Skullsplitter Witch Doctor
+step
+    .goto Stranglethorn Vale,35.66,10.81
+    >>Talk to |cRXP_FRIENDLY_Hemet Nesingwary|r
+    .turnin 196 >>Turn in Raptor Mastery
+    .target Hemet Nesingwary
+step
+    .goto Stranglethorn Vale,35.55,10.55
+    >>Talk to |cRXP_FRIENDLY_Sir S. J. Erlgadin|r
+    .turnin 192 >>Turn in Panther Mastery
+    .target Sir S. J. Erlgadin
+step
+    .goto Stranglethorn Vale,37.83,3.56
+    >>Talk to |cRXP_FRIENDLY_Brother Nimetz|r
+    .turnin 205 >>Turn in Troll Witchery
+    .target Brother Nimetz
+step
+    .goto Stranglethorn Vale,37.74,3.30
+    >>Talk to |cRXP_FRIENDLY_Corporal Kaleb|r
+    .turnin 622 >>Turn in Return to Corporal Kaleb
+    .target Corporal Kaleb
+step
+    .goto Stranglethorn Vale,27.78,77.07
+    >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
+    .turnin 609 >>Turn in Voodoo Dues
+    .target "Sea Wolf" MacKinley
+step
+    .goto Stranglethorn Vale,27.12,77.21
+    >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
+    .turnin 600 >>Turn in Venture Company Mining
+    .turnin 621 >>Turn in Zanzil's Secret
+    .target Crank Fizzlebub
+step
+    .goto Stranglethorn Vale,27.00,77.13
+    >>Talk to |cRXP_FRIENDLY_Kebok|r
+    .turnin 209 >>Turn in Skullsplitter Tusks
+    .target Kebok
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 42-43 Stormwind City
+#next 42-43 Badlands
 
 step
     #completewith next
@@ -288,8 +390,8 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 41-42 Badlands
-#next 42-43 Stranglethorn Vale
+#name 42-43 Badlands
+#next 44-45 Feralas
 
 step
     #completewith next
@@ -297,27 +399,22 @@ step
 step
     .goto Badlands,53.80,43.30
     >>Talk to |cRXP_FRIENDLY_Sigrun Ironhew|r
-    .accept 718 >>Accept Mirages
+    .accept 733 >>Accept Scrounging
     .target Sigrun Ironhew
+step
+    .goto Badlands,61.94,54.26
+    >>Talk to |cRXP_FRIENDLY_Garek|r
+    .accept 732 >>Accept Tremors of the Earth
+    .target Garek
 step
     .goto Badlands,42.39,52.93
     >>Talk to |cRXP_FRIENDLY_Rigglefuzz|r
     .accept 703 >>Accept Barbecued Buzzard Wings
+    .turnin -705 >>Turn in Pearl Diving
     .target Rigglefuzz
 step
     .goto Badlands,25.95,44.87
     >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
-    .accept 710 >>Accept Study of the Elements: Rock
-    .target Lotwil Veriatus
-step
-    .goto Badlands,21.20,45.88
-    >>Kill |cRXP_ENEMY_Lesser Rock Elemental|r. Loot them for |cRXP_LOOT_Small Stone Shard|r
-    .complete 710,1 --Study of the Elements: Rock
-    .mob Lesser Rock Elemental
-step
-    .goto Badlands,25.95,44.87
-    >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
-    .turnin 710 >>Turn in Study of the Elements: Rock
     .accept 711 >>Accept Study of the Elements: Rock
     .target Lotwil Veriatus
 step
@@ -327,52 +424,6 @@ step
     .mob Starving Buzzard
     .mob Buzzard
     .mob Giant Buzzard
-step
-    .goto Badlands,42.39,52.93
-    >>Talk to |cRXP_FRIENDLY_Rigglefuzz|r
-    .turnin 703 >>Turn in Barbecued Buzzard Wings
-    .target Rigglefuzz
-step
-    .goto Badlands,51.39,76.87
-    >>Talk to |cRXP_FRIENDLY_Theldurin the Lost|r
-    .accept 709 >>Accept Solution to Doom
-    .target Theldurin the Lost
-step
-    .goto Badlands,43.32,84.20
-    >>Kill |cRXP_ENEMY_Rock Elemental|r. Loot them for |cRXP_LOOT_Large Stone Slab|r
-    .complete 711,1 --Study of the Elements: Rock
-    .mob Rock Elemental
-step
-    .goto Badlands,25.95,44.87
-    >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
-    .turnin 711 >>Turn in Study of the Elements: Rock
-    .accept 712 >>Accept Study of the Elements: Rock
-    .target Lotwil Veriatus
-step
-    .goto Badlands,39.34,18.82
-    >>Loot the |cRXP_PICK_Tablet of Ryun'eh|r
-    .complete 709,1 --Solution to Doom
-step
-    .goto Badlands,66.60,22.00
-    >>Loot the |cRXP_PICK_Supply Crate|r
-    .complete 718,1 --Mirages
-step
-    .goto Badlands,53.80,43.30
-    >>Talk to |cRXP_FRIENDLY_Sigrun Ironhew|r
-    .turnin 718 >>Turn in Mirages
-    .accept 733 >>Accept Scrounging
-    .target Sigrun Ironhew
-step
-    .goto Badlands,61.94,54.26
-    >>Talk to |cRXP_FRIENDLY_Garek|r
-    .accept 732 >>Accept Tremors of the Earth
-    .target Garek
-step
-    .goto Badlands,51.39,76.87
-    >>Talk to |cRXP_FRIENDLY_Theldurin the Lost|r
-    .turnin 709 >>Turn in Solution to Doom
-    .accept 727 >>Accept To Ironforge for Yagyin's Digest
-    .target Theldurin the Lost
 step
     .goto Badlands,12.62,75.49
     >>Kill |cRXP_ENEMY_Boss Tho'grun|r. Loot them for |cRXP_LOOT_Sign of the Earth|r
@@ -384,6 +435,58 @@ step
     .mob Dustbelcher Brute
     .mob Dustbelcher Wyrmhunter
 step
+    .goto Badlands,43.32,84.20
+    >>Kill |cRXP_ENEMY_Rock Elemental|r. Loot them for |cRXP_LOOT_Large Stone Slab|r
+    .complete 711,1 --Study of the Elements: Rock
+    .mob Rock Elemental
+step
+    .goto Badlands,51.39,76.87
+    >>Talk to |cRXP_FRIENDLY_Theldurin the Lost|r
+    .accept 709 >>Accept Solution to Doom
+    .target Theldurin the Lost
+step
+    .goto Badlands,61.94,54.26
+    >>Talk to |cRXP_FRIENDLY_Garek|r
+    .turnin 732 >>Turn in Tremors of the Earth
+    .target Garek
+step
+    .goto Badlands,53.80,43.30
+    >>Talk to |cRXP_FRIENDLY_Sigrun Ironhew|r
+    .accept 706 >>Accept Fiery Blaze Enchantments
+    .turnin 733 >>Turn in Scrounging
+    .target Sigrun Ironhew
+step
+    .goto Badlands,42.39,52.93
+    >>Talk to |cRXP_FRIENDLY_Rigglefuzz|r
+    .turnin 703 >>Turn in Barbecued Buzzard Wings
+    .target Rigglefuzz
+step
+    .goto Badlands,25.95,44.87
+    >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
+    .turnin 711 >>Turn in Study of the Elements: Rock
+    .accept 712 >>Accept Study of the Elements: Rock
+    .target Lotwil Veriatus
+step
+    .goto Badlands,39.34,18.82
+    >>Loot the |cRXP_PICK_Tablet of Ryun'eh|r
+    .complete 709,1 --Solution to Doom
+step
+    .goto Badlands,83.71,30.51
+    >>Kill |cRXP_ENEMY_Scalding Whelp|r. Loot them for |cRXP_LOOT_Black Drake's Heart|r
+    .complete 706,1 --Fiery Blaze Enchantments
+    .mob Scalding Whelp
+step
+    .goto Badlands,53.80,43.30
+    >>Talk to |cRXP_FRIENDLY_Sigrun Ironhew|r
+    .turnin 706 >>Turn in Fiery Blaze Enchantments
+    .target Sigrun Ironhew
+step
+    .goto Badlands,51.39,76.87
+    >>Talk to |cRXP_FRIENDLY_Theldurin the Lost|r
+    .turnin 709 >>Turn in Solution to Doom
+    .accept 727 >>Accept To Ironforge for Yagyin's Digest
+    .target Theldurin the Lost
+step
     .goto Badlands,4.11,79.91
     >>Kill |cRXP_ENEMY_Greater Rock Elemental|r. Loot them for |cRXP_LOOT_Bracers of Rock Binding|r
     .complete 712,1 --Study of the Elements: Rock
@@ -393,16 +496,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Lotwil Veriatus|r
     .turnin 712 >>Turn in Study of the Elements: Rock
     .target Lotwil Veriatus
-step
-    .goto Badlands,53.80,43.30
-    >>Talk to |cRXP_FRIENDLY_Sigrun Ironhew|r
-    .turnin 733 >>Turn in Scrounging
-    .target Sigrun Ironhew
-step
-    .goto Badlands,61.94,54.26
-    >>Talk to |cRXP_FRIENDLY_Garek|r
-    .turnin 732 >>Turn in Tremors of the Earth
-    .target Garek
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -412,90 +505,210 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 42-43 Stranglethorn Vale
-#next 42-43 Ironforge
+#name 44-45 Feralas
+#next 45-46 Tanaris
 
 step
     #completewith next
-    .zone Stranglethorn Vale >>Fly to Darkshire and ride south to the Rebel Camp in Stranglethorn Vale
+    .zone Feralas >>Travel to Feathermoon Stronghold in Feralas (boat from the Forgotten Coast)
 step
-    .goto Stranglethorn Vale,28.77,38.80
-    >>Kill |cRXP_ENEMY_Cold Eye Basilisk|r. Loot them for |cRXP_LOOT_Chilled Basilisk Haunch|r
-    .complete 212,1 --A Meal Served Cold
-    .mob Cold Eye Basilisk
+    .goto Feralas,30.24,43.25
+    >>Talk to |cRXP_FRIENDLY_Fyldren Moonfeather|r
+    .fp Feathermoon Stronghold >>Get the Feathermoon Stronghold flight path
+    .target Fyldren Moonfeather
 step
-    .goto Stranglethorn Vale,26.76,76.38
-    >>Talk to |cRXP_FRIENDLY_Privateer Bloads|r
-    .accept 617 >>Accept Akiris by the Bundle
-    .target Privateer Bloads
+    .xp 44 >>Kill mobs on the way, or run Uldaman, until you're level 44: the quests here are a bit high for you before that
 step
-    .goto Stranglethorn Vale,27.17,77.01
-    >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
-    .accept 604 >>Accept The Bloodsail Buccaneers
-    .target Fleet Master Seahorn
+    .goto Feralas,30.63,42.71
+    >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
+    .accept 2821 >>Accept The Mark of Quality
+    .target Pratt McGrubben
 step
-    .goto Stranglethorn Vale,27.12,77.21
-    >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
-    .accept 621 >>Accept Zanzil's Secret
-    .target Crank Fizzlebub
+    .goto Feralas,31.83,45.61
+    >>Talk to |cRXP_FRIENDLY_Angelas Moonbreeze|r
+    .accept 2982 >>Accept The High Wilderness
+    .target Angelas Moonbreeze
 step
-    .goto Stranglethorn Vale,27.78,77.07
-    >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
-    .accept 609 >>Accept Voodoo Dues
-    .target "Sea Wolf" MacKinley
+    .goto Feralas,30.38,46.17
+    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
+    .accept 4124 >>Accept The Missing Courier
+    .target Latronicus Moonspear
 step
-    .goto Stranglethorn Vale,27.18,82.66
-    >>Kill |cRXP_ENEMY_Bloodsail Swashbuckler|r
-    >>Loot the |cRXP_PICK_Bloodsail Charts|r
-    >>Loot the |cRXP_PICK_Bloodsail Orders|r
-    .complete 604,1 --The Bloodsail Buccaneers
-    .complete 604,2 --The Bloodsail Buccaneers
-    .complete 604,3 --The Bloodsail Buccaneers
-    .mob Bloodsail Swashbuckler
+    .goto Feralas,30.28,46.17
+    >>Talk to |cRXP_FRIENDLY_Shandris Feathermoon|r
+    .accept 2866 >>Accept The Ruins of Solarsal
+    .target Shandris Feathermoon
 step
-    .goto Stranglethorn Vale,27.17,77.01
-    >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
-    .turnin 604 >>Turn in The Bloodsail Buccaneers
-    .target Fleet Master Seahorn
+    .goto Feralas,31.86,45.13
+    >>Talk to |cRXP_FRIENDLY_Ginro Hearthkindle|r
+    .turnin 4124 >>Turn in The Missing Courier
+    .accept 4125 >>Accept The Missing Courier
+    .target Ginro Hearthkindle
 step
-    .goto Stranglethorn Vale,26.20,62.42
-    >>Kill |cRXP_ENEMY_Naga Explorer|r and |cRXP_ENEMY_Brinescale Skirmisher|r. Loot them for |cRXP_LOOT_Akiris Reed|r
-    .complete 617,1 --Akiris by the Bundle
-    .mob Naga Explorer
-    .mob Brinescale Skirmisher
+    .goto Feralas,26.31,52.34
+    >>Click the |cRXP_PICK_Solarsal Gazebo|r
+    .turnin 2866 >>Turn in The Ruins of Solarsal
+    .accept 2867 >>Accept Return to Feathermoon Stronghold
 step
-    .goto Stranglethorn Vale,26.76,76.38
-    >>Talk to |cRXP_FRIENDLY_Privateer Bloads|r
-    .turnin 617 >>Turn in Akiris by the Bundle
-    .target Privateer Bloads
+    .goto Feralas,30.28,46.17
+    >>Talk to |cRXP_FRIENDLY_Shandris Feathermoon|r
+    .turnin 2867 >>Turn in Return to Feathermoon Stronghold
+    .accept 3130 >>Accept Against the Hatecrest
+    .target Shandris Feathermoon
 step
-    .goto Stranglethorn Vale,39.55,58.29
-    >>Kill |cRXP_ENEMY_Zanzil Zombie|r and |cRXP_ENEMY_Zanzil Hunter|r and |cRXP_ENEMY_Zanzil Witch Doctor|r. Loot them for |cRXP_LOOT_Zanzil's Mixture|r
-    >>Kill |cRXP_ENEMY_Chucky "Ten Thumbs"|r. Loot them for |cRXP_LOOT_Chucky's Huge Ring|r
-    .complete 621,1 --Zanzil's Secret
-    .complete 609,3 --Voodoo Dues
-    .mob Zanzil Zombie
-    .mob Zanzil Hunter
-    .mob Zanzil Witch Doctor
-    .mob Chucky "Ten Thumbs"
+    .goto Feralas,30.38,46.17
+    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
+    .turnin 3130 >>Turn in Against the Hatecrest
+    .accept 2869 >>Accept Against the Hatecrest
+    .target Latronicus Moonspear
 step
-    .goto Stranglethorn Vale,34.92,51.84
-    >>Kill |cRXP_ENEMY_Maury "Club Foot" Wilkins|r. Loot them for |cRXP_LOOT_Maury's Clubbed Foot|r
-    >>Kill |cRXP_ENEMY_Jon-Jon the Crow|r. Loot them for |cRXP_LOOT_Jon-Jon's Golden Spyglass|r
-    .complete 609,1 --Voodoo Dues
-    .complete 609,2 --Voodoo Dues
-    .mob Maury "Club Foot" Wilkins
-    .mob Jon-Jon the Crow
+    .goto Feralas,45.44,64.96
+    >>Click the |cRXP_PICK_Wrecked Row Boat|r
+    .turnin 4125 >>Turn in The Missing Courier
+    .accept 4127 >>Accept Boat Wreckage
 step
-    .goto Stranglethorn Vale,27.78,77.07
-    >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
-    .turnin 609 >>Turn in Voodoo Dues
-    .target "Sea Wolf" MacKinley
+    .goto Feralas,52.26,57.93
+    >>Kill |cRXP_ENEMY_Feral Scar Yeti|r and |cRXP_ENEMY_Hulking Feral Scar|r and |cRXP_ENEMY_Enraged Feral Scar|r. Loot them for |cRXP_LOOT_Thick Yeti Hide|r
+    .complete 2821,1 --The Mark of Quality
+    .mob Feral Scar Yeti
+    .mob Hulking Feral Scar
+    .mob Enraged Feral Scar
 step
-    .goto Stranglethorn Vale,27.12,77.21
-    >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
-    .turnin 621 >>Turn in Zanzil's Secret
-    .target Crank Fizzlebub
+    .goto Feralas,61.37,56.17
+    >>Kill |cRXP_ENEMY_Gordunni Brute|r
+    .complete 2982,3 --The High Wilderness
+    .mob Gordunni Brute
+step
+    .goto Feralas,60.98,67.86
+    >>Kill |cRXP_ENEMY_Gordunni Shaman|r
+    .complete 2982,2 --The High Wilderness
+    .mob Gordunni Shaman
+step
+    .goto Feralas,59.11,71.23
+    >>Kill |cRXP_ENEMY_Gordunni Warlock|r
+    .complete 2982,1 --The High Wilderness
+    .mob Gordunni Warlock
+step
+    .goto Feralas,27.10,68.07
+    >>Kill |cRXP_ENEMY_Hatecrest Warrior|r and |cRXP_ENEMY_Hatecrest Wave Rider|r and |cRXP_ENEMY_Hatecrest Serpent Guard|r. Loot them for |cRXP_LOOT_Hatecrest Naga Scale|r
+    .complete 2869,1 --Against the Hatecrest
+    .mob Hatecrest Warrior
+    .mob Hatecrest Wave Rider
+    .mob Hatecrest Serpent Guard
+step
+    .goto Feralas,30.38,46.17
+    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
+    .turnin 2869 >>Turn in Against the Hatecrest
+    .accept 2870 >>Accept Against Lord Shalzaru
+    .target Latronicus Moonspear
+step
+    .goto Feralas,31.83,45.61
+    >>Talk to |cRXP_FRIENDLY_Angelas Moonbreeze|r
+    .turnin 2982 >>Turn in The High Wilderness
+    .target Angelas Moonbreeze
+step
+    .goto Feralas,31.86,45.13
+    >>Talk to |cRXP_FRIENDLY_Ginro Hearthkindle|r
+    .turnin 4127 >>Turn in Boat Wreckage
+    .accept 4129 >>Accept The Knife Revealed
+    .target Ginro Hearthkindle
+step
+    .goto Feralas,32.45,43.79
+    >>Talk to |cRXP_FRIENDLY_Quintis Jonespyre|r
+    .turnin 4129 >>Turn in The Knife Revealed
+    .accept 4130 >>Accept Psychometric Reading
+    .target Quintis Jonespyre
+step
+    .goto Feralas,31.86,45.13
+    >>Talk to |cRXP_FRIENDLY_Ginro Hearthkindle|r
+    .turnin 4130 >>Turn in Psychometric Reading
+    .accept 4131 >>Accept The Woodpaw Gnolls
+    .target Ginro Hearthkindle
+step
+    .goto Feralas,30.63,42.71
+    >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
+    .turnin 2821 >>Turn in The Mark of Quality
+    .target Pratt McGrubben
+step
+    .goto Feralas,28.50,70.46
+    >>Kill |cRXP_ENEMY_Lord Shalzaru|r. Loot them for |cRXP_LOOT_Mysterious Relic|r
+    .complete 2870,1 --Against Lord Shalzaru
+    .mob Lord Shalzaru
+step
+    .goto Feralas,30.38,46.17
+    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
+    .turnin 2870 >>Turn in Against Lord Shalzaru
+    .accept 2871 >>Accept Delivering the Relic
+    .target Latronicus Moonspear
+step
+    .goto Feralas,30.08,45.06
+    >>Talk to |cRXP_FRIENDLY_Vestia Moonspear|r
+    .turnin 2871 >>Turn in Delivering the Relic
+    .target Vestia Moonspear
+step
+    .goto Feralas,65.94,45.65
+    >>Talk to |cRXP_FRIENDLY_Kindal Moonweaver|r
+    .accept 2969 >>Accept Freedom for All Creatures
+    .target Kindal Moonweaver
+step
+    .goto Feralas,67.27,46.67
+    >>Save at least 6 Sprite Darters from capture
+    .complete 2969,1 --Freedom for All Creatures
+step
+    .goto Feralas,65.94,45.65
+    >>Talk to |cRXP_FRIENDLY_Kindal Moonweaver|r
+    .turnin 2969 >>Turn in Freedom for All Creatures
+    .target Kindal Moonweaver
+step
+    .goto Feralas,65.95,45.61
+    >>Talk to |cRXP_FRIENDLY_Jer'kai Moonweaver|r
+    .accept 2970 >>Accept Doling Justice
+    .target Jer'kai Moonweaver
+step
+    .goto Feralas,66.63,46.38
+    >>Kill |cRXP_ENEMY_Grimtotem Raider|r
+    >>Kill |cRXP_ENEMY_Grimtotem Shaman|r
+    .complete 2970,2 --Doling Justice
+    .complete 2970,3 --Doling Justice
+    .mob Grimtotem Raider
+    .mob Grimtotem Shaman
+step
+    .goto Feralas,73.32,56.31
+    >>Click the |cRXP_PICK_Large Leather Backpacks|r
+    .turnin 4131 >>Turn in The Woodpaw Gnolls
+    .accept 4135 >>Accept The Writhing Deep
+step
+    .goto Feralas,72.07,63.72
+    >>Click the |cRXP_PICK_Zukk'ash Pod|r
+    .turnin 4135 >>Turn in The Writhing Deep
+    .accept 4265 >>Accept Freed from the Hive
+step
+    .goto Feralas,72.13,63.84
+    >>Free Raschal.
+    .complete 4265,1 --Freed from the Hive
+step
+    .goto Feralas,68.74,39.25
+    >>Kill |cRXP_ENEMY_Grimtotem Naturalist|r
+    .complete 2970,1 --Doling Justice
+    .mob Grimtotem Naturalist
+step
+    .goto Feralas,65.95,45.61
+    >>Talk to |cRXP_FRIENDLY_Jer'kai Moonweaver|r
+    .turnin 2970 >>Turn in Doling Justice
+    .accept 2972 >>Accept Doling Justice
+    .target Jer'kai Moonweaver
+step
+    .goto Feralas,31.86,45.13
+    >>Talk to |cRXP_FRIENDLY_Ginro Hearthkindle|r
+    .turnin 4265 >>Turn in Freed from the Hive
+    .accept 4266 >>Accept A Hero's Welcome
+    .target Ginro Hearthkindle
+step
+    .goto Feralas,30.28,46.17
+    >>Talk to |cRXP_FRIENDLY_Shandris Feathermoon|r
+    .turnin 4266 >>Turn in A Hero's Welcome
+    .accept 4267 >>Accept Rise of the Silithid
+    .target Shandris Feathermoon
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -505,43 +718,8 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 42-43 Ironforge
-#next 42-43 Tanaris
-
-step
-    #completewith next
-    .zone Ironforge >>Travel to Ironforge
-step
-    .goto Ironforge,69.55,50.33
-    >>Talk to |cRXP_FRIENDLY_Tinkmaster Overspark|r
-    .turnin -2923 >>Turn in Tinkmaster Overspark
-    .target Tinkmaster Overspark
-step
-    .goto Ironforge,77.54,11.82
-    >>Talk to |cRXP_FRIENDLY_Historian Karnik|r
-    .turnin -98313 >>Turn in For Further Study
-    .target Historian Karnik
-step
-    .goto Ironforge,50.83,5.62
-    >>Talk to |cRXP_FRIENDLY_Gerrig Bonegrip|r
-    .turnin 727 >>Turn in To Ironforge for Yagyin's Digest
-    .target Gerrig Bonegrip
-step << Paladin
-    .goto Ironforge,27.63,12.18
-    >>Talk to |cRXP_FRIENDLY_Tiza Battleforge|r
-    .accept 4485 >>Accept The Tome of Nobility
-    .target Tiza Battleforge
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 42-43 Tanaris
-#next 43-44 Feralas
+#name 45-46 Tanaris
+#next 46-47 Desolace
 
 step
     #completewith next
@@ -562,53 +740,81 @@ step
     .accept 1707 >>Accept Water Pouch Bounty
     .target Spigot Operator Luglunket
 step
-    .goto Tanaris,63.76,31.40
-    >>Kill |cRXP_ENEMY_Wastewander Bandit|r
-    >>Kill |cRXP_ENEMY_Wastewander Thief|r
-    .complete 1690,1 --Wastewander Justice
-    .complete 1690,2 --Wastewander Justice
-    .mob Wastewander Bandit
-    .mob Wastewander Thief
+    .goto Tanaris,50.21,27.48
+    >>Talk to |cRXP_FRIENDLY_Senior Surveyor Fizzledowser|r
+    .accept 992 >>Accept Gadgetzan Water Survey
+    .target Senior Surveyor Fizzledowser
 step
-    .goto Tanaris,67.11,23.98
-    >>Talk to |cRXP_FRIENDLY_Stoley|r
-    .accept 2873 >>Accept Stoley's Shipment
-    .target Stoley
+    .goto Tanaris,39.00,29.00
+    >>Loot the |cRXP_PICK_Tapped Dowsing Widget|r
+    .complete 992,1 --Gadgetzan Water Survey
 step
-    .goto Tanaris,67.06,23.89
-    >>Talk to |cRXP_FRIENDLY_Security Chief Bilgewhizzle|r
-    .accept 8366 >>Accept Southsea Shakedown
-    .target Security Chief Bilgewhizzle
-step
-    .goto Tanaris,66.82,22.29
-    >>Click the |cRXP_PICK_Wanted Poster|r
-    .accept 2875 >>Accept WANTED: Andre Firebeard
+    .goto Tanaris,50.21,27.48
+    >>Talk to |cRXP_FRIENDLY_Senior Surveyor Fizzledowser|r
+    .turnin 992 >>Turn in Gadgetzan Water Survey
+    .accept 82 >>Accept Noxious Lair Investigation
+    .target Senior Surveyor Fizzledowser
 step
     .goto Tanaris,66.56,22.27
     >>Talk to |cRXP_FRIENDLY_Haughty Modiste|r
     .accept 8365 >>Accept Pirate Hats Ahoy!
     .target Haughty Modiste
 step
-    .goto Tanaris,52.46,28.51
-    >>Talk to |cRXP_FRIENDLY_Chief Engineer Bilgewhizzle|r
-    .turnin 1690 >>Turn in Wastewander Justice
-    .accept 1691 >>Accept More Wastewander Justice
-    .target Chief Engineer Bilgewhizzle
+    .goto Tanaris,66.82,22.29
+    >>Click the |cRXP_PICK_Wanted Poster|r
+    .accept 2781 >>Accept WANTED: Caliph Scorpidsting
+    .accept 2875 >>Accept WANTED: Andre Firebeard
+step
+    .goto Tanaris,67.06,23.89
+    >>Talk to |cRXP_FRIENDLY_Security Chief Bilgewhizzle|r
+    .accept 8366 >>Accept Southsea Shakedown
+    .target Security Chief Bilgewhizzle
+step
+    .goto Tanaris,67.11,23.98
+    >>Talk to |cRXP_FRIENDLY_Stoley|r
+    .accept 2873 >>Accept Stoley's Shipment
+    .target Stoley
+step
+    .goto Tanaris,63.90,31.23
+    >>Kill |cRXP_ENEMY_Wastewander Thief|r
+    >>Kill |cRXP_ENEMY_Wastewander Bandit|r
+    .complete 1690,2 --Wastewander Justice
+    .complete 1690,1 --Wastewander Justice
+    .mob Wastewander Thief
+    .mob Wastewander Bandit
 step
     .goto Tanaris,62.25,35.00
     >>Kill |cRXP_ENEMY_Wastewander Rogue|r and |cRXP_ENEMY_Wastewander Thief|r and |cRXP_ENEMY_Wastewander Shadow Mage|r. Loot them for |cRXP_LOOT_Wastewander Water Pouch|r
-    >>Kill |cRXP_ENEMY_Wastewander Shadow Mage|r
     .complete 1707,1 --Water Pouch Bounty
-    .complete 1691,3 --More Wastewander Justice
     .mob Wastewander Rogue
     .mob Wastewander Thief
     .mob Wastewander Shadow Mage
 step
-    .goto Tanaris,61.71,38.21
+    .goto Tanaris,61.77,38.17
+    >>Kill |cRXP_ENEMY_Caliph Scorpidsting|r. Loot them for |cRXP_LOOT_Caliph Scorpidsting's Head|r
+    .complete 2781,1 --WANTED: Caliph Scorpidsting
+    .mob Caliph Scorpidsting
+step
+    .goto Tanaris,52.46,28.51
+    >>Talk to |cRXP_FRIENDLY_Chief Engineer Bilgewhizzle|r
+    .turnin 1690 >>Turn in Wastewander Justice
+    .accept 1691 >>Accept More Wastewander Justice
+    .turnin 2781 >>Turn in WANTED: Caliph Scorpidsting
+    .target Chief Engineer Bilgewhizzle
+step
+    .goto Tanaris,52.49,28.45
+    >>Talk to |cRXP_FRIENDLY_Spigot Operator Luglunket|r
+    .turnin 1707 >>Turn in Water Pouch Bounty
+    .target Spigot Operator Luglunket
+step
+    .goto Tanaris,61.97,35.46
+    >>Kill |cRXP_ENEMY_Wastewander Shadow Mage|r
     >>Kill |cRXP_ENEMY_Wastewander Assassin|r
     >>Kill |cRXP_ENEMY_Wastewander Rogue|r
+    .complete 1691,3 --More Wastewander Justice
     .complete 1691,2 --More Wastewander Justice
     .complete 1691,1 --More Wastewander Justice
+    .mob Wastewander Shadow Mage
     .mob Wastewander Assassin
     .mob Wastewander Rogue
 step
@@ -616,11 +822,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Chief Engineer Bilgewhizzle|r
     .turnin 1691 >>Turn in More Wastewander Justice
     .target Chief Engineer Bilgewhizzle
-step
-    .goto Tanaris,52.49,28.45
-    >>Talk to |cRXP_FRIENDLY_Spigot Operator Luglunket|r
-    .turnin 1707 >>Turn in Water Pouch Bounty
-    .target Spigot Operator Luglunket
 step
     .goto Tanaris,71.97,45.81
     >>Kill |cRXP_ENEMY_Southsea Freebooter|r
@@ -659,226 +860,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Haughty Modiste|r
     .turnin 8365 >>Turn in Pirate Hats Ahoy!
     .target Haughty Modiste
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 43-44 Feralas
-#next 45-46 Desolace
-
-step
-    #completewith next
-    .zone Feralas >>Fly to Feathermoon Stronghold in Feralas
-step
-    .goto Feralas,31.83,45.61
-    >>Talk to |cRXP_FRIENDLY_Angelas Moonbreeze|r
-    .accept 2982 >>Accept The High Wilderness
-    .target Angelas Moonbreeze
-step
-    .goto Feralas,30.38,46.17
-    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
-    .accept 2870 >>Accept Against Lord Shalzaru
-    .target Latronicus Moonspear
-step
-    .goto Feralas,45.44,64.96
-    >>Click the |cRXP_PICK_Wrecked Row Boat|r
-    .accept 4127 >>Accept Boat Wreckage
-step
-    .goto Feralas,59.11,71.23
-    >>Kill |cRXP_ENEMY_Gordunni Warlock|r
-    .complete 2982,1 --The High Wilderness
-    .mob Gordunni Warlock
-step
-    .goto Feralas,60.98,67.86
-    >>Kill |cRXP_ENEMY_Gordunni Shaman|r
-    .complete 2982,2 --The High Wilderness
-    .mob Gordunni Shaman
-step
-    .goto Feralas,61.37,56.17
-    >>Kill |cRXP_ENEMY_Gordunni Brute|r
-    .complete 2982,3 --The High Wilderness
-    .mob Gordunni Brute
-step
-    .goto Feralas,31.83,45.61
-    >>Talk to |cRXP_FRIENDLY_Angelas Moonbreeze|r
-    .turnin 2982 >>Turn in The High Wilderness
-    .target Angelas Moonbreeze
-step
-    .goto Feralas,31.86,45.13
-    >>Talk to |cRXP_FRIENDLY_Ginro Hearthkindle|r
-    .turnin 4127 >>Turn in Boat Wreckage
-    .accept 4129 >>Accept The Knife Revealed
-    .target Ginro Hearthkindle
-step
-    .goto Feralas,32.45,43.79
-    >>Talk to |cRXP_FRIENDLY_Quintis Jonespyre|r
-    .turnin 4129 >>Turn in The Knife Revealed
-    .accept 4130 >>Accept Psychometric Reading
-    .target Quintis Jonespyre
-step
-    .goto Feralas,31.86,45.13
-    >>Talk to |cRXP_FRIENDLY_Ginro Hearthkindle|r
-    .turnin 4130 >>Turn in Psychometric Reading
-    .accept 4131 >>Accept The Woodpaw Gnolls
-    .target Ginro Hearthkindle
-step
-    .goto Feralas,28.50,70.46
-    >>Kill |cRXP_ENEMY_Lord Shalzaru|r. Loot them for |cRXP_LOOT_Mysterious Relic|r
-    .complete 2870,1 --Against Lord Shalzaru
-    .mob Lord Shalzaru
-step
-    .goto Feralas,30.38,46.17
-    >>Talk to |cRXP_FRIENDLY_Latronicus Moonspear|r
-    .turnin 2870 >>Turn in Against Lord Shalzaru
-    .accept 2871 >>Accept Delivering the Relic
-    .target Latronicus Moonspear
-step
-    .goto Feralas,30.08,45.06
-    >>Talk to |cRXP_FRIENDLY_Vestia Moonspear|r
-    .turnin 2871 >>Turn in Delivering the Relic
-    .target Vestia Moonspear
-step
-    .goto Feralas,73.32,56.31
-    >>Click the |cRXP_PICK_Large Leather Backpacks|r
-    .turnin 4131 >>Turn in The Woodpaw Gnolls
-    .accept 4135 >>Accept The Writhing Deep
-step
-    .goto Feralas,72.07,63.72
-    >>Click the |cRXP_PICK_Zukk'ash Pod|r
-    .turnin 4135 >>Turn in The Writhing Deep
-    .accept 4265 >>Accept Freed from the Hive
-step
-    .goto Feralas,72.13,63.84
-    >>Free Raschal.
-    .complete 4265,1 --Freed from the Hive
-step
-    .goto Feralas,31.86,45.13
-    >>Talk to |cRXP_FRIENDLY_Ginro Hearthkindle|r
-    .turnin 4265 >>Turn in Freed from the Hive
-    .accept 4266 >>Accept A Hero's Welcome
-    .target Ginro Hearthkindle
-step
-    .goto Feralas,30.28,46.17
-    >>Talk to |cRXP_FRIENDLY_Shandris Feathermoon|r
-    .turnin 4266 >>Turn in A Hero's Welcome
-    .accept 4267 >>Accept Rise of the Silithid
-    .target Shandris Feathermoon
-step
-    .goto Feralas,30.63,42.71
-    >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
-    .accept 2821 >>Accept The Mark of Quality
-    .target Pratt McGrubben
-step
-    .goto Feralas,52.26,57.93
-    >>Kill |cRXP_ENEMY_Feral Scar Yeti|r and |cRXP_ENEMY_Hulking Feral Scar|r and |cRXP_ENEMY_Enraged Feral Scar|r. Loot them for |cRXP_LOOT_Thick Yeti Hide|r
-    .complete 2821,1 --The Mark of Quality
-    .mob Feral Scar Yeti
-    .mob Hulking Feral Scar
-    .mob Enraged Feral Scar
-step
-    .goto Feralas,30.63,42.71
-    >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
-    .turnin 2821 >>Turn in The Mark of Quality
-    .target Pratt McGrubben
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 45-46 Desolace
-#next 45-46 Tanaris
-
-step
-    #completewith next
-    .zone Desolace >>Fly to Nijel's Point in Desolace
-step
-    .xp 45 >>Kill mobs on the way, or run Zul'Farrak, until you're level 45: the quests here are a bit high for you before that
-step
-    .goto Desolace,66.52,7.91
-    >>Talk to |cRXP_FRIENDLY_Brother Anton|r
-    .turnin 6141 >>Turn in Brother Anton
-    .target Brother Anton
-step
-    .goto Desolace,62.20,39.63
-    >>Talk to |cRXP_FRIENDLY_Willow|r
-    .accept 7028 >>Accept Twisted Evils
-    .target Willow
-step
-    .goto Desolace,30.36,60.18
-    >>Kill |cRXP_ENEMY_Cursed Centaur|r. Loot them for |cRXP_LOOT_Theradric Crystal Carving|r
-    .complete 7028,1 --Twisted Evils
-    .mob Cursed Centaur
-step
-    .goto Desolace,36.22,79.25
-    >>Talk to |cRXP_FRIENDLY_Uthek the Wise|r
-    .turnin 93128 >>Turn in Khan Jehn
-    .turnin 93041 >>Turn in Facing the Truth
-    .target Uthek the Wise
-step
-    .goto Desolace,62.20,39.63
-    >>Talk to |cRXP_FRIENDLY_Willow|r
-    .turnin 7028 >>Turn in Twisted Evils
-    .target Willow
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Alliance
-#group RestedXP Forever Guide (A)
-#subgroup OpenXP 21-60
-#name 45-46 Tanaris
-#next 46-47 Feralas
-
-step
-    #completewith next
-    .zone Tanaris >>Fly to Gadgetzan in Tanaris
-step
-    .xp 45 >>Kill mobs on the way, or run Zul'Farrak, until you're level 45: the quests here are a bit high for you before that
-step
-    .goto Tanaris,50.21,27.48
-    >>Talk to |cRXP_FRIENDLY_Senior Surveyor Fizzledowser|r
-    .accept 992 >>Accept Gadgetzan Water Survey
-    .target Senior Surveyor Fizzledowser
-step
-    .goto Tanaris,39.00,29.00
-    >>Loot the |cRXP_PICK_Tapped Dowsing Widget|r
-    .complete 992,1 --Gadgetzan Water Survey
-step
-    .goto Tanaris,50.21,27.48
-    >>Talk to |cRXP_FRIENDLY_Senior Surveyor Fizzledowser|r
-    .turnin 992 >>Turn in Gadgetzan Water Survey
-    .accept 82 >>Accept Noxious Lair Investigation
-    .target Senior Surveyor Fizzledowser
-step
-    .goto Tanaris,66.82,22.29
-    >>Click the |cRXP_PICK_Wanted Poster|r
-    .accept 2781 >>Accept WANTED: Caliph Scorpidsting
-step
-    .goto Tanaris,61.77,38.17
-    >>Kill |cRXP_ENEMY_Caliph Scorpidsting|r. Loot them for |cRXP_LOOT_Caliph Scorpidsting's Head|r
-    .complete 2781,1 --WANTED: Caliph Scorpidsting
-    .mob Caliph Scorpidsting
 step
     .goto Tanaris,52.71,45.92
     >>Talk to |cRXP_FRIENDLY_Marvon Rivetseeker|r
     .accept 3161 >>Accept Gahz'ridian
     .target Marvon Rivetseeker
-step
-    .goto Tanaris,52.46,28.51
-    >>Talk to |cRXP_FRIENDLY_Chief Engineer Bilgewhizzle|r
-    .turnin 2781 >>Turn in WANTED: Caliph Scorpidsting
-    .target Chief Engineer Bilgewhizzle
 step
     .goto Tanaris,33.36,45.25
     >>Kill |cRXP_ENEMY_Centipaar Wasp|r and |cRXP_ENEMY_Centipaar Stinger|r and |cRXP_ENEMY_Centipaar Swarmer|r. Loot them for |cRXP_LOOT_Centipaar Insect Parts|r
@@ -935,96 +921,38 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 46-47 Feralas
+#name 46-47 Desolace
 #next 46-47 The Hinterlands
 
 step
     #completewith next
-    .zone Feralas >>Fly to Feathermoon Stronghold in Feralas
+    .zone Desolace >>Fly to Nijel's Point in Desolace
 step
-    .goto Feralas,30.63,42.71
-    >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
-    .accept 7733 >>Accept Improved Quality
-    .target Pratt McGrubben
+    .goto Desolace,66.52,7.91
+    >>Talk to |cRXP_FRIENDLY_Brother Anton|r
+    .turnin 6141 >>Turn in Brother Anton
+    .target Brother Anton
 step
-    .goto Feralas,44.81,43.42
-    >>Talk to |cRXP_FRIENDLY_Zorbin Fandazzle|r
-    .accept 7003 >>Accept Zapped Giants
-    .accept 7721 >>Accept Fuel for the Zapping
-    .target Zorbin Fandazzle
+    .goto Desolace,62.20,39.63
+    >>Talk to |cRXP_FRIENDLY_Willow|r
+    .accept 7028 >>Accept Twisted Evils
+    .target Willow
 step
-    .goto Feralas,47.55,53.18
-    >>Kill |cRXP_ENEMY_Sea Elemental|r and |cRXP_ENEMY_Sea Spray|r. Loot them for |cRXP_LOOT_Water Elemental Core|r
-    .complete 7721,1 --Fuel for the Zapping
-    .mob Sea Elemental
-    .mob Sea Spray
+    .goto Desolace,30.36,60.18
+    >>Kill |cRXP_ENEMY_Cursed Centaur|r. Loot them for |cRXP_LOOT_Theradric Crystal Carving|r
+    .complete 7028,1 --Twisted Evils
+    .mob Cursed Centaur
 step
-    .goto Feralas,44.81,43.42
-    >>Talk to |cRXP_FRIENDLY_Zorbin Fandazzle|r
-    .turnin 7721 >>Turn in Fuel for the Zapping
-    .target Zorbin Fandazzle
+    .goto Desolace,36.22,79.25
+    >>Talk to |cRXP_FRIENDLY_Uthek the Wise|r
+    .turnin 93041 >>Turn in Facing the Truth
+    .turnin 93128 >>Turn in Khan Jehn
+    .target Uthek the Wise
 step
-    .goto Feralas,54.05,32.51
-    >>Kill |cRXP_ENEMY_Rage Scar Yeti|r and |cRXP_ENEMY_Elder Rage Scar|r and |cRXP_ENEMY_Ferocious Rage Scar|r. Loot them for |cRXP_LOOT_Rage Scar Yeti Hide|r
-    .complete 7733,1 --Improved Quality
-    .mob Rage Scar Yeti
-    .mob Elder Rage Scar
-    .mob Ferocious Rage Scar
-step
-    .goto Feralas,65.94,45.65
-    >>Talk to |cRXP_FRIENDLY_Kindal Moonweaver|r
-    .accept 2969 >>Accept Freedom for All Creatures
-    .target Kindal Moonweaver
-step
-    .goto Feralas,67.27,46.67
-    >>Save at least 6 Sprite Darters from capture
-    .complete 2969,1 --Freedom for All Creatures
-step
-    .goto Feralas,65.94,45.65
-    >>Talk to |cRXP_FRIENDLY_Kindal Moonweaver|r
-    .turnin 2969 >>Turn in Freedom for All Creatures
-    .target Kindal Moonweaver
-step
-    .goto Feralas,65.95,45.61
-    >>Talk to |cRXP_FRIENDLY_Jer'kai Moonweaver|r
-    .accept 2970 >>Accept Doling Justice
-    .target Jer'kai Moonweaver
-step
-    .goto Feralas,66.63,46.38
-    >>Kill |cRXP_ENEMY_Grimtotem Raider|r
-    >>Kill |cRXP_ENEMY_Grimtotem Shaman|r
-    .complete 2970,2 --Doling Justice
-    .complete 2970,3 --Doling Justice
-    .mob Grimtotem Raider
-    .mob Grimtotem Shaman
-step
-    .goto Feralas,68.74,39.25
-    >>Kill |cRXP_ENEMY_Grimtotem Naturalist|r
-    .complete 2970,1 --Doling Justice
-    .mob Grimtotem Naturalist
-step
-    .goto Feralas,65.95,45.61
-    >>Talk to |cRXP_FRIENDLY_Jer'kai Moonweaver|r
-    .turnin 2970 >>Turn in Doling Justice
-    .accept 2972 >>Accept Doling Justice
-    .target Jer'kai Moonweaver
-step
-    .goto Feralas,30.63,42.71
-    >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
-    .turnin 7733 >>Turn in Improved Quality
-    .target Pratt McGrubben
-step
-    .goto Feralas,39.67,22.30
-    >>Kill |cRXP_ENEMY_Zapped Shore Strider|r and |cRXP_ENEMY_Zapped Land Walker|r and |cRXP_ENEMY_Zapped Wave Strider|r. Loot them for |cRXP_LOOT_Miniaturization Residue|r
-    .complete 7003,1 --Zapped Giants
-    .mob Zapped Shore Strider
-    .mob Zapped Land Walker
-    .mob Zapped Wave Strider
-step
-    .goto Feralas,44.81,43.42
-    >>Talk to |cRXP_FRIENDLY_Zorbin Fandazzle|r
-    .turnin 7003 >>Turn in Zapped Giants
-    .target Zorbin Fandazzle
+    .goto Desolace,62.20,39.63
+    >>Talk to |cRXP_FRIENDLY_Willow|r
+    .turnin 7028 >>Turn in Twisted Evils
+    .target Willow
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1035,7 +963,7 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
 #name 46-47 The Hinterlands
-#next 47-48 Searing Gorge
+#next 46-47 Stranglethorn Vale
 
 step
     #completewith next
@@ -1112,8 +1040,77 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
+#name 46-47 Stranglethorn Vale
+#next 47-48 Searing Gorge
+
+step
+    #completewith next
+    .zone Stranglethorn Vale >>Fly to Darkshire and ride south to the Rebel Camp in Stranglethorn Vale
+step
+    .goto Stranglethorn Vale,28.77,38.80
+    >>Kill |cRXP_ENEMY_Cold Eye Basilisk|r. Loot them for |cRXP_LOOT_Chilled Basilisk Haunch|r
+    .complete 212,1 --A Meal Served Cold
+    .mob Cold Eye Basilisk
+step
+    .goto Stranglethorn Vale,27.61,76.74
+    >>Talk to |cRXP_FRIENDLY_Fin Fizracket|r
+    .accept 348 >>Accept Stranglethorn Fever
+    .target Fin Fizracket
+step
+    .goto Stranglethorn Vale,27.78,77.07
+    >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
+    .accept 2872 >>Accept Stoley's Debt
+    .turnin 2874 >>Turn in Deliver to MacKinley
+    .target "Sea Wolf" MacKinley
+step
+    .goto Stranglethorn Vale,27.17,77.01
+    >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
+    .accept 608 >>Accept The Bloodsail Buccaneers
+    .target Fleet Master Seahorn
+step
+    .goto Stranglethorn Vale,26.95,77.21
+    >>Talk to |cRXP_FRIENDLY_Krazek|r
+    .accept 2864 >>Accept Tran'rek
+    .target Krazek
+step
+    .goto Stranglethorn Vale,29.32,88.29
+    >>Kill |cRXP_ENEMY_Captain Keelhaul|r
+    >>Kill |cRXP_ENEMY_Fleet Master Firallon|r
+    .complete 608,2 --The Bloodsail Buccaneers
+    .complete 608,3 --The Bloodsail Buccaneers
+    .mob Captain Keelhaul
+    .mob Fleet Master Firallon
+step
+    .goto Stranglethorn Vale,32.87,88.20
+    >>Kill |cRXP_ENEMY_Captain Stillwater|r
+    .complete 608,1 --The Bloodsail Buccaneers
+    .mob Captain Stillwater
+step
+    .goto Stranglethorn Vale,27.17,77.01
+    >>Talk to |cRXP_FRIENDLY_Fleet Master Seahorn|r
+    .turnin 608 >>Turn in The Bloodsail Buccaneers
+    .target Fleet Master Seahorn
+step
+    .goto Stranglethorn Vale,35.05,60.88
+    >>Kill |cRXP_ENEMY_Mokk the Savage|r. Loot them for |cRXP_LOOT_Heart of Mokk|r
+    .complete 348,1 --Stranglethorn Fever
+    .mob Mokk the Savage
+step
+    .goto Stranglethorn Vale,27.61,76.74
+    >>Talk to |cRXP_FRIENDLY_Fin Fizracket|r
+    .turnin 348 >>Turn in Stranglethorn Fever
+    .target Fin Fizracket
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
 #name 47-48 Searing Gorge
-#next 47-48 Darnassus
+#next 47-48 Tanaris
 
 step
     #completewith next
@@ -1231,8 +1228,82 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
+#name 47-48 Tanaris
+#next 47-48 Darnassus
+
+step
+    #completewith next
+    .zone Tanaris >>Fly to Gadgetzan in Tanaris
+step
+    .goto Tanaris,51.81,28.66
+    >>Talk to |cRXP_FRIENDLY_Marin Noggenfogger|r
+    .accept 2605 >>Accept The Thirsty Goblin
+    .target Marin Noggenfogger
+step
+    .goto Tanaris,52.82,27.40
+    >>Talk to |cRXP_FRIENDLY_Andi Lynn|r
+    .accept 5863 >>Accept The Dunemaul Compound
+    .target Andi Lynn
+step
+    .goto Tanaris,51.57,26.76
+    >>Talk to |cRXP_FRIENDLY_Tran'rek|r
+    .turnin 2864 >>Turn in Tran'rek
+    .target Tran'rek
+step
+    .goto Tanaris,50.21,27.48
+    >>Talk to |cRXP_FRIENDLY_Senior Surveyor Fizzledowser|r
+    .accept 162 >>Accept Rise of the Silithid
+    .target Senior Surveyor Fizzledowser
+step
+    .goto Tanaris,67.11,23.98
+    >>Talk to |cRXP_FRIENDLY_Stoley|r
+    .turnin 2872 >>Turn in Stoley's Debt
+    .target Stoley
+step
+    .goto Tanaris,40.49,54.34
+    >>Kill |cRXP_ENEMY_Dunemaul Enforcer|r
+    >>Kill |cRXP_ENEMY_Dunemaul Brute|r
+    .complete 5863,2 --The Dunemaul Compound
+    .complete 5863,1 --The Dunemaul Compound
+    .mob Dunemaul Enforcer
+    .mob Dunemaul Brute
+step
+    .goto Tanaris,41.50,57.81
+    >>Kill |cRXP_ENEMY_Gor'marok the Ravager|r
+    .complete 5863,3 --The Dunemaul Compound
+    .mob Gor'marok the Ravager
+step
+    .goto Tanaris,29.36,66.28
+    >>Kill |cRXP_ENEMY_Thistleshrub Dew Collector|r. Loot them for |cRXP_LOOT_Laden Dew Gland|r
+    .complete 2605,1 --The Thirsty Goblin
+    .mob Thistleshrub Dew Collector
+step
+    .goto Tanaris,51.81,28.66
+    >>Talk to |cRXP_FRIENDLY_Marin Noggenfogger|r
+    .turnin 2605 >>Turn in The Thirsty Goblin
+    .accept 2606 >>Accept In Good Taste
+    .target Marin Noggenfogger
+step
+    .goto Tanaris,52.82,27.40
+    >>Talk to |cRXP_FRIENDLY_Andi Lynn|r
+    .turnin 5863 >>Turn in The Dunemaul Compound
+    .target Andi Lynn
+step
+    .goto Tanaris,51.06,26.87
+    >>Talk to |cRXP_FRIENDLY_Sprinkle|r
+    .turnin 2606 >>Turn in In Good Taste
+    .target Sprinkle
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
 #name 47-48 Darnassus
-#next 48-49 Tanaris
+#next 48-49 Feralas
 
 step
     #completewith next
@@ -1255,8 +1326,20 @@ step
 step
     .goto Darnassus,41.83,85.62
     >>Talk to |cRXP_FRIENDLY_Gracina Spiritmight|r
+    .turnin 162 >>Turn in Rise of the Silithid
     .turnin 4267 >>Turn in Rise of the Silithid
     .target Gracina Spiritmight
+step
+    .goto Darnassus,67.42,15.65
+    >>Talk to |cRXP_FRIENDLY_Innkeeper Saelienne|r
+    .accept 3763 >>Accept Assisting Arch Druid Staghelm
+    .target Innkeeper Saelienne
+step
+    .goto Darnassus,34.81,9.26
+    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
+    .turnin 3763 >>Turn in Assisting Arch Druid Staghelm
+    .accept 3764 >>Accept Un'Goro Soil
+    .target Arch Druid Fandral Staghelm
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1266,94 +1349,129 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #group RestedXP Forever Guide (A)
 #subgroup OpenXP 21-60
-#name 48-49 Tanaris
+#name 48-49 Feralas
+#next 48-49 Ironforge
+
+step
+    #completewith next
+    .zone Feralas >>Fly to Feathermoon Stronghold in Feralas
+step
+    .xp 48 >>Kill mobs on the way, or run Zul'Farrak, until you're level 48: the quests here are a bit high for you before that
+step
+    .goto Feralas,30.63,42.71
+    >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
+    .accept 7733 >>Accept Improved Quality
+    .target Pratt McGrubben
+step
+    .goto Feralas,44.81,43.42
+    >>Talk to |cRXP_FRIENDLY_Zorbin Fandazzle|r
+    .accept 7003 >>Accept Zapped Giants
+    .accept 7721 >>Accept Fuel for the Zapping
+    .target Zorbin Fandazzle
+step
+    .goto Feralas,47.55,53.18
+    >>Kill |cRXP_ENEMY_Sea Elemental|r and |cRXP_ENEMY_Sea Spray|r. Loot them for |cRXP_LOOT_Water Elemental Core|r
+    .complete 7721,1 --Fuel for the Zapping
+    .mob Sea Elemental
+    .mob Sea Spray
+step
+    .goto Feralas,44.81,43.42
+    >>Talk to |cRXP_FRIENDLY_Zorbin Fandazzle|r
+    .turnin 7721 >>Turn in Fuel for the Zapping
+    .target Zorbin Fandazzle
+step
+    .goto Feralas,54.05,32.51
+    >>Kill |cRXP_ENEMY_Rage Scar Yeti|r and |cRXP_ENEMY_Elder Rage Scar|r and |cRXP_ENEMY_Ferocious Rage Scar|r. Loot them for |cRXP_LOOT_Rage Scar Yeti Hide|r
+    .complete 7733,1 --Improved Quality
+    .mob Rage Scar Yeti
+    .mob Elder Rage Scar
+    .mob Ferocious Rage Scar
+step
+    .goto Feralas,42.39,22.00
+    >>Talk to |cRXP_FRIENDLY_Rockbiter|r
+    .accept 2844 >>Accept The Giant Guardian
+    .target Rockbiter
+step
+    .goto Feralas,39.67,22.30
+    >>Kill |cRXP_ENEMY_Zapped Shore Strider|r and |cRXP_ENEMY_Zapped Land Walker|r and |cRXP_ENEMY_Zapped Wave Strider|r. Loot them for |cRXP_LOOT_Miniaturization Residue|r
+    .complete 7003,1 --Zapped Giants
+    .mob Zapped Shore Strider
+    .mob Zapped Land Walker
+    .mob Zapped Wave Strider
+step
+    .goto Feralas,38.22,10.30
+    >>Talk to |cRXP_FRIENDLY_Shay Leafrunner|r
+    .turnin 2844 >>Turn in The Giant Guardian
+    .accept 2845 >>Accept Wandering Shay
+    .target Shay Leafrunner
+step
+    .goto Feralas,38.25,10.29
+    >>Loot the |cRXP_PICK_Shay's Bell|r
+    .complete 2845,1 --Wandering Shay
+step
+    .goto Feralas,42.33,21.85
+    >>Take Shay Leafrunner to Rockbiter's camp
+    .complete 2845,2 --Wandering Shay
+step
+    .goto Feralas,42.39,22.00
+    >>Talk to |cRXP_FRIENDLY_Rockbiter|r
+    .turnin 2845 >>Turn in Wandering Shay
+    .target Rockbiter
+step
+    .goto Feralas,44.81,43.42
+    >>Talk to |cRXP_FRIENDLY_Zorbin Fandazzle|r
+    .turnin 7003 >>Turn in Zapped Giants
+    .target Zorbin Fandazzle
+step
+    .goto Feralas,30.63,42.71
+    >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
+    .turnin 7733 >>Turn in Improved Quality
+    .target Pratt McGrubben
+step
+    .goto Feralas,65.94,45.65
+    >>Talk to |cRXP_FRIENDLY_Kindal Moonweaver|r
+    .accept 3841 >>Accept An Orphan Looking For a Home
+    .target Kindal Moonweaver
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Alliance
+#group RestedXP Forever Guide (A)
+#subgroup OpenXP 21-60
+#name 48-49 Ironforge
 #next 49-50 Blasted Lands
 
 step
     #completewith next
-    .zone Tanaris >>Fly to Gadgetzan in Tanaris
+    .zone Ironforge >>Travel to Ironforge
 step
-    .xp 48 >>Kill mobs on the way, or run Zul'Farrak, until you're level 48: the quests here are a bit high for you before that
+    .goto Ironforge,67.92,46.10
+    >>Talk to |cRXP_FRIENDLY_Klockmort Spannerspan|r
+    .accept 2769 >>Accept The Brassbolts Brothers
+    .target Klockmort Spannerspan
 step
-    .goto Tanaris,51.81,28.66
-    >>Talk to |cRXP_FRIENDLY_Marin Noggenfogger|r
-    .accept 2605 >>Accept The Thirsty Goblin
-    .target Marin Noggenfogger
+    .goto Ironforge,69.95,21.26
+    >>Talk to |cRXP_FRIENDLY_Roetten Stonehammer|r
+    .turnin -1457 >>Turn in The Karnitol Shipwreck
+    .target Roetten Stonehammer
 step
-    .goto Tanaris,52.82,27.40
-    >>Talk to |cRXP_FRIENDLY_Andi Lynn|r
-    .accept 5863 >>Accept The Dunemaul Compound
-    .target Andi Lynn
+    .goto Ironforge,71.50,15.74
+    >>Talk to |cRXP_FRIENDLY_Curator Thorius|r
+    .turnin 3368 >>Turn in Suntara Stones
+    .target Curator Thorius
 step
-    .goto Tanaris,51.57,26.76
-    >>Talk to |cRXP_FRIENDLY_Tran'rek|r
-    .accept 3362 >>Accept Thistleshrub Valley
-    .target Tran'rek
+    .goto Ironforge,50.83,5.62
+    >>Talk to |cRXP_FRIENDLY_Gerrig Bonegrip|r
+    .turnin 727 >>Turn in To Ironforge for Yagyin's Digest
+    .target Gerrig Bonegrip
 step
-    .goto Tanaris,50.21,27.48
-    >>Talk to |cRXP_FRIENDLY_Senior Surveyor Fizzledowser|r
-    .accept 162 >>Accept Rise of the Silithid
-    .target Senior Surveyor Fizzledowser
-step
-    .goto Tanaris,40.49,54.34
-    >>Kill |cRXP_ENEMY_Dunemaul Enforcer|r
-    >>Kill |cRXP_ENEMY_Dunemaul Brute|r
-    .complete 5863,2 --The Dunemaul Compound
-    .complete 5863,1 --The Dunemaul Compound
-    .mob Dunemaul Enforcer
-    .mob Dunemaul Brute
-step
-    .goto Tanaris,41.50,57.81
-    >>Kill |cRXP_ENEMY_Gor'marok the Ravager|r
-    .complete 5863,3 --The Dunemaul Compound
-    .mob Gor'marok the Ravager
-step
-    .goto Tanaris,29.48,60.51
-    >>Talk to |cRXP_FRIENDLY_Tooga|r
-    .accept 1560 >>Accept Tooga's Quest
-    .target Tooga
-step
-    .goto Tanaris,29.36,66.28
-    >>Kill |cRXP_ENEMY_Thistleshrub Dew Collector|r. Loot them for |cRXP_LOOT_Laden Dew Gland|r
-    >>Kill |cRXP_ENEMY_Thistleshrub Rootshaper|r
-    >>Kill |cRXP_ENEMY_Gnarled Thistleshrub|r
-    .complete 2605,1 --The Thirsty Goblin
-    .complete 3362,2 --Thistleshrub Valley
-    .complete 3362,1 --Thistleshrub Valley
-    .mob Thistleshrub Dew Collector
-    .mob Thistleshrub Rootshaper
-    .mob Gnarled Thistleshrub
-step
-    .goto Tanaris,51.81,28.66
-    >>Talk to |cRXP_FRIENDLY_Marin Noggenfogger|r
-    .turnin 2605 >>Turn in The Thirsty Goblin
-    .accept 2606 >>Accept In Good Taste
-    .target Marin Noggenfogger
-step
-    .goto Tanaris,52.82,27.40
-    >>Talk to |cRXP_FRIENDLY_Andi Lynn|r
-    .turnin 5863 >>Turn in The Dunemaul Compound
-    .target Andi Lynn
-step
-    .goto Tanaris,51.57,26.76
-    >>Talk to |cRXP_FRIENDLY_Tran'rek|r
-    .turnin 3362 >>Turn in Thistleshrub Valley
-    .target Tran'rek
-step
-    .goto Tanaris,51.06,26.87
-    >>Talk to |cRXP_FRIENDLY_Sprinkle|r
-    .turnin 2606 >>Turn in In Good Taste
-    .target Sprinkle
-step
-    .goto Tanaris,66.58,25.67
-    >>Kill |cRXP_ENEMY_Torta|r
-    .complete 1560,1 --Tooga's Quest
-    .mob Torta
-step
-    .goto Tanaris,66.58,25.67
-    >>Talk to |cRXP_FRIENDLY_Torta|r
-    .turnin 1560 >>Turn in Tooga's Quest
-    .target Torta
+    .goto Ironforge,18.15,51.45
+    >>Talk to |cRXP_FRIENDLY_Innkeeper Firebrew|r
+    .accept 3790 >>Accept Assisting Arch Druid Staghelm
+    .target Innkeeper Firebrew
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1374,8 +1492,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Alexandra Constantine|r
     .fp Nethergarde Keep >>Get the Nethergarde Keep flight path
     .target Alexandra Constantine
-step
-    .xp 49 >>Kill mobs on the way, or run Maraudon, until you're level 49: the quests here are a bit high for you before that
 step
     .goto Blasted Lands,66.90,19.47
     >>Talk to |cRXP_FRIENDLY_Thadius Grimshade|r

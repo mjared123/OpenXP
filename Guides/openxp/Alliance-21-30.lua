@@ -103,15 +103,20 @@ step
     .accept 245 >>Accept Eight-Legged Menaces
     .target Watcher Dodds
 step
+    .goto Duskwood,21.10,55.60
+    >>Loot the |cRXP_PICK_Raven Hill Tome|r
+    .complete 96139,1 --The Valor Family
+step
     .goto Duskwood,18.38,56.37
     >>Talk to |cRXP_FRIENDLY_Jitters|r
     .accept 5 >>Accept Jitters' Growling Gut
     .turnin 163 >>Turn in Raven Hill
     .target Jitters
 step
-    .goto Duskwood,21.10,55.60
-    >>Loot the |cRXP_PICK_Raven Hill Tome|r
-    .complete 96139,1 --The Valor Family
+    .goto Duskwood,10.75,55.39
+    >>Kill |cRXP_ENEMY_Pygmy Venom Web Spider|r
+    .complete 245,1 --Eight-Legged Menaces
+    .mob Pygmy Venom Web Spider
 step
     .goto Duskwood,7.78,34.07
     >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
@@ -128,7 +133,7 @@ step
     .complete 226,2 --Wolves at Our Heels
     .mob Rabid Dire Wolf
 step
-    .goto Duskwood,30.49,25.57
+    .goto Duskwood,22.58,25.95
     >>Kill |cRXP_ENEMY_Starving Dire Wolf|r
     .complete 226,1 --Wolves at Our Heels
     .mob Starving Dire Wolf
@@ -143,10 +148,15 @@ step
     .accept 148 >>Accept Supplies from Darkshire
     .target Abercrombie
 step
-    .goto Duskwood,66.69,17.92
-    >>Kill |cRXP_ENEMY_Pygmy Venom Web Spider|r
-    .complete 245,1 --Eight-Legged Menaces
-    .mob Pygmy Venom Web Spider
+    .goto Duskwood,72.62,47.62
+    >>Talk to |cRXP_FRIENDLY_Sirra Von'Indi|r
+    .turnin 96139 >>Turn in The Valor Family
+    .target Sirra Von'Indi
+step
+    .goto Duskwood,73.54,46.82
+    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
+    .accept 56 >>Accept The Night Watch
+    .target Commander Althea Ebonlocke
 step
     .goto Duskwood,73.75,43.48
     >>Talk to |cRXP_FRIENDLY_Chef Grual|r
@@ -160,21 +170,24 @@ step
     .accept 149 >>Accept Ghost Hair Thread
     .target Madame Eva
 step
-    .goto Duskwood,73.54,46.82
-    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
-    .accept 56 >>Accept The Night Watch
-    .target Commander Althea Ebonlocke
-step
-    .goto Duskwood,72.62,47.62
-    >>Talk to |cRXP_FRIENDLY_Sirra Von'Indi|r
-    .turnin 96139 >>Turn in The Valor Family
-    .target Sirra Von'Indi
-step
     .goto Duskwood,81.99,59.09
     >>Talk to |cRXP_FRIENDLY_Blind Mary|r
     .turnin 149 >>Turn in Ghost Hair Thread
     .accept 154 >>Accept Return the Comb
     .target Blind Mary
+step
+    .goto Duskwood,79.71,69.33
+    >>Kill |cRXP_ENEMY_Skeletal Mage|r
+    >>Kill |cRXP_ENEMY_Skeletal Warrior|r
+    .complete 56,2 --The Night Watch
+    .complete 56,1 --The Night Watch
+    .mob Skeletal Mage
+    .mob Skeletal Warrior
+step
+    .goto Duskwood,73.54,46.82
+    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
+    .turnin 56 >>Turn in The Night Watch
+    .target Commander Althea Ebonlocke
 step
     .goto Duskwood,75.79,45.32
     >>Talk to |cRXP_FRIENDLY_Madame Eva|r
@@ -194,19 +207,6 @@ step
     .turnin 93 >>Turn in Dusky Crab Cakes
     .accept 240 >>Accept Return to Jitters
     .target Chef Grual
-step
-    .goto Duskwood,79.71,69.33
-    >>Kill |cRXP_ENEMY_Skeletal Warrior|r
-    >>Kill |cRXP_ENEMY_Skeletal Mage|r
-    .complete 56,1 --The Night Watch
-    .complete 56,2 --The Night Watch
-    .mob Skeletal Warrior
-    .mob Skeletal Mage
-step
-    .goto Duskwood,73.54,46.82
-    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
-    .turnin 56 >>Turn in The Night Watch
-    .target Commander Althea Ebonlocke
 step
     .goto Duskwood,45.12,67.03
     >>Talk to |cRXP_FRIENDLY_Watcher Dodds|r
@@ -234,20 +234,36 @@ step
     .turnin 95 >>Turn in Sven's Revenge
     .accept 230 >>Accept Sven's Camp
 step
+    .goto Duskwood,7.78,34.07
+    >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
+    .turnin 230 >>Turn in Sven's Camp
+    .accept 262 >>Accept The Shadowy Figure
+    .target Sven Yorgen
+step
+    .goto Duskwood,75.79,45.32
+    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
+    .accept 101 >>Accept The Totem of Infliction
+    .turnin 262 >>Turn in The Shadowy Figure
+    .accept 265 >>Accept The Shadowy Search Continues
+    .target Madame Eva
+step
     .goto Duskwood,75.34,48.75
     >>Talk to |cRXP_FRIENDLY_Elaine Carevin|r
     .accept 165 >>Accept The Hermit
     .target Elaine Carevin
 step
-    .goto Duskwood,75.79,45.32
-    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
-    .accept 101 >>Accept The Totem of Infliction
-    .target Madame Eva
+    .goto Duskwood,72.54,46.87
+    >>Talk to |cRXP_FRIENDLY_Clerk Daltry|r
+    .turnin 265 >>Turn in The Shadowy Search Continues
+    .accept 266 >>Accept Inquire at the Inn
+    .target Clerk Daltry
 step
     .goto Duskwood,73.78,44.49
     >>Talk to |cRXP_FRIENDLY_Tavernkeep Smitts|r
     .turnin 158 >>Turn in Zombie Juice
     .accept 156 >>Accept Gather Rot Blossoms
+    .turnin 266 >>Turn in Inquire at the Inn
+    .accept 453 >>Accept Finding the Shadowy Figure
     .target Tavernkeep Smitts
 step
     .goto Duskwood,68.62,20.24
@@ -257,36 +273,30 @@ step
     .mob Pygmy Venom Web Spider
     .mob Green Recluse
 step
-    .goto Duskwood,28.11,31.46
-    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
-    .turnin 165 >>Turn in The Hermit
-    .target Abercrombie
-step
-    .goto Duskwood,24.14,36.05
+    .goto Duskwood,77.86,33.54
     >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Fang|r
     .complete 101,1 --The Totem of Infliction
     .mob Flesh Eater
     .mob Bone Chewer
     .mob Brain Eater
 step
-    .goto Duskwood,15.96,34.65
+    .goto Duskwood,80.64,59.42
+    >>Kill |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Fiend|r. Loot them for |cRXP_LOOT_Rot Blossom|r
+    .complete 156,1 --Gather Rot Blossoms
+    .mob Skeletal Horror
+    .mob Skeletal Fiend
+step
+    .goto Duskwood,78.96,69.68
     >>Kill |cRXP_ENEMY_Skeletal Warrior|r and |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Mage|r. Loot them for |cRXP_LOOT_Skeleton Finger|r
     .complete 101,3 --The Totem of Infliction
     .mob Skeletal Warrior
     .mob Skeletal Horror
     .mob Skeletal Mage
 step
-    .goto Duskwood,7.78,34.07
-    >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
-    .turnin 230 >>Turn in Sven's Camp
-    .accept 262 >>Accept The Shadowy Figure
-    .target Sven Yorgen
-step
-    .goto Duskwood,20.65,46.40
-    >>Kill |cRXP_ENEMY_Skeletal Horror|r and |cRXP_ENEMY_Skeletal Fiend|r. Loot them for |cRXP_LOOT_Rot Blossom|r
-    .complete 156,1 --Gather Rot Blossoms
-    .mob Skeletal Horror
-    .mob Skeletal Fiend
+    .goto Duskwood,75.79,45.32
+    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
+    .turnin 101 >>Turn in The Totem of Infliction
+    .target Madame Eva
 step
     .goto Duskwood,73.78,44.49
     >>Talk to |cRXP_FRIENDLY_Tavernkeep Smitts|r
@@ -294,44 +304,10 @@ step
     .accept 159 >>Accept Juice Delivery
     .target Tavernkeep Smitts
 step
-    .goto Duskwood,75.79,45.32
-    >>Talk to |cRXP_FRIENDLY_Madame Eva|r
-    .turnin 101 >>Turn in The Totem of Infliction
-    .turnin 262 >>Turn in The Shadowy Figure
-    .accept 265 >>Accept The Shadowy Search Continues
-    .target Madame Eva
-step
-    .goto Duskwood,72.54,46.87
-    >>Talk to |cRXP_FRIENDLY_Clerk Daltry|r
-    .turnin 265 >>Turn in The Shadowy Search Continues
-    .accept 266 >>Accept Inquire at the Inn
-    .target Clerk Daltry
-step
     .goto Duskwood,73.54,46.82
     >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
     .accept 57 >>Accept The Night Watch
     .target Commander Althea Ebonlocke
-step
-    .goto Duskwood,73.78,44.49
-    >>Talk to |cRXP_FRIENDLY_Tavernkeep Smitts|r
-    .turnin 266 >>Turn in Inquire at the Inn
-    .accept 453 >>Accept Finding the Shadowy Figure
-    .target Tavernkeep Smitts
-step
-    .goto Duskwood,80.64,59.42
-    >>Kill |cRXP_ENEMY_Skeletal Horror|r
-    .complete 57,2 --The Night Watch
-    .mob Skeletal Horror
-step
-    .goto Duskwood,28.11,31.46
-    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
-    .turnin 159 >>Turn in Juice Delivery
-    .target Abercrombie
-step
-    .goto Duskwood,22.93,43.46
-    >>Kill |cRXP_ENEMY_Skeletal Fiend|r
-    .complete 57,1 --The Night Watch
-    .mob Skeletal Fiend
 step
     .goto Duskwood,18.38,56.37
     >>Talk to |cRXP_FRIENDLY_Jitters|r
@@ -339,10 +315,24 @@ step
     .accept 268 >>Accept Return to Sven
     .target Jitters
 step
+    .goto Duskwood,15.28,46.38
+    >>Kill |cRXP_ENEMY_Skeletal Fiend|r
+    >>Kill |cRXP_ENEMY_Skeletal Horror|r
+    .complete 57,1 --The Night Watch
+    .complete 57,2 --The Night Watch
+    .mob Skeletal Fiend
+    .mob Skeletal Horror
+step
     .goto Duskwood,7.78,34.07
     >>Talk to |cRXP_FRIENDLY_Sven Yorgen|r
     .turnin 268 >>Turn in Return to Sven
     .target Sven Yorgen
+step
+    .goto Duskwood,28.11,31.46
+    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
+    .turnin 159 >>Turn in Juice Delivery
+    .turnin 165 >>Turn in The Hermit
+    .target Abercrombie
 step
     .goto Duskwood,73.54,46.82
     >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
@@ -455,14 +445,14 @@ step
     .accept 306 >>Accept In Search of The Excavation Team
     .target Merrin Rockweaver
 step
+    .goto Wetlands,38.86,52.21
+    >>Loot the |cRXP_PICK_Flagongut's Fossil|r
+    .complete 943,2 --The Absent Minded Prospector
+step
     .goto Wetlands,38.81,52.39
     >>Talk to |cRXP_FRIENDLY_Prospector Whelgar|r
     .accept 299 >>Accept Uncovering the Past
     .target Prospector Whelgar
-step
-    .goto Wetlands,38.86,52.21
-    >>Loot the |cRXP_PICK_Flagongut's Fossil|r
-    .complete 943,2 --The Absent Minded Prospector
 step
     .goto Wetlands,34.20,47.60
     >>Loot the |cRXP_PICK_Modr Fragment|r
@@ -733,43 +723,9 @@ step
     .turnin 66 >>Turn in The Legend of Stalvan
     .target Clerk Daltry
 step
-    .goto Duskwood,65.48,69.13
-    >>Kill |cRXP_ENEMY_Nightbane Shadow Weaver|r
-    .complete 173,1 --Worgen in the Woods
-    .mob Nightbane Shadow Weaver
-step
-    .goto Duskwood,75.75,47.57
-    >>Talk to |cRXP_FRIENDLY_Calor|r
-    .turnin 173 >>Turn in Worgen in the Woods
-    .accept 221 >>Accept Worgen in the Woods
-    .target Calor
-step
-    .goto Duskwood,63.70,75.48
-    >>Kill |cRXP_ENEMY_Nightbane Dark Runner|r
-    .complete 221,1 --Worgen in the Woods
-    .mob Nightbane Dark Runner
-step
-    .goto Duskwood,75.75,47.57
-    >>Talk to |cRXP_FRIENDLY_Calor|r
-    .turnin 221 >>Turn in Worgen in the Woods
-    .target Calor
-step
     .goto Duskwood,28.11,31.46
     >>Talk to |cRXP_FRIENDLY_Abercrombie|r
     .accept 133 >>Accept Ghoulish Effigy
-    .target Abercrombie
-step
-    .goto Duskwood,24.14,36.05
-    >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Rib|r
-    .complete 133,1 --Ghoulish Effigy
-    .mob Flesh Eater
-    .mob Bone Chewer
-    .mob Brain Eater
-step
-    .goto Duskwood,28.11,31.46
-    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
-    .turnin 133 >>Turn in Ghoulish Effigy
-    .accept 134 >>Accept Ogre Thieves
     .target Abercrombie
 step
     .goto Duskwood,7.78,34.07
@@ -778,12 +734,12 @@ step
     .target Sven Yorgen
 step
     .goto Duskwood,15.96,34.65
-    >>Kill |cRXP_ENEMY_Skeletal Raider|r
     >>Kill |cRXP_ENEMY_Skeletal Warder|r
-    .complete 323,1 --Proving Your Worth
+    >>Kill |cRXP_ENEMY_Skeletal Raider|r
     .complete 323,3 --Proving Your Worth
-    .mob Skeletal Raider
+    .complete 323,1 --Proving Your Worth
     .mob Skeletal Warder
+    .mob Skeletal Raider
 step
     .goto Duskwood,16.66,37.75
     >>Kill |cRXP_ENEMY_Skeletal Healer|r
@@ -796,6 +752,40 @@ step
     .accept 269 >>Accept Seeking Wisdom
     .target Sven Yorgen
 step
+    .goto Duskwood,22.48,28.24
+    >>Kill |cRXP_ENEMY_Flesh Eater|r and |cRXP_ENEMY_Bone Chewer|r and |cRXP_ENEMY_Brain Eater|r. Loot them for |cRXP_LOOT_Ghoul Rib|r
+    .complete 133,1 --Ghoulish Effigy
+    .mob Flesh Eater
+    .mob Bone Chewer
+    .mob Brain Eater
+step
+    .goto Duskwood,58.28,29.32
+    >>Kill |cRXP_ENEMY_Nightbane Shadow Weaver|r
+    .complete 173,1 --Worgen in the Woods
+    .mob Nightbane Shadow Weaver
+step
+    .goto Duskwood,75.75,47.57
+    >>Talk to |cRXP_FRIENDLY_Calor|r
+    .turnin 173 >>Turn in Worgen in the Woods
+    .accept 221 >>Accept Worgen in the Woods
+    .target Calor
+step
+    .goto Duskwood,73.54,46.82
+    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
+    .accept 58 >>Accept The Night Watch
+    .target Commander Althea Ebonlocke
+step
+    .goto Duskwood,28.11,31.46
+    >>Talk to |cRXP_FRIENDLY_Abercrombie|r
+    .turnin 133 >>Turn in Ghoulish Effigy
+    .accept 134 >>Accept Ogre Thieves
+    .target Abercrombie
+step
+    .goto Duskwood,24.47,34.72
+    >>Kill |cRXP_ENEMY_Plague Spreader|r
+    .complete 58,1 --The Night Watch
+    .mob Plague Spreader
+step
     .goto Duskwood,33.42,76.35
     >>Loot the |cRXP_PICK_Abercrombie's Crate|r
     .complete 134,1 --Ogre Thieves
@@ -805,6 +795,11 @@ step
     .turnin 134 >>Turn in Ogre Thieves
     .accept 160 >>Accept Note to the Mayor
     .target Abercrombie
+step
+    .goto Duskwood,65.60,67.23
+    >>Kill |cRXP_ENEMY_Nightbane Dark Runner|r
+    .complete 221,1 --Worgen in the Woods
+    .mob Nightbane Dark Runner
 step
     .goto Duskwood,71.93,46.42
     >>Talk to |cRXP_FRIENDLY_Lord Ello Ebonlocke|r
@@ -822,7 +817,7 @@ step
 step
     .goto Duskwood,73.54,46.82
     >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
-    .accept 58 >>Accept The Night Watch
+    .turnin 58 >>Turn in The Night Watch
     .target Commander Althea Ebonlocke
 step
     .goto Duskwood,71.93,46.42
@@ -830,15 +825,10 @@ step
     .turnin 252 >>Turn in Translation to Ello
     .target Lord Ello Ebonlocke
 step
-    .goto Duskwood,24.47,34.72
-    >>Kill |cRXP_ENEMY_Plague Spreader|r
-    .complete 58,1 --The Night Watch
-    .mob Plague Spreader
-step
-    .goto Duskwood,73.54,46.82
-    >>Talk to |cRXP_FRIENDLY_Commander Althea Ebonlocke|r
-    .turnin 58 >>Turn in The Night Watch
-    .target Commander Althea Ebonlocke
+    .goto Duskwood,75.75,47.57
+    >>Talk to |cRXP_FRIENDLY_Calor|r
+    .turnin 221 >>Turn in Worgen in the Woods
+    .target Calor
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -854,6 +844,11 @@ RXPGuides.RegisterGuide([[
 step
     #completewith next
     .zone Stormwind City >>Travel to Stormwind City
+step
+    .goto Stormwind City,53.02,86.64
+    >>Talk to |cRXP_FRIENDLY_Collin Mauren|r
+    .accept 1078 >>Accept Retrieval for Mauren
+    .target Collin Mauren
 step << Mage
     .goto Stormwind City,49.56,85.80
     >>Talk to |cRXP_FRIENDLY_Jennea Cannon|r
@@ -1045,16 +1040,6 @@ step
     .accept 322 >>Accept Blessed Arm
     .target Glorin Steelbrow
 step
-    .goto Wetlands,9.96,57.96
-    >>Talk to |cRXP_FRIENDLY_Red Jack Flint|r
-    .accept 1132 >>Accept Fiora Longears
-    .target Red Jack Flint
-step
-    .goto Wetlands,38.81,52.39
-    >>Talk to |cRXP_FRIENDLY_Prospector Whelgar|r
-    .accept 98313 >>Accept For Further Study
-    .target Prospector Whelgar
-step
     .goto Wetlands,47.46,47.01
     >>Click the |cRXP_PICK_Dragonmaw Catapult|r
     .turnin 465 >>Turn in Nek'rosh's Gambit
@@ -1063,10 +1048,20 @@ step
     >>Click the |cRXP_PICK_Tattered Spellbook|r
     .accept 98223 >>Accept Old Habits
 step
-    .goto Wetlands,49.90,18.24
-    >>Talk to |cRXP_FRIENDLY_Rhag Garmason|r
-    .accept 631 >>Accept The Thandol Span
-    .target Rhag Garmason
+    .goto Wetlands,38.81,52.39
+    >>Talk to |cRXP_FRIENDLY_Prospector Whelgar|r
+    .accept 98313 >>Accept For Further Study
+    .target Prospector Whelgar
+step
+    .goto Wetlands,9.96,57.96
+    >>Talk to |cRXP_FRIENDLY_Red Jack Flint|r
+    .accept 1132 >>Accept Fiora Longears
+    .target Red Jack Flint
+step
+    .goto Wetlands,9.86,57.49
+    >>Talk to |cRXP_FRIENDLY_Captain Stoutfist|r
+    .turnin 98223 >>Turn in Old Habits
+    .target Captain Stoutfist
 step
     .goto Wetlands,45.67,16.66
     >>Talk to |cRXP_FRIENDLY_Captive Fire Elemental|r
@@ -1078,6 +1073,11 @@ step
     .turnin 87491 >>Turn in Spark of Freedom
     .target Roggo Harlbarrow
 step
+    .goto Wetlands,49.90,18.24
+    >>Talk to |cRXP_FRIENDLY_Rhag Garmason|r
+    .accept 631 >>Accept The Thandol Span
+    .target Rhag Garmason
+step
     .goto Wetlands,51.28,7.95
     >>Click the |cRXP_PICK_Ebenezer Rustlocke's Corpse|r
     .turnin 631 >>Turn in The Thandol Span
@@ -1087,9 +1087,4 @@ step
     >>Talk to |cRXP_FRIENDLY_Rhag Garmason|r
     .turnin 632 >>Turn in The Thandol Span
     .target Rhag Garmason
-step
-    .goto Wetlands,9.86,57.49
-    >>Talk to |cRXP_FRIENDLY_Captain Stoutfist|r
-    .turnin 98223 >>Turn in Old Habits
-    .target Captain Stoutfist
 ]])
