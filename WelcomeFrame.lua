@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.24",
+        date = "November 2026",
+        changes = {
+            "Every race's starting zone guides are back in the guide picker: open OpenXP Alliance (or Horde) > Starting zones, and your own race is listed first",
+            "The guide picker is in level order: Starting zones, then Levels 10-19, 20-29 and so on, and the guides inside each one go by level and route order",
+            "OpenXP Alliance / Horde now sits above the dungeon guides",
+        },
+    },
+    {
         version = "1.3.23",
         date = "November 2026",
         changes = {

@@ -157,6 +157,12 @@ function addon.AddGuide(guide)
         group = guide.lowPrio
     end
     local index = fmt("%s||%s",guide.group,guide.name)
+    -- OpenXP: remember load order (= route order inside a guide file) for the menu
+    addon.guideLoadOrder = addon.guideLoadOrder or {}
+    if not addon.guideLoadOrder[index] then
+        addon.guideLoadCount = (addon.guideLoadCount or 0) + 1
+        addon.guideLoadOrder[index] = addon.guideLoadCount
+    end
     addon.RegisterGroup(group,guide.group ~= group and guide.group)
 
     local groupDisplayName = group

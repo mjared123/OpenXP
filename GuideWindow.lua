@@ -2520,6 +2520,136 @@ function addon.SplitMenuByLevel(sub)
     return split
 end
 
+-- OpenXP: the faction menu (OpenXP Alliance / OpenXP Horde) is laid out by
+-- level instead of by the engine's subgroups:
+--   Starting zones > one entry per race (your own race first)
+--   Levels 10-19, Levels 20-29, ... 50-59
+-- Every race's starter guides are listed, not just your own race's (the
+-- engine files the others under "unused guides" and hides them).
+-- Inside each list, guides go by starting level, then route order.
+local STARTER_RACES = {
+    Alliance = {
+        {label = "Human", tag = "Human", guides = {
+            "1-6 Northshire", "6-11 Elwynn Forest", "11-13 Loch Modan"}},
+        {label = "Dwarf & Gnome", tag = "Dwarf/Gnome", guides = {
+            "1-5 Coldridge Valley", "5-11 Dun Morogh",
+            "11-12 Elwynn (Dwarf/Gnome)", "12-14 Loch Modan (Dwarf/Gnome)",
+            "11-13 Loch Modan (Hunter)"}},
+        {label = "Night Elf", tag = "NightElf", guides = {
+            "1-6 Shadowglen", "6-11 Teldrassil"}},
+        {label = "Skyborne", tag = "Skyborne", guides = {
+            "1-9 Zephras Isle", "9-13 Zephras Isle"}},
+    },
+    Horde = {
+        {label = "Orc & Troll", tag = "Orc/Troll", guides = {
+            "1-6 Durotar", "6-10 Durotar", "10-12 Durotar",
+            "10-12 Tirisfal (Orc/Troll)"}},
+        {label = "Undead", tag = "Undead", guides = {
+            "1-6 Tirisfal Glades", "6-12 Tirisfal Glades"}},
+        {label = "Tauren", tag = "Tauren", guides = {
+            "1-6 Mulgore", "6-12 Mulgore"}},
+        {label = "Skyborne", tag = "Skyborne", guides = {
+            "1-9 Zephras Isle", "9-13 Zephras Isle"}},
+    },
+}
+addon.starterRaces = STARTER_RACES
+
+-- guide names get a zero pad when loaded ("1-6 X" is stored as "01-06 X")
+local function PlainGuideName(name)
+    return (name or ""):gsub("^0(%d)%-0?", "%1-")
+end
+
+local function MenuText(entry)
+    return ((entry.text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
+end
+
+local function LevelRange(entry)
+    local first, last = MenuText(entry):match("^%s*(%d+)%s*%-%s*(%d+)")
+    first = tonumber(first) or tonumber(MenuText(entry):match("^%s*(%d+)"))
+    return first, tonumber(last) or first
+end
+
+local function SortByLevel(list)
+    table.sort(list, function(a, b)
+        local a1, a2 = LevelRange(a.item)
+        local b1, b2 = LevelRange(b.item)
+        a1, b1 = a1 or 999, b1 or 999
+        if a1 ~= b1 then return a1 < b1 end
+        a2, b2 = a2 or 999, b2 or 999
+        if a2 ~= b2 then return a2 < b2 end
+        return (a.order or 0) < (b.order or 0)
+    end)
+end
+
+-- entries: {item = menu entry, guide = guide table, order = load order}
+function addon.BuildLevelMenu(entries, faction)
+    local races = STARTER_RACES[faction] or {}
+    local raceOf = {}
+    for i, race in ipairs(races) do
+        for _, name in ipairs(race.guides) do raceOf[name] = i end
+    end
+
+    local byRace, brackets, keys = {}, {}, {}
+    for _, entry in ipairs(entries) do
+        local r = raceOf[PlainGuideName(entry.guide.name)]
+        if r then
+            byRace[r] = byRace[r] or {}
+            tinsert(byRace[r], entry)
+        else
+            local level = LevelRange(entry.item)
+            local key = level and math.floor(level / 10) * 10 or 999
+            if not brackets[key] then
+                brackets[key] = {}
+                tinsert(keys, key)
+            end
+            tinsert(brackets[key], entry)
+        end
+    end
+
+    local function items(list)
+        SortByLevel(list)
+        local out = {}
+        for _, entry in ipairs(list) do tinsert(out, entry.item) end
+        return out
+    end
+
+    local menu = {}
+    -- starting zones: your own race first, then the rest in a fixed order
+    local raceOrder = {}
+    for i, race in ipairs(races) do
+        if byRace[i] and addon.applies(race.tag) then tinsert(raceOrder, i) end
+    end
+    for i in ipairs(races) do
+        if byRace[i] and not addon.applies(races[i].tag) then tinsert(raceOrder, i) end
+    end
+    if #raceOrder > 0 then
+        local raceMenu = {}
+        for _, i in ipairs(raceOrder) do
+            local lo, hi
+            for _, entry in ipairs(byRace[i]) do
+                local a, b = LevelRange(entry.item)
+                if a and (not lo or a < lo) then lo = a end
+                if b and (not hi or b > hi) then hi = b end
+            end
+            local text = L(races[i].label)
+            if lo and hi then text = fmt("%s (%d-%d)", text, lo, hi) end
+            tinsert(raceMenu, {text = text, notCheckable = 1, hasArrow = true,
+                               menuList = items(byRace[i])})
+        end
+        tinsert(menu, {text = L("Starting zones"), notCheckable = 1,
+                       hasArrow = true, menuList = raceMenu})
+    end
+
+    table.sort(keys)
+    for _, key in ipairs(keys) do
+        local text = key == 999 and L("Other") or
+                         fmt(L("Levels %d-%d"), math.max(key, 1), key + 9)
+        tinsert(menu, {text = text, notCheckable = 1, hasArrow = true,
+                       menuList = items(brackets[key])})
+    end
+    return menu
+end
+
 local function SwapNames(name)
     if addon.GuideNames and addon.GuideNames[name] then
         name = addon.GuideNames[name]
@@ -2558,9 +2688,15 @@ function RXPFrame:GenerateMenuTable(menu)
         end
     end
 
+    -- OpenXP: the leveling guides (OpenXP Alliance/Horde) come before dungeons
+    local function GroupWeight(g)
+        local w = addon.guideList[g].weight_ or 0
+        if g:find("Forever Guide %([AH]%)") then w = w + 1000 end
+        return w
+    end
     local sortfunc = function(g1,g2)
-        local w1 = addon.guideList[g1].weight_ or 0
-        local w2 = addon.guideList[g2].weight_ or 0
+        local w1 = GroupWeight(g1)
+        local w2 = GroupWeight(g2)
         if w1 == w2 then
             return g1 < g2
         else
@@ -2625,6 +2761,15 @@ function RXPFrame:GenerateMenuTable(menu)
         local nActive = 0
         local guides = addon.GetActiveGuidesInGroup(group)
         local subgroups = addon.GetGuideSubgroups(guides)
+        -- OpenXP: faction guide menus are laid out by level (see BuildLevelMenu)
+        local faction = group:find("Forever Guide %(A%)") and "Alliance" or
+                            group:find("Forever Guide %(H%)") and "Horde"
+        local levelEntries = faction and {}
+        local function LevelEntry(guide, subitem)
+            local identity = guide.group .. "||" .. guide.name
+            tinsert(levelEntries, {item = subitem, guide = guide,
+                                   order = addon.guideLoadOrder and addon.guideLoadOrder[identity] or 0})
+        end
         for _, guide in ipairs(guides) do
             local guideName = guide.name
             nActive = nActive + 1
@@ -2652,6 +2797,7 @@ function RXPFrame:GenerateMenuTable(menu)
                 subitem.notCheckable = 1
                 ProcessChapters(guide,subitem)
                 tinsert(subtable.menuList, subitem)
+                if levelEntries then LevelEntry(guide, subitem) end
             else
                 submenuIndex = submenuIndex + 1
                 guide.menuIndex = menuIndex
@@ -2683,7 +2829,27 @@ function RXPFrame:GenerateMenuTable(menu)
             end
         end
 
-        if #subgroups > 0 then
+        if levelEntries and #levelEntries > 0 then
+            -- other races' starter guides (the engine hides them as unused)
+            for _, guide in ipairs(addon.GetActiveGuidesInGroup("*" .. group)) do
+                if guide.subgroup and not guide.disabled and
+                    (guide.defaultfor or guide.defaultFor) ~= "None" then
+                    local subitem = {
+                        text = SwapNames(addon.GetGuideName(guide)),
+                        func = OnClick,
+                        arg1 = guide.group,
+                        arg2 = guide.name,
+                        notCheckable = 1,
+                    }
+                    ProcessChapters(guide, subitem)
+                    LevelEntry(guide, subitem)
+                end
+            end
+            for _, entry in ipairs(addon.BuildLevelMenu(levelEntries, faction)) do
+                tinsert(item.menuList, entry)
+            end
+            item.subtable = nil
+        elseif #subgroups > 0 then
             for _, category in ipairs(subgroups) do
                 local sub = item.subtable[category.subgroup]
                 local brackets = addon.SplitMenuByLevel(sub)
