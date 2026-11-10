@@ -14,6 +14,17 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.25",
+        date = "November 2026",
+        changes = {
+            "Kill and loot areas for every zone, not just Duskwood: quest mob areas are shaded blue on the world map and minimap (needs Questie), and the arrow says you're there anywhere inside",
+            "The route line and the arrow keep to the roads: if a road goes your way, you're sent along it instead of off it to cut a corner through mobs",
+            "The way also steers around mob camps near your level when there's a clear way past, not just ones well above you",
+            "Walking terrain for the starting zones too: Elwynn, Westfall, Dun Morogh, Teldrassil, Darkshore, Durotar, Mulgore, Tirisfal and Silverpine",
+            "Turn the areas off in the settings (Kill and loot areas on the maps) if you'd rather just have the arrow",
+        },
+    },
+    {
         version = "1.3.24",
         date = "November 2026",
         changes = {

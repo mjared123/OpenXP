@@ -328,6 +328,9 @@ class Quest:
 
 def spawns_in(entity, zone, spawn_index):
     sp = li(entity, spawn_index)
+    if isinstance(sp, list):
+        # {[1] = {...}} (Dun Morogh is zone 1) comes out of Lua as a list
+        sp = {i + 1: v for i, v in enumerate(sp)}
     if not sp or not isinstance(sp, dict):
         return []
     return [tuple(p) for p in as_list(sp.get(zone)) if p and len(p) == 2 and p[0] >= 0]

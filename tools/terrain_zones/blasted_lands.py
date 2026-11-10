@@ -11,6 +11,14 @@ OPEN = []
 WALLS = []
 WATER = []
 
+ROADS = [
+        # roads and bridges, traced from the zone map
+        # Swamp of Sorrows road south to the Dark Portal
+        [(54.8, 5.6), (53.9, 11.1), (54.2, 15.3), (53.3, 16.4), (54.5, 19.1), (52.7, 28.5), (53.4, 32.1), (56, 38), (55.9, 39.8), (56.6, 41), (56.8, 42.9), (56.1, 45.8), (54.8, 46.1), (53.1, 49.1)],
+        # to Nethergarde Keep
+        [(54, 19.8), (58.2, 19.4), (62.3, 17.3)],
+]
+
 # Drafted by tools/terrain_auto.py from the map: . walkable  # blocked  ~ water
 AUTO = [
     "#################............########################......................######################...",

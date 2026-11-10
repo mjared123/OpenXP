@@ -11,6 +11,14 @@ OPEN = []
 WALLS = []
 WATER = []
 
+ROADS = [
+        # roads and bridges, traced from the zone map
+        # Gadgetzan east to Steamwheedle Port
+        [(52.3, 29.5), (53.8, 28.6), (56, 26), (64.4, 20.8), (65.7, 22), (66.5, 21.7)],
+        # Thousand Needles track south-east to Gadgetzan
+        [(49.3, 12.3), (51.3, 17), (51.5, 18.8), (50.3, 22.5), (50.3, 27.7)],
+]
+
 # Drafted by tools/terrain_auto.py from the map: . walkable  # blocked  ~ water
 AUTO = [
     "####################################################################################################",

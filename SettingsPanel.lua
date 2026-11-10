@@ -224,6 +224,7 @@ local settingsDBDefaults = {
         openxpTooltips = true,
         openxpNameplates = true,
         openxpMapRoute = true,
+        openxpMapAreas = true,
         openxpRouteColor = {0.72, 0.42, 1.0},
         openxpAutoLoot = false,
         openxpMaxCamera = false,
@@ -3254,6 +3255,13 @@ function addon.settings:CreateAceOptionsPanel()
                         type = "toggle",
                         width = optionsWidth,
                         order = 5.512,
+                    },
+                    openxpMapAreas = {
+                        name = L("Kill and loot areas on the maps"),
+                        desc = L("Shades where to kill and loot for a quest on the world map and minimap, and the arrow says you're there anywhere inside. Uses Questie's spawn data when Questie is installed"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.5125,
                     },
                     openxpRouteColor = {
                         name = L("Route line colour"),

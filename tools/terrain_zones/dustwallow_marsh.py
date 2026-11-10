@@ -11,6 +11,16 @@ OPEN = []
 WALLS = []
 WATER = []
 
+ROADS = [
+        # roads and bridges, traced from the zone map
+        # Barrens road to the Shady Rest Inn
+        [(25.2, 45), (25.9, 46.5), (26.7, 46.6), (27.5, 48), (29.9, 48.9)],
+        # Shady Rest north to Brackenwall Village
+        [(29, 47.5), (30.7, 44.7), (32.4, 44.6), (33.3, 41.6), (34.2, 38), (33.6, 36.4), (34, 34.5), (33.1, 31.4), (33.5, 30.6)],
+        # Brackenwall east along the north to Theramore
+        [(36.1, 31.2), (38.5, 28.6), (40.9, 27.9), (41.6, 26.9), (43.3, 26.7), (45, 25.3), (49.3, 28.6), (52.4, 28.9), (53.7, 29.9), (54.1, 31), (54.9, 30.9), (58.4, 34.4), (58.8, 36.8), (62.8, 43.4), (63.4, 47.7)],
+]
+
 # Drafted by tools/terrain_auto.py from the map: . walkable  # blocked  ~ water
 AUTO = [
     "##################...........####################################################################...",

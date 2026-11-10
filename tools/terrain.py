@@ -15,6 +15,8 @@ drawn by hand from the zone map; mob packs are summarised from spawn data
     walls     polylines you can't cross (cliff edges drawn as a line)
     land      polygons where the map's grey-blue isn't water (snow, dark forest)
     water     polygons you have to swim through (slow)
+    roads     polylines of roads and bridges: always walkable, and the arrow
+              and the map's route line keep to them rather than cut corners
     packs     (x, y, radius, level, name): groups of hostile mobs
 
 `python tools/terrain.py --lua` writes DB/terrain.lua for the addon.
@@ -33,6 +35,11 @@ WATER_COST = 3.0    # swimming is about three times slower than running
 # is above you. Killing on the way is fine for packs at your level.
 DANGER = {3: 3.0, 4: 10.0}   # levels above you -> extra cost per cell
 DANGER_MAX = 40.0                     # 5+ levels above: go almost any way around
+# The in-game arrow's costs (Terrain.lua), for path(..., arrow=True): roads
+# count for less than their length so the way keeps to them, and packs near
+# your level cost a little so the way doesn't walk through them either.
+ROAD_COST = 0.65
+DANGER_ARROW = {-2: 1.0, -1: 1.0, 0: 1.0, 1: 1.5, 2: 2.0, 3: 3.0, 4: 10.0}
 
 def _load_zones():
     """Each file in tools/terrain_zones/ describes one zone."""
@@ -52,6 +59,8 @@ def _load_zones():
             blocked=getattr(m, "BLOCKED", []), open=getattr(m, "OPEN", []),
             walls=getattr(m, "WALLS", []), water=getattr(m, "WATER", []),
             auto=getattr(m, "AUTO", None), land=getattr(m, "LAND", []),
+            roads=getattr(m, "ROADS", []),
+            pack_min_level=getattr(m, "PACK_MIN_LEVEL", 20),
             packs=[])
     return zones
 
@@ -95,8 +104,32 @@ def _seg_cells(a, b):
     return out
 
 
+ROAD_HALF = 0.75    # cells: a road covers the cells whose middle is this close to it
+
+
+def road_cells(roads):
+    """Cells a list of road polylines covers."""
+    out = set()
+    for road in roads:
+        for a, b in zip(road, road[1:]):
+            for x in range(int(min(a[0], b[0]) - 2), int(max(a[0], b[0]) + 3)):
+                for y in range(int(min(a[1], b[1]) - 2), int(max(a[1], b[1]) + 3)):
+                    if 0 <= x < GRID and 0 <= y < GRID and \
+                            _seg_dist((x + 0.5, y + 0.5), a, b) <= ROAD_HALF:
+                        out.add((x, y))
+    return out
+
+
+def _seg_dist(p, a, b):
+    vx, vy = b[0] - a[0], b[1] - a[1]
+    l2 = vx * vx + vy * vy
+    t = 0 if l2 == 0 else max(0.0, min(1.0, ((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / l2))
+    return math.hypot(a[0] + vx * t - p[0], a[1] + vy * t - p[1])
+
+
 def build_grid(z):
-    """Cell kinds: '.' open, '#' blocked, '~' water. grid[y][x]."""
+    """Cell kinds: '.' open, '#' blocked, '~' water, '=' road or bridge.
+    grid[y][x]. The route builder walks '=' like '.'; the addon prefers it."""
     auto = z.get("auto")
     g = [list(auto[y]) if auto else ["." for _ in range(GRID)] for y in range(GRID)]
     for y in range(GRID):
@@ -108,7 +141,8 @@ def build_grid(z):
             elif any(_inside(p, cx, cy) for p in z.get("water", ())):
                 g[y][x] = "~"
             elif inside_open:
-                g[y][x] = "."
+                g[y][x] = "."
+
             elif g[y][x] == "~" and any(_inside(p, cx, cy) for p in z.get("land", ())):
                 g[y][x] = "."
     for wall in z.get("walls", ()):
@@ -116,20 +150,23 @@ def build_grid(z):
             for x, y in _seg_cells(a, b):
                 if 0 <= x < GRID and 0 <= y < GRID:
                     g[y][x] = "#"
+    for x, y in road_cells(z.get("roads", ())):
+        g[y][x] = "="
     return g
 
 
-def danger_grid(z, level):
+def danger_grid(z, level, arrow=False):
     """Extra cost per cell for a character of this level."""
     d = {}
     if level is None:
         return d
     ky = z["yards"][0] / z["yards"][1]
+    table = DANGER_ARROW if arrow else DANGER
     for (px, py, r, lvl, _name) in z.get("packs", ()):
         over = lvl - level
-        if over < 3:
+        if over < min(table):
             continue
-        cost = DANGER_MAX if over >= 5 else DANGER[over]
+        cost = DANGER_MAX if over >= 5 else table[over]
         for y in range(int(py - r * ky) - 1, int(py + r * ky) + 2):
             for x in range(int(px - r) - 1, int(px + r) + 2):
                 if 0 <= x < GRID and 0 <= y < GRID:
@@ -152,11 +189,30 @@ class Terrain:
             return self.grid[y][x]
         return "#"
 
-    def danger(self, level):
-        key = None if level is None else int(level)
+    def danger(self, level, arrow=False):
+        key = (None if level is None else int(level), arrow)
         if key not in self._danger:
-            self._danger[key] = danger_grid(self.z, key)
+            self._danger[key] = danger_grid(self.z, key[0], arrow)
         return self._danger[key]
+
+    def cell_cost(self, k, d, arrow=False):
+        """Cost per yard of a cell of kind k with danger d. With the arrow's
+        costs a road ignores packs near your level (danger under 3) and
+        counts the ones well above you as 1 at most."""
+        if arrow and k == "=":
+            d = 0 if d < 3 else min(d, 1.0)  # Terrain.lua's ROAD_DANGER
+        return self.factor(k, arrow) + d
+
+    def factor(self, k, arrow=False):
+        """Cost per yard of a cell kind (not counting danger)."""
+        if k == "~":
+            return WATER_COST
+        if k == "=" and arrow:
+            return ROAD_COST
+        return 1.0
+
+    def is_road(self, x, y):
+        return self.kind(x, y) == "="
 
     def _nearest_open(self, c):
         if self.kind(*c) != "#":
@@ -174,16 +230,18 @@ class Terrain:
                 return best[1]
         return c
 
-    def path(self, a, b, level=None):
+    def path(self, a, b, level=None, arrow=False):
         """(yards, [points]) walking from a to b (map coords) around blocked
         cells and, for this level, around dangerous packs. yards counts the
-        detour and swimming, plus the danger cost (as extra yards)."""
+        detour and swimming, plus the danger cost (as extra yards).
+        arrow=True: the in-game arrow's costs (keeps to roads, steers clear
+        of packs near your level); the cost is then effort, not yards."""
         ca = self._nearest_open((int(a[0]), int(a[1])))
         cb = self._nearest_open((int(b[0]), int(b[1])))
-        key = (ca, cb, None if level is None else int(level))
+        key = (ca, cb, None if level is None else int(level), arrow)
         if key in self._cache:
             return self._cache[key]
-        danger = self.danger(level)
+        danger = self.danger(level, arrow)
         kx, ky = self.kx, self.ky
         diag = math.hypot(kx, ky)
         steps = [(1, 0, kx), (-1, 0, kx), (0, 1, ky), (0, -1, ky),
@@ -207,8 +265,7 @@ class Terrain:
                     continue
                 if dx and dy and (self.kind(c[0] + dx, c[1]) == "#" or self.kind(c[0], c[1] + dy) == "#"):
                     continue  # no cutting corners through a wall
-                cost = step * (WATER_COST if k == "~" else 1.0)
-                cost += danger.get(n, 0) * step
+                cost = step * self.cell_cost(k, danger.get(n, 0), arrow)
                 ng = g + cost
                 if ng < best.get(n, 1e18):
                     best[n] = ng
@@ -222,45 +279,53 @@ class Terrain:
             while cells[-1] != ca:
                 cells.append(came[cells[-1]])
             cells.reverse()
-            pts = [a] + [(x + 0.5, y + 0.5) for x, y in self._smooth(cells, danger)][1:-1] + [b]
+            pts = [a] + [(x + 0.5, y + 0.5) for x, y in self._smooth(cells, danger, best, arrow)][1:-1] + [b]
             res = (best[cb], pts)
         self._cache[key] = res
         return res
 
-    def clear(self, a, b, danger, water=False, limit=0):
-        """True when the straight line a->b only crosses cells no worse than
-        the path it replaces: never blocked, water only if that path swam,
-        no more danger than that path had."""
-        for x, y in _seg_cells((a[0] + 0.5, a[1] + 0.5), (b[0] + 0.5, b[1] + 0.5)):
+    def line_cost(self, a, b, danger, arrow=False):
+        """Cost of the straight line between cell middles a and b, sampled
+        like the addon does; None when it crosses a blocked cell."""
+        steps = int(max(abs(b[0] - a[0]), abs(b[1] - a[1])) * 4) + 1
+        each = math.hypot((b[0] - a[0]) * self.kx, (b[1] - a[1]) * self.ky) / steps
+        total = 0.0
+        for i in range(steps + 1):
+            t = i / steps
+            x = int(a[0] + 0.5 + (b[0] - a[0]) * t)
+            y = int(a[1] + 0.5 + (b[1] - a[1]) * t)
             k = self.kind(x, y)
-            if k == "#" or (k == "~" and not water) or danger.get((x, y), 0) > limit:
-                return False
-        return True
+            if k == "#":
+                return None
+            if i:
+                total += each * self.cell_cost(k, danger.get((x, y), 0), arrow)
+        return total
 
-    def _smooth(self, cells, danger):
+    def _smooth(self, cells, danger, best, arrow=False):
+        """Straight lines over runs of cells that cost no more than the run
+        (2% slack): never through walls, and no cutting off a road through
+        the woods when that's dearer."""
         out = [cells[0]]
         i = 0
         while i < len(cells) - 1:
             j = len(cells) - 1
             while j > i + 1:
-                seg = cells[i:j + 1]
-                water = any(self.kind(*c) == "~" for c in seg)
-                limit = max(danger.get(c, 0) for c in seg)
-                if self.clear(cells[i], cells[j], danger, water, limit):
+                lc = self.line_cost(cells[i], cells[j], danger, arrow)
+                if lc is not None and lc <= (best[cells[j]] - best[cells[i]]) * 1.02 + 0.01:
                     break
                 j -= 1
             out.append(cells[j])
             i = j
         return out
 
-    def distances(self, a, level=None):
+    def distances(self, a, level=None, arrow=False):
         """Walking cost in yards from map point a to every cell (Dijkstra,
         same costs as path()). Cached per start cell and level."""
         ca = self._nearest_open((int(a[0]), int(a[1])))
-        key = ("d", ca, None if level is None else int(level))
+        key = ("d", ca, None if level is None else int(level), arrow)
         if key in self._cache:
             return self._cache[key]
-        danger = self.danger(level)
+        danger = self.danger(level, arrow)
         kx, ky = self.kx, self.ky
         diag = math.hypot(kx, ky)
         steps = [(1, 0, kx), (-1, 0, kx), (0, 1, ky), (0, -1, ky),
@@ -278,17 +343,17 @@ class Terrain:
                     continue
                 if dx and dy and (self.kind(c[0] + dx, c[1]) == "#" or self.kind(c[0], c[1] + dy) == "#"):
                     continue
-                ng = g + step * (WATER_COST if k == "~" else 1.0) + danger.get(n, 0) * step
+                ng = g + step * self.cell_cost(k, danger.get(n, 0), arrow)
                 if ng < best.get(n, 1e18):
                     best[n] = ng
                     heapq.heappush(heap, (ng, n))
         self._cache[key] = best
         return best
 
-    def cost(self, a, b, level=None):
+    def cost(self, a, b, level=None, arrow=False):
         """Walking cost in yards from a to b; the straight line if b can't
         be reached on the grid."""
-        d = self.distances(a, level)
+        d = self.distances(a, level, arrow)
         cb = self._nearest_open((int(b[0]), int(b[1])))
         if cb in d:
             return d[cb]
@@ -367,7 +432,7 @@ def to_lua():
     out = ["local _, addon = ...", "",
            "-- Walking terrain for the arrow: built by tools/terrain.py, don't edit.",
            "-- grid rows (y = 1..%d), one character per 1%% of the map:" % GRID,
-           "--   . open   # blocked (mountain, cliff, outside the zone)   ~ water",
+           "--   . open   # blocked (mountain, cliff, outside the zone)   ~ water   = road",
            "-- packs: {x, y, radius, level} groups of hostile mobs, for going around",
            "-- the ones well above your level.",
            "", "addon.terrainData = {"]
@@ -405,7 +470,7 @@ def main():
                  "", "PACKS = {"]
         for name, z in ZONES.items():
             lines.append("    %r: [" % name)
-            for p in packs_from_db(db, z["area"]):
+            for p in packs_from_db(db, z["area"], min_level=z["pack_min_level"]):
                 lines.append("        %r," % (p,))
             lines.append("    ],")
         lines.append("}")

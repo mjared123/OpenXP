@@ -67,11 +67,23 @@ try("around the Twilight Grove mountains", function()
     assert(not crosses(pts, 30, 40, function(x, y) return x > 37 and x < 57 and y > 25 and y < 55 end), show(pts))
 end)
 
-try("level 22 walks around the Raven Hill Cemetery undead, level 31 goes through", function()
+local function length(pts, ax, ay)
+    local d, px, py = 0, ax, ay
+    for _, p in ipairs(pts or {{0, 0}}) do
+        d = d + math.sqrt((p[1] - px) ^ 2 + (p[2] - py) ^ 2)
+        px, py = p[1], p[2]
+    end
+    return d
+end
+
+try("level 22 walks around the Raven Hill Cemetery undead, level 31 nearly through", function()
     local low = tr.FindPath(1431, 12.0, 45.0, 30.0, 30.0, 22)
     local high = tr.FindPath(1431, 12.0, 45.0, 30.0, 30.0, 31)
-    assert(high == nil, "level 31: straight: " .. show(high))
     assert(low, "level 22: a way around")
+    assert(not high or #high <= 3, "level 31: at most a small bend: " .. show(high))
+    local straight = math.sqrt(18 ^ 2 + 15 ^ 2)
+    assert(not high or length(high, 12, 45) < straight * 1.1, "level 31: " .. show(high))
+    assert(length(low, 12, 45) > length(high or {{30, 30}}, 12, 45), "level 22 goes further round")
 end)
 
 try("arrow points at the corners in order and then lets go", function()
@@ -195,6 +207,73 @@ try("world map and minimap draw without errors", function()
     route = tr.draw.RoutePoints(1431, 10.5, 55, tr.draw.Upcoming(), 22)
     assert(route[#route][2] == 34.07, "inside the area: straight on to the next step")
     _G.WorldMapFrame, _G.Minimap, addon.currentGuide, addon.RXPFrame = nil, nil, nil, nil
+end)
+
+try("every zone: a kill step without .area gets one from Questie's spawns", function()
+    local spawns = {}
+    for i = 0, 7 do spawns[#spawns + 1] = {30 + (i % 4) * 1.5, 70 + math.floor(i / 4) * 2} end
+    spawns[#spawns + 1] = {80, 20} -- far away: not part of this spot's area
+    addon.card = {QGet = function(kind, id)
+        if kind == "Quest" and id == 202 then return {objectives = {{{900}}}} end
+        if kind == "NPC" and id == 900 then return {spawns = {[10] = spawns}} end
+    end}
+    local step = {elements = {{arrow = true, zone = 1431, x = 32, y = 71},
+                              {questId = 202, obj = 1}}}
+    local a = tr.StepArea(step)
+    assert(a and a.auto and a.areaZone == 1431, "an area")
+    for _, p in ipairs(a.area) do
+        assert(p[1] > 26 and p[1] < 38 and p[2] > 66 and p[2] < 76, "near the spot: " .. show(a.area))
+    end
+    assert(tr.InsidePoly(a.area, 32, 71), "the spot is inside")
+    assert(tr.StepArea(step) == a, "worked out once")
+    -- talking to someone first: no area
+    local talk = {elements = {{arrow = true, zone = 1431, x = 32, y = 71}, {tag = "turnin"},
+                              {questId = 202, obj = 1}}}
+    assert(tr.StepArea(talk) == nil, "turn-in step keeps its spot")
+    -- objective done: no area
+    step.elements[2].completed = true
+    assert(tr.StepArea(step) == nil, "done")
+    -- too few spawns
+    local few = {elements = {{arrow = true, zone = 1431, x = 80, y = 20}, {questId = 202, obj = 1}}}
+    assert(tr.StepArea(few) == nil, "one mob is a spot, not an area")
+    -- no Questie: nothing, and asked again later
+    addon.card = nil
+    local later = {elements = {{arrow = true, zone = 1431, x = 32, y = 71}, {questId = 203, obj = 1}}}
+    assert(tr.StepArea(later) == nil)
+    -- switched off in settings
+    addon.card = {QGet = function(kind, id)
+        if kind == "Quest" and id == 203 then return {objectives = {{{900}}}} end
+        if kind == "NPC" and id == 900 then return {spawns = {[10] = spawns}} end
+    end}
+    addon.settings = {profile = {openxpMapAreas = false}}
+    assert(tr.StepArea(later) == nil, "areas off")
+    addon.settings = nil
+    assert(tr.StepArea(later), "areas on")
+    addon.card = nil
+end)
+
+try("roads: the way keeps to the road instead of cutting the corner", function()
+    -- Duskwood's main road bends south-east from Raven Hill to the Stranglethorn
+    -- turn-off and back up to Darkshire; check the route stays near it
+    local pts = tr.FindPath(1431, 20, 60, 73, 57, 25)
+    assert(pts, "a way")
+    local g = tr.Grid(1431)
+    local on, n = 0, 0
+    local px, py = 20, 60
+    for _, p in ipairs(pts) do
+        for s = 1, 10 do
+            local x, y = px + (p[1] - px) * s / 10, py + (p[2] - py) * s / 10
+            n = n + 1
+            local cx, cy = math.floor(x) + 1, math.floor(y) + 1
+            local near = false
+            for dy = -1, 1 do for dx = -1, 1 do
+                if g.cells[(cy + dy - 1) * 100 + cx + dx] == 3 then near = true end
+            end end
+            if near then on = on + 1 end
+        end
+        px, py = p[1], p[2]
+    end
+    assert(on / n > 0.8, "mostly on the road: " .. on .. "/" .. n .. " " .. show(pts))
 end)
 
 return fails

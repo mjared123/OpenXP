@@ -11,6 +11,12 @@ OPEN = []
 WALLS = []
 WATER = []
 
+ROADS = [
+        # roads and bridges, traced from the zone map
+        # Ashenvale road north-east to the Ruins of Eldarath
+        [(7.6, 75), (8.6, 74.5), (10, 76), (11.8, 76.4), (12.5, 76), (14.2, 76.2), (15.8, 75.2), (19.8, 68.5), (21.5, 66.8), (22.7, 64.2), (27.8, 57.4), (31.1, 56.2), (34.3, 53.8), (39.2, 48.4)],
+]
+
 # Drafted by tools/terrain_auto.py from the map: . walkable  # blocked  ~ water
 AUTO = [
     "####################################################################################################",

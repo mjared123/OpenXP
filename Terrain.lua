@@ -21,7 +21,12 @@ addon.terrain = tr
 
 local N = 100           -- grid cells per side
 local WATER = 3.0       -- swimming costs this much more than running
-local DANGER = {[3] = 3.0, [4] = 10.0}
+local ROAD = 0.65       -- a road counts as this much of the same distance off it:
+                        -- stay on the road unless leaving it saves a lot
+local SLACK = 1.02      -- a straight cut may cost this much more than the cells it replaces
+-- extra cost per cell near a pack of mobs, by levels above you: well above
+-- you go far around; at your level just don't walk through them on the way
+local DANGER = {[-2] = 1.0, [-1] = 1.0, [0] = 1.0, [1] = 1.5, [2] = 2.0, [3] = 3.0, [4] = 10.0}
 local DANGER_MAX = 40.0 -- 5+ levels above you
 local NEAR = 1.6        -- cells: a corner counts as reached
 local STRAY = 4         -- cells off the way before it's worked out again
@@ -42,7 +47,7 @@ local function Grid(map)
         local row = d.rows[y] or ""
         for x = 1, N do
             local c = row:sub(x, x)
-            cells[(y - 1) * N + x] = (c == "#" and 0) or (c == "~" and 2) or 1
+            cells[(y - 1) * N + x] = (c == "#" and 0) or (c == "~" and 2) or (c == "=" and 3) or 1
         end
     end
     g = {cells = cells, kx = d.yards and d.yards[1] or 1, ky = d.yards and d.yards[2] or 1,
@@ -52,10 +57,22 @@ local function Grid(map)
 end
 tr.Grid = Grid
 
--- 0 blocked, 1 open, 2 water
+-- 0 blocked, 1 open, 2 water, 3 road (or a bridge)
 local function Kind(g, x, y)
     if x < 1 or y < 1 or x > N or y > N then return 0 end
     return g.cells[(y - 1) * N + x]
+end
+
+local FACTOR = {[1] = 1, [2] = WATER, [3] = ROAD}
+local MILD = 3          -- danger under this is a pack near your level: roads ignore it
+local ROAD_DANGER = 1.0 -- and the mobs by a road are this much trouble at most: the
+                        -- road stays the way through a zone a little above you
+
+-- cost per yard of walking a cell of kind k with danger d
+local function CellCost(k, d)
+    d = d or 0
+    if k == 3 then d = d < MILD and 0 or min(d, ROAD_DANGER) end
+    return FACTOR[k] + d
 end
 
 local function Danger(g, level)
@@ -66,7 +83,7 @@ local function Danger(g, level)
     local ratio = g.kx / g.ky
     for _, p in ipairs(g.packs) do
         local over = (p[4] or 0) - level
-        if over >= 3 then
+        if over >= -2 then
             local cost = DANGER[over] or DANGER_MAX
             local px, py, r = p[1], p[2], p[3]
             for y = floor(py - r * ratio) - 1, floor(py + r * ratio) + 1 do
@@ -133,35 +150,36 @@ local function Pop(h)
     return top
 end
 
--- Straight line from cell a to cell b no worse than the cells it replaces.
-local function Clear(g, danger, ax, ay, bx, by, water, limit)
+-- Cost of walking the straight line from cell a to cell b (cell middles),
+-- or nil when it crosses a blocked cell. Same costs as the grid search.
+local function LineCost(g, danger, ax, ay, bx, by)
     local steps = floor(max(abs(bx - ax), abs(by - ay)) * 4) + 1
+    local dx, dy = (bx - ax) * g.kx, (by - ay) * g.ky
+    local each = sqrt(dx * dx + dy * dy) / steps
+    local total = 0
     for s = 0, steps do
         local t = s / steps
         local x = floor(ax + 0.5 + (bx - ax) * t)
         local y = floor(ay + 0.5 + (by - ay) * t)
         local k = Kind(g, x, y)
-        if k == 0 or (k == 2 and not water) then return false end
-        if (danger[(y - 1) * N + x] or 0) > limit then return false end
+        if k == 0 then return end
+        if s > 0 then total = total + each * CellCost(k, danger[(y - 1) * N + x]) end
     end
-    return true
+    return total
 end
 
 -- Cells are 1-based {x, y}; map coordinates of a cell's middle are x - 0.5.
-local function Smooth(g, danger, cells)
+-- cost[i] is the way's cost up to cells[i]. A run of cells becomes one
+-- straight line only when the line costs no more than the run: so the way
+-- doesn't leave a road to cut a corner through the woods and its mobs.
+local function Smooth(g, danger, cells, cost)
     local out = {cells[1]}
     local i = 1
     while i < #cells do
         local j = #cells
         while j > i + 1 do
-            local water, limit = false, 0
-            for k = i, j do
-                local c = cells[k]
-                if Kind(g, c[1], c[2]) == 2 then water = true end
-                local dv = danger[(c[2] - 1) * N + c[1]] or 0
-                if dv > limit then limit = dv end
-            end
-            if Clear(g, danger, cells[i][1], cells[i][2], cells[j][1], cells[j][2], water, limit) then break end
+            local lc = LineCost(g, danger, cells[i][1], cells[i][2], cells[j][1], cells[j][2])
+            if lc and lc <= (cost[j] - cost[i]) * SLACK + 0.01 then break end
             j = j - 1
         end
         out[#out + 1] = cells[j]
@@ -207,7 +225,7 @@ function tr.FindPath(map, ax, ay, bx, by, level)
                 if k ~= 0 and not (s[1] ~= 0 and s[2] ~= 0 and
                         (Kind(g, x + s[1], y) == 0 or Kind(g, x, y + s[2]) == 0)) then
                     local ni = (ny - 1) * N + nx
-                    local cost = s[3] * (k == 2 and WATER or 1) + (danger[ni] or 0) * s[3]
+                    local cost = s[3] * CellCost(k, danger[ni])
                     local ng = gi + cost
                     if not best[ni] or ng < best[ni] then
                         best[ni] = ng
@@ -219,13 +237,14 @@ function tr.FindPath(map, ax, ay, bx, by, level)
         end
     end
     if not found then return end
-    local cells = {}
+    local cells, cost = {}, {}
     local i = goal
     while i do
         table.insert(cells, 1, {(i - 1) % N + 1, floor((i - 1) / N) + 1})
+        table.insert(cost, 1, best[i])
         i = came[i]
     end
-    cells = Smooth(g, danger, cells)
+    cells = Smooth(g, danger, cells, cost)
     if #cells <= 2 then return end -- straight there
     local pts = {}
     for k = 2, #cells - 1 do
@@ -339,10 +358,126 @@ local function NearestEdge(poly, x, y, kx, ky)
     return bx, by
 end
 
+---------------------------------------------------------------------------
+-- Areas for every zone: a kill/loot step without an .area line gets one
+-- from Questie's spawn data, the same way tools/build_route.py makes them:
+-- the outline of the objective's spawns near the step's spot, widened a
+-- little so the mobs on the edge are inside, at most 8 corners. Needs
+-- Questie; without it such steps just keep their arrow.
+---------------------------------------------------------------------------
+
+local AREA_REACH = 7.0  -- map units: spawns this close to the step's spot make its area
+local AREA_MARGIN = 1.5 -- map units: the area reaches this far past the outer spawns
+local AREA_MIN = 4      -- spawns needed for an area
+local AREA_CORNERS = 8
+
+local ObjectiveSpawns   -- defined with the drawing below
+
+local function Cross(o, a, b)
+    return (a[1] - o[1]) * (b[2] - o[2]) - (a[2] - o[2]) * (b[1] - o[1])
+end
+
+-- The kill area around (wx, wy) from spawn points, or nil
+local function KillArea(points, wx, wy)
+    local near, seen = {}, {}
+    for _, p in ipairs(points) do
+        local dx, dy = p[1] - wx, p[2] - wy
+        if dx * dx + dy * dy <= AREA_REACH * AREA_REACH then
+            local key = floor(p[1] * 100 + 0.5) .. "," .. floor(p[2] * 100 + 0.5)
+            if not seen[key] then
+                seen[key] = true
+                near[#near + 1] = {floor(p[1] * 100 + 0.5) / 100, floor(p[2] * 100 + 0.5) / 100}
+            end
+        end
+    end
+    if #near < AREA_MIN then return end
+    table.sort(near, function(a, b) return a[1] < b[1] or (a[1] == b[1] and a[2] < b[2]) end)
+    local lower, upper = {}, {}
+    for i = 1, #near do
+        local p = near[i]
+        while #lower >= 2 and Cross(lower[#lower - 1], lower[#lower], p) <= 0 do lower[#lower] = nil end
+        lower[#lower + 1] = p
+    end
+    for i = #near, 1, -1 do
+        local p = near[i]
+        while #upper >= 2 and Cross(upper[#upper - 1], upper[#upper], p) <= 0 do upper[#upper] = nil end
+        upper[#upper + 1] = p
+    end
+    local hull = {}
+    for i = 1, #lower - 1 do hull[#hull + 1] = lower[i] end
+    for i = 1, #upper - 1 do hull[#hull + 1] = upper[i] end
+    if #hull < 3 then return end
+    while #hull > AREA_CORNERS do
+        -- drop the corner that changes the outline least
+        local bi, bv
+        for i = 1, #hull do
+            local a, b, c = hull[(i - 2) % #hull + 1], hull[i], hull[i % #hull + 1]
+            local v = abs(Cross(a, b, c))
+            if not bv or v < bv then bi, bv = i, v end
+        end
+        table.remove(hull, bi)
+    end
+    local cx, cy = 0, 0
+    for _, p in ipairs(hull) do cx, cy = cx + p[1], cy + p[2] end
+    cx, cy = cx / #hull, cy / #hull
+    local out = {}
+    for _, p in ipairs(hull) do
+        local dx, dy = p[1] - cx, p[2] - cy
+        local d = sqrt(dx * dx + dy * dy)
+        if d == 0 then d = 1 end
+        out[#out + 1] = {min(100, max(0, p[1] + dx / d * AREA_MARGIN)),
+                         min(100, max(0, p[2] + dy / d * AREA_MARGIN))}
+    end
+    return out
+end
+tr.KillArea = KillArea
+
+local autoAreas = setmetatable({}, {__mode = "k"}) -- step -> {key, area element or false}
+
+local function AutoArea(step)
+    if not (step and step.elements and ObjectiveSpawns) then return end
+    local spot, objs = nil, {}
+    for _, e in ipairs(step.elements) do
+        if (e.tag == "accept" or e.tag == "turnin") and not e.completed and not e.skip then
+            return -- talking to someone first: their spot, not an area
+        end
+        if e.arrow and e.zone and e.x and e.y and not e.skip and not spot then spot = e end
+        if e.questId and e.obj and not e.completed and not e.skip then objs[#objs + 1] = e end
+    end
+    if not spot or #objs == 0 then return end
+    local d = addon.terrainData and addon.terrainData[spot.zone]
+    if not (d and d.area) then return end
+    local key = spot.zone .. ":" .. spot.x .. ":" .. spot.y
+    for _, e in ipairs(objs) do key = key .. ":" .. e.questId .. "/" .. e.obj end
+    local c = autoAreas[step]
+    if c and c.key == key then return c.area or nil end
+    local pts, ready = {}, false
+    for _, e in ipairs(objs) do
+        local sp = ObjectiveSpawns(e.questId, e.obj, d.area)
+        if sp then
+            ready = true
+            for _, p in ipairs(sp) do pts[#pts + 1] = p end
+        end
+    end
+    if not ready then return end -- Questie isn't loaded (yet): ask again later
+    local area = KillArea(pts, spot.x, spot.y)
+    local a = area and {area = area, areaZone = spot.zone, auto = true} or false
+    autoAreas[step] = {key = key, area = a}
+    return a or nil
+end
+tr.AutoArea = AutoArea
+
+local function AreasOn()
+    local p = addon.settings and addon.settings.profile
+    return not (p and p.openxpMapAreas == false)
+end
+tr.AreasOn = AreasOn
+
 local function StepArea(step)
     for _, e in ipairs(step and step.elements or {}) do
         if e.area and e.areaZone then return e end
     end
+    if AreasOn() then return AutoArea(step) end
 end
 tr.StepArea = StepArea
 
@@ -681,13 +816,15 @@ local function RoutePoints(map, px, py, stops, level)
     return pts
 end
 
+-- Spawn points (map 0-100) of whatever counts for this objective in `area`
+-- (a zone id): {} when there are none, nil while Questie isn't loaded.
 local spawnCache = {}
-local function ObjectiveSpawns(questId, objIndex, area)
+function ObjectiveSpawns(questId, objIndex, area)
     local key = questId .. ":" .. objIndex .. ":" .. area
     if spawnCache[key] ~= nil then return spawnCache[key] end
     local QGet = addon.card and addon.card.QGet
     local q = QGet and QGet("Quest", questId)
-    if not q then return {} end -- Questie not ready yet: try again later
+    if not q then return end -- Questie not ready yet: try again later
     local o = type(q.objectives) == "table" and q.objectives or {}
     local sources = {}
     local i = 0
@@ -755,7 +892,7 @@ function tr.DrawMap()
         for _, step in pairs(addon.RXPFrame.activeSteps or {}) do
             for _, e in ipairs(step.elements or {}) do
                 if e.questId and e.obj and not e.completed and not e.skip then
-                    for _, pt in ipairs(ObjectiveSpawns(e.questId, e.obj, d.area)) do
+                    for _, pt in ipairs(ObjectiveSpawns(e.questId, e.obj, d.area) or {}) do
                         local key = floor(pt[1] * 10) .. "," .. floor(pt[2] * 10)
                         if not seen[key] then
                             seen[key] = true
