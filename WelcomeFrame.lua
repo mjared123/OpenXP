@@ -18,7 +18,6 @@ local CHANGELOG = {
         date = "November 2026",
         changes = {
             "Levels 21-40 guides rebuilt with WoW Forever's own quests included (from Questie). About 50 more quests across Wetlands, Duskwood, Stranglethorn, Desolace, Hillsbrad and Badlands, nothing taken out",
-            "Horde 38-40 Badlands section now has its quests",
         },
     },
     {
