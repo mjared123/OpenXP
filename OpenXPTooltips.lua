@@ -527,8 +527,9 @@ local function RefreshBags()
 end
 
 ---------------------------------------------------------------------------
--- Nameplates: the needed item's icon and your count beside enemies that
--- drop it. Sits on the right so it doesn't cover Questie's icon on the left.
+-- Nameplates: the needed item's icon and your count above enemies that
+-- drop it, centred over the name so it doesn't cover the level or Questie's
+-- icon on the left.
 ---------------------------------------------------------------------------
 
 local plates = {}
@@ -542,17 +543,25 @@ end
 local function PlateFrame(plate)
     local f = plates[plate]
     if f then return f end
+    -- centred above the enemy's name, clear of the health bar and level
+    local uf = plate.UnitFrame
+    local above = uf and uf.name or uf or plate
     f = CreateFrame("Frame", nil, plate)
-    f:SetSize(22, 22)
-    f:SetPoint("LEFT", plate, "RIGHT", -6, 0)
+    f:SetSize(60, 24)
+    f:SetPoint("BOTTOM", above, "TOP", 0, 4)
+    f:SetFrameStrata("HIGH")
     f.icon = f:CreateTexture(nil, "ARTWORK")
-    f.icon:SetAllPoints()
+    f.icon:SetSize(24, 24)
+    f.icon:SetPoint("LEFT")
+    f.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     f.mark = f:CreateTexture(nil, "OVERLAY")
-    f.mark:SetSize(12, 12)
-    f.mark:SetPoint("TOPLEFT", -4, 4)
+    f.mark:SetSize(14, 14)
+    f.mark:SetPoint("TOPLEFT", f.icon, "TOPLEFT", -5, 5)
     f.mark:SetTexture(QUEST_ICON)
-    f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    f.text:SetPoint("LEFT", f, "RIGHT", 2, 0)
+    f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    local font, size = f.text:GetFont()
+    if font then f.text:SetFont(font, (size or 12) + 1, "OUTLINE") end
+    f.text:SetPoint("LEFT", f.icon, "RIGHT", 4, 0)
     plates[plate] = f
     return f
 end
@@ -569,6 +578,7 @@ function tips.UpdatePlate(unit)
     local f = PlateFrame(plate)
     f.icon:SetTexture(GetItemIcon and GetItemIcon(n.itemId) or QUEST_ICON)
     f.text:SetText(n.have .. "/" .. n.need .. (count > 1 and " +" or ""))
+    f:SetWidth(28 + (f.text:GetStringWidth() or 30)) -- keeps icon + count centred
     f:Show()
 end
 

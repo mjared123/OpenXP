@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.8-beta",
+        date = "November 2026",
+        changes = {
+            "The quest loot icon on enemy nameplates now sits centred above the enemy's name, bigger and with an outlined count, instead of hiding behind the level",
+        },
+    },
+    {
         version = "1.1.7-beta",
         date = "November 2026",
         changes = {
