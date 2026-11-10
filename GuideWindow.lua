@@ -2517,6 +2517,7 @@ function addon.SplitMenuByLevel(sub)
         tinsert(split, {text = text, notCheckable = 1, hasArrow = true, menuList = brackets[key]})
     end
     sub.menuList = split
+    return split
 end
 
 local function SwapNames(name)
@@ -2685,8 +2686,13 @@ function RXPFrame:GenerateMenuTable(menu)
         if #subgroups > 0 then
             for _, category in ipairs(subgroups) do
                 local sub = item.subtable[category.subgroup]
-                addon.SplitMenuByLevel(sub)
-                tinsert(item.menuList, sub)
+                local brackets = addon.SplitMenuByLevel(sub)
+                if brackets then
+                    -- one click less: the brackets go straight in this menu
+                    for _, bracket in ipairs(brackets) do tinsert(item.menuList, bracket) end
+                else
+                    tinsert(item.menuList, sub)
+                end
             end
         else
             item.subtable = nil
