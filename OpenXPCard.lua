@@ -382,6 +382,11 @@ local function GetBlock(i)
     b.sep:SetColorTexture(1, 1, 1, 0.07)
     b.badge = MakeBadge(b, 34)
     b.badge:SetPoint("TOPLEFT", PAD, -10)
+    -- step number under the badge, so stacked steps are easy to tell apart
+    b.num = b:CreateFontString(nil, "OVERLAY")
+    b.num:SetPoint("TOP", b.badge, "BOTTOM", 0, -4)
+    b.num:SetJustifyH("CENTER")
+    b.num:SetTextColor(unpack(C.faint))
     b.title = b:CreateFontString(nil, "OVERLAY")
     b.title:SetPoint("TOPLEFT", b.badge, "TOPRIGHT", 12, -1)
     b.title:SetJustifyH("LEFT")
@@ -980,6 +985,8 @@ local function LayoutBlock(b, step, first)
     local textWidth = Width() - PAD * 2 - 34 - 12
     b.sep:SetShown(not first)
     b.badge:SetKind(StepKind(step))
+    SetFont(b.num, -2)
+    b.num:SetText(step.index and not step.detour and ("#" .. step.index) or "")
 
     local title, lines = StepContent(step)
     local role = card.StepRole(step, addon.GetGuideProgress and addon.GetGuideProgress())
@@ -1168,7 +1175,7 @@ local function LayoutBlock(b, step, first)
         if b.warn then b.warn:Hide() end
     end
 
-    local height = math.max(y + 4, 34 + 20)
+    local height = math.max(y + 4, 34 + 20 + (b.num:GetText() ~= "" and 14 or 0))
     b:SetHeight(height)
     return height
 end
@@ -1995,6 +2002,7 @@ function Tick()
                 card.ManualSetStep(r.step)
             end
         end
+        pcall(card.CheckTrainerSteps)
         local ok, err = pcall(card.Refresh)
         if not ok then card.ReportError(err) end
         card.SkinPanels()
@@ -2328,6 +2336,63 @@ if addon.SetupArrow then
         if card.enabled then card.SetupArrow() end
     end
 end
+
+---------------------------------------------------------------------------
+-- Trainer steps: done once you've talked to the trainer at this level,
+-- even if that was before the step came up. Training everything isn't
+-- required; in Classic you rarely can or want to.
+---------------------------------------------------------------------------
+
+local function TrainerVisits()
+    if not OXPCData then return {} end
+    OXPCData.openxpTrainers = OXPCData.openxpTrainers or {}
+    return OXPCData.openxpTrainers
+end
+
+function card.RecordTrainerVisit()
+    local level = UnitLevel and UnitLevel("player") or 0
+    local visits = TrainerVisits()
+    local id = addon.GetNpcId and (addon.GetNpcId("npc") or addon.GetNpcId())
+    local name = UnitName and (UnitName("npc") or UnitName("target"))
+    if id then visits[id] = level end
+    if name then visits[name:lower()] = level end
+end
+
+local function StepTrainerNames(step, e)
+    local out = {}
+    if e.id then tinsert(out, e.id) end
+    for _, x in ipairs(step.elements or {}) do
+        for _, n in ipairs(x.targets or {}) do tinsert(out, tonumber(n) or tostring(n):lower()) end
+    end
+    return out
+end
+
+function card.CheckTrainerSteps()
+    local active = addon.RXPFrame and addon.RXPFrame.activeSteps
+    if not active or not addon.SetElementComplete then return end
+    local level = UnitLevel and UnitLevel("player") or 0
+    local visits = TrainerVisits()
+    for _, step in ipairs(active) do
+        for _, e in ipairs(step.elements or {}) do
+            if e.tag == "trainer" and not e.completed then
+                for _, key in ipairs(StepTrainerNames(step, e)) do
+                    if (visits[key] or -1) >= level then
+                        addon.SetElementComplete(e)
+                        break
+                    end
+                end
+            end
+        end
+    end
+end
+
+local trainerWatch = CreateFrame("Frame")
+for _, ev in ipairs({"TRAINER_SHOW", "GOSSIP_SHOW"}) do pcall(trainerWatch.RegisterEvent, trainerWatch, ev) end
+trainerWatch:SetScript("OnEvent", function(_, ev)
+    -- gossip counts only for NPCs that a trainer step names
+    pcall(card.RecordTrainerVisit)
+    pcall(card.CheckTrainerSteps)
+end)
 
 -- Anything quest or level related bumps the counter, so the card redraws
 local watcher = CreateFrame("Frame")

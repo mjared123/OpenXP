@@ -3779,8 +3779,12 @@ function addon.functions.trainer(self, ...)
     local event = ...
     local id = self.element.id
 
+    -- OpenXP: done as soon as you open the trainer. You rarely train every
+    -- spell (or can afford to), so closing it isn't required.
     if event == "TRAINER_SHOW" then
-        self.element.activity = addon.GetNpcId()
+        local npc = addon.GetNpcId("npc") or addon.GetNpcId()
+        self.element.activity = npc
+        if not id or npc == id then addon.SetElementComplete(self) end
     elseif event == "TRAINER_CLOSED" and (self.element.activity == id or not id) then
         self.element.activity = nil
         addon.SetElementComplete(self)

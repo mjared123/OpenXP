@@ -456,5 +456,25 @@ try("xp strip and time to level", function()
     card.xpStrip:GetScript("OnEnter")(card.xpStrip)
     GetTime = nil
 end)
+try("trainer step is done once you've talked to the trainer", function()
+    local done
+    addon.SetElementComplete = function(e) done = e; e.completed = true end
+    addon.GetNpcId = function() return 4205 end
+    UnitLevel = function() return 20 end
+    UnitName = function() return "Karrina Mekenda" end
+    local tr = {tag = "trainer", text = "Train your pet skills"}
+    local step = {index = 43, elements = {tr, {targets = {"Karrina Mekenda"}}}}
+    addon.RXPFrame.activeSteps = {}
+    card.RecordTrainerVisit()          -- talked to her before the step came up
+    addon.RXPFrame.activeSteps = {step}
+    card.CheckTrainerSteps()
+    assert(done == tr, "trainer step not completed")
+    -- a visit at a lower level doesn't count after you level up
+    tr.completed, done = nil, nil
+    UnitLevel = function() return 22 end
+    card.CheckTrainerSteps()
+    assert(not done, "old visit counted")
+    addon.RXPFrame.activeSteps = {}
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

@@ -11,6 +11,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.2",
+        date = "November 2026",
+        changes = {
+            "Each step on the card shows its step number under the icon",
+            "Trainer steps (class and pet) are done as soon as you talk to the trainer. You don't have to train everything, and a visit earlier at the same level counts too",
+        },
+    },
+    {
         version = "1.1.1",
         date = "November 2026",
         changes = {
