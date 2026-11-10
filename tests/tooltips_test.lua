@@ -42,6 +42,10 @@ local addon = {
         }},
     }},
 }
+-- Questie stand-in: Wildthorn Stalkers (3819) drop Gooey Spider Legs
+addon.card = {QGet = function(kind, id)
+    if kind == "Item" and id == 2251 then return {name = "Gooey Spider Legs", npcDrops = {3819}} end
+end}
 assert(loadfile(ROOT .. "/OpenXPTooltips.lua"))("OpenXP", addon)
 local T = addon.openxpTooltips
 local fails = 0
@@ -68,15 +72,26 @@ try("tooltip gets the don't-sell header", function()
     local tt = {AddLine = function(_, t) tinsert(added, t) end,
                 AddDoubleLine = function(_, a, b) tinsert(added, a .. " " .. b) end, Show = function() end}
     T.AddItemLines(tt, 2251, "Gooey Spider Legs")
-    assert(#added == 3 and added[2]:find("don't sell"), table.concat(added, " | "))
+    assert(#added == 3 and added[2]:find("DON'T SELL"), table.concat(added, " | "))
 end)
 try("mob: kill objective", function()
     local lines = T.QuestLines("Kobold Vermin", 6)
     assert(#lines == 1 and lines[1].have == 3 and lines[1].need == 8)
 end)
-try("mob: item it drops (from the guide's .mob lines)", function()
+try("mob: items it drops (from the guide's .mob lines), incl. ones saved for later", function()
     local lines = T.QuestLines("Venom Web Spider", 217)
-    assert(#lines == 1 and lines[1].what == "Gooey Spider Legs" and lines[1].have == 2, "lines " .. #lines)
+    assert(#lines == 2, "lines " .. #lines)
+    local by = {}
+    for _, l in ipairs(lines) do by[l.what] = l end
+    assert(by["Gooey Spider Legs"].have == 2 and by["Gooey Spider Legs"].need == 6)
+    assert(by["Small Venom Sac"].later == 2)
+end)
+try("mob: item it drops (from Questie's drop list)", function()
+    local lines = T.MobItemLines("Wildthorn Stalker", 3819)
+    assert(#lines == 1 and lines[1].itemId == 2251, "lines " .. #lines)
+end)
+try("bag marker only on needed items", function()
+    assert(T.IsNeeded(2251) and T.IsNeeded(1475) and not T.IsNeeded(5000))
 end)
 try("mob that drops nothing you need", function()
     assert(#T.QuestLines("Forest Wolf", 69) == 0)

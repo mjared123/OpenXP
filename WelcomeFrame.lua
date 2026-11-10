@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.7-beta",
+        date = "November 2026",
+        changes = {
+            "Quest items stand out more: a QUEST ITEM - DON'T SELL banner with a quest icon, an orange tooltip border, and a quest marker on the bag slot",
+            "Enemy tooltips now list the quest items they drop that you still need, with the item's icon and your count, even with Questie installed and even for quests you'll pick up later (like Gooey Spider Legs from spiders)",
+            "Enemies that drop an item you need show its icon and your count beside their nameplate (turn it off under Extras: Quest loot on nameplates)",
+        },
+    },
+    {
         version = "1.1.6-beta",
         date = "November 2026",
         changes = {

@@ -214,6 +214,7 @@ local settingsDBDefaults = {
         enableInventoryManager = true,
         autoSellJunk = true,
         openxpTooltips = true,
+        openxpNameplates = true,
         openxpAutoLoot = false,
         openxpMaxCamera = false,
 
@@ -3223,6 +3224,17 @@ function addon.settings:CreateAceOptionsPanel()
                         type = "toggle",
                         width = optionsWidth,
                         order = 5.51,
+                    },
+                    openxpNameplates = {
+                        name = L("Quest loot on nameplates"),
+                        desc = L("Enemies that drop an item you still need for a quest get the item's icon and your count beside their nameplate"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.511,
+                        set = function(info, value)
+                            SetProfileOption(info, value)
+                            if addon.openxpTooltips then addon.openxpTooltips.RefreshPlates() end
+                        end,
                     },
                     openxpAutoLoot = {
                         name = L("Auto loot"),
