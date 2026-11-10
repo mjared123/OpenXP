@@ -124,6 +124,10 @@ function addon.settings.ChatCommand(input)
         if addon.card then addon.card.ToggleStepList() end
     elseif input == "step" then
         if addon.card then addon.card.DebugStep() end
+    elseif input == "questdump" then
+        addon.questDump.Run()
+    elseif input == "questdump clear" then
+        addon.questDump.Clear()
     elseif input == "catchup" then
         addon.smartStart.ShowCatchUp()
     elseif input == "help" then

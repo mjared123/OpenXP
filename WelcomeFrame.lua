@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.9-beta",
+        date = "November 2026",
+        changes = {
+            "New for guide makers: /oxp questdump saves what your installed Questie knows about quests (including WoW Forever's new quests) so the guide tools can find quests the guides are missing. It stays on your PC",
+        },
+    },
+    {
         version = "1.1.8-beta",
         date = "November 2026",
         changes = {

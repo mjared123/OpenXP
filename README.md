@@ -68,6 +68,19 @@ OpenXP works out where you are even if you install it halfway through leveling. 
 - `/oxp where` runs Smart start again at any time.
 - `/oxp catchup` lists the skipped chains and which guide section picks up the missing quest.
 
+## Guide tools (Questie data)
+
+Questie's data is GPLv3, so it is never copied into OpenXP. The tools below read your own copies at build time, and
+OpenXP reads the installed Questie while you play.
+
+1. Get Questie's public data: `git clone --depth 1 https://github.com/Questie/QuestieDB` (outside this repo).
+2. WoW Forever quests that aren't in those files yet come from the installed Questie: in game, type `/oxp questdump`,
+   wait for "Done", then `/reload`. That saves them in `WTF\Account\<name>\SavedVariables\OpenXP.lua`
+   (`/oxp questdump clear` removes it again).
+3. `python tools/audit_guides.py --questiedb PATH\QuestieDB --questie "PATH\AddOns\Questie" --dump PATH\OpenXP.lua`
+   lists, zone by zone, the quests each faction can do that no guide picks up.
+4. `python tools/build_route.py --questiedb PATH\QuestieDB --dump PATH\OpenXP.lua tools/routes/<route>.py` drafts a route.
+
 ## Tests
 
 `pip install lupa`, then `python3 tests/run_tests.py`. The tests run Smart start against the real Forever guides outside the game.

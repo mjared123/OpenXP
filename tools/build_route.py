@@ -92,6 +92,35 @@ def load_db(questiedb, game=None):
     return db
 
 
+def load_dump(path):
+    """Quest data saved in game by /oxp questdump (the OXPQuestieDump saved
+    variable in WTF/Account/<name>/SavedVariables/OpenXP.lua). It has what the
+    installed Questie knows, including WoW Forever quests that Questie's
+    public data files don't have yet. Same row layout as load_db()."""
+    rt = lupa.LuaRuntime(unpack_returned_tuples=True)
+    rt.execute(open(path, encoding="utf-8").read())
+    d = rt.globals().OXPQuestieDump
+    if d is None:
+        raise SystemExit("no OXPQuestieDump in %s: run /oxp questdump in game, then /reload" % path)
+    out = {}
+    for short, kind in (("q", "quest"), ("n", "npc"), ("o", "object"), ("i", "item")):
+        keys = d["keys"][kind] if d["keys"] else None
+        width = max(keys.values()) if keys else 0
+        rows = {}
+        for id_, row in (d[kind] or {}).items():
+            n = width or (max(row.keys()) if list(row.keys()) else 0)
+            rows[int(id_)] = [_lua_to_py(row[i]) if row[i] is not None else None for i in range(1, n + 1)]
+        out[short] = rows
+    return out
+
+
+def merge_db(base, extra):
+    """base with extra's rows on top (extra wins)."""
+    if not extra:
+        return base
+    return {k: {**base.get(k, {}), **extra.get(k, {})} for k in ("q", "n", "o", "i")}
+
+
 def li(v, i):
     """Lua-style 1-based index into a list or sparse dict."""
     if v is None:
@@ -612,6 +641,7 @@ def free_guide_quests(skip=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--questiedb", required=True)
+    ap.add_argument("--dump", help="OpenXP.lua saved variables with /oxp questdump data")
     ap.add_argument("route")
     args = ap.parse_args()
 
@@ -623,6 +653,8 @@ def main():
     GAME = getattr(route, "GAME", "Forever")
     FACTION = getattr(route, "FACTION", "Alliance")
     db = load_db(args.questiedb)
+    if args.dump:
+        db = merge_db(db, load_dump(args.dump))
     accepted, turned = free_guide_quests(os.path.join(ROOT, route.OUTPUT))
     builder = Builder(db, done_before=turned, carried=accepted - turned)
     # Quests a route leaves out on purpose (rare drops, page collections...)
