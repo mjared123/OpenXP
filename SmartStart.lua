@@ -426,17 +426,80 @@ end
 
 -- Offer smart start on login when the player has no guide, or their guide is
 -- far below their level (e.g. they installed OpenXP at level 16).
-function SS.OnLogin()
-    local settings = addon.settings and addon.settings.profile
-    if settings and settings.smartStartOnLogin == false then return end
-    local level = SS.api.PlayerLevel()
-    if level <= 1 then return end
+--
+-- A fresh install has no guide at all, and the guide window stays hidden
+-- until one is loaded, so this also runs at level 1 (where it picks the
+-- starter guide for the player's race). Guides can still be loading a few
+-- seconds after login, so it tries again a few times before giving up.
+-- Players who switch it off in settings (smartStartOnLogin) still get a
+-- guide when they have none; it only stops moving them between sections.
+local function HasGuide()
     local current = addon.currentGuide
-    local _, hi
-    if current and not current.empty then
-        _, hi = SS.LevelRange(current)
+    return current and not current.empty and current.steps and true or false
+end
+SS.HasGuide = HasGuide
+
+-- Makes sure the guide window is switched on once a guide is loaded, since
+-- a click on the minimap button before then may have switched it off.
+local function ShowGuide()
+    local profile = addon.settings and addon.settings.profile
+    if HasGuide() and profile and not profile.showEnabled and addon.settings.ToggleActive then
+        addon.settings.ToggleActive()
     end
-    if not current or current.empty or (hi and level > hi + 1) then
+end
+
+local RETRIES, RETRY_DELAY = 6, 2
+function SS.OnLogin(attempt)
+    attempt = attempt or 1
+    local settings = addon.settings and addon.settings.profile
+    local level = SS.api.PlayerLevel() or 1
+    local current = addon.currentGuide
+    local noGuide = not HasGuide()
+    if not noGuide then
+        if settings and settings.smartStartOnLogin == false then return end
+        if level <= 1 then return end
+        local _, hi = SS.LevelRange(current)
+        if not (hi and level > hi + 1) then return end
         SS.Run(false)
+        return
     end
+    -- No guide: pick one for the character's race, faction and level so the
+    -- guide card and arrow are there without any clicks.
+    if #CandidateGuides() == 0 then
+        if attempt < RETRIES and C_Timer then
+            C_Timer.After(RETRY_DELAY, function() SS.OnLogin(attempt + 1) end)
+        end
+        return
+    end
+    SS.Run(level <= 1)
+    if not HasGuide() and level <= 1 and addon.SelectDefaultGuide then
+        addon.SelectDefaultGuide(true)
+    end
+    ShowGuide()
+end
+
+-- Minimap button / welcome button with no guide loaded: load one now
+-- instead of toggling an empty, hidden window. Returns true if a guide is
+-- loaded afterwards.
+function SS.EnsureGuide()
+    if HasGuide() then return true end
+    if #CandidateGuides() == 0 then
+        Print("Guides are still loading, one moment...")
+        if C_Timer then
+            C_Timer.After(RETRY_DELAY, function()
+                if #CandidateGuides() > 0 then SS.EnsureGuide() end
+            end)
+        end
+        return false
+    end
+    local level = SS.api.PlayerLevel() or 1
+    if level <= 1 and addon.SelectDefaultGuide then
+        addon.SelectDefaultGuide(true)
+    end
+    if not HasGuide() then SS.Run(level <= 1) end
+    ShowGuide()
+    if not HasGuide() and addon.ui and addon.ui.v2 and addon.ui.v2.configurator then
+        addon.ui.v2.configurator:Open()
+    end
+    return HasGuide()
 end

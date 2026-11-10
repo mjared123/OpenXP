@@ -58,6 +58,19 @@ def _real(path):
     return path
 
 
+def exact_case(path, root):
+    """False when the path only exists with different upper/lower case
+    (Windows doesn't care, case-sensitive Mac and Linux disks do)."""
+    cur = root
+    for part in os.path.relpath(path, root).split(os.sep):
+        if part in ("", "."):
+            continue
+        if part not in os.listdir(cur):
+            return False
+        cur = os.path.join(cur, part)
+    return True
+
+
 def check(root):
     missing, seen = [], set()
 
@@ -69,6 +82,9 @@ def check(root):
         if not exists(path):
             missing.append(os.path.relpath(path, root))
             return
+        if not exact_case(path, root):
+            missing.append("%s  (wrong upper/lower case, the file is %s)"
+                           % (os.path.relpath(path, root), os.path.relpath(_real(path), root)))
         path = _real(path)
         if path.endswith(".xml"):
             text = open(path, encoding="utf-8", errors="replace").read()
@@ -135,7 +151,11 @@ def main():
     root = os.path.join(tmp, "OpenXP")
     os.makedirs(root)
     tar = subprocess.run(["git", "-C", repo, "archive", ref], check=True, capture_output=True).stdout
-    subprocess.run(["tar", "-x", "-C", root], input=tar, check=True)
+    # Python's tarfile instead of the tar command, which on Windows tries to
+    # read a tape drive when given no -f.
+    import io, tarfile
+    with tarfile.open(fileobj=io.BytesIO(tar)) as t:
+        t.extractall(root)
     version = check_version(root)
     out = os.path.abspath(arg)
     if os.path.isdir(out):

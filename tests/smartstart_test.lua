@@ -257,5 +257,60 @@ for _, file in ipairs(hfiles) do
     check(#bad == 0, file .. " quests used before accepted: " .. table.concat(bad, ","))
 end
 
+-- Fresh install: no guide loaded, guides still loading at first, then the
+-- login check loads the starter guide and switches the window on, with no
+-- clicks. Also the minimap click before guides are ready.
+do
+    reset(); state.level = 1
+    local timers = {}
+    _G.C_Timer = {After = function(_, fn) table.insert(timers, fn) end}
+    local ready = false
+    local toggled = 0
+    addon.defaultGroup = "RestedXP Forever Guide (A)"
+    addon.GetActiveGuidesInGroup = function() return ready and guides or {} end
+    addon.FetchGuide = function(_, g) return g end
+    addon.LoadGuide = function(_, g) addon.currentGuide = g end
+    addon.SetStep = function(n) addon.step = n end
+    addon.settings = {profile = {showEnabled = false},
+        ToggleActive = function()
+            toggled = toggled + 1
+            addon.settings.profile.showEnabled = not addon.settings.profile.showEnabled
+        end}
+    _G.OXPCData = {stepSkip = {}}
+    addon.currentGuide = {empty = true, steps = {{}}}
+    _G.print = _G.print
+    SS.cachedPrereqs = nil
+
+    check(not SS.HasGuide(), "fresh install: no guide yet")
+    SS.OnLogin()
+    check(not SS.HasGuide() and #timers == 1, "guides not ready: tries again later")
+    ready = true
+    table.remove(timers, 1)()
+    check(SS.HasGuide() and addon.currentGuide.name == "1-6 Northshire",
+        "fresh level 1 Human gets Northshire on login, got " .. tostring(addon.currentGuide.name))
+    check(addon.settings.profile.showEnabled and toggled == 1, "guide window switched on")
+
+    -- smartStartOnLogin off must not stop a fresh character getting a guide
+    addon.currentGuide = {empty = true}
+    addon.settings.profile.smartStartOnLogin = false
+    SS.OnLogin()
+    check(SS.HasGuide(), "fresh install gets a guide even with smart start on login off")
+    addon.settings.profile.smartStartOnLogin = nil
+
+    -- minimap click before the guides are ready, then once they are
+    addon.currentGuide = nil
+    ready = false; timers = {}
+    check(SS.EnsureGuide() == false and #timers == 1, "click while loading waits for guides")
+    ready = true
+    timers[1]()
+    check(SS.HasGuide(), "guide loads once guides are ready")
+
+    -- a guide already loaded is left alone at level 1
+    local before = addon.currentGuide
+    SS.OnLogin()
+    check(addon.currentGuide == before, "existing guide kept")
+    _G.C_Timer = nil
+end
+
 print(string.format("%d passed, %d failed", passes, failures))
 return failures

@@ -14,6 +14,16 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.11",
+        date = "November 2026",
+        changes = {
+            "New installs start right away: the guide card and arrow show up on login with the right guide for your race and level, no clicks or settings needed",
+            "Clicking the minimap button before a guide is loaded now loads one instead of doing nothing",
+            "This What's new window now also shows after you update and /reload, not only after restarting the game",
+            "Fixed two file names that could stop parts of OpenXP loading on a Mac",
+        },
+    },
+    {
         version = "1.3.10",
         date = "November 2026",
         changes = {
@@ -587,7 +597,9 @@ local function CreateWelcomeFrame()
     start:SetScript("OnClick", function()
         f:Hide()
         local level = UnitLevel("player") or 1
-        if addon.smartStart and level > 1 then
+        if addon.smartStart and addon.smartStart.HasGuide and not addon.smartStart.HasGuide() then
+            addon.smartStart.EnsureGuide()
+        elseif addon.smartStart and level > 1 then
             addon.smartStart.Run()
         elseif addon.SelectDefaultGuide then
             addon.SelectDefaultGuide()

@@ -1785,7 +1785,7 @@ end
 
 -- Tracks if a player is on a loading screen and pauses the main update loop
 -- Some information is not available during zone transitions
-function addon:PLAYER_ENTERING_WORLD(_, isInitialLogin)
+function addon:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
     if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and OXPCData then
         OXPCData.GA = false
     end
@@ -1814,19 +1814,25 @@ function addon:PLAYER_ENTERING_WORLD(_, isInitialLogin)
         C_Timer.After(20, function()
             addon.settings:CheckAddonCompatibility()
         end)
+    end
 
-        -- OpenXP: put players who installed mid-leveling on the right step
-        C_Timer.After(delay + 3, function()
+    -- OpenXP: also after a /reload, since players often drop a new version in
+    -- and reload instead of restarting the game.
+    if isInitialLogin or isReloadingUi then
+        -- Load a guide for players who have none yet (fresh install) and put
+        -- players who installed mid-leveling on the right step
+        C_Timer.After(delay + 1, function()
             if addon.smartStart then addon.smartStart.OnLogin() end
         end)
 
-        -- OpenXP: welcome on first load, what's new after an update
-        C_Timer.After(delay + 5, function()
+        -- OpenXP: welcome on first load, what's new once after every update
+        C_Timer.After(delay + 3, function()
             if addon.welcome then addon.welcome.CheckOnLogin() end
         end)
     end
 
-    addon.ui.v2.configurator:Open(true)
+    -- OpenXP: no guide picker on login; Smart start loads the right guide for
+    -- the character (right-click the minimap button to pick another).
 
     addon.targeting:Setup()
 end

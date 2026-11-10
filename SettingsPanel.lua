@@ -3831,6 +3831,10 @@ function addon.settings:UpdateMinimapButton()
             if button == "RightButton" then
                 EasyMenu(buildMinimapMenu(), addon.settings.minimapFrame,
                             "cursor", 0, 0, "MENU")
+            elseif addon.smartStart and addon.smartStart.HasGuide and
+                not addon.smartStart.HasGuide() then
+                -- No guide yet: load one rather than toggling an empty window
+                addon.smartStart.EnsureGuide()
             else
                 addon.settings.ToggleActive()
             end

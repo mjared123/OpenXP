@@ -972,6 +972,11 @@ function addon.SelectDefaultGuide()
     else
         addon:LoadGuideTable(addon.defaultGroup, addon.defaultGuide)
     end
+    -- OpenXP: the default guide name is only known once the guide menu has
+    -- been built, so a fresh install could end up with no guide here.
+    if (not addon.currentGuide or addon.currentGuide.empty) and addon.smartStart then
+        addon.smartStart.Run(true)
+    end
 end
 
 local function parseLine(linetext,step,parsingLogic)
