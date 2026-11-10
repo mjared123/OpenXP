@@ -353,28 +353,74 @@ function SS.Run(quiet)
     SS.lastBlocked = blocked
 end
 
+-- Quests in the current guide that you skipped or whose chain was missed,
+-- worked out from the guide itself (step tags, skips, quest log), so it
+-- covers steps you skipped by hand and survives reloads. Returns a list of
+-- {quest, step, status, missing = {questIds}}.
+local tinsert = table.insert
+function SS.SkippedChains(guide)
+    guide = guide or addon.currentGuide
+    local out = {}
+    local card = addon.card
+    if not (guide and guide.steps and card and card.StepStatus) then return out end
+    local current = addon.GetGuideProgress and addon.GetGuideProgress() or 1
+    local seen = {}
+    local skips = OXPCData and OXPCData.stepSkip or {}
+    for i, step in ipairs(guide.steps) do
+        if i < current or skips[i] then
+            local status = card.StepStatus(guide, i, current)
+            if status == "skipped" or status == "chain" then
+                for _, e in ipairs(step.elements or {}) do
+                    local id = tonumber(e.questId)
+                    if id and id > 0 and not seen[id] and
+                        (e.tag == "accept" or e.tag == "turnin" or e.tag == "complete") and
+                        not SS.api.IsTurnedIn(id) then
+                        seen[id] = true
+                        local missing = {}
+                        if card.MissingChain and card.HasQuestData and card.HasQuestData() then
+                            missing = card.MissingChain(id)
+                        else
+                            missing = SS.MissingPrerequisites(id, SS.Prerequisites())
+                        end
+                        tinsert(out, {quest = id, step = i, status = status, missing = missing})
+                    end
+                end
+            end
+        end
+    end
+    return out
+end
+
+local function QName(id)
+    return (addon.GetQuestName and addon.GetQuestName(id)) or ("Quest " .. id)
+end
+
 -- Lists skipped chains and where OpenXP picks up the missing quest.
 function SS.ShowCatchUp()
-    local blocked = SS.lastBlocked
-    if not blocked or not next(blocked) then
-        Print("No skipped quest chains in your current guide section.")
+    local list = SS.SkippedChains()
+    if #list == 0 then
+        Print("No skipped quests or quest chains in your current guide section.")
         return
     end
-    local prereqs = SS.Prerequisites()
-    for id in pairs(blocked) do
-        local name = addon.GetQuestName and addon.GetQuestName(id) or ("Quest " .. id)
-        local missing = SS.MissingPrerequisites(id, prereqs)
+    Print(string.format("%d skipped quest(s) in this guide section:", #list))
+    for _, entry in ipairs(list) do
         local parts = {}
-        for _, q in ipairs(missing) do
+        for _, q in ipairs(entry.missing or {}) do
             local where = ""
             local entries = addon.pickUpList and addon.pickUpList[q]
             if entries and entries[1] then
                 where = string.format(" (picked up in %s)", entries[1].name or "?")
             end
-            local qname = addon.GetQuestName and addon.GetQuestName(q) or ("Quest " .. q)
-            table.insert(parts, (qname or ("Quest " .. q)) .. where)
+            table.insert(parts, QName(q) .. where)
         end
-        Print(string.format("%s needs: %s", name or ("Quest " .. id), table.concat(parts, ", ")))
+        local why = entry.status == "chain" and "chain missed" or "skipped"
+        if #parts > 0 then
+            Print(string.format("Step %d, %s (%s). Needs first: %s", entry.step, QName(entry.quest), why,
+                table.concat(parts, ", ")))
+        else
+            Print(string.format("Step %d, %s (%s). Click the step counter on the guide card to go back to it.",
+                entry.step, QName(entry.quest), why))
+        end
     end
 end
 

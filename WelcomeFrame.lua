@@ -11,6 +11,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.4",
+        date = "November 2026",
+        changes = {
+            "Skipped quest chains now lists every quest you skipped or whose chain was missed in your current guide, with its step number and what it needs first. Before, it only remembered the last Find my place and forgot it on reload",
+        },
+    },
+    {
         version = "1.1.3",
         date = "November 2026",
         changes = {

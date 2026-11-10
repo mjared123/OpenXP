@@ -497,5 +497,32 @@ try("a go-here step you've run past counts as done", function()
     assert(not card.CheckTravelSteps(300, 0, 1) and not done, "completed a quest step")
     addon.currentGuide = {name = "28-30 Duskwood", steps = steps}
 end)
+try("skipped quest chains list reads the guide, not just the last Smart start", function()
+    assert(loadfile(ROOT .. "/SmartStart.lua"))("OpenXP", addon)
+    local SS = addon.smartStart
+    SS.api.IsTurnedIn = function() return false end
+    SS.cachedPrereqs = {}
+    addon.IsOnQuest = function() return false end
+    addon.IsQuestTurnedIn = function() return false end
+    local s = {
+        {index = 1, elements = {{tag = "accept", questId = 101}}},
+        {index = 2, elements = {{tag = "accept", questId = 102}}},
+        {index = 3, elements = {{tag = "accept", questId = 103}}},
+        {index = 4, elements = {{textOnly = true, text = "now"}}},
+    }
+    addon.currentGuide = {name = "chains", steps = s}
+    addon.GetGuideProgress = function() return 4 end
+    card.MarkStatus(addon.currentGuide, 1, "skipped")
+    card.MarkStatus(addon.currentGuide, 2, "chain")
+    local list = SS.SkippedChains()
+    assert(#list >= 2, "found " .. #list)
+    local printed = {}
+    addon.comms = {PrettyPrint = function(m) printed[#printed + 1] = m end}
+    SS.ShowCatchUp()
+    assert(printed[1] and printed[1]:find("skipped quest"), tostring(printed[1]))
+    addon.comms = nil
+    addon.currentGuide = {name = "28-30 Duskwood", steps = steps}
+    addon.GetGuideProgress = function() return 1 end
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails
