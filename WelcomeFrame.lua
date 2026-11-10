@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.2.2-beta",
+        date = "November 2026",
+        changes = {
+            "Hearth steps now check where your Hearthstone is set. If it's somewhere else (say you missed a \"set your Hearthstone\" step earlier), the step says so in red, with a heads-up in chat and on screen, so you know to travel there another way and skip the step",
+        },
+    },
+    {
         version = "1.2.1-beta",
         date = "November 2026",
         changes = {

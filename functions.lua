@@ -124,7 +124,7 @@ else
     events.complete = {"QUEST_LOG_UPDATE", "CINEMATIC_STOP", UNIT_QUEST_LOG_CHANGED}
 end
 events.fp = {"UI_INFO_MESSAGE", "UI_ERROR_MESSAGE", "TAXIMAP_OPENED", "GOSSIP_SHOW", "TAXIMAP_CLOSED"}
-events.hs = "UNIT_SPELLCAST_SUCCEEDED"
+events.hs = {"UNIT_SPELLCAST_SUCCEEDED", "HEARTHSTONE_BOUND"}
 events.home = {"HEARTHSTONE_BOUND","CONFIRM_BINDER","GOSSIP_SHOW"}
 events.bindlocation = events.home
 events.fly = {"PLAYER_CONTROL_LOST", "TAXIMAP_OPENED", "ZONE_CHANGED", "GOSSIP_SHOW"}
@@ -2602,6 +2602,57 @@ function addon.functions.loop(self, text, range, zone, ...)
     end
 end
 
+-- Where a .hs step sends you, from its text ("Hearth to Auberdine")
+function addon.HearthDestination(text)
+    if type(text) ~= "string" then return end
+    text = text:gsub("|cRXP_%u+_", ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|T.-|t", "")
+    local dest = text:match("[Hh]earth%a*%s+to%s+(.-)%s*$")
+    if not dest or dest == "" then return end
+    return (dest:gsub("[%.!]+$", ""))
+end
+
+-- Towns that guides sometimes call by their zone's name
+local bindAliases = {darkshore = "auberdine"}
+local function NormBind(s)
+    s = strlower(s or ""):gsub("^the ", ""):gsub(" city$", ""):gsub("[^%w ]", "")
+    return bindAliases[s] or s
+end
+
+function addon.IsBoundTo(dest, bind)
+    local a, b = NormBind(dest), NormBind(bind)
+    if a == "" or b == "" then return true end -- can't tell: don't nag
+    return a == b or a:find(b, 1, true) ~= nil or b:find(a, 1, true) ~= nil
+end
+
+-- On a hearth step, say so cleanly when the Hearthstone is bound somewhere else
+-- (for example after missing a "set your Hearthstone" step in an earlier guide)
+function addon.CheckHearthBind(self)
+    local element = self.element
+    local step = element and element.step
+    if not (step and step.active) or element.completed or not GetBindLocation then return end
+    local dest = element.hearthDest
+    local bind = GetBindLocation()
+    local wrong = (dest and bind and bind ~= "" and not addon.IsBoundTo(dest, bind)) or false
+    if wrong == (element.wrongBind or false) and element.bindShown == bind then return end
+    element.wrongBind, element.bindShown = wrong, bind
+    element.baseText = element.baseText or element.text
+    if wrong then
+        local msg = fmt(L("Your Hearthstone is set to %s, not %s. Travel to %s another way, then skip this step."),
+                        bind, dest, dest)
+        element.text = element.baseText .. "\n|cFFFF6B6B" .. msg .. "|r"
+        if element.warnedFor ~= bind then
+            element.warnedFor = bind
+            print("|cFF66BB6AOpenXP:|r |cFFFF6B6B" .. msg .. "|r")
+            if _G.UIErrorsFrame then
+                _G.UIErrorsFrame:AddMessage(fmt(L("Hearthstone is set to %s, not %s"), bind, dest), 1, 0.42, 0.42)
+            end
+        end
+    else
+        element.text = element.baseText
+    end
+    addon.UpdateStepText(self)
+end
+
 function addon.functions.hs(self, ...)
     if type(self) == "string" then -- on parse
         local text = ...
@@ -2611,11 +2662,12 @@ function addon.functions.hs(self, ...)
                            ": Invalid syntax\n" .. self)
         end
 
-        return {text = text}
+        return {text = text, hearthDest = addon.HearthDestination(text)}
     end
     local event, unit, _, id = ...
     local element = self.element
     local step = element.step
+    pcall(addon.CheckHearthBind, self)
     if not element.disableItemWindow then
         if class == "SHAMAN" then
             step.activeSpells = step.activeSpells or {}
