@@ -11,6 +11,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.1.1",
+        date = "November 2026",
+        changes = {
+            "Fixed a Lua error when starting a quest chain walk-through (Do the chain, Get the quest)",
+        },
+    },
+    {
         version = "1.1.0",
         date = "November 2026",
         changes = {

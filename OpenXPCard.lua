@@ -419,7 +419,7 @@ end
 local function ElementText(e)
     local text = e.text
     if not text or text == "" or text == " " then return end
-    if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e) end
+    if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e and e.step and e or nil) end
     return text
 end
 
@@ -2178,7 +2178,7 @@ local function StepSummary(step)
     for _, e in ipairs(step.elements or {}) do
         local text = e.text
         if text and text ~= "" and text ~= " " then
-            if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e) end
+            if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e and e.step and e or nil) end
             return (StripCodes(text):gsub("\n.*", ""))
         end
     end

@@ -56,7 +56,8 @@ local addon = {
     RXPFrame = obj("RXPFrame"),
     GetGuideProgress = function() return 1 end,
     SetStep = function(n) calls.setStep = n end,
-    ReplaceNpcIds = function(t) return t end,
+    -- like the engine: indexes element.step whenever an element is passed
+    ReplaceNpcIds = function(t, e) if e then local _ = e.step.active end return t end,
     arrowFrame = obj("arrow"),
     v2 = {IsGuideWindowEnabled = function() return false end},
 }
