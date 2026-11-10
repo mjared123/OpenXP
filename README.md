@@ -29,9 +29,37 @@ See [NOTICE.md](NOTICE.md) for attribution and the list of changes from RestedXP
 - Sell junk at vendors, plus optional nameplate range, auto loot and max camera distance.
 - Levels 1-60 for WoW Forever and Classic Era. Questie is optional; with it, OpenXP also shows quest chains and levels.
 
+## Work on the code locally (Windows)
+
+Keep one copy of the repo on your PC and point the game at it, so edits show up in game after a `/reload`.
+
+1. Install [Git for Windows](https://git-scm.com/download/win) (or GitHub Desktop) and sign in to GitHub when it asks.
+2. Clone the repo, in PowerShell:
+   ```powershell
+   cd $HOME\Documents
+   git clone https://github.com/mjared123/openxp.git OpenXP
+   cd OpenXP
+   git config user.name "mjared123"
+   git config user.email "158239791+mjared123@users.noreply.github.com"
+   ```
+3. Close the game. In your Forever client's `Interface\AddOns` folder, delete (or move out) any `OpenXP` folder from a test zip.
+4. Link the repo into AddOns. In a Command Prompt (not PowerShell), with your own AddOns path:
+   ```bat
+   mklink /J "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns\OpenXP" "%USERPROFILE%\Documents\OpenXP"
+   ```
+   This is a junction: the game sees `AddOns\OpenXP`, but the files live in `Documents\OpenXP`. Deleting the junction does not delete the repo.
+5. Start the game. After editing a file, type `/reload`. To get the latest changes, run `git pull` in the repo folder.
+
+## Versions
+
+OpenXP is in beta, so versions end in `-beta` (for example `1.1.5-beta`). The version lives in one place, the
+`## Version:` line of `OpenXP.toc` and `OpenXP_Vanilla.toc`. For a new version, change both, and add a matching entry at the
+top of the changelog in `WelcomeFrame.lua`.
+
 ## Build a release zip
 
-`python3 tools/package.py OpenXP-1.0.0.zip` builds a zip with only the Forever and Classic Era files.
+`python3 tools/package.py` builds `OpenXP-<version>.zip` (for example `OpenXP-1.1.5-beta.zip`) with only the Forever and
+Classic Era files. It stops if the `.toc` versions and the newest changelog entry don't match.
 
 ## Smart start
 
