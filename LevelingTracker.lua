@@ -20,7 +20,7 @@ addon.tracker.state = {otherReports = {}, inspectionRequests = {}}
 addon.tracker.reportData = {}
 addon.tracker.ui = {}
 addon.tracker._commPrefix = "RXPLTComms"
-addon.tracker.fonts = {["splits"] = "Fonts\\ARIALN.ttf"}
+addon.tracker.fonts = {["splits"] = addon.SafeFont("Fonts\\ARIALN.ttf")}
 
 local playerName = addon.player.name
 

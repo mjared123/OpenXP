@@ -6,6 +6,36 @@ addon = LibStub("AceAddon-3.0"):NewAddon(addon, addonName, "AceEvent-3.0")
 
 addon.locale = {}
 
+-- OpenXP's look uses Fonts\ARIALN.TTF, which only has Latin letters on
+-- most clients. On Chinese, Korean and Russian clients those glyphs are
+-- missing and names show as squares, so use the client's own text font
+-- there (STANDARD_TEXT_FONT is the localized font Blizzard's UI uses).
+local LATIN_LOCALES = {enUS = true, enGB = true, deDE = true, frFR = true,
+                       esES = true, esMX = true, ptBR = true, itIT = true}
+local clientLocale = GetLocale and GetLocale() or "enUS"
+addon.latinFontsOk = LATIN_LOCALES[clientLocale] == true
+
+local function ClientFont()
+    if _G.STANDARD_TEXT_FONT then return _G.STANDARD_TEXT_FONT end
+    local obj = _G.GameFontNormal or _G.GameFontHighlight
+    local path = obj and obj.GetFont and obj:GetFont()
+    return path or "Fonts\\FRIZQT__.TTF"
+end
+
+-- Blizzard's Latin-only fonts; any other path (e.g. a font a user picked
+-- from SharedMedia) is kept as is.
+local LATIN_ONLY_FONTS = {["fonts\\arialn.ttf"] = true, ["fonts\\frizqt__.ttf"] = true,
+                          ["fonts\\morpheus.ttf"] = true, ["fonts\\skurri.ttf"] = true}
+
+-- Returns a font path that can draw this client's language.
+function addon.SafeFont(path)
+    if addon.latinFontsOk then return path or "Fonts\\ARIALN.TTF" end
+    if not path or path == "" then return ClientFont() end
+    local key = tostring(path):lower():gsub("/", "\\")
+    if LATIN_ONLY_FONTS[key] then return ClientFont() end
+    return path
+end
+
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 local delim = L.delimiter
 

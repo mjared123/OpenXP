@@ -18,7 +18,7 @@ local fmt = string.format
 
 local TEX = "Interface/AddOns/" .. addonName .. "/Textures/Card/"
 local WHITE = "Interface/Buttons/WHITE8X8"
-local FONT = "Fonts\\ARIALN.TTF"
+local FONT = (addon.SafeFont and addon.SafeFont("Fonts\\ARIALN.TTF") or "Fonts\\ARIALN.TTF")
 local WIDTH = 330 -- default; the card can be resized
 local MIN_W, MIN_H, MAX_W, MAX_H = 200, 120, 640, 900
 local MAX_UPNEXT = 12

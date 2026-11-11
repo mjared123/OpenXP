@@ -805,7 +805,7 @@ function addon.targeting:CanCreateMacro() return GetNumMacros() < 119 end
 
 -- OpenXP look: dark body, 1px border, header strip like the guide card
 local OXP_WHITE = "Interface/Buttons/WHITE8X8"
-local OXP_FONT = "Fonts\\ARIALN.TTF"
+local OXP_FONT = (addon.SafeFont and addon.SafeFont("Fonts\\ARIALN.TTF") or "Fonts\\ARIALN.TTF")
 local OXP_BACKDROP = {bgFile = OXP_WHITE, edgeFile = OXP_WHITE, edgeSize = 1,
                       insets = {left = 1, right = 1, top = 1, bottom = 1}}
 local OXP_ROW_W, OXP_ROW_H, OXP_HEAD_H = 200, 24, 24

@@ -23,7 +23,7 @@ themes['RXP Blue'] = {
     tooltip = "|cFF5AB8FF", -- AARRGGBB
     texturePath = "Interface/AddOns/" .. addonName .. "/Textures/Minimal/",
     headerTexture = "rxp-banner",
-    font = "Fonts\\ARIALN.TTF",
+    font = addon.SafeFont("Fonts\\ARIALN.TTF"),
     textColor = {0.92, 0.93, 0.95},
     accent = OPENXP_BLUE,
     minimal = true,
@@ -286,7 +286,7 @@ function addon:LoadActiveTheme()
     -- TOOD fix legacy calls
     addon.colors = addon.activeTheme
 
-    addon.font = addon.activeTheme.font
+    addon.font = addon.SafeFont(addon.activeTheme.font)
 
     return addon.activeTheme
 end
@@ -469,7 +469,7 @@ function addon.v2:ConvertThemes()
                 borderColors = converted.borderColors
                 textColor = converted.textColor
 
-                converted.font = source.font
+                converted.font = addon.SafeFont(source.font)
                 converted.displayName = source.displayName
                 converted.author = source.author
                 converted.name = name

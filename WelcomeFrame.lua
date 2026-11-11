@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.34",
+        date = "November 2026",
+        changes = {
+            "Chinese, Korean and Russian clients: NPC, item and quest names no longer show as squares. OpenXP now uses your client's own font when its default font can't draw your language",
+        },
+    },
+    {
         version = "1.3.33",
         date = "November 2026",
         changes = {
