@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.44",
+        date = "November 2026",
+        changes = {
+            "Fixed step lines going blank after you change the font, until the guide window was resized",
+        },
+    },
+    {
         version = "1.3.43",
         date = "November 2026",
         changes = {

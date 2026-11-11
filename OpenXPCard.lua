@@ -29,7 +29,9 @@ local function Font()
 end
 -- Set the chosen font on a font string; if the game refuses it (missing or
 -- broken file), use the default so the text never goes blank.
+local fontStrings = setmetatable({}, {__mode = "k"})
 local function ApplyFont(fs, font, size, flags)
+    fontStrings[fs] = true
     local ok, res = pcall(fs.SetFont, fs, font, size, flags or "")
     if (not ok or res == false) and font ~= DEFAULT_FONT then
         pcall(fs.SetFont, fs, DEFAULT_FONT, size, flags or "")
@@ -1878,12 +1880,31 @@ function card.Signature()
 end
 
 -- Called when the Font or Text outline setting changes
+-- A font file the game hasn't drawn yet loads in the background: text set
+-- right after the switch stays blank and measures 0 high until something
+-- re-lays it out (resizing the card did). So set every text again once
+-- the font is in, then lay the card out again.
+local function Relayout()
+    for fs in pairs(fontStrings) do
+        local ok, text = pcall(fs.GetText, fs)
+        if ok and text and text ~= "" then
+            pcall(fs.SetText, fs, "")
+            pcall(fs.SetText, fs, text)
+        end
+    end
+    card.Refresh(true)
+end
+
 function card.ApplyFonts()
     for fs, spec in pairs(fixedText) do
         ApplyFont(fs, Font(), spec[1], Flags(spec[2]))
     end
     if card.SkinPanels then pcall(card.SkinPanels) end
     card.Refresh(true)
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0.1, Relayout)
+        C_Timer.After(0.6, Relayout)
+    end
 end
 
 function card.Refresh(force)
