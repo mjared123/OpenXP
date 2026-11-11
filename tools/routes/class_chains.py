@@ -11,7 +11,8 @@ own race mask (the step is tagged "<< Race Class"). A tuple is one
 quest from different givers: whichever the route reaches first. `group` = quests with an
 elite or dungeon part: added, but marked so solo players can skip them.
 `race` = only these races ("Dwarf/Gnome"). `after` = starts where that
-chain ends.
+chain ends. `from_start` = begin at the chain's first part even if the 1-20
+guide does it (parts you've done skip themselves).
 """
 
 ALLIANCE = [
@@ -85,5 +86,5 @@ ALLIANCE = [
 
     # Hunter: the 1-20 guide's Prospector chain, finished
     dict(cls="Hunter", name="The Absent Minded Prospector", why="XP (the 1-20 Hunter guide starts it)",
-         quests=[731, 741, 942, 943]),
+         quests=[729, 731, 741, 942, 943], from_start=True),
 ]

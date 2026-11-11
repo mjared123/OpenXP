@@ -141,8 +141,34 @@ step << NightElf Druid
     .target Dendrite Starblaze
 step << Hunter
     --oxp-class
+    .goto Darkshore,37.44,41.84
+    >>Talk to |cRXP_FRIENDLY_Archaeologist Hollee|r
+    .accept 729 >>Accept The Absent Minded Prospector
+    .target Archaeologist Hollee
+step << Hunter
+    --oxp-class
+    .goto Darkshore,35.73,83.70
+    >>Talk to |cRXP_FRIENDLY_Prospector Remtravel|r
+    .turnin -729 >>Turn in The Absent Minded Prospector
+    .accept 731 >>Accept The Absent Minded Prospector
+    .target Prospector Remtravel
+step << Hunter
+    --oxp-class
+    .goto Darkshore,35.67,84.03
+    >>Escort Prospector Remtravel
+    .complete -731,1 --The Absent Minded Prospector
+step << Hunter
+    --oxp-class
+    .goto Darkshore,37.44,41.84
+    >>Talk to |cRXP_FRIENDLY_Archaeologist Hollee|r
+    .turnin -731 >>Turn in The Absent Minded Prospector
+    .accept 741 >>Accept The Absent Minded Prospector
+    .target Archaeologist Hollee
+step << Hunter
+    --oxp-class
     .goto Darnassus,31.24,84.51
     >>Talk to |cRXP_FRIENDLY_Chief Archaeologist Greywhisker|r
+    .turnin -741 >>Turn in The Absent Minded Prospector
     .accept 942 >>Accept The Absent Minded Prospector
     .target Chief Archaeologist Greywhisker
 ]])
