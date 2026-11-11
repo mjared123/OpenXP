@@ -823,6 +823,9 @@ end
 -- Map points (0-100) of the route on `map` starting at (px, py), or {}
 local legCache = {}
 local function RoutePoints(map, px, py, stops, level)
+    -- no terrain for this map (the capitals): a straight line would go
+    -- through walls and water, so leave it to the arrow
+    if not Grid(map) then return {} end
     local key = map .. ":" .. floor(px) .. ":" .. floor(py) .. ":" .. level
     for _, s in ipairs(stops) do key = key .. ":" .. s[1] .. "/" .. floor(s[2] * 10) .. "/" .. floor(s[3] * 10) end
     if legCache.key == key then return legCache.pts end

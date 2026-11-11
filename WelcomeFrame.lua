@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.35",
+        date = "November 2026",
+        changes = {
+            "The purple line to another zone now follows each zone's terrain on the way, not just your own zone's (Wetlands to Stonetalon no longer cuts over the mountains after the Talondeep Path)",
+            "No purple line inside the capitals, where it went through walls and water; the arrow still points the way",
+            "The route no longer counts on quests only Hunters pick up in the 1-20 guide (The Absent Minded Prospector in the Wetlands); routes rebuilt",
+        },
+    },
+    {
         version = "1.3.34",
         date = "November 2026",
         changes = {

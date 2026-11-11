@@ -193,5 +193,20 @@ try("route line: on the continent map, from you to the step", function()
     for _, l in ipairs(kal) do assert(#l >= 2) end
 end)
 
+try("route line: a walk in another zone follows that zone's terrain", function()
+    know(12, 7, 26, 28)
+    at(1431, 77.0, 44.0)
+    tv.PlanFor(albagorm)
+    local asked = {}
+    addon.terrain = {FindPath = function(map, ax, ay, bx, by)
+        asked[map] = true
+        return {{(ax + bx) / 2 + 3, (ay + by) / 2}, {bx, by}}
+    end}
+    local kal = tv.Polylines(1414, 20)
+    addon.terrain = nil
+    assert(asked[1442], "the walk through Stonetalon is worked out on Stonetalon's map")
+    assert(kal and #kal >= 2)
+end)
+
 if fails > 0 then print(fails .. " failed") end
 return fails

@@ -441,27 +441,52 @@ function tv.Polylines(map, level)
     local lines = {}
     local wx, wy, winst = HBD:GetPlayerWorldPosition()
     local cur = {wx = wx, wy = wy, inst = winst}
+    -- a walk between two points in the same zone follows that zone's
+    -- terrain (round mountains, along roads), whichever map you're looking
+    -- at: the way is found on the zone's own map, then moved onto this one
+    local tr = addon.terrain
+    local function Shared(a, b)
+        for z in pairs(a.zones or {}) do
+            if b.zones and b.zones[z] and z ~= 0 then return z end
+        end
+    end
+    local function Walk(line, a, b)
+        local z = tr and tr.FindPath and Shared(a, b)
+        if z then
+            local ax, ay = HBD:GetZoneCoordinatesFromWorld(a.wx, a.wy, z, true)
+            local bx, by = HBD:GetZoneCoordinatesFromWorld(b.wx, b.wy, z, true)
+            local way = ax and bx and tr.FindPath(z, ax * 100, ay * 100, bx * 100, by * 100, level or 1)
+            for _, w in ipairs(way or {}) do
+                local wx, wy, inst = HBD:GetWorldCoordinatesFromZone(w[1] / 100, w[2] / 100, z)
+                local q = wx and P({wx = wx, wy = wy, inst = inst})
+                if q then line[#line + 1] = q end
+            end
+            if way then return end
+        end
+        local q = P(b)
+        if q then line[#line + 1] = q end
+    end
     for k, leg in ipairs(plan.legs) do
         local line = {}
         local pts = leg.pts
+        local prev = pts[1]
         if k == 1 then
+            prev = cur
+            cur.zones = {[pmap or 0] = true}
             local me = P(cur)
             if me then line[#line + 1] = me end
+        else
+            local a = P(pts[1])
+            if a then line[#line + 1] = a end
         end
-        for i = (k == 1 and 2 or 1), #pts do
-            local a = P(pts[i])
-            if a then
-                -- in your own zone, walk round mountains like the arrow does
-                local last = line[#line]
-                local tr = addon.terrain
-                if leg.kind == "walk" and last and map == pmap and tr and tr.FindPath then
-                    local way = tr.FindPath(map, last[1], last[2], a[1], a[2], level or 1)
-                    for _, w in ipairs(way or {}) do line[#line + 1] = {w[1], w[2]} end
-                    if not way then line[#line + 1] = a end
-                else
-                    line[#line + 1] = a
-                end
+        for i = 2, #pts do
+            if leg.kind == "walk" then
+                Walk(line, prev, pts[i])
+            else
+                local a = P(pts[i])
+                if a then line[#line + 1] = a end
             end
+            prev = pts[i]
         end
         -- only what's on this map, give or take
         local keep = {}

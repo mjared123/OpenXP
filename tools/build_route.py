@@ -1649,6 +1649,9 @@ EVENT_SORTS = {-22, -284, -364, -366, -369, -370, -376, -1002, -1003, -1005, -10
 CLASS_GUIDE = r"Warrior|Paladin|Hunter|Rogue|Priest|Mage|Warlock|Druid|Shaman"
 
 
+CLASS_NAMES = r"(?<![!\w])(Warrior|Paladin|Hunter|Rogue|Priest|Shaman|Mage|Warlock|Druid)\b"
+
+
 def free_guide_quests(skip=None, skip_all=()):
     """Quests accepted / turned in by the Alliance guides before this one:
     the free ones in Guides/forever and OpenXP's earlier level ranges."""
@@ -1674,7 +1677,21 @@ def free_guide_quests(skip=None, skip_all=()):
         if skip and os.path.dirname(path).endswith(os.path.join("Guides", out_dir)) and base > os.path.basename(skip):
             continue  # later level ranges
         text = open(path, encoding="utf-8").read()
-        accepted |= {int(x) for x in re.findall(r"\.accept\s+(\d+)", text)}
+        # a quest picked up only in one class's steps (Hunters do the
+        # Absent Minded Prospector escort) isn't in everyone's log
+        # and nor is one picked up only if you did an earlier optional part
+        # (.isOnQuest / .isQuestTurnedIn)
+        for guide in re.split(r"RegisterGuide\(", text):
+            head = re.search(r"^<<\s*([^\n]*)", guide, re.M)
+            if head and re.search(CLASS_NAMES, head.group(1)):
+                continue
+            for chunk in re.split(r"\n(?=step\b)", guide):
+                tag = re.match(r"step\s*<<\s*([^\n]*)", chunk)
+                if tag and re.search(CLASS_NAMES, tag.group(1)):
+                    continue
+                if re.search(r"\.(isOnQuest|isQuestTurnedIn)\b", chunk):
+                    continue
+                accepted |= {int(x) for x in re.findall(r"\.accept\s+(\d+)", chunk)}
         turned |= {int(x) for x in re.findall(r"\.turnin\s+-?(\d+)", text)}
     return accepted, turned
 

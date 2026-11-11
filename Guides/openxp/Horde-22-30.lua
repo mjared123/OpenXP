@@ -36,23 +36,6 @@ step
     .turnin -1065 >>Turn in Journey to Tarren Mill
     .accept 1066 >>Accept Blood of Innocents
     .target Apothecary Lydon
-step << Rogue
-    .goto Hillsbrad Foothills,61.63,19.19
-    >>Talk to |cRXP_FRIENDLY_Serge Hinott|r
-    .turnin -2479 >>Turn in Hinott's Assistance
-    .accept 2480 >>Accept Hinott's Assistance
-    .target Serge Hinott
-step
-    .goto Hillsbrad Foothills,61.57,19.21
-    >>Loot the |cRXP_PICK_Filled Red Waterskin|r
-    >>Cure Completed
-    .complete -1536,1 --Call of Water
-    .complete 2480,1 --Hinott's Assistance
-step << Rogue
-    .goto Hillsbrad Foothills,61.63,19.19
-    >>Talk to |cRXP_FRIENDLY_Serge Hinott|r
-    .turnin 2480 >>Turn in Hinott's Assistance
-    .target Serge Hinott
 step
     .goto Hillsbrad Foothills,62.33,20.45
     >>Talk to |cRXP_FRIENDLY_High Executor Darthalia|r
@@ -87,20 +70,18 @@ step
     >>Rescue Drull
     .complete 498,1 --The Rescue
 step
-    .goto Hillsbrad Foothills,62.04,36.32
-    >>Kill |cRXP_ENEMY_Vicious Gray Bear|r. Loot them for |cRXP_LOOT_Gray Bear Tongue|r (about 80% drop)
-    .complete 496,1 --Elixir of Suffering
-    .mob Vicious Gray Bear
-step
-    .goto Hillsbrad Foothills,52.65,31.86
-    >>Kill |cRXP_ENEMY_Starving Mountain Lion|r. Loot them for |cRXP_LOOT_Mountain Lion Blood|r (about 80% drop)
-    .complete 501,1 --Elixir of Pain
-    .mob Starving Mountain Lion
-step
-    .goto Hillsbrad Foothills,57.11,13.53
+    .goto Hillsbrad Foothills,61.04,38.16
     >>Kill |cRXP_ENEMY_Forest Moss Creeper|r. Loot them for |cRXP_LOOT_Creeper Ichor|r (about 15% drop)
     .complete 496,2 --Elixir of Suffering
     .mob Forest Moss Creeper
+step
+    .goto Hillsbrad Foothills,54.86,39.54
+    >>Kill |cRXP_ENEMY_Vicious Gray Bear|r. Loot them for |cRXP_LOOT_Gray Bear Tongue|r (about 80% drop)
+    >>Kill |cRXP_ENEMY_Starving Mountain Lion|r. Loot them for |cRXP_LOOT_Mountain Lion Blood|r (about 80% drop)
+    .complete 496,1 --Elixir of Suffering
+    .complete 501,1 --Elixir of Pain
+    .mob Vicious Gray Bear
+    .mob Starving Mountain Lion
 step
     .goto Hillsbrad Foothills,61.44,19.06
     >>Talk to |cRXP_FRIENDLY_Apothecary Lydon|r
@@ -355,9 +336,14 @@ step
     .fp Sun Rock Retreat >>Get the Sun Rock Retreat flight path
     .target Tharm
 step
+    .goto Stonetalon Mountains,47.46,58.38
+    >>Talk to |cRXP_FRIENDLY_Tammra Windfield|r
+    .accept 6301 >>Accept Cycle of Rebirth
+    .target Tammra Windfield
+step
     .goto Stonetalon Mountains,48.05,39.76
     >>Loot the |cRXP_PICK_Gaea Seed|r
-    .complete -6301,1 --Cycle of Rebirth
+    .complete 6301,1 --Cycle of Rebirth
 step
     .goto Stonetalon Mountains,64.49,40.25
     >>Kill |cRXP_ENEMY_Gerenzo Wrenchwhistle|r. Loot them for |cRXP_LOOT_Gerenzo's Mechanical Arm|r
@@ -382,7 +368,7 @@ step
 step
     .goto Stonetalon Mountains,47.46,58.38
     >>Talk to |cRXP_FRIENDLY_Tammra Windfield|r
-    .turnin -6301 >>Turn in Cycle of Rebirth
+    .turnin 6301 >>Turn in Cycle of Rebirth
     .accept 6381 >>Accept New Life
     .target Tammra Windfield
 step
@@ -416,16 +402,16 @@ step
     .mob Burning Ravager
 step
     .goto Stonetalon Mountains,32.91,63.32
-    >>Kill |cRXP_ENEMY_Bloodfury Ambusher|r
     >>Kill |cRXP_ENEMY_Bloodfury Windcaller|r and |cRXP_ENEMY_Bloodfury Harpy|r and |cRXP_ENEMY_Bloodfury Roguefeather|r. Loot them for |cRXP_LOOT_Glittering Sunstone|r
     >>Kill |cRXP_ENEMY_Bloodfury Harpy|r
-    .complete 6282,2 --Harpies Threaten
+    >>Kill |cRXP_ENEMY_Bloodfury Ambusher|r
     .complete 86576,1 --Bloodfury Trinkets
     .complete 6282,1 --Harpies Threaten
-    .mob Bloodfury Ambusher
+    .complete 6282,2 --Harpies Threaten
     .mob Bloodfury Windcaller
     .mob Bloodfury Harpy
     .mob Bloodfury Roguefeather
+    .mob Bloodfury Ambusher
 step
     .goto Stonetalon Mountains,45.20,23.37
     >>Kill |cRXP_ENEMY_Antlered Courser|r and |cRXP_ENEMY_Great Courser|r. Loot them for |cRXP_LOOT_Courser Eye|r
@@ -536,11 +522,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Mangletooth|r
     .accept 879 >>Accept Betrayal from Within
     .target Mangletooth
-step << Warrior
-    .goto The Barrens,44.67,59.42
-    >>Talk to |cRXP_FRIENDLY_Ruga Ragetotem|r
-    .turnin -1823 >>Turn in Speak with Ruga
-    .target Ruga Ragetotem
 step
     .goto The Barrens,45.10,72.18
     >>Loot the |cRXP_PICK_Silithid Egg|r
@@ -550,25 +531,16 @@ step
     >>Talk to |cRXP_FRIENDLY_Gann Stonespire|r
     .accept 843 >>Accept Gann's Reclamation
     .target Gann Stonespire
-step << Shaman
-    .goto The Barrens,43.42,77.41
-    >>Talk to |cRXP_FRIENDLY_Brine|r
-    .turnin -1536 >>Turn in Call of Water
-    .target Brine
 step
     .goto The Barrens,42.07,80.46
     >>Kill |cRXP_ENEMY_Razormane Warfrenzy|r. Loot them for |cRXP_LOOT_Razormane War Shield|r (about 15% drop)
     >>Kill |cRXP_ENEMY_Razormane Seer|r. Loot them for |cRXP_LOOT_Charred Razormane Wand|r (about 30% drop)
-    >>Kill |cRXP_ENEMY_Razormane Stalker|r and |cRXP_ENEMY_Razormane Pathfinder|r. Loot them for |cRXP_LOOT_Razormane Backstabber|r (about 30% drop)
     >>Kill |cRXP_ENEMY_Lok Orcbane|r. Loot them for |cRXP_LOOT_Lok's Skull|r
     .complete 893,3 --Weapons of Choice
     .complete 893,2 --Weapons of Choice
-    .complete 893,1 --Weapons of Choice
     .complete 879,3 --Betrayal from Within
     .mob Razormane Warfrenzy
     .mob Razormane Seer
-    .mob Razormane Stalker
-    .mob Razormane Pathfinder
     .mob Lok Orcbane
 step
     .goto The Barrens,43.75,83.26
@@ -587,16 +559,20 @@ step
     .mob Bael'dun Foreman
     .mob Prospector Khazgorm
 step
+    .goto The Barrens,45.12,80.07
+    >>Kill |cRXP_ENEMY_Razormane Stalker|r and |cRXP_ENEMY_Razormane Pathfinder|r. Loot them for |cRXP_LOOT_Razormane Backstabber|r (about 30% drop)
+    >>Kill |cRXP_ENEMY_Kuz|r. Loot them for |cRXP_LOOT_Kuz's Skull|r
+    .complete 893,1 --Weapons of Choice
+    .complete 879,1 --Betrayal from Within
+    .mob Razormane Stalker
+    .mob Razormane Pathfinder
+    .mob Kuz
+step
     .goto The Barrens,45.89,77.00
     >>Talk to |cRXP_FRIENDLY_Gann Stonespire|r
     .turnin 843 >>Turn in Gann's Reclamation
     .accept 846 >>Accept Revenge of Gann
     .target Gann Stonespire
-step
-    .goto The Barrens,45.12,80.07
-    >>Kill |cRXP_ENEMY_Kuz|r. Loot them for |cRXP_LOOT_Kuz's Skull|r
-    .complete 879,1 --Betrayal from Within
-    .mob Kuz
 step
     .goto The Barrens,49.15,84.13
     >>Kill |cRXP_ENEMY_Bael'dun Soldier|r and |cRXP_ENEMY_Bael'dun Rifleman|r and |cRXP_ENEMY_Bael'dun Officer|r. Loot them for |cRXP_LOOT_Nitroglycerin|r (about 80% drop)
