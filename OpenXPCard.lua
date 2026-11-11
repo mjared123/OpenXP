@@ -1050,6 +1050,22 @@ local function LayoutBlock(b, step, first)
                 break
             end
         end
+        -- a later step you're standing next to, done first
+        local here = card.here
+        if here and step.index == here.index then
+            tinsert(lines, 1, {text = "|cFFF2C35C" .. fmt(L("You're right here, so do this first. Then back to step %d."), here.from) .. "|r", plain = true})
+        end
+        -- the step is in another zone: how to get there
+        local tv = addon.travel
+        local plan = tv and tv.Current and tv.Current()
+        local travel = plan and plan.target and plan.target.step == step and tv.Lines()
+        if travel and #travel > 0 then
+            tinsert(lines, {text = "|cFFB36BFF" .. L("Getting there:") .. "|r", plain = true})
+            for _, t in ipairs(travel) do
+                if #lines >= MAX_LINES then break end
+                tinsert(lines, {text = t, plain = true})
+            end
+        end
     end
     SetFont(b.title, 3)
     b.title:SetWidth(textWidth)
@@ -1431,6 +1447,18 @@ local function QuestElementDone(e)
     end
 end
 
+-- A step ahead of you whose quests are all done already (you did them out
+-- of order): nothing to go there for
+function card.DoneAhead(step)
+    local any = false
+    for _, e in ipairs(step and step.elements or {}) do
+        local d = QuestElementDone(e)
+        if d == false then return false end
+        if d then any = true end
+    end
+    return any
+end
+
 -- What happened to a step you're past: "done", "skipped" (you skipped it)
 -- or "chain" (an earlier quest in its chain was missed, so it can't be done).
 -- Steps ahead of you only get a status when they're already marked.
@@ -1471,6 +1499,11 @@ end
 
 -- Should the engine be allowed to move to step n right now?
 function card.AllowStep(n)
+    local here = card.here
+    if here and not card.manual and n and n ~= here.index then
+        -- done with the step you were standing by: the tick takes you back
+        return false
+    end
     local hold = card.hold
     if not hold or card.manual then return true end
     local guide = addon.currentGuide
@@ -1780,7 +1813,10 @@ function card.Signature()
         p.openxpCardCollapsed and 1 or 0, p.lockFrames and 1 or 0,
         card.detour and (card.detour.index or 0) or -1, card.sizing and 1 or 0,
         card.histOffset or 0, card.hold and card.hold.index or 0,
+        card.here and card.here.index or 0,
     }
+    local travel = addon.travel and addon.travel.Lines and addon.travel.Lines()
+    tinsert(parts, travel and table.concat(travel, "|") or "")
     local active = addon.RXPFrame and addon.RXPFrame.activeSteps or {}
     for _, step in ipairs(active) do
         tinsert(parts, step.index or 0)
@@ -2010,6 +2046,7 @@ function card.RememberStep()
     if not (card.restored and guide and guide.name and OXPCData) then return end
     local cur = addon.GetGuideProgress and addon.GetGuideProgress()
     if not cur then return end
+    if card.here and card.here.guide == guide.name then cur = card.here.from end
     OXPCData.openxpSteps = OXPCData.openxpSteps or {}
     OXPCData.openxpSteps[guide.name] = cur
 end
@@ -2048,6 +2085,7 @@ function Tick()
         end
         pcall(card.CheckTrainerSteps)
         pcall(card.CheckTravelSteps)
+        pcall(card.CheckHereSteps)
         local ok, err = pcall(card.Refresh)
         if not ok then card.ReportError(err) end
         card.SkinPanels()
@@ -2496,6 +2534,105 @@ function card.CheckTravelSteps(px, py, pinst)
         wp.skip = true
         if addon.SetElementComplete then addon.SetElementComplete(wp) end
         return true
+    end
+end
+
+---------------------------------------------------------------------------
+-- Here first: a later step you're standing next to
+---------------------------------------------------------------------------
+-- The guide sends you across the zone for the next step while a later
+-- turn-in is right where you stand (you finished its quest early). Do that
+-- one first, then go back to the step you were on: the guide skips it
+-- later because it's done.
+
+local HERE_RADIUS = 40   -- yards: that close to a later turn-in
+local HERE_FAR = 120     -- yards: and the step you're on is at least this far
+local HERE_AWAY = 90     -- yards: walked off from it, back to the guide
+local HERE_AHEAD = 40    -- steps ahead to look
+
+local function StepSpot(step)
+    for _, e in ipairs(step and step.elements or {}) do
+        if e.tag == "goto" and e.wx and e.wy then return e end
+    end
+end
+
+-- A step that's only turning in quests that are finished (and picking up
+-- what the same person hands out next)
+function card.ReadyHere(step)
+    if not step or step.sticky or step.hidewindow or step.completed or step.active then return false end
+    local ready = false
+    for _, e in ipairs(step.elements or {}) do
+        local id = tonumber(e.questId)
+        if e.tag == "turnin" then
+            if id and id > 0 and not TurnedIn(id) then
+                if addon.IsOnQuest and addon.IsOnQuest(id) and addon.IsQuestComplete and addon.IsQuestComplete(id) then
+                    ready = true
+                else
+                    return false
+                end
+            end
+        elseif e.tag and e.tag ~= "accept" and e.tag ~= "goto" and e.tag ~= "target" and not e.textOnly then
+            return false
+        end
+    end
+    return ready
+end
+
+local function HereDone(step)
+    for _, e in ipairs(step and step.elements or {}) do
+        local id = tonumber(e.questId)
+        if e.tag == "turnin" and id and id > 0 and not TurnedIn(id) then return false end
+    end
+    return true
+end
+
+function card.CheckHereSteps(px, py, pinst)
+    local guide = addon.currentGuide
+    if not (guide and guide.steps) then card.here = nil return end
+    if not px then
+        if not (HBD and HBD.GetPlayerWorldPosition) then return end
+        px, py, pinst = HBD:GetPlayerWorldPosition()
+    end
+    local cur = CurrentStep()
+    local h = card.here
+    if h then
+        if guide.name ~= h.guide or cur ~= h.index then
+            card.here = nil -- you moved on by hand
+            return
+        end
+        local step = guide.steps[h.index]
+        local spot = StepSpot(step)
+        local away = spot and px and (pinst ~= spot.instance or
+                                      (Dist(pinst, px, py, spot.wx, spot.wy) or 0) > HERE_AWAY)
+        if HereDone(step) or away then
+            card.here = nil
+            ManualSetStep(h.from)
+            card.Refresh(true)
+            return true
+        end
+        return
+    end
+    if card.hold or card.detour or card.returnTo or not px then return end
+    if UnitOnTaxi and UnitOnTaxi("player") then return end
+    local spot = StepSpot(guide.steps[cur])
+    if not spot then return end
+    if spot.instance == pinst and (Dist(pinst, px, py, spot.wx, spot.wy) or 0) < HERE_FAR then return end
+    local level = UnitLevel and UnitLevel("player") or 60
+    for i = cur + 1, math.min(#guide.steps, cur + HERE_AHEAD) do
+        local s = guide.steps[i]
+        if s and (s.level or 0) <= level and card.ReadyHere(s) then
+            local sp = StepSpot(s)
+            if sp and sp.instance == pinst and (Dist(pinst, px, py, sp.wx, sp.wy) or math.huge) <= HERE_RADIUS then
+                card.here = {guide = guide.name, from = cur, index = i}
+                ManualSetStep(i)
+                if CurrentStep() ~= i then
+                    card.here = nil
+                    return
+                end
+                card.Refresh(true)
+                return true
+            end
+        end
     end
 end
 

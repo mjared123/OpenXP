@@ -319,16 +319,20 @@ if origDraw then
         if not self then return origDraw(self, ...) end
         local real = self.element
         local go = ph.go
-        local target = go or real
+        -- the step is in another zone: the next leg of the way there
+        -- (flight master, dock, the road into the next zone; Travel.lua)
+        local trav = not go and real and addon.travel and addon.travel.ArrowTarget(real)
+        local target = go or trav or real
         -- a kill/loot area (.area): "Here" anywhere inside, else its edge
-        local area = not go and addon.terrain and addon.terrain.AreaTarget and addon.terrain.AreaTarget(real)
+        local area = not go and not trav and addon.terrain and addon.terrain.AreaTarget and addon.terrain.AreaTarget(real)
         if area then target = area end
         local via = target and not (area and area.inside) and ph.ForArrow(target)
-        self.oxpVia = via or go or area
-        local draw = via or go or area
+        if via and trav then via.title = trav.title end
+        self.oxpVia = via or go or trav or area
+        local draw = via or go or trav or area
         if not draw then return origDraw(self, ...) end
         local wrong = self.wrongContinent
-        if go then self.wrongContinent = false end
+        if go or trav then self.wrongContinent = false end
         self.element = draw
         local ok, err = pcall(origDraw, self, ...)
         self.element = real

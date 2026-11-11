@@ -559,5 +559,52 @@ try("breadcrumb: closed once you have or did the quest it leads to", function()
     assert(card.BreadcrumbClosed(165) == nil, "but not when you already have The Hermit")
     card.data.breadcrumbs = nil
 end)
+try("here first: a finished turn-in you're standing by comes before the far step", function()
+    local done, log, complete = {}, {[156] = true, [453] = true}, {[156] = true}
+    addon.IsQuestTurnedIn = function(id) return done[id] end
+    addon.IsOnQuest = function(id) return log[id] and not done[id] end
+    addon.IsQuestComplete = function(id) return complete[id] end
+    local s = {
+        {index = 1, elements = {{tag = "goto", wx = 0, wy = 0, instance = 0}, {tag = "turnin", questId = 453}}},
+        {index = 2, elements = {{tag = "goto", wx = 10, wy = 0, instance = 0}, {tag = "complete", questId = 156, obj = 1}}},
+        {index = 3, elements = {{tag = "goto", wx = 900, wy = 0, instance = 0}, {tag = "turnin", questId = 156},
+                                {tag = "accept", questId = 159}}},
+        {index = 4, elements = {{tag = "goto", wx = 905, wy = 0, instance = 0}, {tag = "accept", questId = 173}}},
+    }
+    local cur = 1
+    addon.currentGuide = {name = "here", steps = s}
+    addon.GetGuideProgress = function() return cur end
+    addon.SetStep = function(n) cur = n end
+    card.guardedSetStep = nil
+    card.GuardSetStep()
+    card.hold, card.detour, card.returnTo, card.here = nil, nil, nil, nil
+    -- far from both: nothing
+    assert(not card.CheckHereSteps(500, 0, 0) and cur == 1)
+    -- by the turn-in of a quest you finished early: do it now
+    assert(card.CheckHereSteps(902, 0, 0) and cur == 3, "should jump to 3, at " .. cur)
+    assert(card.here and card.here.from == 1)
+    -- the line: that step, then back to 1, without 2 (its quest is done)
+    local up = {}
+    for k, i in ipairs({3, 1, 2, 4}) do
+        if not (k > 1 and card.DoneAhead(s[i])) then up[#up + 1] = i end
+    end
+    assert(table.concat(up, ",") == "3,1,4", table.concat(up, ","))
+    -- turned in: the engine can't wander on, the tick takes you back to 1
+    done[156] = true
+    addon.SetStep(4)
+    assert(cur == 3, "engine moved on to " .. cur)
+    assert(card.CheckHereSteps(902, 0, 0) and cur == 1, "back to 1, at " .. cur)
+    assert(card.here == nil)
+    -- an accept-only step nearby isn't pulled forward
+    assert(not card.CheckHereSteps(905, 0, 0) and cur == 1)
+    -- walking off before turning in also goes back
+    done[156], cur = nil, 1
+    assert(card.CheckHereSteps(902, 0, 0) and cur == 3)
+    assert(card.CheckHereSteps(500, 0, 0) and cur == 1, "walked off, at " .. cur)
+    card.here = nil
+    addon.SetStep = function(n) calls.setStep = n end
+    addon.currentGuide = {name = "28-30 Duskwood", steps = steps}
+    addon.GetGuideProgress = function() return 1 end
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

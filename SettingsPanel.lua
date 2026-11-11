@@ -225,6 +225,7 @@ local settingsDBDefaults = {
         openxpNameplates = true,
         openxpMapRoute = true,
         openxpMapAreas = true,
+        openxpTravel = true,
         openxpRouteColor = {0.72, 0.42, 1.0},
         openxpAutoLoot = false,
         openxpMaxCamera = false,
@@ -3262,6 +3263,13 @@ function addon.settings:CreateAceOptionsPanel()
                         type = "toggle",
                         width = optionsWidth,
                         order = 5.5125,
+                    },
+                    openxpTravel = {
+                        name = L("Show the way to other zones"),
+                        desc = L("When the next step is in another zone, the arrow, the route line and the guide show how to get there: which flight master, boat, tram or road to take, and your Hearthstone when it's ready"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.5127,
                     },
                     openxpRouteColor = {
                         name = L("Route line colour"),

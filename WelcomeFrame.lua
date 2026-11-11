@@ -14,6 +14,16 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.29",
+        date = "November 2026",
+        changes = {
+            "When the next step is in another zone, the guide shows how to get there: which flight master to fly from, the boat, zeppelin or Deeprun Tram to take, your Hearthstone when it's ready, and the roads and passes from zone to zone. The arrow points at each leg and the purple line follows the whole way on the zone, continent and minimap",
+            "A finished turn-in you're standing next to is done first: if the guide wants you across the zone but a later turn-in is right here (you finished that quest early), it shows that one, then goes back to the step you were on",
+            "The purple line skips steps ahead whose quests you've already done, so it doesn't send you somewhere and back for nothing",
+            "New setting: Show the way to other zones (on by default)",
+        },
+    },
+    {
         version = "1.3.28",
         date = "November 2026",
         changes = {

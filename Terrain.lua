@@ -785,9 +785,23 @@ local function Upcoming()
     local out = {}
     if not (guide and guide.steps and addon.GetGuideProgress) then return out end
     local first = addon.GetGuideProgress()
+    local card = addon.card
+    local order = {}
+    -- doing a later step first because you're standing by it: that one,
+    -- then back where you were
+    local here = card and card.here
+    if here and here.index == first then
+        order[1] = first
+        first = here.from
+    end
     for i = first, min(#guide.steps, first + STEPS_AHEAD) do
+        if i ~= order[1] then order[#order + 1] = i end
+    end
+    for k, i in ipairs(order) do
         local step = guide.steps[i]
-        if step and not step.completed and not step.skip then
+        -- steps ahead whose quests you've already done aren't stops
+        if step and not step.completed and not step.skip and
+            not (k > 1 and card and card.DoneAhead and card.DoneAhead(step)) then
             local map, x, y, a = StepTarget(step)
             if map then out[#out + 1] = {map, x, y, a} end
         end
@@ -906,7 +920,17 @@ function tr.DrawMap()
     end
 
     local px, py, pmap = HBD:GetPlayerZonePosition()
-    if px and pmap == map and #stops > 0 then
+    -- the next step is in another zone: the whole way there (Travel.lua),
+    -- on this zone's map or the continent map
+    local tv = addon.travel
+    local tlines = tv and tv.Polylines(map, PlayerLevel())
+    if tlines and #tlines > 0 then
+        for _, line in ipairs(tlines) do
+            local pts = {}
+            for _, p in ipairs(line) do pts[#pts + 1] = {P(p[1], p[2])} end
+            RouteLeg(wmc, pts, 2 / scale)
+        end
+    elseif px and pmap == map and #stops > 0 then
         local pts = {}
         for _, p in ipairs(RoutePoints(map, px * 100, py * 100, stops, PlayerLevel())) do
             pts[#pts + 1] = {P(p[1], p[2])}
@@ -943,7 +967,8 @@ function tr.DrawMinimap()
     if not mmc then mmc = NewCanvas(mm, mm:GetFrameLevel() + 2) end
     Clear(mmc)
     local stops = Upcoming()
-    if #stops == 0 then return end
+    local tv = addon.travel
+    if #stops == 0 and not (tv and tv.Current and tv.Current()) then return end
     local wx, wy, inst = HBD:GetPlayerWorldPosition()
     local px, py, pmap = HBD:GetPlayerZonePosition()
     if not (wx and px) then return end
@@ -976,6 +1001,18 @@ function tr.DrawMinimap()
                 Outline(mmc, pts, AREA_EDGE, 2, clip)
             end
         end
+    end
+    local tlines = tv and tv.Polylines(pmap, PlayerLevel())
+    if tlines and #tlines > 0 then
+        for _, line in ipairs(tlines) do
+            local route = {}
+            for _, p in ipairs(line) do
+                local x, y = P(p[1], p[2])
+                if x then route[#route + 1] = {x, y} end
+            end
+            RouteLeg(mmc, route, 1.5, clip)
+        end
+        return
     end
     local route = {}
     for _, p in ipairs(RoutePoints(pmap, px * 100, py * 100, stops, PlayerLevel())) do
