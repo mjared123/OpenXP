@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.43",
+        date = "November 2026",
+        changes = {
+            "Fixed the Font setting doing nothing: every font fell back to Arial Narrow. The font you pick now shows on the guide card, step list and arrow",
+        },
+    },
+    {
         version = "1.3.42",
         date = "November 2026",
         changes = {

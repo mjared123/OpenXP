@@ -150,7 +150,10 @@ function fonts.Path()
         local lsm = LSM()
         path = lsm and lsm:Fetch("font", key:sub(5), true)
     end
-    if not path or not Loads(path) then path = builtinByKey.default.path end
+    -- No load check here: a test font string can report a failure for a
+    -- font that works (1.3.40-1.3.42 fell back to Arial for every choice).
+    -- The card checks the real SetFont result instead (OpenXPCard ApplyFont).
+    if not path then path = builtinByKey.default.path end
     return addon.SafeFont(path)
 end
 

@@ -27,6 +27,14 @@ local function Font()
     local ok, path = pcall(addon.fonts.Path)
     return (ok and path) or DEFAULT_FONT
 end
+-- Set the chosen font on a font string; if the game refuses it (missing or
+-- broken file), use the default so the text never goes blank.
+local function ApplyFont(fs, font, size, flags)
+    local ok, res = pcall(fs.SetFont, fs, font, size, flags or "")
+    if (not ok or res == false) and font ~= DEFAULT_FONT then
+        pcall(fs.SetFont, fs, DEFAULT_FONT, size, flags or "")
+    end
+end
 local WIDTH = 330 -- default; the card can be resized
 local MIN_W, MIN_H, MAX_W, MAX_H = 200, 120, 640, 900
 local MAX_UPNEXT = 12
@@ -78,7 +86,7 @@ local function Flags(flags)
 end
 
 local function SetFont(fs, offset, flags)
-    fs:SetFont(Font(), FontSize(offset), Flags(flags))
+    ApplyFont(fs, Font(), FontSize(offset), Flags(flags))
 end
 
 -- Text with a size of its own (button labels): remembered so a font change
@@ -86,7 +94,7 @@ end
 local fixedText = {}
 local function FixedFont(fs, size, flags)
     fixedText[fs] = {size, flags}
-    fs:SetFont(Font(), size, Flags(flags))
+    ApplyFont(fs, Font(), size, Flags(flags))
 end
 
 local function Tint(tex, color, alpha)
@@ -277,7 +285,7 @@ local function MakePill(parent)
     function pill:SetStatus(status)
         local st = status and STATUS[status]
         if not st then self:Hide(); return end
-        self.text:SetFont(Font(), FontSize(-3), Flags(""))
+        ApplyFont(self.text, Font(), FontSize(-3), Flags(""))
         self.text:SetText(L(st.text))
         self.text:SetTextColor(st.color[1], st.color[2], st.color[3], 1)
         for _, t in ipairs({self.bg, self.l, self.r}) do
@@ -360,7 +368,7 @@ local function MakeBadge(parent, size)
         Tint(self.ring, k.color, 1)
         if k.glyph then
             self.icon:Hide()
-            self.glyph:SetFont(Font(), math.floor(size * 0.6), "")
+            ApplyFont(self.glyph, Font(), math.floor(size * 0.6), "")
             self.glyph:SetText(k.glyph)
             self.glyph:SetTextColor(unpack(k.color))
             self.glyph:Show()
@@ -1872,7 +1880,7 @@ end
 -- Called when the Font or Text outline setting changes
 function card.ApplyFonts()
     for fs, spec in pairs(fixedText) do
-        fs:SetFont(Font(), spec[1], Flags(spec[2]))
+        ApplyFont(fs, Font(), spec[1], Flags(spec[2]))
     end
     if card.SkinPanels then pcall(card.SkinPanels) end
     card.Refresh(true)
@@ -2197,10 +2205,10 @@ local function StyleArrow()
     af.UpdateVisuals = function(self) self.texture:SetTexture(TEX .. "pointer") end
 
     af.oxpDist = af:CreateFontString(nil, "OVERLAY")
-    af.oxpDist:SetFont(Font(), 17, Flags("OUTLINE"))
+    ApplyFont(af.oxpDist, Font(), 17, Flags("OUTLINE"))
     af.oxpDist:SetPoint("TOP", af.dialBg, "BOTTOM", 0, -6)
     af.oxpLabel = af:CreateFontString(nil, "OVERLAY")
-    af.oxpLabel:SetFont(Font(), 12, Flags("OUTLINE"))
+    ApplyFont(af.oxpLabel, Font(), 12, Flags("OUTLINE"))
     af.oxpLabel:SetPoint("TOP", af.oxpDist, "BOTTOM", 0, -3)
     af.oxpLabel:SetTextColor(0.72, 0.74, 0.8)
     af:SetHitRectInsets(-22 * scale, -22 * scale, -22 * scale, -22 * scale)
@@ -2224,8 +2232,8 @@ local function ArrowSizes(af)
     af.arrived:SetSize(36 * scale, 36 * scale)
     af.texture:SetSize(44 * scale, 44 * scale)
     af:SetHitRectInsets(-22 * scale, -22 * scale, -22 * scale, -22 * scale)
-    af.oxpDist:SetFont(font, textSize + 5, flags)
-    af.oxpLabel:SetFont(font, textSize, flags)
+    ApplyFont(af.oxpDist, font, textSize + 5, flags)
+    ApplyFont(af.oxpLabel, font, textSize, flags)
 end
 
 local function ArrowUpdate(self, ...)
@@ -2760,7 +2768,7 @@ function card.SkinPanel(frame)
     if text and text.GetFont then
         local font = text:GetFont()
         if font ~= Font() then
-            text:SetFont(Font(), 11, "")
+            ApplyFont(text, Font(), 11, "")
             text:SetTextColor(unpack(C.dim))
             local raw = text:GetText()
             if raw then text:SetText(raw:upper()) end
@@ -2774,7 +2782,7 @@ function card.SkinPanel(frame)
         local fs = frame[key]
         if fs and fs.GetFont then
             local font, size = fs:GetFont()
-            if font ~= Font() then fs:SetFont(Font(), size or 12, "") end
+            if font ~= Font() then ApplyFont(fs, Font(), size or 12, "") end
         end
     end
 end
