@@ -7,6 +7,11 @@ turn everything in. Quest objectives are ticked off by the engine.
 
 Usage:
     python3 tools/build_dungeons.py --questiedb PATH --game Forever|Classic --faction Alliance|Horde
+    python3 tools/build_dungeons.py --questiedb PATH --faction Alliance|Horde --new
+
+--new builds the dungeons that are new in WoW Forever (FOREVER_DUNGEONS) into
+Guides/openxp/Dungeons-Forever-<faction>.lua and leaves the classic dungeon
+guides alone.
 """
 import argparse, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -37,10 +42,51 @@ DUNGEONS = [
     ("Scholomance", (2057,), (56, 60), None),
 ]
 
+# Dungeons added in WoW Forever. name, dungeon area id(s), level range, faction,
+# words that mark a quest for the dungeon in its objective text (Questie often
+# has no zone for these quests yet).
+FOREVER_DUNGEONS = [
+    ("Hall of Thanes", (16919,), (13, 18), None, ("Hall of Thanes",)),
+    ("Ruins of Lordaeron", (16611, 16612, 16614, 16615, 16617), (15, 20), None, ("Ruins of Lordaeron",)),
+    ("Excavation Site: Wetlands", (16732, 16876, 16877), (24, 29), None, ("Excavation Site",)),
+    ("City of Dalaran", (16544, 16558, 16559, 16560), (28, 33), None, ("City of Dalaran",)),
+    ("The Drowned City", (), (35, 40), None, ("Drowned City",)),
+    ("Krol'dok Stronghold", (17780,), (40, 45), None, ("Krol'dok",)),
+    ("Alcaz Prison", (), (48, 53), None, ("Alcaz Prison",)),
+    ("Blackmaw Hold", (), (55, 60), None, ("Blackmaw Hold",)),
+    ("The Shaper's Terrace", (16985,), (58, 60), None, ("Shaper's Terrace",)),
+]
+
+# Quest ids from here up were added in WoW Forever. Only these are matched by
+# the objective-text words, so old quests that name a place (Ormer's Revenge
+# at Whelgar's Excavation Site) stay out.
+NEW_QUEST_IDS = 90000
+
+# Quest givers to visit first, because their quest unlocks the others
+# (Modera only offers her quests after An Alarming Request).
+FIRST = {92432}
+
+# Breadcrumbs from far away that the dungeon guide leaves out.
+SKIP = {
+    95737,  # Seeking Caitlin, from Llana in Ashenvale; Caitlin offers her quest without it
+    97289, 97290, 97291, 97292,  # Unending Torment follow-ups, done in the Undercity
+}
+
+# Quests given or started inside the dungeon, which Questie has no quest giver
+# position for. (quest id, faction or None, text shown on the step)
+INSIDE = {
+    "Hall of Thanes": [
+        (96395, None, "Talk to the |cRXP_FRIENDLY_Ghostly Attendant|r in the west room after the first pull"),
+        (98423, "Alliance", "Click the |cRXP_PICK_Treaty of Understanding|r tablet behind the vault door in the last room, on the way to the lever out"),
+    ],
+}
+
 
 def area_map(qdb):
     m = {}
     path = os.path.join(qdb, "support", "Zones", "areaIdToUiMapId.lua")
+    if not os.path.exists(path):
+        path = os.path.join(qdb, "support", "Forever", "Zones", "areaIdToUiMapId.lua")
     for a, u in re.findall(r"\[(\d+)\]\s*=\s*(\d+)", open(path).read()):
         m.setdefault(int(a), int(u))
     return m
@@ -51,15 +97,22 @@ def main():
     ap.add_argument("--questiedb", required=True)
     ap.add_argument("--game", default="Forever")
     ap.add_argument("--faction", default="Alliance")
+    ap.add_argument("--new", action="store_true", help="only the dungeons new in WoW Forever")
     a = ap.parse_args()
     br.GAME, br.FACTION = a.game, a.faction
     db = br.load_db(a.questiedb)
     amap = area_map(a.questiedb)
     builder = br.Builder(db, set(), set())
-    dungeon_areas = {x for _, areas, _, _ in DUNGEONS for x in areas}
+    dungeon_list = [d + ((),) for d in DUNGEONS]
+    if a.new:
+        dungeon_list = FOREVER_DUNGEONS
+    dungeon_areas = {x for d in DUNGEONS + FOREVER_DUNGEONS for x in d[1]}
 
     def where(entity, idx):
         sp = br.li(entity, idx)
+        if isinstance(sp, list):
+            # {[1] = {...}} (Dun Morogh is zone 1) comes out of Lua as a list
+            sp = {i + 1: v for i, v in enumerate(sp) if v}
         if not isinstance(sp, dict):
             return None
         best = None
@@ -90,8 +143,21 @@ def main():
         """True when every spawn of the entity is inside the dungeon."""
         return isinstance(sp, dict) and sp and all(k in areas for k in sp)
 
-    def in_dungeon(q, areas):
+    def text_of(qid):
+        return " ".join(x for x in br.as_list(br.li(db["q"].get(qid), 8)) if isinstance(x, str))
+
+    def item_start(ref):
+        """Quests started by looting an item: (item name, item id)."""
+        for iid in br.as_list(br.li(ref, 3)):
+            it = db["i"].get(iid)
+            if it and br.li(it, 1):
+                return br.li(it, 1), iid
+        return None
+
+    def in_dungeon(q, areas, words=()):
         if q.zone in areas:
+            return True
+        if words and q.id >= NEW_QUEST_IDS and any(w in text_of(q.id) for w in words):
             return True
         obj = q.objectives or {}
         found = False
@@ -116,10 +182,12 @@ def main():
            'if faction ~= "%s" then return end' % a.faction,
            "local L = GetLocale() if L and RXP.enabledLocale[L] then return end", ""]
     report = []
-    for name, areas, (lo, hi), only in DUNGEONS:
+    for name, areas, (lo, hi), only, words in dungeon_list:
         if only and only != a.faction:
             continue
-        quests = []
+        quests, looted = [], []
+        inside = [(qid, txt) for qid, fac, txt in INSIDE.get(name, ()) if fac in (None, a.faction)]
+        inside_ids = {qid for qid, _ in inside}
         for qid, row in db["q"].items():
             q = br.Quest(qid, row)
             if not q.name or not q.for_faction() or q.name.startswith("[") or "<" in q.name:
@@ -130,15 +198,29 @@ def main():
                 continue
             if not (lo - 2 <= q.level <= hi + 2):
                 continue
-            if not in_dungeon(q, areas):
+            if q.id in SKIP or not in_dungeon(q, areas, words):
                 continue
             st, fi = giver(q.startedBy), giver(q.finishedBy)
-            if not st or not fi:
+            if q.id in inside_ids:
+                quests.append((q, None, fi))
                 continue
-            quests.append((q, st, fi))
-        if not quests:
+            if not st and fi and item_start(q.startedBy):
+                looted.append((q, item_start(q.startedBy), fi))
+                continue
+            if not st:
+                continue
+            quests.append((q, st, fi))  # fi None: turned in inside, or not known yet
+        # follow-ups of a quest in this guide are done after the run, in town
+        ids = {q.id for q, _, _ in quests + looted}
+        quests = [t for t in quests if not (set(t[0].preSingle) | set(t[0].preGroup)) & ids]
+        # inside quests the data has no faction or level for yet
+        for qid, _ in inside:
+            if qid not in {q.id for q, _, _ in quests} and qid in db["q"]:
+                q = br.Quest(qid, db["q"][qid])
+                quests.append((q, None, giver(q.finishedBy)))
+        if not quests and not looted:
             continue
-        quests.sort(key=lambda t: (t[1][1][0], t[1][1][1][0], t[1][1][1][1]))
+        quests.sort(key=lambda t: (t[1] is None, t[0].id not in FIRST, t[1] and (t[1][1][0], t[1][1][1][0], t[1][1][1][1])))
         lines = ["RXPGuides.RegisterGuide([[", tag, "#version 1", "<< " + a.faction,
                  "#group OpenXP Dungeons", "#subgroup %d-%d" % (lo, hi),
                  "#name %d-%d %s" % (lo, hi, name), ""]
@@ -152,18 +234,27 @@ def main():
         # pickups, grouped by quest giver
         by = {}
         for q, st, fi in quests:
-            by.setdefault((st[0], st[1][0], st[1][1]), []).append(q)
+            if st:
+                by.setdefault((st[0], st[1][0], st[1][1]), []).append(q)
         for (who, m, pt), qs in by.items():
             npc_step(who, (m, pt), "accept", qs)
+        for qid, txt in inside:
+            lines.extend(["step", "    >>Inside |cRXP_WARN_%s|r: %s" % (name, txt),
+                          "    .accept %d >> Accept %s" % (qid, br.li(db["q"].get(qid), 1) or "quest %d" % qid)])
+        for q, (iname, iid), _ in looted:
+            lines.extend(["step",
+                          "    >>Inside |cRXP_WARN_%s|r: loot |cRXP_LOOT_%s|r and use it to start the quest" % (name, iname),
+                          "    .accept %d >> Accept %s" % (q.id, q.name)])
         lines.extend(["step", "    >>Run |cRXP_WARN_%s|r and finish these quests. Skip any you didn't pick up" % name])
-        for q, _, _ in quests:
+        for q, _, _ in quests + looted:
             n = len(br.as_list(br.li(q.objectives or {}, 1))) + len(br.as_list(br.li(q.objectives or {}, 2))) + \
                 len(br.as_list(br.li(q.objectives or {}, 3))) + len(br.as_list(br.li(q.objectives or {}, 5)))
             for i in range(1, max(n, 0) + 1):
                 lines.append("    .complete -%d,%d" % (q.id, i))
         by = {}
-        for q, st, fi in quests:
-            by.setdefault((fi[0], fi[1][0], fi[1][1]), []).append(q)
+        for q, st, fi in quests + looted:
+            if fi:
+                by.setdefault((fi[0], fi[1][0], fi[1][1]), []).append(q)
         for (who, m, pt), qs in by.items():
             lines.extend(["step", "    .goto %d,%.2f,%.2f" % (m, pt[0], pt[1]),
                           "    >>Talk to |cRXP_FRIENDLY_%s|r" % who])
@@ -172,9 +263,9 @@ def main():
             lines.append("    .target %s" % who)
         lines.append("]])")
         out.extend(lines + [""])
-        report.append("%-24s %2d quests" % (name, len(quests)))
+        report.append("%-26s %2d quests" % (name, len(quests) + len(looted)))
     d = "openxp" if a.game == "Forever" else "openxp-classic"
-    path = os.path.join(ROOT, "Guides", d, "Dungeons-%s.lua" % a.faction)
+    path = os.path.join(ROOT, "Guides", d, "Dungeons-%s%s.lua" % ("Forever-" if a.new else "", a.faction))
     open(path, "w").write("\n".join(out))
     print("\n".join(report))
     print("wrote", os.path.relpath(path, ROOT))
