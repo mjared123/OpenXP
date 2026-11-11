@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.28",
+        date = "November 2026",
+        changes = {
+            "The quest chain prompt only shows up when you really missed part of a chain (say it started at level 12 and you're 20 now), not while you're working through it or when this step turns in the quest before",
+        },
+    },
+    {
         version = "1.3.27",
         date = "November 2026",
         changes = {

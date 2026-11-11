@@ -781,6 +781,27 @@ function card.MissingChain(id)
     return out
 end
 
+-- Only ask about a chain when you really missed part of it: a quest before
+-- this one that's neither done nor in your log, and that this step doesn't
+-- take care of itself. While you're working through the chain (the quest
+-- before is in your log, or this very step turns it in) there's nothing to ask.
+function card.ChainMissed(step, id, blocker, chain)
+    local here = {}
+    for _, e in ipairs(step and step.elements or {}) do
+        local q = QuestIdOf(e)
+        if q and (e.tag == "turnin" or e.tag == "accept" or e.tag == "complete") then here[q] = true end
+    end
+    local function missed(q)
+        if not q or q == id or here[q] or TurnedIn(q) then return false end
+        return not (addon.IsOnQuest and addon.IsOnQuest(q))
+    end
+    for _, q in ipairs(chain or {}) do
+        if missed(q) then return true end
+    end
+    -- no chain known: ask only when what's in the way isn't in hand
+    return #(chain or {}) == 0 and missed(blocker)
+end
+
 -- What's wrong with a step, if anything:
 --   {kind = "missing", quest}  turn in / kill step for a quest not in the log
 --   {kind = "chain", quest, chain, needAccept}  quests before this one aren't done
@@ -814,8 +835,11 @@ function card.StepProblem(step)
                     if isExcl then
                         return {kind = "locked", quest = id, by = blocker}
                     end
-                    return {kind = "chain", quest = id, chain = card.MissingChain(id),
-                            needAccept = needAccept}
+                    local chain = card.MissingChain(id)
+                    if card.ChainMissed(step, id, blocker, chain) then
+                        return {kind = "chain", quest = id, chain = chain,
+                                needAccept = needAccept}
+                    end
                 elseif needAccept then
                     return {kind = "missing", quest = id}
                 end
