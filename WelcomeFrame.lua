@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.37",
+        date = "November 2026",
+        changes = {
+            "Class quests in the 21-60 guide, shown only to your class: Warlock Succubus, Felhunter and Felsteed; Shaman water and air totems; Druid Aquatic Form, Cure Poison and the Great Cat Spirit; Rogue poisons; your race's priest spell",
+            "Class chains worth doing while you level: Verigan's Fist (Paladin), Fire Hardened Mail and the Whirlwind weapon (Warrior), the Bloodrobe and Orahil and Soran'ruk orbs (Warlock), the Astral Knot Robe and wand (Mage), Ravenholdt (Rogue), the rest of The Absent Minded Prospector (Hunter)",
+            "The shared route doesn't move: class steps are only added to it",
+        },
+    },
+    {
         version = "1.3.36",
         date = "November 2026",
         changes = {
