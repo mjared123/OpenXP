@@ -817,7 +817,10 @@ end
 -- this one that's neither done nor in your log, and that this step doesn't
 -- take care of itself. While you're working through the chain (the quest
 -- before is in your log, or this very step turns it in) there's nothing to ask.
-function card.ChainMissed(step, id, blocker, chain)
+-- A turn in or kill step is different: it needs the quest itself, so an
+-- earlier part that's only in your log (not turned in) still has to be done
+-- first, and the card asks.
+function card.ChainMissed(step, id, blocker, chain, needAccept)
     local here = {}
     for _, e in ipairs(step and step.elements or {}) do
         local q = QuestIdOf(e)
@@ -825,6 +828,7 @@ function card.ChainMissed(step, id, blocker, chain)
     end
     local function missed(q)
         if not q or q == id or here[q] or TurnedIn(q) then return false end
+        if needAccept then return true end
         return not (addon.IsOnQuest and addon.IsOnQuest(q))
     end
     for _, q in ipairs(chain or {}) do
@@ -868,7 +872,7 @@ function card.StepProblem(step)
                         return {kind = "locked", quest = id, by = blocker}
                     end
                     local chain = card.MissingChain(id)
-                    if card.ChainMissed(step, id, blocker, chain) then
+                    if card.ChainMissed(step, id, blocker, chain, needAccept) then
                         return {kind = "chain", quest = id, chain = chain,
                                 needAccept = needAccept}
                     end

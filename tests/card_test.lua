@@ -546,6 +546,10 @@ try("chain: only asked when part of it was really missed", function()
     local turnHere = {index = 31, elements = {el{tag = "turnin", questId = 4681}, el{tag = "accept", questId = 4733}}}
     log[4681] = true
     assert(card.StepProblem(turnHere) == nil, "this step turns the one before in: don't ask")
+    local turnLater = {index = 32, elements = {el{tag = "turnin", questId = 4733}}}
+    pr = card.StepProblem(turnLater)
+    assert(pr and pr.kind == "chain" and pr.needAccept,
+           "turn in for a quest whose earlier part is only in your log: ask")
     log[4681] = nil
     pr = card.StepProblem(s)
     assert(pr and pr.kind == "chain", "skipped the middle quest: ask")
