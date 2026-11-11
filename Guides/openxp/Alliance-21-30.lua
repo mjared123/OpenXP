@@ -114,31 +114,16 @@ step << NightElf Druid
     >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
     .turnin -272 >>Turn in Trial of the Sea Lion
     .accept 5061 >>Accept Aquatic Form
+    .accept 6125 >>Accept Power over Poison
+    .turnin -98731 >>Turn in Blessings of the Great Cat Spirit
     .target Dendrite Starblaze
 step << NightElf Druid
     --oxp-class
     .goto Darnassus,35.37,8.40
     >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
     .turnin 5061 >>Turn in Aquatic Form
-    .target Mathrengyl Bearwalker
-step << NightElf Druid
-    --oxp-class
-    .goto Moonglade,56.21,30.64
-    >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
-    .accept 6125 >>Accept Power over Poison
-    .target Dendrite Starblaze
-step << NightElf Druid
-    --oxp-class
-    .goto Darnassus,35.37,8.40
-    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
     .turnin 6125 >>Turn in Power over Poison
     .target Mathrengyl Bearwalker
-step << NightElf Druid
-    --oxp-class
-    .goto Moonglade,56.21,30.64
-    >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
-    .turnin -98731 >>Turn in Blessings of the Great Cat Spirit
-    .target Dendrite Starblaze
 step << Hunter
     --oxp-class
     .goto Darkshore,37.44,41.84
@@ -518,49 +503,19 @@ step << Shaman
     >>Talk to |cRXP_FRIENDLY_Hervdana Saegrund|r
     .turnin 94495 >>Turn in Call of Water
     .accept 94497 >>Accept Call of Water
-    .turnin 94497 >>Turn in Call of Water
-    .accept 94499 >>Accept Call of Water
-    .turnin 94499 >>Turn in Call of Water
-    .accept 94500 >>Accept Call of Water
-    .turnin 94500 >>Turn in Call of Water
-    .accept 94501 >>Accept Call of Water
     .target Hervdana Saegrund
 step << Shaman
     --oxp-class
-    .goto Loch Modan,41.76,19.05
-    >>Talk to |cRXP_FRIENDLY_Norric Lochthane|r
-    .turnin 94501 >>Turn in Call of Water
-    .accept 94502 >>Accept Call of Water
-    .target Norric Lochthane
+    .goto Wetlands,65.40,77.20
+    >>Fill the |cRXP_PICK_Brown Waterskin|r at the bottom of the waterfall below Hervdana's cave
+    .complete 94497,1 --Call of Water
 step << Shaman
     --oxp-class
-    .goto Silverpine Forest,38.78,44.26
-    >>Kill |cRXP_ENEMY_Corrupt Minor Manifestation of Water|r. Loot them for |cRXP_LOOT_Corrupt Manifestation's Bracers|r
-    .complete 94502,1 --Call of Water
-    .mob Corrupt Minor Manifestation of Water
-step << Shaman
-    --oxp-class
-    .goto Westfall,45.60,59.88
-    >>Click the |cRXP_PICK_Forgotten Shrine|r
-    .turnin 94502 >>Turn in Call of Water
-step << Shaman
-    --oxp-class
-    .goto Westfall,45.60,59.88
-    >>Click the |cRXP_PICK_Forgotten Shrine|r
-    .accept 94503 >>Accept Call of Water
-step << Shaman
-    --oxp-class
-    .goto Silverpine Forest,38.65,44.58
-    >>Talk to |cRXP_FRIENDLY_Minor Manifestation of Water|r
-    .turnin 94503 >>Turn in Call of Water
-    .accept 94505 >>Accept Call of Water
-    .target Minor Manifestation of Water
-step << Shaman
-    --oxp-class
-    .goto Loch Modan,41.76,19.05
-    >>Talk to |cRXP_FRIENDLY_Norric Lochthane|r
-    .turnin 94505 >>Turn in Call of Water
-    .target Norric Lochthane
+    .goto Wetlands,65.76,76.52
+    >>Talk to |cRXP_FRIENDLY_Hervdana Saegrund|r
+    .turnin 94497 >>Turn in Call of Water
+    .accept 94499 >>Accept Call of Water
+    .target Hervdana Saegrund
 step << Rogue
     --oxp-class
     .goto Stormwind City,78.31,70.74
@@ -959,6 +914,11 @@ step
     .mob Shadowhide Warrior
     .mob Shadowhide Brute
     .mob Shadowhide Gnoll
+step << Shaman
+    --oxp-class
+    .goto Redridge Mountains,73.70,61.60
+    >>Fill the |cRXP_PICK_Red Waterskin|r at Stonewatch Falls
+    .complete 94499,1 --Call of Water
 step
     .goto Redridge Mountains,79.40,46.83
     >>Click the |cRXP_PICK_Old Lion Statue|r
@@ -1343,16 +1303,16 @@ step << Warlock
     .target Takar the Seer
 step << Warlock
     --oxp-class
-    .goto Ashenvale,31.55,31.57
-    >>Loot the |cRXP_PICK_Heartswood|r
-    .complete 1738,1 --Heartswood
-step << Warlock
-    --oxp-class
     .goto The Barrens,49.31,57.21
     >>Talk to |cRXP_FRIENDLY_Doan Karhan|r
     .accept 1740 >>Accept The Orb of Soran'ruk
     .turnin 1740 >>Turn in The Orb of Soran'ruk
     .target Doan Karhan
+step << Warlock
+    --oxp-class
+    .goto Ashenvale,31.55,31.57
+    >>Loot the |cRXP_PICK_Heartswood|r
+    .complete 1738,1 --Heartswood
 step << Human Paladin/Dwarf Paladin
     --oxp-class
     .goto Darkshore,37.40,40.13
@@ -1428,6 +1388,13 @@ step << Warrior
     .complete 1701,1 --Fire Hardened Mail
     .mob Leech Stalker
     .mob Cave Stalker
+step << Shaman
+    --oxp-class
+    .goto Wetlands,65.76,76.52
+    >>Talk to |cRXP_FRIENDLY_Hervdana Saegrund|r
+    .turnin 94499 >>Turn in Call of Water
+    .accept 94500 >>Accept Call of Water
+    .target Hervdana Saegrund
 step
     .goto Wetlands,34.44,50.91
     >>Kill |cRXP_ENEMY_Mottled Scytheclaw|r

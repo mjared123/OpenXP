@@ -4486,7 +4486,7 @@ step
 step << !NightElf/!Dwarf Hunter/!Human Hunter/!Druid
     #completewith BeachedCloak
     #map Darkshore
-    .goto 1448/1,577.92,6371.65,100 >> Travel to Auberdine
+    .goto 1439/1,577.92,6371.65,100 >> Travel to Auberdine
     .cooldown item,6948,<0
 step << !NightElf/!Dwarf Hunter/!Human Hunter/!Druid
     .hs >> Hearth to Auberdine
@@ -4686,7 +4686,7 @@ step << Druid
 step << NightElf/Dwarf Hunter/Human Hunter/Skyborne Hunter
     #completewith BeachedCloak
     #map Darkshore
-    .goto 1448/1,577.92,6371.65,100 >> Travel to Auberdine
+    .goto 1439/1,577.92,6371.65,100 >> Travel to Auberdine
     .cooldown item,6948,<0
 step << NightElf/Dwarf Hunter/Human Hunter/Skyborne Hunter
     #optional

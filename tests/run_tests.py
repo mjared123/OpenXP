@@ -27,4 +27,6 @@ import subprocess
 failures += subprocess.call([sys.executable, os.path.join(ROOT, "tests", "route_frozen.py")])
 print("== completion_check.py")
 failures += subprocess.call([sys.executable, os.path.join(ROOT, "tests", "completion_check.py")])
+print("== guide_places.py")
+failures += subprocess.call([sys.executable, os.path.join(ROOT, "tests", "guide_places.py")])
 sys.exit(1 if failures else 0)

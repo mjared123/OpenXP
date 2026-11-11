@@ -33,7 +33,7 @@ step << Warrior/Shaman/Warlock/Mage/Priest
     .mob Mottled Boar
     .money >0.01
 step << Warlock
-    .goto 1411/1,-4214.45,-623.92.00
+    .goto 1411/1,-4214.45,-623.92
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Ruzan|r
     .accept 1485 >>Accept Vile Familiars
     .target Ruzan

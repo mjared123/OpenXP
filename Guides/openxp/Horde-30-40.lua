@@ -121,14 +121,6 @@ step << Warrior
     .target Thun'grim Firegaze
 step << Warrior
     --oxp-class
-    .goto Stonetalon Mountains,72.94,60.61
-    >>Kill |cRXP_ENEMY_Windshear Vermin|r and |cRXP_ENEMY_Windshear Digger|r and |cRXP_ENEMY_Windshear Tunnel Rat|r. Loot them for |cRXP_LOOT_Smoky Iron Ingot|r
-    .complete 1838,1 --Brutal Armor
-    .mob Windshear Vermin
-    .mob Windshear Digger
-    .mob Windshear Tunnel Rat
-step << Warrior
-    --oxp-class
     .goto The Barrens,68.62,49.16
     >>Talk to |cRXP_FRIENDLY_Klannoc Macleod|r
     .turnin -1718 >>Turn in The Islander
@@ -152,6 +144,14 @@ step << Warrior
     .turnin 1719 >>Turn in The Affray
     .accept 1791 >>Accept The Windwatcher
     .target Klannoc Macleod
+step << Warrior
+    --oxp-class
+    .goto Stonetalon Mountains,72.94,60.61
+    >>Kill |cRXP_ENEMY_Windshear Vermin|r and |cRXP_ENEMY_Windshear Digger|r and |cRXP_ENEMY_Windshear Tunnel Rat|r. Loot them for |cRXP_LOOT_Smoky Iron Ingot|r
+    .complete 1838,1 --Brutal Armor
+    .mob Windshear Vermin
+    .mob Windshear Digger
+    .mob Windshear Tunnel Rat
 step << Shaman
     --oxp-class
     .goto The Barrens,65.83,43.78
@@ -445,15 +445,15 @@ step << Warlock
     .target Jorah Annison
 step << Warlock
     --oxp-class
-    .goto Hillsbrad Foothills,27.78,72.79
-    >>Loot the |cRXP_PICK_Moldy Tome|r
-    .complete 1803,1 --Tome of the Cabal
-step << Warlock
-    --oxp-class
     .goto Undercity,86.21,15.93
     >>Talk to |cRXP_FRIENDLY_Kaal Soulreaper|r
     .accept 4739 >>Accept In Search of Menara Voidrender
     .target Kaal Soulreaper
+step << Warlock
+    --oxp-class
+    .goto Hillsbrad Foothills,27.78,72.79
+    >>Loot the |cRXP_PICK_Moldy Tome|r
+    .complete 1803,1 --Tome of the Cabal
 step << Undead Paladin
     --oxp-class
     .goto Silverpine Forest,43.40,41.10
@@ -623,6 +623,7 @@ step << Warrior
     .accept 1848 >>Accept Brutal Hauberk
     .turnin 1848 >>Turn in Brutal Hauberk
     .accept 1839 >>Accept Ula'elek and the Brutal Gauntlets
+    .accept 1840 >>Accept Orm Stonehoof and the Brutal Helm
     .target Thun'grim Firegaze
 step << Warrior
     --oxp-class
@@ -647,12 +648,6 @@ step << Warrior
     .accept 1843 >>Accept Brutal Gauntlets
     .turnin 1843 >>Turn in Brutal Gauntlets
     .target Ula'elek
-step << Warrior
-    --oxp-class
-    .goto The Barrens,57.23,30.34
-    >>Talk to |cRXP_FRIENDLY_Thun'grim Firegaze|r
-    .accept 1840 >>Accept Orm Stonehoof and the Brutal Helm
-    .target Thun'grim Firegaze
 step << Warrior
     --oxp-class
     .goto Thunder Bluff,38.99,55.98
@@ -1397,6 +1392,7 @@ step << Warlock
     >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
     .turnin 4782 >>Turn in Components for the Enchanted Gold Bloodrobe
     .accept 4783 >>Accept Components for the Enchanted Gold Bloodrobe
+    .turnin 4969 >>Turn in Knowledge of the Orb of Orahil
     .target Menara Voidrender
 step << Warlock
     --oxp-class
@@ -1418,7 +1414,6 @@ step << Warlock
     .goto The Barrens,62.51,35.45
     >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
     .turnin 4783 >>Turn in Components for the Enchanted Gold Bloodrobe
-    .turnin 4969 >>Turn in Knowledge of the Orb of Orahil
     .target Menara Voidrender
 ]])
 

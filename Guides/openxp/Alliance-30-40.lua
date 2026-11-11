@@ -39,6 +39,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Pelturas Whitemoon|r
     .accept 1035 >>Accept Fallen Sky Lake
     .target Pelturas Whitemoon
+step << Shaman
+    --oxp-class
+    .goto Ashenvale,37.00,51.60
+    >>Fill the |cRXP_PICK_Blue Waterskin|r in the lake by Astranaar
+    .complete -94500,1 --Call of Water
 step
     .goto Ashenvale,49.48,67.09
     >>Talk to |cRXP_FRIENDLY_Shandrina|r
@@ -252,16 +257,16 @@ step << Human Paladin/Dwarf Paladin
     .target Jordan Stilwell
 step << Warrior
     --oxp-class
-    .goto Stormwind City,64.62,37.23
-    >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
-    .turnin -1701 >>Turn in Fire Hardened Mail
-    .target Furen Longbeard
-step << Warrior
-    --oxp-class
     .goto Ironforge,70.34,90.65
     >>Talk to |cRXP_FRIENDLY_Kelv Sternhammer|r
     .accept 1718 >>Accept The Islander
     .target Kelv Sternhammer
+step << Warrior
+    --oxp-class
+    .goto Stormwind City,64.62,37.23
+    >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
+    .turnin -1701 >>Turn in Fire Hardened Mail
+    .target Furen Longbeard
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -629,6 +634,13 @@ step
     >>Talk to |cRXP_FRIENDLY_Howin Kindfeather|r
     .accept 98300 >>Accept Word to Ironforge
     .target Howin Kindfeather
+step << Shaman
+    --oxp-class
+    .goto Wetlands,65.76,76.52
+    >>Talk to |cRXP_FRIENDLY_Hervdana Saegrund|r
+    .turnin -94500 >>Turn in Call of Water
+    .accept 94501 >>Accept Call of Water
+    .target Hervdana Saegrund
 step
     .goto Wetlands,10.80,60.40
     >>Talk to |cRXP_FRIENDLY_Vincent Hyal|r
@@ -652,6 +664,42 @@ step << Warrior
     >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
     .turnin 1791 >>Turn in The Windwatcher
     .target Bath'rah the Windwatcher
+step << Shaman
+    --oxp-class
+    .goto Loch Modan,41.76,19.05
+    >>Talk to |cRXP_FRIENDLY_Norric Lochthane|r
+    .turnin 94501 >>Turn in Call of Water
+    .accept 94502 >>Accept Call of Water
+    .target Norric Lochthane
+step << Shaman
+    --oxp-class
+    .goto Westfall,47.50,60.40
+    >>Kill |cRXP_ENEMY_Corrupt Minor Manifestation of Water|r. Loot them for |cRXP_LOOT_Corrupt Manifestation's Bracers|r
+    .complete 94502,1 --Call of Water
+    .mob Corrupt Minor Manifestation of Water
+step << Shaman
+    --oxp-class
+    .goto Westfall,45.60,59.88
+    >>Click the |cRXP_PICK_Forgotten Shrine|r
+    .turnin 94502 >>Turn in Call of Water
+step << Shaman
+    --oxp-class
+    .goto Westfall,45.60,59.88
+    >>Click the |cRXP_PICK_Forgotten Shrine|r
+    .accept 94503 >>Accept Call of Water
+step << Shaman
+    --oxp-class
+    .goto Westfall,45.90,60.10
+    >>Talk to |cRXP_FRIENDLY_Minor Manifestation of Water|r
+    .turnin 94503 >>Turn in Call of Water
+    .accept 94505 >>Accept Call of Water
+    .target Minor Manifestation of Water
+step << Shaman
+    --oxp-class
+    .goto Loch Modan,41.76,19.05
+    >>Talk to |cRXP_FRIENDLY_Norric Lochthane|r
+    .turnin 94505 >>Turn in Call of Water
+    .target Norric Lochthane
 step << Rogue
     --oxp-class
     .goto Alterac Mountains,84.93,80.38
@@ -1253,28 +1301,6 @@ step << Human Warrior
     .turnin 1700 >>Turn in Grimand Elmore
     .accept 1705 >>Accept Burning Blood
     .target Grimand Elmore
-step << Human Warrior
-    --oxp-class
-    .goto Duskwood,63.95,73.72
-    >>Kill |cRXP_ENEMY_Nightbane Dark Runner|r and |cRXP_ENEMY_Nightbane Vile Fang|r and |cRXP_ENEMY_Nightbane Shadow Weaver|r. Loot them for |cRXP_LOOT_Burning Blood|r
-    .complete 1705,1 --Burning Blood
-    .mob Nightbane Dark Runner
-    .mob Nightbane Vile Fang
-    .mob Nightbane Shadow Weaver
-step << Human Warrior
-    --oxp-class
-    .goto Silverpine Forest,49.83,85.60
-    >>Kill |cRXP_ENEMY_Old Fire-Eye|r. Loot them for |cRXP_LOOT_Burning Rock|r
-    .complete 1705,2 --Burning Blood
-    .mob Old Fire-Eye
-step << Human Warrior
-    --oxp-class
-    .goto Stormwind City,59.73,33.78
-    >>Talk to |cRXP_FRIENDLY_Grimand Elmore|r
-    .turnin 1705 >>Turn in Burning Blood
-    .accept 1706 >>Accept Grimand's Armor
-    .turnin 1706 >>Turn in Grimand's Armor
-    .target Grimand Elmore
 step << NightElf Warrior
     --oxp-class
     .goto Stormwind City,64.62,37.23
@@ -1287,6 +1313,28 @@ step << Dwarf Warrior/Gnome Warrior
     >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
     .accept 1704 >>Accept Klockmort Spannerspan
     .target Furen Longbeard
+step << Human Warrior
+    --oxp-class
+    .goto Duskwood,63.95,73.72
+    >>Kill |cRXP_ENEMY_Nightbane Dark Runner|r and |cRXP_ENEMY_Nightbane Vile Fang|r and |cRXP_ENEMY_Nightbane Shadow Weaver|r. Loot them for |cRXP_LOOT_Burning Blood|r
+    .complete 1705,1 --Burning Blood
+    .mob Nightbane Dark Runner
+    .mob Nightbane Vile Fang
+    .mob Nightbane Shadow Weaver
+step << Human Warrior
+    --oxp-class
+    .goto Duskwood,73.89,77.17
+    >>Kill |cRXP_ENEMY_Gutspill|r. Loot them for |cRXP_LOOT_Burning Rock|r
+    .complete 1705,2 --Burning Blood
+    .mob Gutspill
+step << Human Warrior
+    --oxp-class
+    .goto Stormwind City,59.73,33.78
+    >>Talk to |cRXP_FRIENDLY_Grimand Elmore|r
+    .turnin 1705 >>Turn in Burning Blood
+    .accept 1706 >>Accept Grimand's Armor
+    .turnin 1706 >>Turn in Grimand's Armor
+    .target Grimand Elmore
 step << Dwarf Warrior/Gnome Warrior
     --oxp-class
     .goto Ironforge,67.92,46.10
@@ -1469,17 +1517,17 @@ step
     .target Kreldig Ungor
 step << Warlock
     --oxp-class
-    .goto Thousand Needles,43.44,32.69
-    >>Loot the |cRXP_PICK_Tattered Manuscript|r
-    .complete 1802,2 --Tome of the Cabal
-step << Warlock
-    --oxp-class
     .goto The Barrens,62.51,35.45
     >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
     .turnin 4782 >>Turn in Components for the Enchanted Gold Bloodrobe
     .accept 4783 >>Accept Components for the Enchanted Gold Bloodrobe
     .turnin 4968 >>Turn in Knowledge of the Orb of Orahil
     .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto Thousand Needles,43.44,32.69
+    >>Loot the |cRXP_PICK_Tattered Manuscript|r
+    .complete 1802,2 --Tome of the Cabal
 step << NightElf Warrior
     --oxp-class
     .goto Darnassus,59.51,45.38

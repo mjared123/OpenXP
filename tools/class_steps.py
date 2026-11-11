@@ -13,6 +13,16 @@ already goes when it can:
   of the first section that's at the right level, preferring one on the same
   continent: a detour, and the report says so.
 
+Everything that lands at the end of a section is then put in a sensible
+order for each class: whatever can be done in the zone you're in comes
+first, then the zone with the most to do, so a class's trips don't zigzag
+(Matt, 2026-11-11, after a player quit over a long detour). A chain's own
+order is always kept.
+
+Quest data that's wrong for Forever (the Alliance shaman water chain uses
+Horde NPCs whose only known spawns are in Silverpine) is corrected with the
+PLACES table in tools/routes/class_chains.py.
+
 Steps it wrote carry a `--oxp-class` line, and are taken out first on every
 run, so running it again gives the same files, and the shared steps stay
 byte for byte what they were.
@@ -58,13 +68,16 @@ AREAS = {
 }
 # Zones the other faction's players don't go to: quest objectives and
 # givers there are ignored (an herb that also grows in Teldrassil is picked
-# in the Barrens). Only used for Horde, so the Alliance steps stay as they are.
+# in the Barrens).
 HOSTILE = {
     "Horde": {141, 1657, 12, 40, 1, 38, 1519, 1537, 148},
-    "Alliance": set(),
+    "Alliance": {14, 215, 85, 130, 1637, 1638, 1497},
 }
 HOSTILE_NOW = set()
 FACTION_LETTER = "A"
+# item id -> (area, (x, y), what to do) for quest items the data has no
+# source for; filled from class_chains.<FACTION>_PLACES
+ITEM_PLACES = {}
 AREA_OF = {v[0]: k for k, v in AREAS.items()}
 RACE_NAMES = [(1, "Human"), (4, "Dwarf"), (8, "NightElf"), (64, "Gnome")]
 HORDE_RACE_NAMES = [(2, "Orc"), (16, "Undead"), (32, "Tauren"), (128, "Troll")]
@@ -84,6 +97,7 @@ class Section:
         zone = re.sub(r" \(part \d+\)$", "", zone)
         self.area = AREA_OF.get(zone)
         self.inserts = {}  # step index -> [step text], added after that step
+        self.raw = {}  # step index -> [(class, chain, after, order, text)], before ordering
 
     def points(self):
         """(index, area, (x, y)) of each step's .goto"""
@@ -218,6 +232,10 @@ def objectives(db, q):
                 zones.setdefault(z, []).extend(pts)
                 elite = False
         z, p = best(zones)
+        if not z and entry[0] in ITEM_PLACES:
+            z, p, label = ITEM_PLACES[entry[0]]
+            out.append((idx, "do", label, [], z, p, False))
+            continue
         if z:
             out.append((idx, "loot", B.li(item, 1), names.get(z, [])[:3], z, p, elite and bool(names.get(z))))
     for entry in B.as_list(B.li(obj, 5)):
@@ -375,6 +393,7 @@ def build(db, sections, chains, faction):
                 return -1
             return 1 if accepted_in.get(q.id) == sections[pos[0]].path else -1
         cursor = ends.get(chain.get("after"), (0, 0))
+        key = (chain["cls"], chain["name"], chain.get("after"))
         added, detours, minutes = [], [], 0
         start_level = None
         for q in quests:
@@ -399,7 +418,7 @@ def build(db, sections, chains, faction):
                         best = (pos, det, o, g)
                 pos, det, o, g = best
                 q = o  # the one you'll have: its objectives and turn-in
-                put(sections, pos, render_talk(tag, g, [("accept", o)]))
+                put(sections, pos, render_talk(tag, g, [("accept", o)]), key)
                 accepted_in[o.id] = sections[pos[0]].path
                 for alt in options:
                     accepted_in[alt.id] = sections[pos[0]].path
@@ -409,7 +428,7 @@ def build(db, sections, chains, faction):
             for idx, kind, label, mobs, z, p, elite in objectives(db, q):
                 pos, det = placer.place(cursor, z, p, max(level, q.level - 1))
                 put(sections, pos, render_obj(tag, q, idx, kind, label, mobs, z, p, elite or group,
-                                              sign(q, pos)))
+                                              sign(q, pos)), key)
                 cursor = pos
                 if det:
                     detours.append("%s objective in %s" % (q.name, AREAS[z][0]))
@@ -421,7 +440,7 @@ def build(db, sections, chains, faction):
                     if best is None or (pos, det) < (best[0], best[1]):
                         best = (pos, det, g)
                 pos, det, g = best
-                put(sections, pos, render_talk(tag, g, [("turnin", q)], sign(q, pos)))
+                put(sections, pos, render_talk(tag, g, [("turnin", q)], sign(q, pos)), key)
                 cursor = pos
                 if det:
                     detours.append("%s turn-in in %s" % (q.name, AREAS[g[3]][0]))
@@ -431,13 +450,63 @@ def build(db, sections, chains, faction):
     return report
 
 
-def put(sections, pos, text):
+ORDER = [0]
+
+
+def put(sections, pos, text, key):
     si, st = pos
     steps = sections[si].steps
     # never between a "#completewith next" step and the step it waits for
     while st + 1 < len(steps) and "#completewith next" in steps[st]:
         st += 1
-    lst = sections[si].inserts.setdefault(st, [])
+    ORDER[0] += 1
+    sections[si].raw.setdefault(st, []).append(key + (ORDER[0], text))
+
+
+def zone_of(text):
+    m = re.search(r"\.goto ([^,\n]+),", text)
+    return m.group(1) if m else None
+
+
+def continent(zone):
+    a = AREA_OF.get(zone)
+    return AREAS[a][1] if a else None
+
+
+def order_block(items, here):
+    """Order one class's steps at the end of a section: keep each chain's
+    order, finish what's in the zone you're in, then go where the most is
+    waiting (same continent first). `here` is the zone you start in."""
+    queues = {}
+    for cls, name, after, n, text in sorted(items, key=lambda x: x[3]):
+        queues.setdefault(name, []).append((n, text, after))
+    out, last = [], None
+    while any(queues.values()):
+        heads = []
+        for name, q in queues.items():
+            if not q:
+                continue
+            after = q[0][2]
+            if after and queues.get(after):
+                continue  # the chain it follows isn't done yet
+            heads.append((name, q[0]))
+        if not heads:  # shouldn't happen; keep the original order
+            heads = [(name, q[0]) for name, q in queues.items() if q]
+        def score(h):
+            name, (n, text, _) = h
+            z = zone_of(text)
+            same = z == here
+            count = sum(1 for _, (_, t, _) in heads if zone_of(t) == z)
+            same_cont = continent(z) is not None and continent(z) == continent(here)
+            return (same, name == last and same, same_cont, count, -n)
+        name, (n, text, _) = max(heads, key=score)
+        queues[name].pop(0)
+        out.append(text)
+        here, last = zone_of(text) or here, name
+    return out
+
+
+def merge_into(lst, text):
     # the same person again right after (turn one in, pick up the next):
     # one step
     if lst and ".target " in text:
@@ -448,6 +517,31 @@ def put(sections, pos, text):
             lst[-1] = "\n".join(prev[:-2] + body + prev[-2:])
             return
     lst.append(text)
+
+
+def finalize(sections):
+    """Order the steps at the end of each section and merge them in."""
+    for sec in sections:
+        last = len(sec.steps) - 1
+        for st, items in sorted(sec.raw.items()):
+            if st >= last:
+                here = None
+                for step in reversed(sec.steps):
+                    here = zone_of(step)
+                    if here:
+                        break
+                texts = []
+                classes = []
+                for it in sorted(items, key=lambda x: x[3]):
+                    if it[0] not in classes:
+                        classes.append(it[0])
+                for cls in classes:
+                    texts += order_block([it for it in items if it[0] == cls], here)
+            else:
+                texts = [it[4] for it in sorted(items, key=lambda x: x[3])]
+            lst = sec.inserts.setdefault(st, [])
+            for t in texts:
+                merge_into(lst, t)
 
 
 def render_talk(tag, g, acts, sign=1):
@@ -509,7 +603,24 @@ def main():
     import class_chains
     chains = getattr(class_chains, args.faction.upper())
     files, sections = load_sections(args.faction)
+    for kind, table in getattr(class_chains, args.faction.upper() + "_PLACES", {}).items():
+        for eid, zones in table.items():
+            if kind == "item":
+                ITEM_PLACES[eid] = zones
+                continue
+            ent = db["n" if kind == "npc" else "o"].get(eid)
+            idx = 7 if kind == "npc" else 4
+            if ent is None:
+                continue
+            spawns = {z: [list(p) for p in pts] for z, pts in zones.items()}
+            if isinstance(ent, list):
+                while len(ent) < idx:
+                    ent.append(None)
+                ent[idx - 1] = spawns
+            else:
+                ent[idx] = spawns
     report = build(db, sections, chains, args.faction)
+    finalize(sections)
     write_files(files)
     lines = []
     for chain, lvl, cursor, added, detours, xp in report:

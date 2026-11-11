@@ -1106,11 +1106,6 @@ step << Hunter
     .money <0.0281
     .itemStat 18,ITEM_MOD_DAMAGE_PER_SECOND_SHORT,<2.38
 step << Hunter
-    .goto 1438/1,968.85,9821.98--c:Teldrassil,55.890,59.205
-    >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Jeena Featherbow|r
-    .vendor >>|cRXP_BUY_Buy|r |T132382:0|t[Rough Arrows] |cRXP_BUY_until your Quiver is full|r
-    .target Jeena Featherbow
-step << Hunter
     #completewith next
     .equip 18,2506 >> |cRXP_WARN_Equip the|r |T135499:0|t[Hornwood Recurve Bow]
     .use 2506

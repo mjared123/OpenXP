@@ -89,6 +89,26 @@ ALLIANCE = [
          quests=[729, 731, 741, 942, 943], from_start=True),
 ]
 
+# Places the quest data gets wrong or doesn't have for Forever (area id ->
+# points, map percent). Sources: foreverchanges.pro quests 94497-94505,
+# polestar.guide "Call of Water (Alliance)", warcrafttavern.com and
+# realmfirst.net Dwarf Shaman totem guides (2026-11-11).
+ALLIANCE_PLACES = {
+    # Alliance Call of Water: the corrupt manifestation is summoned at the
+    # Forgotten Shrine by Stendel's Pond in Westfall (the data only knows the
+    # Horde quest's Silverpine spawn)
+    "npc": {
+        5894: {40: [(47.5, 60.4)]},  # Corrupt Minor Manifestation of Water
+        5895: {40: [(45.9, 60.1)]},  # Minor Manifestation of Water, by the shrine
+    },
+    # waterskins have no source in the data
+    "item": {
+        265734: (11, (65.4, 77.2), "Fill the |cRXP_PICK_Brown Waterskin|r at the bottom of the waterfall below Hervdana's cave"),
+        265748: (44, (73.7, 61.6), "Fill the |cRXP_PICK_Red Waterskin|r at Stonewatch Falls"),
+        265773: (331, (37.0, 51.6), "Fill the |cRXP_PICK_Blue Waterskin|r in the lake by Astranaar"),
+    },
+}
+
 HORDE = [
     # Warlock: the Succubus (Barrens, 20) is done in the 1-22 guide
     dict(cls="Warlock", name="Orb of Soran'ruk", why="off-hand for levelling",
