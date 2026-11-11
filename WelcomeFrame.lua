@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.48",
+        date = "November 2026",
+        changes = {
+            "Less stutter while running: the minimap's blue areas and purple line are redrawn only when you've moved at least a pixel on the minimap, not 20 times a second",
+            "Kill areas are looked up at most twice a second instead of every frame",
+            "New /oxp perf: records 30 seconds of play and prints how long each part of OpenXP took, the slowest frames and how fast memory grew, so stutter reports can point at the cause",
+        },
+    },
+    {
         version = "1.3.47",
         date = "November 2026",
         changes = {

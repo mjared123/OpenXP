@@ -237,3 +237,91 @@ function addon.locale.AddGenericTranslation(source,translation)
         lazyTranslationCache[source] = translation
     end
 end
+
+---------------------------------------------------------------------------
+-- /oxp perf: how long OpenXP's own work takes while you play
+---------------------------------------------------------------------------
+-- (Kept in this file, which loads first, rather than a new one: WoW only
+-- loads new addon files after a full restart, and every other file wraps
+-- its timers and frame updates with perf.Wrap as it loads.)
+--
+-- /oxp perf records for 30 seconds: for each part of OpenXP, how often it
+-- ran, its average and slowest time, and how many runs took 5 ms or more;
+-- plus frames that took 50 ms or more (hitches) and how fast Lua memory
+-- grew (lots of garbage makes the game pause to clean it up). Costs
+-- nothing while it isn't recording.
+
+local perf = {on = false, stats = {}}
+addon.perf = perf
+local clock = debugprofilestop or function() return 0 end
+
+local function Done(name, t0, ...)
+    local ms = clock() - t0
+    local s = perf.stats[name]
+    if not s then
+        s = {n = 0, total = 0, max = 0, slow = 0}
+        perf.stats[name] = s
+    end
+    s.n = s.n + 1
+    s.total = s.total + ms
+    if ms > s.max then s.max = ms end
+    if ms >= 5 then s.slow = s.slow + 1 end
+    return ...
+end
+
+-- fn, timed as `name` while recording
+function perf.Wrap(name, fn)
+    if type(fn) ~= "function" then return fn end
+    return function(...)
+        if not perf.on then return fn(...) end
+        return Done(name, clock(), fn(...))
+    end
+end
+
+local SECONDS = 30
+local frame
+local function Say(s) print("|cFF66BB6AOpenXP:|r " .. s) end
+
+local function Report()
+    perf.on = false
+    if frame then frame:SetScript("OnUpdate", nil) end
+    local secs = math.max(perf.elapsed or 0, 0.001)
+    local rows = {}
+    local total = 0
+    for name, s in pairs(perf.stats) do
+        rows[#rows + 1] = {name = name, s = s}
+        total = total + s.total
+    end
+    table.sort(rows, function(a, b) return a.s.total > b.s.total end)
+    Say(string.format("perf: %.0f s, %d frames, %d hitches (frames of 50 ms or more), slowest frame %.0f ms",
+        secs, perf.frames or 0, perf.hitches or 0, perf.worstFrame or 0))
+    Say(string.format("OpenXP total: %.2f ms per second; Lua memory grew %.0f KB per second",
+        total / secs, (perf.grew or 0) / secs))
+    for i = 1, math.min(#rows, 12) do
+        local r, s = rows[i], rows[i].s
+        Say(string.format("  %s: %d runs, avg %.2f ms, slowest %.1f ms, %d of 5 ms or more",
+            r.name, s.n, s.total / math.max(s.n, 1), s.max, s.slow))
+    end
+    if #rows == 0 then Say("  nothing of OpenXP's ran") end
+end
+
+function perf.Start()
+    if perf.on then return Report() end
+    perf.stats = {}
+    perf.elapsed, perf.frames, perf.hitches, perf.worstFrame, perf.grew = 0, 0, 0, 0, 0
+    perf.on = true
+    frame = frame or CreateFrame("Frame")
+    local lastMem = collectgarbage("count")
+    frame:SetScript("OnUpdate", function(_, dt)
+        perf.elapsed = perf.elapsed + dt
+        perf.frames = perf.frames + 1
+        local ms = dt * 1000
+        if ms >= 50 then perf.hitches = perf.hitches + 1 end
+        if ms > perf.worstFrame then perf.worstFrame = ms end
+        local mem = collectgarbage("count")
+        if mem > lastMem then perf.grew = perf.grew + mem - lastMem end
+        lastMem = mem
+        if perf.elapsed >= SECONDS then Report() end
+    end)
+    Say(string.format("recording for %d seconds: run around like you normally would (/oxp perf again stops early)", SECONDS))
+end

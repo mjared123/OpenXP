@@ -271,6 +271,7 @@ end
 -- Ways already worked out. The answer only depends on the map, the start
 -- and target cells and your level, so a way is never worked out twice: the
 -- route line, the arrow and the travel line all share these.
+local TimedSearch = (addon.perf and addon.perf.Wrap or function(_, f) return f end)("terrain path search", Search)
 local found, foundCount = {}, 0
 local FOUND_MAX = 600
 
@@ -304,7 +305,7 @@ function tr.FindPath(map, ax, ay, bx, by, level, lazy)
         local used = tr.SearchesThisFrame()
         if lazy and used >= tr.lazyPerFrame then tr.waited = true return nil, true end
         frameSearches = used + 1
-        corners = Search(g, level, sx, sy, tx, ty)
+        corners = TimedSearch(g, level, sx, sy, tx, ty)
         if foundCount >= FOUND_MAX then found, foundCount = {}, 0 end
         found[key] = corners
         foundCount = foundCount + 1
@@ -558,6 +559,11 @@ local autoAreas = setmetatable({}, {__mode = "k"}) -- step -> {key, area element
 
 local function AutoArea(step)
     if not (step and step.elements and ObjectiveSpawns) then return end
+    -- asked every frame by the arrow and the minimap: look again at most
+    -- twice a second instead of building the key strings every time
+    local now = GetTime and GetTime() or 0
+    local c0 = autoAreas[step]
+    if c0 and c0.at and now - c0.at < 0.5 and now >= c0.at then return c0.area or nil end
     local spot, objs = nil, {}
     for _, e in ipairs(step.elements) do
         if (e.tag == "accept" or e.tag == "turnin") and not e.completed and not e.skip then
@@ -572,7 +578,7 @@ local function AutoArea(step)
     local key = spot.zone .. ":" .. spot.x .. ":" .. spot.y
     for _, e in ipairs(objs) do key = key .. ":" .. e.questId .. "/" .. e.obj end
     local c = autoAreas[step]
-    if c and c.key == key then return c.area or nil end
+    if c and c.key == key then c.at = now return c.area or nil end
     local pts, ready = {}, false
     for _, e in ipairs(objs) do
         local sp = ObjectiveSpawns(e.questId, e.obj, d.area)
@@ -584,7 +590,7 @@ local function AutoArea(step)
     if not ready then return end -- Questie isn't loaded (yet): ask again later
     local area = KillArea(pts, spot.x, spot.y)
     local a = area and {area = area, areaZone = spot.zone, auto = true} or false
-    autoAreas[step] = {key = key, area = a}
+    autoAreas[step] = {key = key, area = a, at = now}
     return a or nil
 end
 tr.AutoArea = AutoArea
@@ -762,7 +768,7 @@ local function Fill(c, pts, color, step, clip)
     local y = y0 + step / 2
     local xs = {}
     while top < y1 do
-        xs = {}
+        for k = #xs, 1, -1 do xs[k] = nil end
         local j = #pts
         for i = 1, #pts do
             local a, b = pts[j], pts[i]
@@ -1129,7 +1135,11 @@ local function DrawMinimap()
     -- nothing moved since the last frame (standing, fighting, looting):
     -- keep what's drawn instead of laying out hundreds of lines again
     local col = RouteColor()
-    local sig = {pmap, floor(wx * 2), floor(wy * 2), floor(facing * 200), radius, size, tostring(plan),
+    -- (moving less than one minimap pixel, or turning less than one pixel at
+    -- its edge, changes nothing you could see: running, that's a redraw
+    -- every few frames instead of 20 times a second)
+    local ppy = size / radius -- pixels per yard
+    local sig = {pmap, floor(wx * ppy), floor(wy * ppy), floor(facing * size), radius, size, tostring(plan),
                  RouteOn() and 1 or 0, AreasOn() and 1 or 0, col[1], col[2], col[3]}
     for _, st in ipairs(stops) do
         sig[#sig + 1] = st[1] .. "/" .. floor(st[2] * 10) .. "/" .. floor(st[3] * 10) .. "/" .. tostring(st[4])
@@ -1198,9 +1208,10 @@ if CreateFrame and C_Timer and C_Timer.NewTicker then
         local ok, err = pcall(fn)
         if not ok and addon.comms and addon.comms.PrettyDebug then addon.comms.PrettyDebug(tostring(err)) end
     end
-    C_Timer.NewTicker(MAP_TICK, function()
+    local Wrap = (addon.perf and addon.perf.Wrap or function(_, f) return f end)
+    C_Timer.NewTicker(MAP_TICK, Wrap("world map lines", function()
         local wm = _G.WorldMapFrame
         if wm and wm:IsShown() then Safe(tr.DrawMap) elseif wmc then Clear(wmc) end
-    end)
-    C_Timer.NewTicker(MINI_TICK, function() Safe(tr.DrawMinimap) end)
+    end))
+    C_Timer.NewTicker(MINI_TICK, Wrap("minimap lines", function() Safe(tr.DrawMinimap) end))
 end

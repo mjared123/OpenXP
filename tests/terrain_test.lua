@@ -259,6 +259,7 @@ try("every zone: a kill step without .area gets one from Questie's spawns", func
     assert(tr.StepArea(talk) == nil, "turn-in step keeps its spot")
     -- objective done: no area
     step.elements[2].completed = true
+    clock = clock + 1 -- looked at again at most twice a second
     assert(tr.StepArea(step) == nil, "done")
     -- too few spawns
     local few = {elements = {{arrow = true, zone = 1431, x = 80, y = 20}, {questId = 202, obj = 1}}}

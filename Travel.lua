@@ -552,3 +552,10 @@ if events then
         lastKey = nil
     end)
 end
+
+-- timed by /oxp perf
+local Wrap = addon.perf and addon.perf.Wrap
+if Wrap then
+    tv.PlanFor = Wrap("travel plan", tv.PlanFor)
+    tv.Polylines = Wrap("travel line", tv.Polylines)
+end

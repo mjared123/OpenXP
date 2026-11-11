@@ -2115,7 +2115,7 @@ ticker:SetScript("OnUpdate", function(_, dt)
     elapsed = elapsed + dt
     if elapsed < 0.25 then return end
     elapsed = 0
-    Tick()
+    card.TimedTick()
 end)
 -- Remember where you are in each guide on this character, including steps
 -- you skipped forward to, and put you back there after a reload or relog
@@ -2171,6 +2171,7 @@ function Tick()
     end
 end
 card.TickForTest = Tick
+card.TimedTick = (addon.perf and addon.perf.Wrap or function(_, f) return f end)("card update", function() return Tick() end)
 
 ---------------------------------------------------------------------------
 -- The classic window is still the engine; park it off screen
@@ -2286,12 +2287,14 @@ local function ArrowUpdate(self, ...)
     af.oxpLabel:SetText(label and StripCodes(label) or "")
 end
 
+card.TimedArrow = (addon.perf and addon.perf.Wrap or function(_, f) return f end)("arrow", ArrowUpdate)
+
 function card.SetupArrow()
     local af = addon.arrowFrame
     if not af then return end
     StyleArrow()
     ArrowVisuals(af)
-    af:SetScript("OnUpdate", ArrowUpdate)
+    af:SetScript("OnUpdate", card.TimedArrow)
 end
 
 ---------------------------------------------------------------------------
@@ -2873,4 +2876,15 @@ function card.DebugStep()
     local text = table.concat(out, "\n")
     print(text)
     return text
+end
+
+-- timed by /oxp perf, so a slow part of the card update shows by name
+do
+    local Wrap = addon.perf and addon.perf.Wrap
+    if Wrap then
+        card.Refresh = Wrap("card redraw", card.Refresh)
+        card.CheckHereSteps = Wrap("card: steps you're standing by", card.CheckHereSteps)
+        card.CheckTravelSteps = Wrap("card: travel steps", card.CheckTravelSteps)
+        card.CheckTrainerSteps = Wrap("card: trainer steps", card.CheckTrainerSteps)
+    end
 end

@@ -526,7 +526,7 @@ end
 
 local ticker = CreateFrame("Frame")
 local tickWait = 0
-ticker:SetScript("OnUpdate", function(_, elapsed)
+ticker:SetScript("OnUpdate", (addon.perf and addon.perf.Wrap or function(_, f) return f end)("path learning", function(_, elapsed)
     tickWait = tickWait + elapsed
     if tickWait < 0.5 then return end
     tickWait = 0
@@ -538,7 +538,7 @@ ticker:SetScript("OnUpdate", function(_, elapsed)
     end
     local x, y, inst = HBD:GetPlayerWorldPosition()
     ph.LearnTick(x, y, inst, IsIndoors() and true or false)
-end)
+end))
 
 ---------------------------------------------------------------------------
 -- /oxp path

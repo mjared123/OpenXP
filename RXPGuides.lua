@@ -2101,6 +2101,11 @@ local errorCount = 0
 local event = ""
 local updateStepIndex = 0
 
+-- timed by /oxp perf: refreshing the old window's step list (parked off
+-- screen behind the card) a few steps at a time
+local TimedStepListUpdate = (addon.perf and addon.perf.Wrap or function(_, f) return f end)(
+    "old step list", function(n) addon.RXPFrame.BottomFrame.UpdateFrame(nil, n) end)
+
 function addon.LegacyUpdateLoop()
     -- NewTicker calls function every updateFrequency, making diff/updateTick/tickRate logic obsolete
     local profile = addon.settings.profile
@@ -2284,9 +2289,7 @@ function addon.LegacyUpdateLoop()
 
         for n = stepCounter,stepCounter + batchSize do
             if n <= max then
-                C_Timer.After(0,function()
-                    addon.RXPFrame.BottomFrame.UpdateFrame(nil,n)
-                end)
+                C_Timer.After(0,function() TimedStepListUpdate(n) end)
             end
         end
         updateStepIndex = (updateStepIndex + 1) % 8
@@ -2332,7 +2335,7 @@ function addon.tickers:SetupTickerLoops()
     }
     ]]
     if not self.legacy then
-        self.legacy = NewTicker(updateFrequency, addon.LegacyUpdateLoop)
+        self.legacy = NewTicker(updateFrequency, (addon.perf and addon.perf.Wrap or function(_, f) return f end)("guide engine", addon.LegacyUpdateLoop))
     end
     --[[
     if not self.cycleZero then

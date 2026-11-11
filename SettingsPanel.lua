@@ -134,6 +134,8 @@ function addon.settings.ChatCommand(input)
         addon.questDump.Clear()
     elseif input == "path" or input:match("^path%s") then
         if addon.pathHints then addon.pathHints.Command(input:sub(5)) end
+    elseif input == "perf" then
+        addon.perf.Start()
     elseif input == "catchup" then
         addon.smartStart.ShowCatchUp()
     elseif input == "help" then
