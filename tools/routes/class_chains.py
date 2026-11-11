@@ -102,6 +102,17 @@ HORDE = [
     dict(cls="Warlock", name="Felsteed", why="need (mount)",
          quests=[(3631, 4489), 4490]),
 
+    # Paladin (Forever's Undead paladins): Wolfsbane, a two-hander for
+    # levelling. Order from the Forever guides (forg.gg, wowhandbook,
+    # conquestcapped): Silverpine, Fenris Isle, then Ott in Hillsbrad forges
+    # the Moonsilver Blade, which you need to hurt Old Fire-Eye. A Moon-Kissed
+    # Blade needs items from the Deadmines and Shadowfang Keep, and the Kor
+    # Gem is an elite naga quest at Blackfathom Deeps: marked group. The
+    # mount is trained at 40, no quest.
+    dict(cls="Paladin", name="Wolfsbane", why="two-hander for levelling",
+         quests=[91858, 91859, 91860, 91861, 91862, 96204, 95034, 95042, 95036,
+                 95111, 95125, 95126, 95140], group={95042, 95036}),
+
     # Warrior: Brutal Armor starts at the Field of Giants trial (the 1-22
     # guide takes "Speak with Ruga"), then two of the three pieces
     dict(cls="Warrior", name="Brutal Hauberk", why="chest for levelling",

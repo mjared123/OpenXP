@@ -230,6 +230,13 @@ step
     >>Talk to |cRXP_FRIENDLY_Keeper Bel'varil|r
     .accept 556 >>Accept Stone Tokens
     .target Keeper Bel'varil
+step << Undead Paladin
+    --oxp-class
+    .goto Hillsbrad Foothills,60.43,26.18
+    >>Talk to |cRXP_FRIENDLY_Ott|r
+    .turnin -95111 >>Turn in An Underrated Talent
+    .accept 95126 >>Accept The Moonsilver Blade
+    .target Ott
 step
     .goto Hillsbrad Foothills,63.24,20.66
     >>Talk to |cRXP_FRIENDLY_Krusk|r
@@ -447,6 +454,31 @@ step << Warlock
     >>Talk to |cRXP_FRIENDLY_Kaal Soulreaper|r
     .accept 4739 >>Accept In Search of Menara Voidrender
     .target Kaal Soulreaper
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,43.40,41.10
+    >>Talk to |cRXP_FRIENDLY_Trevan Rol|r
+    .turnin 95126 >>Turn in The Moonsilver Blade
+    .target Trevan Rol
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,43.40,40.99
+    >>Talk to |cRXP_FRIENDLY_Lumina Windsinger|r
+    .accept 95140 >>Accept Old Fire-Eye
+    .target Lumina Windsinger
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,49.83,85.60
+    >>Kill |cRXP_ENEMY_Old Fire-Eye|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 95140,1 --Old Fire-Eye
+    .mob Old Fire-Eye
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,43.40,40.99
+    >>Talk to |cRXP_FRIENDLY_Lumina Windsinger|r
+    .turnin 95140 >>Turn in Old Fire-Eye
+    .target Lumina Windsinger
 step << Warrior
     --oxp-class
     .goto Hillsbrad Foothills,30.14,56.47

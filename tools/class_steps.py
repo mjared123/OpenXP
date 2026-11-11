@@ -60,7 +60,7 @@ AREAS = {
 # givers there are ignored (an herb that also grows in Teldrassil is picked
 # in the Barrens). Only used for Horde, so the Alliance steps stay as they are.
 HOSTILE = {
-    "Horde": {141, 1657, 12, 40, 1, 38, 1519, 1537},
+    "Horde": {141, 1657, 12, 40, 1, 38, 1519, 1537, 148},
     "Alliance": set(),
 }
 HOSTILE_NOW = set()

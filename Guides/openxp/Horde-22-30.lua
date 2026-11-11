@@ -183,6 +183,66 @@ step
     >>Talk to |cRXP_FRIENDLY_Deathguard Samsa|r
     .turnin 546 >>Turn in Souvenirs of Death
     .target Deathguard Samsa
+step << Undead Paladin
+    --oxp-class
+    .goto Tirisfal Glades,22.09,44.66
+    >>Talk to |cRXP_FRIENDLY_Danitha Morr|r
+    .accept 91858 >>Accept Diplomatic Incident
+    .target Danitha Morr
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,43.40,41.10
+    >>Talk to |cRXP_FRIENDLY_Trevan Rol|r
+    .turnin 91858 >>Turn in Diplomatic Incident
+    .accept 91859 >>Accept A Curious Pair
+    .target Trevan Rol
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,45.81,41.88
+    >>Talk to |cRXP_FRIENDLY_Deathguard Baldren|r
+    .turnin 91859 >>Turn in A Curious Pair
+    .accept 91860 >>Accept A Grim Fate
+    .target Deathguard Baldren
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,65.02,34.10
+    >>Click the |cRXP_PICK_Charred Remains|r
+    .turnin 91860 >>Turn in A Grim Fate
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,65.02,34.10
+    >>Click the |cRXP_PICK_Charred Remains|r
+    .accept 91861 >>Accept Into Fenris Keep
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,65.55,23.27
+    >>Talk to |cRXP_FRIENDLY_Lumina Windsinger|r
+    .turnin 91861 >>Turn in Into Fenris Keep
+    .accept 91862 >>Accept Lumina Windsinger
+    .target Lumina Windsinger
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,65.71,24.03
+    >>Kill |cRXP_ENEMY_Rot Hide Savage|r and |cRXP_ENEMY_Raging Rot Hide|r and |cRXP_ENEMY_Rot Hide Bruiser|r. Loot them for |cRXP_LOOT_Fenris Isle Key|r
+    .complete 91862,1 --Lumina Windsinger
+    .mob Rot Hide Savage
+    .mob Raging Rot Hide
+    .mob Rot Hide Bruiser
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,65.55,23.27
+    >>Talk to |cRXP_FRIENDLY_Lumina Windsinger|r
+    .turnin 91862 >>Turn in Lumina Windsinger
+    .accept 96204 >>Accept The Windshaper's Wrath
+    .target Lumina Windsinger
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,43.40,40.99
+    >>Talk to |cRXP_FRIENDLY_Lumina Windsinger|r
+    .turnin 96204 >>Turn in The Windshaper's Wrath
+    .accept 95034 >>Accept The Debt
+    .turnin 95034 >>Turn in The Debt
+    .target Lumina Windsinger
 step << Undead Rogue
     --oxp-class
     .goto Undercity,83.51,69.11
@@ -267,6 +327,12 @@ step
     >>Talk to |cRXP_FRIENDLY_Karang Amakkar|r
     .turnin -216 >>Turn in Between a Rock and a Thistlefur
     .target Karang Amakkar
+step << Paladin
+    --oxp-class
+    .goto Ashenvale,11.84,34.47
+    >>Talk to |cRXP_FRIENDLY_Ulric Frostveil|r
+    .accept 95042 >>Accept Seeking the Kor Gem
+    .target Ulric Frostveil
 step
     .goto Ashenvale,11.56,34.29
     >>Talk to |cRXP_FRIENDLY_Je'neu Sancrea|r
@@ -532,6 +598,19 @@ step
     >>Talk to |cRXP_FRIENDLY_Witch Doctor Jin'Zil|r
     .turnin -1058 >>Turn in Jin'Zil's Forest Magic
     .target Witch Doctor Jin'Zil
+step << Paladin
+    --oxp-class
+    .goto Ashenvale,13.55,12.06
+    >>Kill |cRXP_ENEMY_Blackfathom Tide Priestess|r. Loot them for |cRXP_LOOT_Corrupted Kor Gem|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 95042,1 --Seeking the Kor Gem
+    .mob Blackfathom Tide Priestess
+step << Paladin
+    --oxp-class
+    .goto Ashenvale,11.84,34.47
+    >>Talk to |cRXP_FRIENDLY_Ulric Frostveil|r
+    .turnin 95042 >>Turn in Seeking the Kor Gem
+    .target Ulric Frostveil
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1181,6 +1260,19 @@ step
     >>Talk to |cRXP_FRIENDLY_Scooty|r
     .turnin -2842 >>Turn in Chief Engineer Scooty
     .target Scooty
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,43.40,40.99
+    >>Talk to |cRXP_FRIENDLY_Lumina Windsinger|r
+    .accept 95036 >>Accept A Moon-Kissed Blade
+    .target Lumina Windsinger
+step << Undead Paladin
+    --oxp-class
+    .goto Silverpine Forest,43.40,41.10
+    >>Talk to |cRXP_FRIENDLY_Trevan Rol|r
+    .turnin 95036 >>Turn in A Moon-Kissed Blade
+    .accept 95111 >>Accept An Underrated Talent
+    .target Trevan Rol
 step << Shaman
     --oxp-class
     .goto Silverpine Forest,38.78,44.26

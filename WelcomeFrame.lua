@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.47",
+        date = "November 2026",
+        changes = {
+            "Undead Paladins: the Wolfsbane chain from 20 (Silverpine, Fenris Isle, Ott in Hillsbrad, then Old Fire-Eye). The Kor Gem and dungeon parts are marked as group content",
+        },
+    },
+    {
         version = "1.3.46",
         date = "November 2026",
         changes = {
