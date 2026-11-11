@@ -2468,12 +2468,18 @@ step << Hunter
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Belia Thundergranite|r
     .trainer >> Train your class spells
     .target Regnus Thundergranite
-step << Dawrf Priest
+step << Dwarf Priest
     .goto 1455/0,-897.200,-4607.200
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_High Priest Rohan|r
-    .turnin 5639 >> Turn in Desperate Prayer
     .trainer >> Train your class spells
     .target High Priest Rohan
+step << Dwarf Priest
+    .goto 1455/0,-897.200,-4607.200
+    >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_High Priest Rohan|r
+    .accept 5639 >> Accept Desperate Prayer
+    >>|cRXP_WARN_You turn it in to High Priestess Laurena when you get to Stormwind|r
+    .target High Priest Rohan
+    .xp <10,1
 step << Gnome Priest
     .goto Ironforge,24.59,10.0
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_High Priestess Mims|r in the Mystic Ward
@@ -2819,6 +2825,16 @@ step
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Dungar Longdrink|r
     .fp Stormwind >> Get the Stormwind City flight path
     .target Dungar Longdrink
+step << Dwarf Priest
+    #completewith next
+    .goto 1453/0,809.52,-8579.22,20 >> Travel to the Stormwind Cathedral
+    .isOnQuest 5639
+step << Dwarf Priest
+    .goto Stormwind City,49.53,44.6
+    >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_High Priestess Laurena|r in the Cathedral
+    .turnin 5639 >> Turn in Desperate Prayer. You learn |cRXP_WARN_Desperate Prayer|r
+    .target High Priestess Laurena
+    .isOnQuest 5639
 step << Warlock
     #softcore
     #optional

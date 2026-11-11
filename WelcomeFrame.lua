@@ -14,11 +14,12 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
-        version = "1.3.49",
+        version = "1.3.50",
         date = "November 2026",
         changes = {
             "Human Paladins: the end of The Tome of Divinity (Redemption) in the 19-20 guide. Revive Henze Faulk and get the Defias Script by Stone Cairn Lake on the way to Redridge, then turn it in at the Stormwind Cathedral before you hearth to Darkshore",
             "Gnome Priests: Confounding Flash from High Priestess Mims in Ironforge at level 10",
+            "Dwarf Priests: Desperate Prayer now shows. Pick it up from High Priest Rohan in Ironforge at 10 and turn it in to High Priestess Laurena when you reach Stormwind (the step was hidden by a typo and pointed at the wrong NPC)",
         },
     },
     {
