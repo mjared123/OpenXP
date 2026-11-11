@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.39",
+        date = "November 2026",
+        changes = {
+            "Fixed: a turn-in step for a quest you don't have (because an earlier part of its chain is still in your log) now asks whether to do the chain or skip it, instead of sending you to turn in nothing",
+            "Hunters: The Absent Minded Prospector now starts at part 1 in Darkshore. Parts you've already done skip themselves",
+        },
+    },
+    {
         version = "1.3.38",
         date = "November 2026",
         changes = {
