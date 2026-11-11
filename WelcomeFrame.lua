@@ -14,6 +14,16 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.51",
+        date = "November 2026",
+        changes = {
+            "Human Hunters: no more trip to Teldrassil for arrows at level 6. Buy them in Goldshire",
+            "Undead: the campfire step for The Great Outdoors now points to Brill instead of Durotar",
+            "Orc and Troll Warlocks: the Ruzan step for Vile Familiars works again (its map point was broken)",
+            "Darkshore: the Travel to Auberdine step now points to Auberdine",
+        },
+    },
+    {
         version = "1.3.50",
         date = "November 2026",
         changes = {
