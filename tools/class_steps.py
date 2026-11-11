@@ -148,6 +148,29 @@ def write_files(files):
 # Where each part of a quest is done
 # ---------------------------------------------------------------------------
 
+# Dungeons (AreaTable id) -> (name, zone the entrance is in, entrance point).
+# Quest mobs inside have no map point, so the step goes to the entrance.
+DUNGEON_ENTRANCES = {
+    718: ("Wailing Caverns", 17, (46.0, 36.4)), 719: ("Blackfathom Deeps", 331, (14.5, 14.2)),
+    209: ("Shadowfang Keep", 130, (44.8, 67.8)), 1581: ("The Deadmines", 40, (42.6, 71.7)),
+    721: ("Gnomeregan", 1, (24.4, 39.8)), 491: ("Razorfen Kraul", 17, (42.3, 89.9)),
+    722: ("Razorfen Downs", 17, (49.0, 93.9)), 796: ("Scarlet Monastery", 85, (82.6, 33.8)),
+    1337: ("Uldaman", 3, (44.4, 12.2)), 978: ("Zul'Farrak", 440, (38.7, 20.0)),
+    2100: ("Maraudon", 405, (29.1, 62.5)), 1477: ("The Temple of Atal'Hakkar", 8, (69.9, 53.6)),
+    717: ("The Stockade", 1519, (40.5, 55.8)),
+}
+
+
+def dungeon_of(entity, idx):
+    """(dungeon name, zone, point) when the entity only spawns in a dungeon."""
+    sp = B.li(entity, idx)
+    if isinstance(sp, dict):
+        for z in sp:
+            if z in DUNGEON_ENTRANCES:
+                return DUNGEON_ENTRANCES[z]
+    return None
+
+
 def spawn_zones(entity, idx):
     sp = B.li(entity, idx)
     if isinstance(sp, list):
@@ -202,6 +225,10 @@ def objectives(db, q):
         z, p = best(spawn_zones(n, 7))
         if z:
             out.append((idx, "kill", B.li(n, 1), [B.li(n, 1)], z, p, (B.li(n, 6) or 0) in (1, 2, 3)))
+        elif dungeon_of(n, 7):
+            dn, dz, dp = dungeon_of(n, 7)
+            out.append((idx, "do", "Kill |cRXP_ENEMY_%s|r in %s (dungeon)" % (B.li(n, 1), dn),
+                        [B.li(n, 1)], dz, dp, True))
     for entry in B.as_list(B.li(obj, 2)):
         idx += 1
         o = db["o"].get(entry[0])
@@ -232,6 +259,18 @@ def objectives(db, q):
                 zones.setdefault(z, []).extend(pts)
                 elite = False
         z, p = best(zones)
+        if not z:
+            for nid in B.as_list(B.li(item, 2)):
+                n = db["n"].get(nid)
+                d = dungeon_of(n, 7) if n else None
+                if d:
+                    out.append((idx, "do", "Kill |cRXP_ENEMY_%s|r in %s (dungeon). Loot them for |cRXP_LOOT_%s|r"
+                                % (B.li(n, 1), d[0], B.li(item, 1)), [B.li(n, 1)], d[1], d[2], True))
+                    break
+            else:
+                d = None
+            if d:
+                continue
         if not z and entry[0] in ITEM_PLACES:
             z, p, label = ITEM_PLACES[entry[0]]
             out.append((idx, "do", label, [], z, p, False))
@@ -369,6 +408,51 @@ def free_guide_state(faction, cls):
     return acc - turned, turned
 
 
+# Each race's home towns (area ids): a quest several trainers give is picked
+# up from the one in your own capital, so nobody is sent to another race's
+# city for it (Matt, 2026-11-11).
+HOMES = {
+    "Alliance": [("Human", {1519, 12}), ("Dwarf", {1537, 1}), ("Gnome", {1537, 1}),
+                 ("NightElf", {1657, 141}), ("Skyborne", set())],
+    "Horde": [("Orc", {1637, 14}), ("Troll", {1637, 14}), ("Tauren", {1638, 215}),
+              ("Undead", {1497, 85}), ("Skyborne", set())],
+}
+FACTION_NAME = ["Alliance"]
+# quests the data couldn't place: (class, chain, quest id, name, why, [later quests left out])
+LEFT_OUT = []
+
+
+def quest_races(q, chain):
+    """The races that do this quest (all of the faction's when it's open to all)."""
+    homes = [r for r, _ in HOMES[FACTION_NAME[0]]]
+    only = chain.get("only", {}).get(q.id)
+    if only:
+        return only.split("/")
+    if chain.get("race"):
+        return chain["race"].split("/")
+    names = [n for b, n in RACE_NAMES if q.races & b] if q.races else []
+    if not names or len(names) == len(RACE_NAMES):
+        return homes
+    return names
+
+
+def race_groups(races):
+    """[(races, home areas)], races sharing a home town together."""
+    out = {}
+    for r, home in HOMES[FACTION_NAME[0]]:
+        if r in races:
+            k = frozenset(home)
+            out.setdefault(k, ([], home))[0].append(r)
+    return list(out.values())
+
+
+def race_tag(races, allowed, chain):
+    homes = [r for r, _ in HOMES[FACTION_NAME[0]]]
+    if set(races) >= set(homes):
+        return chain["cls"]
+    return "/".join("%s %s" % (r, chain["cls"]) for r in homes if r in races)
+
+
 def build(db, sections, chains, faction):
     placer = Placer(sections)
     report = []
@@ -396,54 +480,96 @@ def build(db, sections, chains, faction):
         key = (chain["cls"], chain["name"], chain.get("after"))
         added, detours, minutes = [], [], 0
         start_level = None
-        for q in quests:
+        left_out = []
+        for qi, q in enumerate(quests):
             options = alts[q.id]
-            if chain.get("race"):
-                tag = "step << " + "/".join("%s %s" % (r, chain["cls"]) for r in chain["race"].split("/"))
-            else:
-                tag = "step << " + class_tag(q, chain["cls"])
+            allowed = quest_races(q, chain)
             level = max(q.reqLevel, q.level - 2)
             start_level = start_level or level
             group = q.id in chain.get("group", ())
-            # pickup: the giver reached first
+            carried_now = any(o.id in carried for o in options)
+            # pickup: per group of races, the giver in their own home town if
+            # there is one, else the one reached first
             gl = []
             for o in options:
                 for g in givers(db, o.startedBy):
                     gl.append((o, g))
-            if gl and not any(o.id in carried for o in options):
-                best = None
-                for o, g in gl:
-                    pos, det = placer.place(cursor, g[3], g[4], level)
-                    if best is None or (pos, det) < (best[0], best[1]):
-                        best = (pos, det, o, g)
-                pos, det, o, g = best
-                q = o  # the one you'll have: its objectives and turn-in
-                put(sections, pos, render_talk(tag, g, [("accept", o)]), key)
-                accepted_in[o.id] = sections[pos[0]].path
-                for alt in options:
-                    accepted_in[alt.id] = sections[pos[0]].path
-                cursor = pos
-                if det:
-                    detours.append("%s pickup in %s" % (o.name, AREAS[g[3]][0]))
-            for idx, kind, label, mobs, z, p, elite in objectives(db, q):
-                pos, det = placer.place(cursor, z, p, max(level, q.level - 1))
-                put(sections, pos, render_obj(tag, q, idx, kind, label, mobs, z, p, elite or group,
-                                              sign(q, pos)), key)
-                cursor = pos
-                if det:
-                    detours.append("%s objective in %s" % (q.name, AREAS[z][0]))
-            fl = givers(db, q.finishedBy)
-            if fl:
-                best = None
-                for g in fl:
-                    pos, det = placer.place(cursor, g[3], g[4], level)
-                    if best is None or (pos, det) < (best[0], best[1]):
-                        best = (pos, det, g)
-                pos, det, g = best
-                put(sections, pos, render_talk(tag, g, [("turnin", q)], sign(q, pos)), key)
-                cursor = pos
-                if det:
-                    detours.append("%s turn-in in %s" % (q.name, AREAS[g[3]][0]))
+            plans = []  # (races, quest variant, pickup (pos, det, g) or None)
+            if carried_now:
+                plans.append((allowed, options[0], None))
+            elif gl:
+                choice = {}
+                for races, home in race_groups(allowed):
+                    cand = [x for x in gl if x[1][3] in home] or gl
+                    best = None
+                    for o, g in cand:
+                        pos, det = placer.place(cursor, g[3], g[4], level)
+                        if best is None or (pos, det) < (best[0], best[1]):
+                            best = (pos, det, o, g)
+                    k = (best[2].id, best[3][1], best[0])
+                    if k not in choice:
+                        choice[k] = ([], best)
+                    choice[k][0].extend(races)
+                for races, (pos, det, o, g) in choice.values():
+                    plans.append((races, o, (pos, det, g)))
+            # leave out what the data can't place (Matt, 2026-11-11: add it
+            # later when there's data), and the rest of the chain with it
+            missing = None
+            for races, v, _ in plans:
+                obj = v.objectives or {}
+                want = sum(len(B.as_list(B.li(obj, k))) for k in (1, 2, 3, 5)) + (1 if v.triggerEnd else 0)
+                if len(objectives(db, v)) < want:
+                    missing = "an objective has no known place"
+                elif not givers(db, v.finishedBy):
+                    missing = "no known turn-in place"
+            if not plans:
+                missing = "no known pickup place"
+            if missing:
+                left_out = [(x.id, x.name) for x in quests[qi:]]
+                LEFT_OUT.append((chain["cls"], chain["name"], q.id, q.name, missing,
+                                 [x for x in left_out[1:]]))
+                break
+            end = cursor
+            for races, v, pick in plans:
+                tag = "step << " + race_tag(races, allowed, chain)
+                c = cursor
+                if pick:
+                    pos, det, g = pick
+                    put(sections, pos, render_talk(tag, g, [("accept", v)]), key)
+                    for alt in options:
+                        accepted_in[alt.id] = sections[pos[0]].path
+                    c = pos
+                    if det:
+                        detours.append("%s pickup in %s" % (v.name, AREAS[g[3]][0]))
+                for idx, kind, label, mobs, z, p, elite in objectives(db, v):
+                    pos, det = placer.place(c, z, p, max(level, v.level - 1))
+                    put(sections, pos, render_obj(tag, v, idx, kind, label, mobs, z, p, elite or group,
+                                                  sign(v, pos)), key)
+                    c = pos
+                    if det:
+                        detours.append("%s objective in %s" % (v.name, AREAS[z][0]))
+                fl = givers(db, v.finishedBy)
+                tchoice = {}
+                for rs, home in race_groups(races):
+                    cand = [g for g in fl if g[3] in home] or fl
+                    best = None
+                    for g in cand:
+                        pos, det = placer.place(c, g[3], g[4], level)
+                        if best is None or (pos, det) < (best[0], best[1]):
+                            best = (pos, det, g)
+                    k = (best[2][1], best[0])
+                    if k not in tchoice:
+                        tchoice[k] = ([], best)
+                    tchoice[k][0].extend(rs)
+                cend = c
+                for rs, (pos, det, g) in tchoice.values():
+                    ttag = "step << " + race_tag(rs, allowed, chain)
+                    put(sections, pos, render_talk(ttag, g, [("turnin", v)], sign(v, pos)), key)
+                    cend = max(cend, pos)
+                    if det:
+                        detours.append("%s turn-in in %s" % (v.name, AREAS[g[3]][0]))
+                end = max(end, cend)
+            cursor = end
         ends[chain["name"]] = cursor
         xp = sum(((B.FACTS or {}).get("quest", {}).get(q.id) or {}).get("xp") or 0 for q in quests)
         report.append((chain, start_level, cursor, [q.id for q in quests], detours, xp))
@@ -592,6 +718,7 @@ def main():
     global RACE_NAMES, HOSTILE_NOW, FACTION_LETTER
     HOSTILE_NOW = HOSTILE[args.faction]
     FACTION_LETTER = args.faction[0]
+    FACTION_NAME[0] = args.faction
     if args.faction == "Horde":
         RACE_NAMES = HORDE_RACE_NAMES
     if args.facts:
@@ -628,6 +755,12 @@ def main():
         lines.append("%s: %s (%s), %d quests, about %d XP, from level %s, done by %s; %d detour(s)%s" % (
             chain["cls"], chain["name"], chain["why"], len(added), xp, lvl, end, len(detours),
             (": " + "; ".join(detours)) if detours else ""))
+    if LEFT_OUT:
+        lines.append("")
+        lines.append("Left out (no data yet):")
+        for cls, name, qid, qname, why, later in LEFT_OUT:
+            lines.append("%s, %s: %s (%d): %s%s" % (cls, name, qname, qid, why,
+                         ("; also left out after it: " + ", ".join("%s (%d)" % (n, i) for i, n in later)) if later else ""))
     text = "\n".join(lines)
     print(text)
     if args.report:

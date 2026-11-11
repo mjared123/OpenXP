@@ -166,7 +166,12 @@ end
 function SS.ScoreGuide(guide, level, zone)
     local lo, hi = SS.LevelRange(guide)
     if not lo then return nil end
-    if level < lo - 1 or level > hi then return nil end
+    -- a little outside the level range is fine when you're in the middle of
+    -- it (its quests are in your log): a level 16 with Westfall quests
+    -- still belongs in 13-15 Westfall, not halfway into Darkshore
+    local inRange = level >= lo - 1 and level <= hi
+    local nearRange = level >= lo - 3 and level <= hi + 2
+    if not nearRange then return nil end
 
     local steps = SS.QuestSteps(guide)
     local total, done, started = 0, 0, 0
@@ -185,6 +190,7 @@ function SS.ScoreGuide(guide, level, zone)
         end
     end
     if total == 0 or done == total then return nil end
+    if not inRange and started == 0 then return nil end
 
     local score = 0
     -- Resume a section the player is in the middle of: quests from it are
@@ -222,8 +228,9 @@ end
 -- Works out, for a loaded guide, which step to start on and which steps to
 -- skip because their quest chain is broken.
 -- Returns startStep, skipSteps (set of step indexes), blocked (set of quest ids).
-function SS.PlanSteps(guide, prereqs)
+function SS.PlanSteps(guide, prereqs, skipped, minStart)
     local steps = SS.QuestSteps(guide)
+    skipped = skipped or {}
 
     -- Quests whose chain can't be started.
     local blocked = {}
@@ -254,9 +261,20 @@ function SS.PlanSteps(guide, prereqs)
             for _, q in ipairs(quests) do
                 if not SS.IsSatisfied(q.tag, q.id) then
                     open = true
-                    if not IsBlocked(q.id) then allBlocked = false end
+                    -- turning in (or doing) a quest you don't have, that
+                    -- this section never gives you: it was picked up in a
+                    -- section you skipped
+                    local orphan = q.tag ~= "accept" and not SS.api.IsOnQuest(q.id)
+                        and not SS.GuideAccepts(steps, q.id)
+                    if orphan then
+                        blocked[q.id] = true
+                    elseif not IsBlocked(q.id) then
+                        allBlocked = false
+                    end
                 end
             end
+            -- steps you skipped by hand stay skipped
+            if skipped[i] then open = false end
             if open and allBlocked then
                 skip[i] = true
             elseif open and not start then
@@ -268,7 +286,10 @@ function SS.PlanSteps(guide, prereqs)
     end
     local blockedList = {}
     for id, b in pairs(blocked) do if b then blockedList[id] = true end end
-    return start or 1, skip, blockedList
+    start = start or 1
+    -- never back to before where you already are in this section
+    if minStart and minStart > start then start = minStart end
+    return start, skip, blockedList
 end
 
 function SS.GuideAccepts(steps, id)
@@ -317,6 +338,14 @@ end
 function SS.Run(quiet)
     local level = SS.api.PlayerLevel()
     local guide, info = SS.PickGuide(CandidateGuides(), level, SS.api.ZoneName())
+    local before = addon.currentGuide
+    local sameGuide = guide and before and not before.empty and before.name and
+        SS.api.GuideName(before) == SS.api.GuideName(guide)
+    local wasAt = sameGuide and addon.GetGuideProgress and addon.GetGuideProgress() or nil
+    local skippedBefore = {}
+    if sameGuide and OXPCData and OXPCData.stepSkip then
+        for k, v in pairs(OXPCData.stepSkip) do skippedBefore[k] = v end
+    end
     if not guide then
         if not quiet then
             Print("Smart start couldn't find a guide section for your level.")
@@ -328,7 +357,7 @@ function SS.Run(quiet)
     local current = addon.currentGuide
     if not current or not current.steps then return end
 
-    local start, skip, blocked = SS.PlanSteps(current, SS.Prerequisites())
+    local start, skip, blocked = SS.PlanSteps(current, SS.Prerequisites(), skippedBefore, wasAt)
     for index in pairs(skip) do
         OXPCData.stepSkip[index] = true
         -- every step Smart start skips is one whose quest chain was missed
@@ -460,7 +489,18 @@ function SS.OnLogin(attempt)
         if level <= 1 then return end
         local _, hi = SS.LevelRange(current)
         if not (hi and level > hi + 1) then return end
-        SS.Run(false)
+        -- Only move you on your own when you're far past this section and
+        -- none of its quests are in your log (you came back to an old
+        -- character). Otherwise say so and let you choose: moving you on
+        -- every login undid steps you'd skipped on purpose.
+        local _, info = SS.ScoreGuide(current, hi, "")
+        local started = info and info.started or 0
+        if level > hi + 4 and started == 0 then
+            SS.Run(false)
+        elseif not SS.hinted then
+            SS.hinted = true
+            Print("You're above this section's level. Type /oxp where to jump to the right section.")
+        end
         return
     end
     -- No guide: pick one for the character's race, faction and level so the
