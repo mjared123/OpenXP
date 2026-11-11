@@ -45,11 +45,23 @@ local fonts = {}
 addon.fonts = fonts
 
 fonts.DEFAULT = "default"
+-- OpenXP ships a few fonts picked for easy reading (Fonts/, all under the
+-- SIL Open Font License, see Fonts/licenses). They're listed first.
+local OWN = "Interface\\AddOns\\" .. addonName .. "\\Fonts\\"
 local BUILTIN = {
     {key = "default", name = "Arial Narrow (OpenXP default)", path = "Fonts\\ARIALN.TTF"},
+    {key = "atkinson", name = "Atkinson Hyperlegible (made for low vision)",
+     path = OWN .. "AtkinsonHyperlegible-Regular.ttf"},
+    {key = "atkinsonbold", name = "Atkinson Hyperlegible Bold",
+     path = OWN .. "AtkinsonHyperlegible-Bold.ttf"},
+    {key = "lexend", name = "Lexend (wide, easy reading)", path = OWN .. "Lexend-Regular.ttf"},
+    {key = "opensans", cyrillic = true, name = "Open Sans", path = OWN .. "OpenSans-Regular.ttf"},
+    {key = "roboto", cyrillic = true, name = "Roboto", path = OWN .. "Roboto-Regular.ttf"},
+    {key = "notosans", cyrillic = true, name = "Noto Sans", path = OWN .. "NotoSans-Regular.ttf"},
+    {key = "firasans", cyrillic = true, name = "Fira Sans", path = OWN .. "FiraSans-Regular.ttf"},
     {key = "friz", name = "Friz Quadrata (game text)", path = "Fonts\\FRIZQT__.TTF"},
-    {key = "morpheus", name = "Morpheus", path = "Fonts\\MORPHEUS.TTF"},
-    {key = "skurri", name = "Skurri", path = "Fonts\\SKURRI.TTF"},
+    {key = "morpheus", name = "Morpheus (game, decorative)", path = "Fonts\\MORPHEUS.TTF"},
+    {key = "skurri", name = "Skurri (game, decorative)", path = "Fonts\\SKURRI.TTF"},
 }
 local builtinByKey = {}
 for _, f in ipairs(BUILTIN) do builtinByKey[f.key] = f end
@@ -113,8 +125,15 @@ function fonts.Path()
     local p = addon.settings and addon.settings.profile
     local key = (p and p.guideFont) or fonts.DEFAULT
     local path
-    if builtinByKey[key] then
-        path = builtinByKey[key].path
+    local own = builtinByKey[key]
+    if own then
+        path = own.path
+        -- OpenXP's own fonts only draw Latin (and some Cyrillic) letters;
+        -- other clients keep their own text font
+        if own.path:find("AddOns", 1, true) and not addon.latinFontsOk
+            and not (clientLocale == "ruRU" and own.cyrillic) then
+            return addon.SafeFont(nil)
+        end
     elseif type(key) == "string" and key:sub(1, 4) == "lsm:" then
         local lsm = LSM()
         path = lsm and lsm:Fetch("font", key:sub(5), true)

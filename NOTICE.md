@@ -30,3 +30,15 @@ RestedXP name were written by RestedXP and are kept here with credit.
 - Removed the files that only load on other WoW versions (Retail, TBC, Wrath, Cata, MoP, Season of Discovery), guides that no Forever or Classic Era guide list loads, unused textures and RestedXP's developer scripts. They remain in RestedXP's repository.
 - Rebuilt the Active Targets frame as a "Quest Targets" list in OpenXP's style, with key bindings to target a quest mob or NPC.
 - Added step history to the guide card with Done / Skipped / Chain missed tags, and made manual step changes stick.
+
+## Bundled fonts
+
+The `Fonts/` folder holds fonts under the SIL Open Font License 1.1. Each license is in `Fonts/licenses/`.
+They are free to bundle, but the fonts themselves are not under CC BY-NC-SA.
+
+- Atkinson Hyperlegible, Regular and Bold: Copyright 2020 Braille Institute of America, Inc. Unmodified.
+- Lexend: Copyright 2018 The Lexend Project Authors. Static Regular instance, cut down to Latin, Greek and Cyrillic.
+- Open Sans: Copyright 2020 The Open Sans Project Authors. Static Regular instance, cut down to Latin, Greek and Cyrillic.
+- Roboto: Copyright 2011 The Roboto Project Authors. Static Regular instance, cut down to Latin, Greek and Cyrillic.
+- Noto Sans: Copyright 2022 The Noto Project Authors. Static Regular instance, cut down to Latin, Greek and Cyrillic.
+- Fira Sans: Copyright 2012-2015 The Mozilla Foundation and Telefonica S.A. Cut down to Latin, Greek and Cyrillic.

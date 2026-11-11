@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.40",
+        date = "November 2026",
+        changes = {
+            "OpenXP now comes with fonts made for easy reading: Atkinson Hyperlegible (designed for low vision, in regular and bold), Lexend, Open Sans, Roboto, Noto Sans and Fira Sans. Pick one in Settings > Guide Window > Font",
+        },
+    },
+    {
         version = "1.3.39",
         date = "November 2026",
         changes = {
