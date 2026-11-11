@@ -240,6 +240,56 @@ try("pickup behind a quest chain offers the chain, then walks it", function()
     assert(pr.kind == "chain" and pr.needAccept, "turn in behind a chain")
     addon.GetGuideProgress = function() return 1 end
 end)
+-- CurseForge, 2026-11-11: "it shows a step later in the quest chain instead
+-- of the first quest". When the guide picks up the chain's first quest a few
+-- steps back, the card offers to go back there, and returns afterwards.
+try("chain whose first quest the guide picks up earlier: go back to it, then return", function()
+    card.data.prereqs = {[4733] = {any = {4681}}, [4681] = {any = {3524}}}
+    card.data.chains = {[4733] = {3524, 4681}, [4681] = {3524}}
+    local done, log = {}, {}
+    addon.IsQuestTurnedIn = function(id) return done[id] end
+    addon.IsOnQuest = function(id) return log[id] end
+    local cur = 12
+    addon.GetGuideProgress = function() return cur end
+    addon.SetStep = function(n) calls.setStep = n; cur = n end
+    steps[5] = {index = 5, elements = {el{tag = "accept", questId = 3524, text = "Accept Washed Ashore"}}}
+    steps[12] = {index = 12, elements = {el{tag = "accept", questId = 4733, text = "Accept Beached Sea Creature"}}}
+    addon.currentGuide = {name = "19-21 Darkshore/Ashenvale", steps = steps}
+    addon.RXPFrame.activeSteps = {steps[12]}
+    stepSkip[5] = true
+    card.MarkStatus(addon.currentGuide, 5, "skipped")
+    card.Refresh(true)
+    local b = card.blocksForTest[1]
+    assert(b.missing and b.missing.back == 5, "go back step not found, got " .. tostring(b.missing and b.missing.back))
+    assert(b.warn.back.shown and b.warn.chain.shown, "go back and chain buttons not both shown")
+    b.warn.back:GetScript("OnClick")()
+    assert(cur == 5, "did not go back to the chain's first pickup")
+    assert(not stepSkip[5], "first pickup still marked skipped")
+    assert(card.StepStatus(addon.currentGuide, 5, 5) == nil, "first pickup still tagged")
+    -- partway through the chain: stay
+    log[3524] = true
+    card.TickForTest()
+    assert(cur == 5 and card.returnTo, "returned before the chain was done")
+    log[3524] = nil; done[3524] = true; done[4681] = true
+    card.TickForTest()
+    assert(cur == 12 and not card.returnTo, "did not come back once the quest could be picked up")
+    -- the guide got there on its own: nothing to do
+    done[3524], done[4681] = nil, nil
+    cur = 12
+    card.ChainBack({back = 5, step = 12, quest = 4733})
+    cur = 13
+    card.TickForTest()
+    assert(not card.returnTo, "return kept after the guide moved past the step")
+    -- no pickup before this step: only the walk
+    steps[5] = {index = 5, elements = {el{textOnly = true, text = "Step text 5"}}}
+    cur = 12
+    card.Refresh(true)
+    assert(b.missing and not b.missing.back and not b.warn.back.shown, "go back offered without a pickup step")
+    addon.SetStep = function(n) calls.setStep = n end
+    addon.GetGuideProgress = function() return 1 end
+    steps[12], steps[13], steps[14] = nil, nil, nil
+    stepSkip[5] = nil
+end)
 try("reads quest chains from Questie when it's installed", function()
     card.data = {}
     local quests = {

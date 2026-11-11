@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.57",
+        date = "November 2026",
+        changes = {
+            "Fixed the guide sometimes showing a later quest in a chain instead of the first one. Smart start now starts you on the chain's first quest",
+            "On a quest chain warning, the new \"Go back to step N\" button takes you to the step with the chain's first quest and brings you back once the chain is done. \"Do the chain\" still works for chains the guide doesn't pick up itself",
+        },
+    },
+    {
         version = "1.3.56",
         date = "November 2026",
         changes = {

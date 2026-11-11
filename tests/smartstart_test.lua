@@ -488,5 +488,42 @@ do
     reset()
 end
 
+-- CurseForge, 2026-11-11: "it shows a step later in the quest chain instead
+-- of the first quest". The anchor lets a couple of open steps sit behind
+-- you; when one of them picks up the first quest of a chain you're about to
+-- do, start on that pickup instead of the later quest.
+do
+    reset()
+    local A, B = 910001, 910002
+    local s = {}
+    local function add(elements) s[#s + 1] = {elements = elements} end
+    add({{tag = "accept", questId = 910100}})          -- 1 done
+    add({{tag = "accept", questId = A}})               -- 2 open: chain start
+    add({{tag = "turnin", questId = 910100}})          -- 3 done
+    add({{tag = "accept", questId = 910101}})          -- 4 done
+    add({{tag = "turnin", questId = 910101}})          -- 5 done
+    add({{tag = "accept", questId = 910102}})          -- 6 done
+    add({{tag = "turnin", questId = 910102}})          -- 7 done (anchor)
+    add({{tag = "turnin", questId = A}, {tag = "accept", questId = B}}) -- 8
+    add({{tag = "turnin", questId = B}})               -- 9
+    local fake = {name = "fake chain", steps = s}
+    for _, q in ipairs({910100, 910101, 910102}) do state.turnedIn[q] = true end
+    local fp = SS.InferPrerequisites({fake})
+    local start = SS.PlanSteps(fake, fp)
+    check(start == 2, "starts on the chain's first pickup just behind you, got " .. start)
+    -- skipped by hand: stays skipped
+    start = SS.PlanSteps(fake, fp, {[2] = true})
+    check(start == 8, "a pickup you skipped by hand isn't brought back, got " .. start)
+    -- where you already were in this section still wins
+    start = SS.PlanSteps(fake, fp, nil, 8)
+    check(start == 8, "never back before where you already are, got " .. start)
+    -- no later step needs it: the open pickup stays behind you
+    s[8] = {elements = {{tag = "accept", questId = 910200}}}
+    s[9] = {elements = {{tag = "turnin", questId = 910200}}}
+    start = SS.PlanSteps(fake, SS.InferPrerequisites({fake}))
+    check(start == 8, "an unrelated open step behind you doesn't pull you back, got " .. start)
+    reset()
+end
+
 print(string.format("%d passed, %d failed", passes, failures))
 return failures

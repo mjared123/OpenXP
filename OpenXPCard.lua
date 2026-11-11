@@ -779,6 +779,40 @@ function card.FindAcceptStep(guide, questId, before)
     end
 end
 
+-- The earlier step in this guide where the first quest of a missed chain
+-- is picked up (one you don't have yet), or nil when the guide doesn't
+-- pick it up before this step
+function card.ChainBackStep(guide, chain, index)
+    if not (guide and guide.steps and index) then return end
+    for _, q in ipairs(chain or {}) do
+        if not TurnedIn(q) and not (addon.IsOnQuest and addon.IsOnQuest(q)) then
+            local steps = guide.steps
+            for i = math.min(index - 1, #steps), 1, -1 do
+                for _, e in ipairs(steps[i] and steps[i].elements or {}) do
+                    if e.tag == "accept" and QuestIdOf(e) == q then return i end
+                end
+            end
+            return
+        end
+    end
+end
+
+-- Go back to where the chain starts. The step there may be marked skipped
+-- from when you passed it; it isn't any more. Once the quest you came from
+-- can be done the guide brings you back to it (see Tick).
+function card.ChainBack(m)
+    local guide = addon.currentGuide
+    if not (guide and m and m.back and m.step) then return end
+    if OXPCData and OXPCData.stepSkip then OXPCData.stepSkip[m.back] = nil end
+    card.MarkStatus(guide, m.back, nil)
+    if guide.steps[m.back] then guide.steps[m.back].completed = nil end
+    card.returnTo = {guide = guide, step = m.step, quest = m.quest, chain = true,
+                     needAccept = m.needAccept}
+    card.hold = nil
+    card.ManualSetStep(m.back)
+    card.Refresh(true)
+end
+
 local function TextButton(parent, text, tip, onClick)
     local btn = CreateFrame("Button", nil, parent)
     btn:SetHeight(22)
@@ -1017,6 +1051,12 @@ local function GetWarn(b)
                 card.StartDetour(m.quest, {m.quest}, "have")
             end
         end)
+    w.back = TextButton(w, L("Go back to it"),
+        L("Go back to the step where the guide picks up the first quest of this chain. Once the chain is done the guide brings you back here."),
+        function()
+            local m = b.missing
+            if m and m.back then card.ChainBack(m) end
+        end)
     w.chain = TextButton(w, L("Do the chain"),
         L("Walk through the earlier quests in this chain, with the arrow. When they're done the guide picks up here again."),
         function()
@@ -1243,7 +1283,14 @@ local function LayoutBlock(b, step, first)
                                       onIt and L(" - in your log") or ""))
                 end
                 list = table.concat(rows, "\n")
-                buttons = {w.chain, w.skip}
+                m.back = card.ChainBackStep(addon.currentGuide, chain, step.index)
+                if m.back then
+                    w.back.label:SetText(fmt(L("Go back to step %d"), m.back))
+                    w.back:SetWidth(math.max(70, (w.back.label:GetStringWidth() or 60) + 18))
+                    buttons = {w.back, w.chain, w.skip}
+                else
+                    buttons = {w.chain, w.skip}
+                end
             end
         end
         b.missing = m
@@ -1257,7 +1304,7 @@ local function LayoutBlock(b, step, first)
         w:ClearAllPoints()
         w:SetPoint("TOPLEFT", b.title, "TOPLEFT", 0, -(y - 11))
         w:SetPoint("RIGHT", b, "RIGHT", -PAD, 0)
-        w.get:Hide(); w.chain:Hide(); w.finish:Hide(); w.skip:Hide()
+        w.get:Hide(); w.back:Hide(); w.chain:Hide(); w.finish:Hide(); w.skip:Hide()
         local anchor = list and w.list or w.text
         -- buttons go side by side, and wrap to a new row on a narrow card
         local rows, x, rowStart = 1, 0, nil
@@ -2153,8 +2200,20 @@ function Tick()
         end
         local r = card.returnTo
         if r then
+            local cur = addon.GetGuideProgress and addon.GetGuideProgress()
             if addon.currentGuide ~= r.guide then
                 card.returnTo = nil
+            elseif r.chain then
+                -- back from the start of a chain: once the quest you came
+                -- from can be done, unless the guide got you there already
+                if cur and cur >= r.step then
+                    card.returnTo = nil
+                elseif not card.QuestBlocked(r.quest) and (not r.needAccept or
+                        (addon.IsOnQuest and addon.IsOnQuest(r.quest)) or TurnedIn(r.quest)) then
+                    card.returnTo = nil
+                    card.hold = nil
+                    card.ManualSetStep(r.step)
+                end
             elseif addon.IsOnQuest and addon.IsOnQuest(r.quest) then
                 card.returnTo = nil
                 card.hold = nil

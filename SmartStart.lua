@@ -427,17 +427,53 @@ function SS.PlanSteps(guide, prereqs, skipped, minStart, level)
         end
     end
 
-    local start
+    local start, startK
     local lastQuestStep = 0
-    for _, i in ipairs(order) do
+    for k, i in ipairs(order) do
         if i > anchor and state[i] == "todo" then
-            start = lastQuestStep + 1
+            start, startK = lastQuestStep + 1, k
             break
         end
         lastQuestStep = i
     end
     -- nothing left to do: after the last quest step
     start = start or (anchor > 0 and math.min(lastQuestStep + 1, #guide.steps) or 1)
+
+    -- A quest you're about to do whose chain starts on an open pickup step
+    -- just behind you (the few open steps the anchor allows): start on that
+    -- pickup, so the guide shows the first quest of the chain and not a
+    -- later one you can't get yet. Pickups further back are a part of the
+    -- section you skipped; the card offers to go back for those.
+    if startK and anchor > 0 then
+        local anchorK
+        for k, i in ipairs(order) do if i == anchor then anchorK = k end end
+        local acceptAt = {}
+        for k = math.max(1, (anchorK or 1) - SS.GUARD_STEPS), startK - 1 do
+            local j = order[k]
+            if state[j] == "todo" and not skipped[j] then
+                for _, q in ipairs(steps[j]) do
+                    if q.tag == "accept" and not acceptAt[q.id] and not SS.IsSatisfied(q.tag, q.id) then
+                        acceptAt[q.id] = j
+                    end
+                end
+            end
+        end
+        local back
+        for k = startK, math.min(#order, startK + SS.GUARD_STEPS) do
+            local i = order[k]
+            if state[i] == "todo" then
+                for _, q in ipairs(steps[i]) do
+                    if not SS.IsSatisfied(q.tag, q.id) then
+                        for _, p in ipairs(SS.MissingPrerequisites(q.id, prereqs)) do
+                            local j = acceptAt[p]
+                            if j and (not back or j < back) then back = j end
+                        end
+                    end
+                end
+            end
+        end
+        if back and back < start then start = back end
+    end
 
     local blockedList = {}
     for id, b in pairs(blocked) do if b then blockedList[id] = true end end
