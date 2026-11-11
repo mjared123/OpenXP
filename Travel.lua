@@ -420,6 +420,11 @@ function tv.Lines()
     for i, leg in ipairs(plan.legs) do
         out[#out + 1] = fmt("%d. %s", i, leg.text)
     end
+    -- flight paths learned before OpenXP was installed aren't known until
+    -- you open a flight master's map once
+    if OXPCData and not OXPCData.openxpTaxiSeen and not next(OXPCData.flightPaths or {}) then
+        out[#out + 1] = L("Tip: open any flight master's map once so OpenXP knows your flight paths")
+    end
     return out
 end
 

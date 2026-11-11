@@ -187,6 +187,9 @@ flightInfo.nodeHash = nodeHash
 local flightUpdate = 0
 
 function addon:TAXIMAP_OPENED()
+    -- OpenXP: the flight paths you know are only readable from an open
+    -- flight map; the travel directions say so until this has happened once
+    if OXPCData then OXPCData.openxpTaxiSeen = true end
     local mapID = C_Map.GetBestMapForUnit("player")
     local cTime = GetTime()
     if mapID and cTime - flightUpdate > 1 then

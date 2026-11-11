@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.54",
+        date = "November 2026",
+        changes = {
+            "Your place in the guide no longer jumps back when you log in. Steps you skipped stay skipped. If you're a bit above a section's level, OpenXP tells you to type /oxp where instead of moving you",
+            "Installing partway through: if you still have a zone's quests, Smart start keeps you in that zone instead of sending you ahead (no more level 16s sent to Auberdine mid-Westfall). Turn-ins for quests you never picked up are skipped instead of being where you start",
+            "Getting there: until you open a flight master's map with OpenXP installed, the directions remind you to do it once, so it knows which flight paths you have",
+        },
+    },
+    {
         version = "1.3.53",
         date = "November 2026",
         changes = {

@@ -312,6 +312,78 @@ do
     _G.C_Timer = nil
 end
 
+-- Player comment (2026-11-11): installed at 16 and got sent to Auberdine,
+-- then to quests they didn't have. A level 16 still doing Westfall (its
+-- quests in the log) stays in Westfall, even one level past its range.
+do
+    reset(); state.level = 16; state.zone = "Westfall"
+    for _, name in ipairs({"1-6 Northshire", "6-11 Elwynn Forest", "11-13 Loch Modan"}) do
+        finishGuide(byName(name))
+    end
+    local west = byName("13-15 Westfall")
+    local ws = SS.QuestSteps(west)
+    local n = 0
+    for i = 1, #west.steps do
+        for _, q in ipairs(ws[i] or {}) do
+            if q.tag == "accept" and n < 4 and not state.turnedIn[q.id] then state.onQuest[q.id] = true; n = n + 1 end
+        end
+    end
+    local pick = SS.PickGuide(guides, 16, "Westfall")
+    check(pick and pick.name == "13-15 Westfall", "level 16 with Westfall quests stays in Westfall, got " .. tostring(pick and pick.name))
+    -- with nothing from Westfall in the log, 16 still goes on to Darkshore
+    state.onQuest = {}
+    pick = SS.PickGuide(guides, 16, "")
+    check(pick and pick.name:find("Darkshore"), "level 16 with an empty log goes to Darkshore, got " .. tostring(pick and pick.name))
+    -- in Darkshore, turn-ins for quests you never picked up are skipped,
+    -- not the place you start
+    local dark = byName("16-19 Darkshore")
+    local start, skip = SS.PlanSteps(dark, prereqs)
+    local ds = SS.QuestSteps(dark)
+    for _, q in ipairs(ds[start] or {}) do
+        if q.tag ~= "accept" then
+            check(state.onQuest[q.id] or state.turnedIn[q.id] or SS.GuideAccepts(ds, q.id),
+                "start step doesn't turn in a quest you don't have (" .. q.id .. ")")
+        end
+    end
+end
+
+-- Player comment (2026-11-11): progress reset on every login. Steps you
+-- skipped by hand stay skipped, Smart start never moves you back in the
+-- section you're in, and logging in a bit above a section's level only
+-- prints a hint instead of moving you.
+do
+    reset(); state.level = 8; state.zone = "Elwynn Forest"
+    finishGuide(byName("1-6 Northshire"))
+    local elwynn = byName("6-11 Elwynn Forest")
+    local es = SS.QuestSteps(elwynn)
+    local first
+    for i = 1, #elwynn.steps do if es[i] then first = i break end end
+    local skipped = {[first] = true}
+    local start = SS.PlanSteps(elwynn, prereqs, skipped)
+    check(start ~= first, "a step skipped by hand isn't where you start, got " .. start)
+    local start2 = SS.PlanSteps(elwynn, prereqs, nil, 40)
+    check(start2 >= 40, "never moved back before your current step, got " .. start2)
+
+    local printed = {}
+    local oldPrint = _G.print
+    _G.print = function(m) table.insert(printed, m) end
+    local ran = false
+    local realRun = SS.Run
+    SS.Run = function() ran = true end
+    addon.currentGuide = elwynn
+    addon.settings = {profile = {}}
+    state.level = 13 -- 2 above 6-11
+    SS.hinted = nil
+    SS.OnLogin()
+    check(not ran, "2 levels above the section: login doesn't move you")
+    check(#printed == 1 and printed[1]:find("/oxp where"), "and says how to jump ahead")
+    state.level = 20 -- far past it, nothing from it in the log
+    SS.OnLogin()
+    check(ran, "far past the section with none of its quests: login moves you")
+    SS.Run = realRun
+    _G.print = oldPrint
+end
+
 -- The guide group names Smart start looks in must match the guides' own
 -- #group lines exactly. They were run through the translation table, so a
 -- German/Spanish/Chinese client looked in a group that doesn't exist.
