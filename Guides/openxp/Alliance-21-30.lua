@@ -105,6 +105,36 @@ step << Gnome Priest
     .target Priestess Alathea
 step << NightElf Druid
     --oxp-class
+    .goto Moonglade,36.00,41.42
+    >>Loot the |cRXP_PICK_Pendant of the Sea Lion|r
+    .complete -272,1 --Trial of the Sea Lion
+step << NightElf Druid
+    --oxp-class
+    .goto Moonglade,56.21,30.64
+    >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
+    .turnin -272 >>Turn in Trial of the Sea Lion
+    .accept 5061 >>Accept Aquatic Form
+    .target Dendrite Starblaze
+step << NightElf Druid
+    --oxp-class
+    .goto Darnassus,35.37,8.40
+    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
+    .turnin 5061 >>Turn in Aquatic Form
+    .target Mathrengyl Bearwalker
+step << NightElf Druid
+    --oxp-class
+    .goto Moonglade,56.21,30.64
+    >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
+    .accept 6125 >>Accept Power over Poison
+    .target Dendrite Starblaze
+step << NightElf Druid
+    --oxp-class
+    .goto Darnassus,35.37,8.40
+    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
+    .turnin 6125 >>Turn in Power over Poison
+    .target Mathrengyl Bearwalker
+step << NightElf Druid
+    --oxp-class
     .goto Moonglade,56.21,30.64
     >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
     .turnin -98731 >>Turn in Blessings of the Great Cat Spirit

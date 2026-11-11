@@ -48,7 +48,8 @@ ALLIANCE = [
     dict(cls="Warrior", name="Whirlwind Weapon", why="weapon for levelling",
          quests=[1718, 1719, 1791, 1712, 1713, 1792], group={1712}),
 
-    # Shaman (Forever's Alliance shamans)
+    # Shaman (Forever's Alliance shamans): Earth and Fire are done by 14 in
+    # the 1-20 guide, so Water and Air here make all four totems
     dict(cls="Shaman", name="Call of Water", why="need (water totems)",
          quests=[94494, 94616, 94495, 94497, 94499, 94500, 94501, 94502, 94503, 94505]),
     dict(cls="Shaman", name="Call of Air", why="need (air totems)",
@@ -67,6 +68,12 @@ ALLIANCE = [
     dict(cls="Priest", race="Gnome", name="Contingency Plan", why="need", quests=[(94819, 94820)]),
 
     # Druid
+    # Druid: every form (Bear is done by 10 in the 1-20 guide; Aquatic Form
+    # and Cure Poison are left open there)
+    dict(cls="Druid", name="Aquatic Form", why="need",
+         quests=[272, 5061]),
+    dict(cls="Druid", name="Cure Poison", why="need",
+         quests=[6125]),
     dict(cls="Druid", name="The Great Cat Spirit", why="need",
          quests=[98731]),
 
