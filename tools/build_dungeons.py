@@ -84,11 +84,13 @@ INSIDE = {
 
 def area_map(qdb):
     m = {}
-    path = os.path.join(qdb, "support", "Zones", "areaIdToUiMapId.lua")
-    if not os.path.exists(path):
-        path = os.path.join(qdb, "support", "Forever", "Zones", "areaIdToUiMapId.lua")
-    for a, u in re.findall(r"\[(\d+)\]\s*=\s*(\d+)", open(path).read()):
-        m.setdefault(int(a), int(u))
+    # Forever's own table first (it has Riverglades, Zephras Isle and the
+    # new dungeons), then the shared one for the rest
+    for path in (os.path.join(qdb, "support", "Forever", "Zones", "areaIdToUiMapId.lua"),
+                 os.path.join(qdb, "support", "Zones", "areaIdToUiMapId.lua")):
+        if os.path.exists(path):
+            for a, u in re.findall(r"\[(\d+)\]\s*=\s*(\d+)", open(path).read()):
+                m.setdefault(int(a), int(u))
     return m
 
 
@@ -98,9 +100,16 @@ def main():
     ap.add_argument("--game", default="Forever")
     ap.add_argument("--faction", default="Alliance")
     ap.add_argument("--new", action="store_true", help="only the dungeons new in WoW Forever")
+    ap.add_argument("--dump", help="also read /oxp questdump from this OpenXP.lua")
     a = ap.parse_args()
     br.GAME, br.FACTION = a.game, a.faction
     db = br.load_db(a.questiedb)
+    if a.game == "Forever":
+        # Forever's own quests are corrections on top of the base data
+        import forever_data
+        if a.dump:
+            db = br.merge_db(db, br.load_dump_cached(a.dump, a.questiedb))
+        db = forever_data.load(a.questiedb, base=db, quiet=True)
     amap = area_map(a.questiedb)
     builder = br.Builder(db, set(), set())
     dungeon_list = [d + ((),) for d in DUNGEONS]
@@ -116,9 +125,13 @@ def main():
         if not isinstance(sp, dict):
             return None
         best = None
+        home = br.li(entity, 9 if idx == 7 else 5)  # the entity's own zone wins
         for area, pts in sp.items():
             pts = [tuple(p) for p in br.as_list(pts) if p and len(p) == 2 and p[0] >= 0]
             if pts and area not in dungeon_areas and amap.get(area):
+                if area == home:
+                    best = (area, pts)
+                    break
                 if not best or len(pts) > len(best[1]):
                     best = (area, pts)
         if not best:

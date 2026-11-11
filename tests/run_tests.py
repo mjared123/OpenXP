@@ -25,4 +25,6 @@ for name in sorted(os.listdir(os.path.join(ROOT, "tests"))):
 print("== route_frozen.py")
 import subprocess
 failures += subprocess.call([sys.executable, os.path.join(ROOT, "tests", "route_frozen.py")])
+print("== completion_check.py")
+failures += subprocess.call([sys.executable, os.path.join(ROOT, "tests", "completion_check.py")])
 sys.exit(1 if failures else 0)

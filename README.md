@@ -80,6 +80,10 @@ OpenXP reads the installed Questie while you play.
 3. `python tools/audit_guides.py --questiedb PATH\QuestieDB --questie "PATH\AddOns\Questie" --dump PATH\OpenXP.lua`
    lists, zone by zone, the quests each faction can do that no guide picks up.
 4. `python tools/build_route.py --questiedb PATH\QuestieDB --dump PATH\OpenXP.lua tools/routes/alliance.py` (or `horde.py`) builds the 21-60 route; the builder picks the zone order by XP per minute.
+5. `python tools/build_completion.py --questiedb PATH\QuestieDB --dump PATH\OpenXP.lua --faction Alliance` (or `Horde`)
+   builds the zone completion guides (`Guides/openxp/Completion-*.lua`, group "OpenXP Zone Completion"): one guide per
+   zone with every quest it has, apart from the 21-60 route. Forever's own quests (Riverglades, Shen'dralas, Zephras
+   Isle, the new quests in old zones) come from QuestieDB's Forever corrections, read by `tools/forever_data.py`.
 
 ## Tests
 
