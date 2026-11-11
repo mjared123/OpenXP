@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.42",
+        date = "November 2026",
+        changes = {
+            "Fixed 1.3.41 showing the old guide window instead of the OpenXP card (a font check stopped the card from loading)",
+        },
+    },
+    {
         version = "1.3.41",
         date = "November 2026",
         changes = {

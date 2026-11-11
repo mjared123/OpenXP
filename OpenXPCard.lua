@@ -20,8 +20,12 @@ local TEX = "Interface/AddOns/" .. addonName .. "/Textures/Card/"
 local WHITE = "Interface/Buttons/WHITE8X8"
 -- The font comes from Settings > Guide Window > Font (Locale.lua, addon.fonts)
 local DEFAULT_FONT = (addon.SafeFont and addon.SafeFont("Fonts\\ARIALN.TTF") or "Fonts\\ARIALN.TTF")
+-- Never let a font problem stop this file from loading: if it did, the card
+-- would never start and the engine's old window would show instead.
 local function Font()
-    return (addon.fonts and addon.fonts.Path()) or DEFAULT_FONT
+    if not addon.fonts then return DEFAULT_FONT end
+    local ok, path = pcall(addon.fonts.Path)
+    return (ok and path) or DEFAULT_FONT
 end
 local WIDTH = 330 -- default; the card can be resized
 local MIN_W, MIN_H, MAX_W, MAX_H = 200, 120, 640, 900

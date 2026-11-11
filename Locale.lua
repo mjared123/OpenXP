@@ -82,8 +82,9 @@ local probe, good, lastTry = nil, {}, {}
 local function Probe()
     if not probe and CreateFrame then
         local ok, frame = pcall(CreateFrame, "Frame", nil, UIParent)
+        -- no SetText here: text on a font string with no font yet is a Lua
+        -- error, and this runs while OpenXPCard.lua is still loading (1.3.42)
         probe = ok and frame and frame.CreateFontString and frame:CreateFontString(nil, "OVERLAY")
-        if probe and probe.SetText then probe:SetText("Aa") end
     end
     return probe
 end
