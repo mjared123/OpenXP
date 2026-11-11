@@ -54,9 +54,20 @@ AREAS = {
     1537: ("Ironforge", E), 12: ("Elwynn Forest", E), 40: ("Westfall", E), 38: ("Loch Modan", E),
     1: ("Dun Morogh", E), 36: ("Alterac Mountains", E), 41: ("Deadwind Pass", E),
     130: ("Silverpine Forest", E), 85: ("Tirisfal Glades", E),
+    1637: ("Orgrimmar", K), 1638: ("Thunder Bluff", K), 1497: ("Undercity", E),
 }
+# Zones the other faction's players don't go to: quest objectives and
+# givers there are ignored (an herb that also grows in Teldrassil is picked
+# in the Barrens). Only used for Horde, so the Alliance steps stay as they are.
+HOSTILE = {
+    "Horde": {141, 1657, 12, 40, 1, 38, 1519, 1537},
+    "Alliance": set(),
+}
+HOSTILE_NOW = set()
+FACTION_LETTER = "A"
 AREA_OF = {v[0]: k for k, v in AREAS.items()}
 RACE_NAMES = [(1, "Human"), (4, "Dwarf"), (8, "NightElf"), (64, "Gnome")]
+HORDE_RACE_NAMES = [(2, "Orc"), (16, "Undead"), (32, "Tauren"), (128, "Troll")]
 
 
 # ---------------------------------------------------------------------------
@@ -130,7 +141,7 @@ def spawn_zones(entity, idx):
     if not isinstance(sp, dict):
         return {}
     return {z: [tuple(p) for p in B.as_list(v) if p and len(p) == 2 and p[0] >= 0]
-            for z, v in sp.items() if z in AREAS}
+            for z, v in sp.items() if z in AREAS and z not in HOSTILE_NOW}
 
 
 def givers(db, ref):
@@ -141,7 +152,7 @@ def givers(db, ref):
         if not n:
             continue
         f = B.li(n, 13)
-        if f is not None and "A" not in f:
+        if f is not None and FACTION_LETTER not in f:
             continue
         for z, pts in spawn_zones(n, 7).items():
             if pts:
@@ -484,6 +495,11 @@ def main():
     ap.add_argument("faction", choices=["Alliance", "Horde"])
     args = ap.parse_args()
     B.GAME, B.FACTION = "Forever", args.faction
+    global RACE_NAMES, HOSTILE_NOW, FACTION_LETTER
+    HOSTILE_NOW = HOSTILE[args.faction]
+    FACTION_LETTER = args.faction[0]
+    if args.faction == "Horde":
+        RACE_NAMES = HORDE_RACE_NAMES
     if args.facts:
         B.FACTS = pickle.load(open(args.facts, "rb"))
     db = B.load_db(args.questiedb)

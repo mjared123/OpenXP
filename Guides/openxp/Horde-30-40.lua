@@ -100,6 +100,109 @@ step
     >>Talk to |cRXP_FRIENDLY_Trackmaster Zherin|r
     .turnin 1175 >>Turn in A Bump in the Road
     .target Trackmaster Zherin
+step << Warlock
+    --oxp-class
+    .goto Orgrimmar,48.25,45.28
+    >>Talk to |cRXP_FRIENDLY_Gan'rul Bloodeye|r
+    .accept 2996 >>Accept Seeking Strahad
+    .target Gan'rul Bloodeye
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.63,35.50
+    >>Talk to |cRXP_FRIENDLY_Strahad Farsan|r
+    .turnin 2996 >>Turn in Seeking Strahad
+    .accept 1801 >>Accept Tome of the Cabal
+    .target Strahad Farsan
+step << Warrior
+    --oxp-class
+    .goto The Barrens,57.23,30.34
+    >>Talk to |cRXP_FRIENDLY_Thun'grim Firegaze|r
+    .accept 1838 >>Accept Brutal Armor
+    .target Thun'grim Firegaze
+step << Warrior
+    --oxp-class
+    .goto Stonetalon Mountains,72.94,60.61
+    >>Kill |cRXP_ENEMY_Windshear Vermin|r and |cRXP_ENEMY_Windshear Digger|r and |cRXP_ENEMY_Windshear Tunnel Rat|r. Loot them for |cRXP_LOOT_Smoky Iron Ingot|r
+    .complete 1838,1 --Brutal Armor
+    .mob Windshear Vermin
+    .mob Windshear Digger
+    .mob Windshear Tunnel Rat
+step << Warrior
+    --oxp-class
+    .goto The Barrens,68.62,49.16
+    >>Talk to |cRXP_FRIENDLY_Klannoc Macleod|r
+    .turnin -1718 >>Turn in The Islander
+    .accept 1719 >>Accept The Affray
+    .target Klannoc Macleod
+step << Warrior
+    --oxp-class
+    .goto The Barrens,68.61,48.72
+    >>Kill |cRXP_ENEMY_Big Will|r
+    .complete 1719,1 --The Affray
+    .mob Big Will
+step << Warrior
+    --oxp-class
+    .goto The Barrens,68.60,48.72
+    >>Step on the grate to begin the Affray
+    .complete 1719,2 --The Affray
+step << Warrior
+    --oxp-class
+    .goto The Barrens,68.62,49.16
+    >>Talk to |cRXP_FRIENDLY_Klannoc Macleod|r
+    .turnin 1719 >>Turn in The Affray
+    .accept 1791 >>Accept The Windwatcher
+    .target Klannoc Macleod
+step << Shaman
+    --oxp-class
+    .goto The Barrens,65.83,43.78
+    >>Talk to |cRXP_FRIENDLY_Islen Waterseer|r
+    .turnin -96 >>Turn in Call of Water
+    .target Islen Waterseer
+step << Shaman
+    --oxp-class
+    .goto Orgrimmar,37.96,37.73
+    >>Talk to |cRXP_FRIENDLY_Searn Firewarder|r
+    .accept 1531 >>Accept Call of Air
+    .target Searn Firewarder
+step << Shaman
+    --oxp-class
+    .goto Thousand Needles,53.54,42.65
+    >>Talk to |cRXP_FRIENDLY_Prate Cloudseer|r
+    .turnin 1531 >>Turn in Call of Air
+    .target Prate Cloudseer
+step << Undead Mage/Troll Mage
+    --oxp-class
+    .goto Orgrimmar,38.45,86.13
+    >>Talk to |cRXP_FRIENDLY_Deino|r
+    .turnin -1943 >>Turn in Speak with Deino
+    .accept 1944 >>Accept Waters of Xavian
+    .target Deino
+step << Undead Mage/Troll Mage
+    --oxp-class
+    .goto Ashenvale,76.29,41.49
+    >>Loot the |cRXP_PICK_Xavian Water Sample|r
+    .complete 1944,1 --Waters of Xavian
+step << Undead Mage/Troll Mage
+    --oxp-class
+    .goto Orgrimmar,38.45,86.13
+    >>Talk to |cRXP_FRIENDLY_Deino|r
+    .turnin 1944 >>Turn in Waters of Xavian
+    .accept 1945 >>Accept Laughing Sisters
+    .target Deino
+step << Undead Mage/Troll Mage
+    --oxp-class
+    .goto Ashenvale,59.83,54.69
+    >>Kill |cRXP_ENEMY_Laughing Sister|r. Loot them for |cRXP_LOOT_Laughing Sister's Hair|r
+    .complete 1945,1 --Laughing Sisters
+    .mob Laughing Sister
+step << Undead Mage/Troll Mage
+    --oxp-class
+    .goto The Barrens,52.20,31.70
+    >>Talk to |cRXP_FRIENDLY_Kil'hala|r
+    .turnin 1945 >>Turn in Laughing Sisters
+    .accept 1946 >>Accept Nether-lace Garment
+    .turnin 1946 >>Turn in Nether-lace Garment
+    .target Kil'hala
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -326,6 +429,43 @@ step
     >>Talk to |cRXP_FRIENDLY_Drum Fel|r
     .turnin 677 >>Turn in Call to Arms
     .target Drum Fel
+step << Warlock
+    --oxp-class
+    .goto Undercity,75.92,37.89
+    >>Talk to |cRXP_FRIENDLY_Jorah Annison|r
+    .turnin 1801 >>Turn in Tome of the Cabal
+    .accept 1803 >>Accept Tome of the Cabal
+    .target Jorah Annison
+step << Warlock
+    --oxp-class
+    .goto Hillsbrad Foothills,27.78,72.79
+    >>Loot the |cRXP_PICK_Moldy Tome|r
+    .complete 1803,1 --Tome of the Cabal
+step << Warlock
+    --oxp-class
+    .goto Undercity,86.21,15.93
+    >>Talk to |cRXP_FRIENDLY_Kaal Soulreaper|r
+    .accept 4739 >>Accept In Search of Menara Voidrender
+    .target Kaal Soulreaper
+step << Warrior
+    --oxp-class
+    .goto Hillsbrad Foothills,30.14,56.47
+    >>Kill |cRXP_ENEMY_Hillsbrad Miner|r. Loot them for |cRXP_LOOT_Powdered Azurite|r
+    .complete 1838,2 --Brutal Armor
+    .mob Hillsbrad Miner
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .turnin 1791 >>Turn in The Windwatcher
+    .target Bath'rah the Windwatcher
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.93,80.38
+    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
+    .accept 96783 >>Accept A Way In
+    .turnin -96786 >>Turn in The Syndicate Sting
+    .target Myrokos Silentform
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -429,6 +569,86 @@ step
     >>Talk to |cRXP_FRIENDLY_"Swamp Eye" Jarl|r
     .turnin 1206 >>Turn in Jarl Needs Eyes
     .target "Swamp Eye" Jarl
+step << Warlock
+    --oxp-class
+    .goto Thousand Needles,43.44,32.69
+    >>Loot the |cRXP_PICK_Tattered Manuscript|r
+    .complete 1803,2 --Tome of the Cabal
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4739 >>Turn in In Search of Menara Voidrender
+    .accept 1796 >>Accept Components for the Enchanted Gold Bloodrobe
+    .turnin 1796 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .accept 4781 >>Accept Components for the Enchanted Gold Bloodrobe
+    .target Menara Voidrender
+step << Warrior
+    --oxp-class
+    .goto The Barrens,57.23,30.34
+    >>Talk to |cRXP_FRIENDLY_Thun'grim Firegaze|r
+    .turnin 1838 >>Turn in Brutal Armor
+    .accept 1848 >>Accept Brutal Hauberk
+    .turnin 1848 >>Turn in Brutal Hauberk
+    .accept 1839 >>Accept Ula'elek and the Brutal Gauntlets
+    .target Thun'grim Firegaze
+step << Warrior
+    --oxp-class
+    .goto Durotar,56.31,74.33
+    >>Talk to |cRXP_FRIENDLY_Ula'elek|r
+    .turnin 1839 >>Turn in Ula'elek and the Brutal Gauntlets
+    .accept 1842 >>Accept Satyr Hooves
+    .target Ula'elek
+step << Warrior
+    --oxp-class
+    .goto Ashenvale,79.29,47.35
+    >>Kill |cRXP_ENEMY_Xavian Rogue|r and |cRXP_ENEMY_Xavian Betrayer|r and |cRXP_ENEMY_Xavian Felsworn|r. Loot them for |cRXP_LOOT_Uncloven Satyr Hoof|r
+    .complete 1842,1 --Satyr Hooves
+    .mob Xavian Rogue
+    .mob Xavian Betrayer
+    .mob Xavian Felsworn
+step << Warrior
+    --oxp-class
+    .goto Durotar,56.31,74.33
+    >>Talk to |cRXP_FRIENDLY_Ula'elek|r
+    .turnin 1842 >>Turn in Satyr Hooves
+    .accept 1843 >>Accept Brutal Gauntlets
+    .turnin 1843 >>Turn in Brutal Gauntlets
+    .target Ula'elek
+step << Warrior
+    --oxp-class
+    .goto The Barrens,57.23,30.34
+    >>Talk to |cRXP_FRIENDLY_Thun'grim Firegaze|r
+    .accept 1840 >>Accept Orm Stonehoof and the Brutal Helm
+    .target Thun'grim Firegaze
+step << Warrior
+    --oxp-class
+    .goto Thunder Bluff,38.99,55.98
+    >>Talk to |cRXP_FRIENDLY_Orm Stonehoof|r
+    .turnin 1840 >>Turn in Orm Stonehoof and the Brutal Helm
+    .accept 1844 >>Accept Chimaeric Horn
+    .target Orm Stonehoof
+step << Warrior
+    --oxp-class
+    .goto Stonetalon Mountains,33.64,74.66
+    >>Kill |cRXP_ENEMY_Chimaera Matriarch|r. Loot them for |cRXP_LOOT_Galvanized Horn|r
+    .complete 1844,1 --Chimaeric Horn
+    .mob Chimaera Matriarch
+step << Warrior
+    --oxp-class
+    .goto Thunder Bluff,38.99,55.98
+    >>Talk to |cRXP_FRIENDLY_Orm Stonehoof|r
+    .turnin 1844 >>Turn in Chimaeric Horn
+    .accept 1845 >>Accept Brutal Helm
+    .turnin 1845 >>Turn in Brutal Helm
+    .target Orm Stonehoof
+step << Shaman
+    --oxp-class
+    .goto Thousand Needles,46.14,51.71
+    >>Talk to |cRXP_FRIENDLY_Rau Cliffrunner|r
+    .accept 79360 >>Accept Elemental Aid
+    .turnin 79360 >>Turn in Elemental Aid
+    .target Rau Cliffrunner
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -865,6 +1085,18 @@ step
     .complete 570,2 --Mok'thardin's Enchantment
     .mob Shadowmaw Panther
     .mob Stranglethorn Tigress
+step << Warlock
+    --oxp-class
+    .goto Stranglethorn Vale,44.33,45.06
+    >>Loot the |cRXP_PICK_Gold Bar|r
+    .complete 4781,1 --Components for the Enchanted Gold Bloodrobe
+step << Warlock
+    --oxp-class
+    .goto Stranglethorn Vale,28.71,76.89
+    >>Talk to |cRXP_FRIENDLY_Xizk Goodstitch|r
+    .turnin 4781 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .accept 4782 >>Accept Components for the Enchanted Gold Bloodrobe
+    .target Xizk Goodstitch
 step
     .goto Stranglethorn Vale,32.12,29.24
     >>Talk to |cRXP_FRIENDLY_Far Seer Mok'thardin|r
@@ -875,6 +1107,27 @@ step
     >>Talk to |cRXP_FRIENDLY_Sir S. J. Erlgadin|r
     .turnin 192 >>Turn in Panther Mastery
     .target Sir S. J. Erlgadin
+step << Warlock
+    --oxp-class
+    .goto Undercity,75.92,37.89
+    >>Talk to |cRXP_FRIENDLY_Jorah Annison|r
+    .turnin 1803 >>Turn in Tome of the Cabal
+    .accept 1805 >>Accept Tome of the Cabal
+    .target Jorah Annison
+step << Warlock
+    --oxp-class
+    .goto Wetlands,49.28,47.47
+    >>Kill |cRXP_ENEMY_Dragonmaw Shadowwarder|r and |cRXP_ENEMY_Dragonmaw Bonewarder|r. Loot them for |cRXP_LOOT_Rod of Channeling|r
+    .complete 1805,1 --Tome of the Cabal
+    .mob Dragonmaw Shadowwarder
+    .mob Dragonmaw Bonewarder
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.93,80.38
+    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
+    .accept 96781 >>Accept What's the Big Idea?
+    .turnin 96781 >>Turn in What's the Big Idea?
+    .target Myrokos Silentform
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -982,6 +1235,12 @@ step
     >>Talk to |cRXP_FRIENDLY_Shakes O'Breen|r
     .turnin 663 >>Turn in Land Ho!
     .target Shakes O'Breen
+step << Warlock
+    --oxp-class
+    .goto Undercity,86.21,15.93
+    >>Talk to |cRXP_FRIENDLY_Kaal Soulreaper|r
+    .accept 4969 >>Accept Knowledge of the Orb of Orahil
+    .target Kaal Soulreaper
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1081,6 +1340,54 @@ step
     >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
     .turnin 5581 >>Turn in Portals of the Legion
     .target Taiga Wisemane
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.63,35.50
+    >>Talk to |cRXP_FRIENDLY_Strahad Farsan|r
+    .turnin 1805 >>Turn in Tome of the Cabal
+    .accept 1795 >>Accept The Binding
+    .target Strahad Farsan
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.60,35.31
+    >>Kill |cRXP_ENEMY_Summoned Felhunter|r
+    .complete 1795,1 --The Binding
+    .mob Summoned Felhunter
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.63,35.50
+    >>Talk to |cRXP_FRIENDLY_Strahad Farsan|r
+    .turnin 1795 >>Turn in The Binding
+    .target Strahad Farsan
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4782 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .accept 4783 >>Accept Components for the Enchanted Gold Bloodrobe
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto Desolace,75.96,22.45
+    >>Kill |cRXP_ENEMY_Hatefury Rogue|r and |cRXP_ENEMY_Hatefury Trickster|r and |cRXP_ENEMY_Hatefury Felsworn|r. Loot them for |cRXP_LOOT_Vial of Hatefury Blood|r
+    .complete 4783,1 --Components for the Enchanted Gold Bloodrobe
+    .mob Hatefury Rogue
+    .mob Hatefury Trickster
+    .mob Hatefury Felsworn
+step << Warlock
+    --oxp-class
+    .goto Desolace,53.00,80.00
+    >>Kill |cRXP_ENEMY_Lesser Infernal|r and |cRXP_ENEMY_Demon Portal Guardian|r. Loot them for |cRXP_LOOT_Lesser Infernal Stone|r
+    .complete 4783,2 --Components for the Enchanted Gold Bloodrobe
+    .mob Lesser Infernal
+    .mob Demon Portal Guardian
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4783 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .turnin 4969 >>Turn in Knowledge of the Orb of Orahil
+    .target Menara Voidrender
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1132,6 +1439,13 @@ step
     >>Kill |cRXP_ENEMY_Darkfang Creeper|r. Loot them for |cRXP_LOOT_Acidic Venom Sac|r (about 25% drop)
     .complete 1322,1 --The Black Shield
     .mob Darkfang Creeper
+step << Mage
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin -1947 >>Turn in Journey to the Marsh
+    .accept 1949 >>Accept Hidden Secrets
+    .target Tabetha
 step
     .goto Dustwallow Marsh,46.88,17.52
     >>Talk to |cRXP_FRIENDLY_"Stinky" Ignatz|r
@@ -1166,6 +1480,25 @@ step
     >>Talk to |cRXP_FRIENDLY_Mudcrush Durtfeet|r
     .turnin 1177 >>Turn in Hungry!
     .target Mudcrush Durtfeet
+step << Mage
+    --oxp-class
+    .goto Thousand Needles,78.29,75.70
+    >>Talk to |cRXP_FRIENDLY_Magus Tirth|r
+    .turnin 1949 >>Turn in Hidden Secrets
+    .accept 1950 >>Accept Get the Scoop
+    .target Magus Tirth
+step << Mage
+    --oxp-class
+    .goto Thousand Needles,79.61,75.63
+    >>Kill |cRXP_ENEMY_"Plucky" Johnson|r
+    .complete 1950,1 --Get the Scoop
+    .mob "Plucky" Johnson
+step << Mage
+    --oxp-class
+    .goto Thousand Needles,78.29,75.70
+    >>Talk to |cRXP_FRIENDLY_Magus Tirth|r
+    .turnin 1950 >>Turn in Get the Scoop
+    .target Magus Tirth
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1250,6 +1583,12 @@ step
     .turnin 668 >>Turn in Sunken Treasure
     .accept 669 >>Accept Sunken Treasure
     .target Shakes O'Breen
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .accept 1712 >>Accept Cyclonian
+    .target Bath'rah the Windwatcher
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1467,6 +1806,12 @@ step
     .goto Stranglethorn Vale,32.22,27.60
     >>Click the |cRXP_PICK_Bubbling Cauldron|r
     .accept 1261 >>Accept Marg Speaks
+step << Warrior
+    --oxp-class
+    .goto Stranglethorn Vale,35.62,23.19
+    >>Loot the |cRXP_PICK_Liferoot|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1712,1 --Cyclonian
 step
     .goto Stranglethorn Vale,35.66,10.81
     >>Talk to |cRXP_FRIENDLY_Hemet Nesingwary|r
@@ -1480,6 +1825,15 @@ step
     .complete 584,1 --Bloodscalp Clan Heads
     .mob Nezzliok the Dire
     .mob Gan'zulah
+step << Warrior
+    --oxp-class
+    .goto Stranglethorn Vale,24.40,11.18
+    >>Kill |cRXP_ENEMY_Bloodscalp Warrior|r and |cRXP_ENEMY_Bloodscalp Scout|r and |cRXP_ENEMY_Bloodscalp Hunter|r. Loot them for |cRXP_LOOT_Bloodscalp Tusk|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1712,2 --Cyclonian
+    .mob Bloodscalp Warrior
+    .mob Bloodscalp Scout
+    .mob Bloodscalp Hunter
 step
     .goto Stranglethorn Vale,25.30,26.40
     >>Loot the |cRXP_PICK_Blue Pearl|r
@@ -1512,6 +1866,13 @@ step
     >>Talk to |cRXP_FRIENDLY_First Mate Crazz|r
     .accept 595 >>Accept The Bloodsail Buccaneers
     .target First Mate Crazz
+step << Warlock
+    --oxp-class
+    .goto Stranglethorn Vale,28.71,76.89
+    >>Talk to |cRXP_FRIENDLY_Xizk Goodstitch|r
+    .accept 4785 >>Accept Fine Gold Thread
+    .turnin 4785 >>Turn in Fine Gold Thread
+    .target Xizk Goodstitch
 step
     .goto Stranglethorn Vale,27.12,77.21
     >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
@@ -1614,6 +1975,28 @@ step
     >>Talk to |cRXP_FRIENDLY_Deeg|r
     .turnin 587 >>Turn in Up to Snuff
     .target Deeg
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .turnin 1712 >>Turn in Cyclonian
+    .accept 1713 >>Accept The Summoning
+    .target Bath'rah the Windwatcher
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.32,62.14
+    >>Kill |cRXP_ENEMY_Cyclonian|r. Loot them for |cRXP_LOOT_Whirlwind Heart|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1713,1 --The Summoning
+    .mob Cyclonian
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .turnin 1713 >>Turn in The Summoning
+    .accept 1792 >>Accept Whirlwind Weapon
+    .turnin 1792 >>Turn in Whirlwind Weapon
+    .target Bath'rah the Windwatcher
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1681,4 +2064,36 @@ step
     >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
     .turnin 5501 >>Turn in Bone Collector
     .target Bibbly F'utzbuckle
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .accept 4784 >>Accept Components for the Enchanted Gold Bloodrobe
+    .accept 1799 >>Accept Fragments of the Orb of Orahil
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto Desolace,80.47,77.84
+    >>Kill |cRXP_ENEMY_Burning Blade Summoner|r. Loot them for |cRXP_LOOT_Infernal Orb|r
+    .complete 1799,1 --Fragments of the Orb of Orahil
+    .mob Burning Blade Summoner
+step << Shaman
+    --oxp-class
+    .goto Thousand Needles,46.14,51.71
+    >>Talk to |cRXP_FRIENDLY_Rau Cliffrunner|r
+    .accept 79366 >>Accept Heed My Call
+    .turnin 79366 >>Turn in Heed My Call
+    .target Rau Cliffrunner
+step << Orc Shaman/Tauren Shaman/Troll Shaman
+    --oxp-class
+    .goto Thousand Needles,46.14,51.71
+    >>Talk to |cRXP_FRIENDLY_Rau Cliffrunner|r
+    .accept 79442 >>Accept The Tempest's Weapons
+    .target Rau Cliffrunner
+step << Mage
+    --oxp-class
+    .goto Thousand Needles,78.29,75.70
+    >>Talk to |cRXP_FRIENDLY_Magus Tirth|r
+    .accept 1951 >>Accept Rituals of Power
+    .target Magus Tirth
 ]])

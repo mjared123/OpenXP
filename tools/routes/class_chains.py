@@ -88,3 +88,56 @@ ALLIANCE = [
     dict(cls="Hunter", name="The Absent Minded Prospector", why="XP (the 1-20 Hunter guide starts it)",
          quests=[729, 731, 741, 942, 943], from_start=True),
 ]
+
+HORDE = [
+    # Warlock: the Succubus (Barrens, 20) is done in the 1-22 guide
+    dict(cls="Warlock", name="Orb of Soran'ruk", why="off-hand for levelling",
+         quests=[1740]),
+    dict(cls="Warlock", name="Felhunter", why="need",
+         quests=[(2996, 3001), 1801, 1803, 1805, 1795]),
+    dict(cls="Warlock", name="Enchanted Gold Bloodrobe", why="chest for levelling",
+         quests=[(4737, 4739), 1796, 4781, 4782, 4783, 4785, 4784, 4786]),
+    dict(cls="Warlock", name="Orb of Orahil", why="off-hand for levelling",
+         quests=[(4967, 4969), 1799, 4962, 4961, 4976, 4964]),
+    dict(cls="Warlock", name="Felsteed", why="need (mount)",
+         quests=[(3631, 4489), 4490]),
+
+    # Warrior: Brutal Armor starts at the Field of Giants trial (the 1-22
+    # guide takes "Speak with Ruga"), then two of the three pieces
+    dict(cls="Warrior", name="Brutal Hauberk", why="chest for levelling",
+         quests=[1823, 1824, 1825, 1838, 1848]),
+    dict(cls="Warrior", name="Brutal Gauntlets", after="Brutal Hauberk", why="gloves for levelling",
+         quests=[1839, 1842, 1843]),
+    dict(cls="Warrior", name="Brutal Helm", after="Brutal Hauberk", why="helm for levelling",
+         quests=[1840, 1844, 1845]),
+    dict(cls="Warrior", name="Whirlwind Weapon", why="Berserker Stance and a weapon for levelling",
+         quests=[1718, 1719, 1791, 1712, 1713, 1792], group={1712}),
+
+    # Shaman: Earth and Fire are done in the starting zones, Water is
+    # started in the Barrens; this finishes Water and adds Forever's Air
+    dict(cls="Shaman", name="Call of Water", why="need (water totems)",
+         quests=[1534, 220, 63, 100, 96]),
+    dict(cls="Shaman", name="Call of Air", why="need (air totems)",
+         quests=[(1531, 1532), 79360, 79366, 79442]),
+
+    # Rogue
+    dict(cls="Rogue", name="Poisons", why="need",
+         quests=[2458, 2478, 2479, 2480]),
+    dict(cls="Rogue", race="Undead", name="Tools of the Trade", why="gear for levelling",
+         quests=[1998, 1999]),
+    dict(cls="Rogue", name="Ravenholdt", why="XP and the Syndicate chain",
+         quests=[6681, 96779, 96783, 96786, 96781]),
+
+    # Druid (Tauren): Bear and Cat are done in the 1-22 guides; Aquatic Form
+    # is started in the Barrens
+    dict(cls="Druid", name="Aquatic Form", why="need",
+         quests=[27, 28, 30, 31]),
+    dict(cls="Druid", name="Cure Poison", why="need",
+         quests=[6126, 6127, 6128, 6129, 6130]),
+
+    # Mage
+    dict(cls="Mage", race="Undead/Troll", name="Nether-lace Garment", why="robe for levelling",
+         quests=[1943, 1944, 1945, 1946]),
+    dict(cls="Mage", name="Mage's Wand", why="wand for levelling",
+         quests=[1947, 1949, 1950, 1951, 1948, 1952]),
+]

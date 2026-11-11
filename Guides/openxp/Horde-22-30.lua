@@ -183,6 +183,36 @@ step
     >>Talk to |cRXP_FRIENDLY_Deathguard Samsa|r
     .turnin 546 >>Turn in Souvenirs of Death
     .target Deathguard Samsa
+step << Undead Rogue
+    --oxp-class
+    .goto Undercity,83.51,69.11
+    >>Talk to |cRXP_FRIENDLY_Mennet Carkad|r
+    .accept 1998 >>Accept Fenwick Thatros
+    .target Mennet Carkad
+step << Undead Rogue
+    --oxp-class
+    .goto Silverpine Forest,59.58,33.94
+    >>Kill |cRXP_ENEMY_Fenwick Thatros|r. Loot them for |cRXP_LOOT_Fenwick's Head|r
+    .complete 1998,1 --Fenwick Thatros
+    .mob Fenwick Thatros
+step << Undead Rogue
+    --oxp-class
+    .goto Undercity,83.51,69.11
+    >>Talk to |cRXP_FRIENDLY_Mennet Carkad|r
+    .turnin 1998 >>Turn in Fenwick Thatros
+    .accept 1999 >>Accept Tools of the Trade
+    .target Mennet Carkad
+step << Undead Rogue
+    --oxp-class
+    .goto Silverpine Forest,63.71,65.24
+    >>Loot the |cRXP_PICK_Dalaran Status Report|r
+    .complete 1999,1 --Tools of the Trade
+step << Undead Rogue
+    --oxp-class
+    .goto Undercity,83.51,69.11
+    >>Talk to |cRXP_FRIENDLY_Mennet Carkad|r
+    .turnin 1999 >>Turn in Tools of the Trade
+    .target Mennet Carkad
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -315,6 +345,32 @@ step
     >>Talk to |cRXP_FRIENDLY_Je'neu Sancrea|r
     .turnin 6563 >>Turn in The Essence of Aku'Mai
     .target Je'neu Sancrea
+step << Tauren Druid
+    --oxp-class
+    .goto Moonglade,36.00,41.42
+    >>Loot the |cRXP_PICK_Pendant of the Sea Lion|r
+    .complete -30,1 --Trial of the Sea Lion
+step << Tauren Druid
+    --oxp-class
+    .goto Moonglade,56.21,30.64
+    >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
+    .turnin -30 >>Turn in Trial of the Sea Lion
+    .accept 31 >>Accept Aquatic Form
+    .target Dendrite Starblaze
+step << Tauren Druid
+    --oxp-class
+    .goto Thunder Bluff,76.48,27.22
+    >>Talk to |cRXP_FRIENDLY_Turak Runetotem|r
+    .turnin 31 >>Turn in Aquatic Form
+    .accept 6126 >>Accept Lessons Anew
+    .target Turak Runetotem
+step << Tauren Druid
+    --oxp-class
+    .goto Moonglade,56.21,30.64
+    >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
+    .turnin 6126 >>Turn in Lessons Anew
+    .accept 6127 >>Accept The Principal Source
+    .target Dendrite Starblaze
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -517,20 +573,48 @@ step
     >>Talk to |cRXP_FRIENDLY_Tatternack Steelforge|r
     .accept 893 >>Accept Weapons of Choice
     .target Tatternack Steelforge
+step << Warlock
+    --oxp-class
+    .goto The Barrens,49.31,57.21
+    >>Talk to |cRXP_FRIENDLY_Doan Karhan|r
+    .accept 1740 >>Accept The Orb of Soran'ruk
+    .turnin 1740 >>Turn in The Orb of Soran'ruk
+    .target Doan Karhan
 step
     .goto The Barrens,44.55,59.26
     >>Talk to |cRXP_FRIENDLY_Mangletooth|r
     .accept 879 >>Accept Betrayal from Within
     .target Mangletooth
+step << Warrior
+    --oxp-class
+    .goto The Barrens,44.67,59.42
+    >>Talk to |cRXP_FRIENDLY_Ruga Ragetotem|r
+    .turnin -1823 >>Turn in Speak with Ruga
+    .accept 1824 >>Accept Trial at the Field of Giants
+    .target Ruga Ragetotem
 step
     .goto The Barrens,45.10,72.18
     >>Loot the |cRXP_PICK_Silithid Egg|r
     .complete -868,1 --Egg Hunt
+step << Warrior
+    --oxp-class
+    .goto The Barrens,45.23,70.16
+    >>Kill |cRXP_ENEMY_Silithid Creeper|r and |cRXP_ENEMY_Silithid Grub|r and |cRXP_ENEMY_Silithid Swarmer|r. Loot them for |cRXP_LOOT_Twitching Antenna|r
+    .complete 1824,1 --Trial at the Field of Giants
+    .mob Silithid Creeper
+    .mob Silithid Grub
+    .mob Silithid Swarmer
 step
     .goto The Barrens,45.89,77.00
     >>Talk to |cRXP_FRIENDLY_Gann Stonespire|r
     .accept 843 >>Accept Gann's Reclamation
     .target Gann Stonespire
+step << Shaman
+    --oxp-class
+    .goto The Barrens,43.42,77.41
+    >>Talk to |cRXP_FRIENDLY_Brine|r
+    .accept 1534 >>Accept Call of Water
+    .target Brine
 step
     .goto The Barrens,42.07,80.46
     >>Kill |cRXP_ENEMY_Razormane Warfrenzy|r. Loot them for |cRXP_LOOT_Razormane War Shield|r (about 15% drop)
@@ -605,6 +689,13 @@ step
     .turnin 879 >>Turn in Betrayal from Within
     .accept 906 >>Accept Betrayal from Within
     .target Mangletooth
+step << Warrior
+    --oxp-class
+    .goto The Barrens,44.67,59.42
+    >>Talk to |cRXP_FRIENDLY_Ruga Ragetotem|r
+    .turnin 1824 >>Turn in Trial at the Field of Giants
+    .accept 1825 >>Accept Speak with Thun'grim
+    .target Ruga Ragetotem
 step
     .goto The Barrens,45.10,57.68
     >>Talk to |cRXP_FRIENDLY_Tatternack Steelforge|r
@@ -615,16 +706,91 @@ step
     >>Talk to |cRXP_FRIENDLY_Thork|r
     .turnin 906 >>Turn in Betrayal from Within
     .target Thork
+step << Warrior
+    --oxp-class
+    .goto The Barrens,57.23,30.34
+    >>Talk to |cRXP_FRIENDLY_Thun'grim Firegaze|r
+    .turnin 1825 >>Turn in Speak with Thun'grim
+    .target Thun'grim Firegaze
 step
     .goto The Barrens,51.07,29.63
     >>Talk to |cRXP_FRIENDLY_Korran|r
     .turnin -868 >>Turn in Egg Hunt
     .target Korran
+step << Tauren Druid
+    --oxp-class
+    .goto The Barrens,48.40,18.89
+    >>Loot the |cRXP_PICK_Filled Dreadmist Peak Sampler|r
+    .complete 6127,1 --The Principal Source
+step << Tauren Druid
+    --oxp-class
+    .goto The Barrens,52.26,31.93
+    >>Talk to |cRXP_FRIENDLY_Tonga Runetotem|r
+    .turnin 6127 >>Turn in The Principal Source
+    .accept 6128 >>Accept Gathering the Cure
+    .target Tonga Runetotem
 step
     .goto The Barrens,35.26,27.88
     >>Talk to |cRXP_FRIENDLY_Seereth Stonebreak|r
     .turnin -1068 >>Turn in Shredding Machines
     .target Seereth Stonebreak
+step << Shaman
+    --oxp-class
+    .goto Ashenvale,33.55,67.47
+    >>Loot the |cRXP_PICK_Filled Blue Waterskin|r
+    .complete 1534,1 --Call of Water
+step << Shaman
+    --oxp-class
+    .goto The Barrens,43.42,77.41
+    >>Talk to |cRXP_FRIENDLY_Brine|r
+    .turnin 1534 >>Turn in Call of Water
+    .accept 220 >>Accept Call of Water
+    .target Brine
+step << Shaman
+    --oxp-class
+    .goto The Barrens,65.83,43.78
+    >>Talk to |cRXP_FRIENDLY_Islen Waterseer|r
+    .turnin 220 >>Turn in Call of Water
+    .accept 63 >>Accept Call of Water
+    .target Islen Waterseer
+step << Tauren Druid
+    --oxp-class
+    .goto The Barrens,40.85,29.59
+    >>Loot the |cRXP_PICK_Earthroot|r
+    .complete 6128,1 --Gathering the Cure
+step << Tauren Druid
+    --oxp-class
+    .goto The Barrens,52.65,43.44
+    >>Kill |cRXP_ENEMY_Lost Barrens Kodo|r and |cRXP_ENEMY_Barrens Kodo|r. Loot them for |cRXP_LOOT_Kodo Horn|r
+    .complete 6128,2 --Gathering the Cure
+    .mob Lost Barrens Kodo
+    .mob Barrens Kodo
+step << Tauren Druid
+    --oxp-class
+    .goto The Barrens,52.26,31.93
+    >>Talk to |cRXP_FRIENDLY_Tonga Runetotem|r
+    .turnin 6128 >>Turn in Gathering the Cure
+    .accept 6129 >>Accept Curing the Sick
+    .target Tonga Runetotem
+step << Tauren Druid
+    --oxp-class
+    .goto The Barrens,57.59,20.49
+    >>Kill |cRXP_ENEMY_Sickly Gazelle|r
+    .complete 6129,1 --Curing the Sick
+    .mob Sickly Gazelle
+step << Tauren Druid
+    --oxp-class
+    .goto Moonglade,56.21,30.64
+    >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
+    .turnin 6129 >>Turn in Curing the Sick
+    .accept 6130 >>Accept Power over Poison
+    .target Dendrite Starblaze
+step << Tauren Druid
+    --oxp-class
+    .goto Thunder Bluff,76.48,27.22
+    >>Talk to |cRXP_FRIENDLY_Turak Runetotem|r
+    .turnin 6130 >>Turn in Power over Poison
+    .target Turak Runetotem
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -645,6 +811,24 @@ step
     >>Talk to |cRXP_FRIENDLY_Apothecary Lydon|r
     .accept 509 >>Accept Elixir of Agony
     .target Apothecary Lydon
+step << Rogue
+    --oxp-class
+    .goto Hillsbrad Foothills,61.63,19.19
+    >>Talk to |cRXP_FRIENDLY_Serge Hinott|r
+    .turnin -2479 >>Turn in Hinott's Assistance
+    .accept 2480 >>Accept Hinott's Assistance
+    .target Serge Hinott
+step << Rogue
+    --oxp-class
+    .goto Hillsbrad Foothills,61.57,19.21
+    >>Cure Completed
+    .complete 2480,1 --Hinott's Assistance
+step << Rogue
+    --oxp-class
+    .goto Hillsbrad Foothills,61.63,19.19
+    >>Talk to |cRXP_FRIENDLY_Serge Hinott|r
+    .turnin 2480 >>Turn in Hinott's Assistance
+    .target Serge Hinott
 step
     .goto Hillsbrad Foothills,62.56,19.66
     >>Click the |cRXP_PICK_Dangerous!|r
@@ -997,4 +1181,63 @@ step
     >>Talk to |cRXP_FRIENDLY_Scooty|r
     .turnin -2842 >>Turn in Chief Engineer Scooty
     .target Scooty
+step << Shaman
+    --oxp-class
+    .goto Silverpine Forest,38.78,44.26
+    >>Kill |cRXP_ENEMY_Corrupt Minor Manifestation of Water|r. Loot them for |cRXP_LOOT_Corrupt Manifestation's Bracers|r
+    .complete 63,1 --Call of Water
+    .mob Corrupt Minor Manifestation of Water
+step << Shaman
+    --oxp-class
+    .goto Silverpine Forest,38.26,44.56
+    >>Click the |cRXP_PICK_Brazier of Everfount|r
+    .turnin 63 >>Turn in Call of Water
+step << Shaman
+    --oxp-class
+    .goto Silverpine Forest,38.26,44.56
+    >>Click the |cRXP_PICK_Brazier of Everfount|r
+    .accept 100 >>Accept Call of Water
+step << Shaman
+    --oxp-class
+    .goto Silverpine Forest,38.65,44.58
+    >>Talk to |cRXP_FRIENDLY_Minor Manifestation of Water|r
+    .turnin 100 >>Turn in Call of Water
+    .accept 96 >>Accept Call of Water
+    .target Minor Manifestation of Water
+step << Rogue
+    --oxp-class
+    .goto Hillsbrad Foothills,78.64,17.84
+    >>Kill |cRXP_ENEMY_Ravenholdt|r
+    .complete -6681,1 --The Manor, Ravenholdt
+    .mob Ravenholdt
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.45,80.32
+    >>Talk to |cRXP_FRIENDLY_Fahrad|r
+    .turnin -6681 >>Turn in The Manor, Ravenholdt
+    .target Fahrad
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.93,80.38
+    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
+    .accept 96779 >>Accept Syndicate Sabotage
+    .target Myrokos Silentform
+step << Rogue
+    --oxp-class
+    .goto Hillsbrad Foothills,79.92,46.04
+    >>Kill |cRXP_ENEMY_Lord Tomas|r
+    .complete 96779,1 --Syndicate Sabotage
+    .mob Lord Tomas
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.93,80.38
+    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
+    .turnin 96779 >>Turn in Syndicate Sabotage
+    .target Myrokos Silentform
+step << Undead Mage/Troll Mage
+    --oxp-class
+    .goto Undercity,85.14,10.03
+    >>Talk to |cRXP_FRIENDLY_Anastasia Hartwell|r
+    .accept 1943 >>Accept Speak with Deino
+    .target Anastasia Hartwell
 ]])

@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.46",
+        date = "November 2026",
+        changes = {
+            "Horde 22-60 now has class quests, like Alliance: Warlock Felhunter, Felsteed and the Bloodrobe and Orb of Orahil, Warrior Brutal Armor and Berserker Stance, Shaman Water and Air totems, Rogue poisons and Ravenholdt, Druid Aquatic Form and Cure Poison, Mage robe and wand. The shared route is unchanged: these steps only show for your class",
+        },
+    },
+    {
         version = "1.3.45",
         date = "November 2026",
         changes = {

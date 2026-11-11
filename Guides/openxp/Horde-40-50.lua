@@ -33,6 +33,13 @@ step
     >>Talk to |cRXP_FRIENDLY_Mosarn|r
     .turnin -1276 >>Turn in The Black Shield
     .target Mosarn
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.63,35.50
+    >>Talk to |cRXP_FRIENDLY_Strahad Farsan|r
+    .accept 4490 >>Accept Summon Felsteed
+    .turnin 4490 >>Turn in Summon Felsteed
+    .target Strahad Farsan
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -72,6 +79,12 @@ step
     >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
     .accept 576 >>Accept Keep An Eye Out
     .target Dizzy One-Eye
+step << Warlock
+    --oxp-class
+    .goto Stranglethorn Vale,28.71,76.89
+    >>Kill |cRXP_ENEMY_Xizk Goodstitch|r. Loot them for |cRXP_LOOT_Fine Gold Thread|r
+    .complete -4784,1 --Components for the Enchanted Gold Bloodrobe
+    .mob Xizk Goodstitch
 step
     .goto Stranglethorn Vale,27.00,77.13
     >>Talk to |cRXP_FRIENDLY_Kebok|r
@@ -135,6 +148,18 @@ step
     >>Talk to |cRXP_FRIENDLY_Kebok|r
     .turnin 209 >>Turn in Skullsplitter Tusks
     .target Kebok
+step << Warlock
+    --oxp-class
+    .goto Arathi Highlands,25.81,30.65
+    >>Kill |cRXP_ENEMY_Burning Exile|r. Loot them for |cRXP_LOOT_Smoldering Coal|r
+    .complete -4784,2 --Components for the Enchanted Gold Bloodrobe
+    .mob Burning Exile
+step << Orc Shaman/Tauren Shaman/Troll Shaman
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .turnin -79442 >>Turn in The Tempest's Weapons
+    .target Bath'rah the Windwatcher
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -293,6 +318,25 @@ step
     >>Talk to |cRXP_FRIENDLY_Hadoken Swiftstrider|r
     .turnin 2903 >>Turn in The Battle Plans
     .target Hadoken Swiftstrider
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin -4784 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .accept 4786 >>Accept The Completed Robe
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Kill |cRXP_ENEMY_Menara Voidrender|r
+    .complete 4786,1 --The Completed Robe
+    .mob Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4786 >>Turn in The Completed Robe
+    .target Menara Voidrender
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -341,6 +385,19 @@ step
     .complete 1166,1 --Overlord Mok'Morokk's Concern
     .mob Firemane Scout
     .mob Firemane Ash Tail
+step << Warlock
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin -1799 >>Turn in Fragments of the Orb of Orahil
+    .target Tabetha
+step << Mage
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin -1951 >>Turn in Rituals of Power
+    .accept 1948 >>Accept Items of Power
+    .target Tabetha
 step
     .goto Dustwallow Marsh,46.00,67.40
     >>Kill |cRXP_ENEMY_Searing Hatchling|r and |cRXP_ENEMY_Searing Whelp|r. Loot them for |cRXP_LOOT_Searing Tongue|r (about 25% drop)
@@ -390,6 +447,63 @@ step
     >>Talk to |cRXP_FRIENDLY_Draz'Zilb|r
     .turnin 1171 >>Turn in The Brood of Onyxia
     .target Draz'Zilb
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.64,35.30
+    >>Talk to |cRXP_FRIENDLY_Acolyte Wytula|r
+    .accept 4962 >>Accept Shard of a Felhound
+    .target Acolyte Wytula
+step << Warlock
+    --oxp-class
+    .goto Desolace,52.91,68.14
+    >>Kill |cRXP_ENEMY_Mana Eater|r. Loot them for |cRXP_LOOT_Imprisoned Felhound Spirit|r
+    .complete 4962,1 --Shard of a Felhound
+    .mob Mana Eater
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4962 >>Turn in Shard of a Felhound
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .accept 4961 >>Accept Cleansing of the Orb of Orahil
+    .target Tabetha
+step << Warlock
+    --oxp-class
+    .goto Dustwallow Marsh,45.79,56.97
+    >>Kill |cRXP_ENEMY_Demon of the Orb|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 4961,1 --Cleansing of the Orb of Orahil
+    .mob Demon of the Orb
+step << Warlock
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin 4961 >>Turn in Cleansing of the Orb of Orahil
+    .accept 4976 >>Accept Returning the Cleansed Orb
+    .target Tabetha
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4976 >>Turn in Returning the Cleansed Orb
+    .accept 4964 >>Accept The Completed Orb of Dar'Orahil
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Kill |cRXP_ENEMY_Menara Voidrender|r
+    .complete 4964,1 --The Completed Orb of Dar'Orahil
+    .mob Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4964 >>Turn in The Completed Orb of Dar'Orahil
+    .target Menara Voidrender
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -654,6 +768,11 @@ step
     .complete 609,1 --Voodoo Dues
     .mob Jon-Jon the Crow
     .mob Maury "Club Foot" Wilkins
+step << Mage
+    --oxp-class
+    .goto Stranglethorn Vale,44.33,45.06
+    >>Loot the |cRXP_PICK_Jade|r
+    .complete 1948,1 --Items of Power
 step
     .goto Stranglethorn Vale,27.61,76.74
     >>Talk to |cRXP_FRIENDLY_Fin Fizracket|r
@@ -679,6 +798,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Far Seer Mok'thardin|r
     .turnin 573 >>Turn in Mok'thardin's Enchantment
     .target Far Seer Mok'thardin
+step << Mage
+    --oxp-class
+    .goto Arathi Highlands,52.00,50.80
+    >>Loot the |cRXP_PICK_Bolt Charged Bramble|r
+    .complete 1948,2 --Items of Power
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -970,6 +1094,14 @@ step
     >>Talk to |cRXP_FRIENDLY_Alchemist Pestlezugg|r
     .turnin 82 >>Turn in Noxious Lair Investigation
     .target Alchemist Pestlezugg
+step << Mage
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin 1948 >>Turn in Items of Power
+    .accept 1952 >>Accept Mage's Wand
+    .turnin 1952 >>Turn in Mage's Wand
+    .target Tabetha
 ]])
 
 RXPGuides.RegisterGuide([[
