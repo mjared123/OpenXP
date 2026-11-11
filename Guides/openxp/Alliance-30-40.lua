@@ -280,15 +280,15 @@ step
     #completewith next
     .zone Ironforge >>Get to Ironforge: Fly to Ironforge
 step
-    .goto Ironforge,69.55,50.33
-    >>Talk to |cRXP_FRIENDLY_Tinkmaster Overspark|r
-    .turnin -2923 >>Turn in Tinkmaster Overspark
-    .target Tinkmaster Overspark
-step
     .goto Ironforge,72.08,51.88
     >>Talk to |cRXP_FRIENDLY_Lomac Gearstrip|r
     .turnin -1072 >>Turn in An Old Colleague
     .target Lomac Gearstrip
+step
+    .goto Ironforge,69.55,50.33
+    >>Talk to |cRXP_FRIENDLY_Tinkmaster Overspark|r
+    .turnin -2923 >>Turn in Tinkmaster Overspark
+    .target Tinkmaster Overspark
 step
     .goto Ironforge,69.95,21.26
     >>Talk to |cRXP_FRIENDLY_Roetten Stonehammer|r
@@ -305,15 +305,15 @@ step << Shaman
     .accept 94789 >>Accept Call of Air
     .target Eldrun Stormbreaker
 step << Priest
-    .goto Ironforge,24.59,10.00
-    >>Talk to |cRXP_FRIENDLY_High Priestess Mims|r
-    .turnin -94819 >>Turn in Contingency Plan
-    .target High Priestess Mims
-step << Priest
     .goto Ironforge,24.73,8.16
     >>Talk to |cRXP_FRIENDLY_High Priest Rohan|r
     .turnin -5645 >>Turn in A Lack of Fear
     .target High Priest Rohan
+step << Priest
+    .goto Ironforge,24.59,10.00
+    >>Talk to |cRXP_FRIENDLY_High Priestess Mims|r
+    .turnin -94819 >>Turn in Contingency Plan
+    .target High Priestess Mims
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1163,6 +1163,16 @@ step
     .accept 1246 >>Accept The Missing Diplomat
     .target Elling Trias
 step
+    .goto Stormwind City,59.73,33.78
+    >>Talk to |cRXP_FRIENDLY_Grimand Elmore|r
+    .turnin 322 >>Turn in Blessed Arm
+    .target Grimand Elmore
+step
+    .goto Stormwind City,75.83,36.72
+    >>Talk to |cRXP_FRIENDLY_Major Samuelson|r
+    .turnin 563 >>Turn in Reassignment
+    .target Major Samuelson
+step
     .goto Stormwind City,74.26,59.17
     >>Talk to |cRXP_FRIENDLY_Dashel Stonefist|r
     .turnin 1246 >>Turn in The Missing Diplomat
@@ -1184,6 +1194,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Elling Trias|r
     .turnin 1247 >>Turn in The Missing Diplomat
     .target Elling Trias
+step << Mage
+    .goto Stormwind City,49.56,85.80
+    >>Talk to |cRXP_FRIENDLY_Jennea Cannon|r
+    .accept 1947 >>Accept Journey to the Marsh
+    .target Jennea Cannon
 step
     .goto Stormwind City,51.79,93.64
     >>Talk to |cRXP_FRIENDLY_Angus Stern|r
@@ -1191,21 +1206,6 @@ step
     .turnin 1271 >>Turn in Feast at the Blue Recluse
     .accept 1260 >>Accept Morgan Stern
     .target Angus Stern
-step << Mage
-    .goto Stormwind City,49.56,85.80
-    >>Talk to |cRXP_FRIENDLY_Jennea Cannon|r
-    .accept 1947 >>Accept Journey to the Marsh
-    .target Jennea Cannon
-step
-    .goto Stormwind City,59.73,33.78
-    >>Talk to |cRXP_FRIENDLY_Grimand Elmore|r
-    .turnin 322 >>Turn in Blessed Arm
-    .target Grimand Elmore
-step
-    .goto Stormwind City,75.83,36.72
-    >>Talk to |cRXP_FRIENDLY_Major Samuelson|r
-    .turnin 563 >>Turn in Reassignment
-    .target Major Samuelson
 ]])
 
 RXPGuides.RegisterGuide([[

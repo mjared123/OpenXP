@@ -27,15 +27,15 @@ step
     .accept 4512 >>Accept A Little Slime Goes a Long Way
     .target Laris Geardawdle
 step
-    .goto Ironforge,71.50,15.74
-    >>Talk to |cRXP_FRIENDLY_Curator Thorius|r
-    .turnin -3368 >>Turn in Suntara Stones
-    .target Curator Thorius
-step
     .goto Ironforge,77.54,11.82
     >>Talk to |cRXP_FRIENDLY_Historian Karnik|r
     .accept 3448 >>Accept Passing the Burden
     .target Historian Karnik
+step
+    .goto Ironforge,71.50,15.74
+    >>Talk to |cRXP_FRIENDLY_Curator Thorius|r
+    .turnin -3368 >>Turn in Suntara Stones
+    .target Curator Thorius
 step << Warlock
     .goto Ironforge,50.35,5.66
     >>Talk to |cRXP_FRIENDLY_Briarthorn|r
@@ -1419,16 +1419,6 @@ step
     .accept 3763 >>Accept Assisting Arch Druid Staghelm
     .target Innkeeper Saelienne
 step
-    .goto Darnassus,35.37,8.40
-    >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
-    .turnin 4986 >>Turn in Glyphed Oaken Branch
-    .target Mathrengyl Bearwalker
-step
-    .goto Darnassus,34.81,9.26
-    >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
-    .turnin 3763 >>Turn in Assisting Arch Druid Staghelm
-    .target Arch Druid Fandral Staghelm
-step
     .goto Darnassus,47.81,81.97
     >>Talk to |cRXP_FRIENDLY_Herald Moonstalker|r
     .accept 1047 >>Accept The New Frontier
@@ -1441,12 +1431,14 @@ step
 step
     .goto Darnassus,34.81,9.26
     >>Talk to |cRXP_FRIENDLY_Arch Druid Fandral Staghelm|r
+    .turnin 3763 >>Turn in Assisting Arch Druid Staghelm
     .turnin 1047 >>Turn in The New Frontier
     .accept 6761 >>Accept The New Frontier
     .target Arch Druid Fandral Staghelm
 step
     .goto Darnassus,35.37,8.40
     >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
+    .turnin 4986 >>Turn in Glyphed Oaken Branch
     .turnin 6761 >>Turn in The New Frontier
     .target Mathrengyl Bearwalker
 ]])
@@ -2148,6 +2140,11 @@ step
     .accept 8795 >>Accept The Alliance Needs Your Help!
     .target Master Sergeant Fizzlebolt
 step
+    .goto Ironforge,61.30,74.20
+    >>Talk to |cRXP_FRIENDLY_Field Marshal Snowfall|r
+    .turnin 8795 >>Turn in The Alliance Needs Your Help!
+    .target Field Marshal Snowfall
+step
     .goto Ironforge,38.37,55.31
     >>Talk to |cRXP_FRIENDLY_Royal Historian Archesonus|r
     .turnin 3701 >>Turn in The Smoldering Ruins of Thaurissan
@@ -2157,11 +2154,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Laris Geardawdle|r
     .turnin 4513 >>Turn in A Little Slime Goes a Long Way
     .target Laris Geardawdle
-step
-    .goto Ironforge,61.30,74.20
-    >>Talk to |cRXP_FRIENDLY_Field Marshal Snowfall|r
-    .turnin 8795 >>Turn in The Alliance Needs Your Help!
-    .target Field Marshal Snowfall
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -2176,16 +2168,16 @@ RXPGuides.RegisterGuide([[
 step
     #completewith next
     .zone Stormwind City >>Get to Stormwind City: Fly to Stormwind
-step
-    .goto Stormwind City,57.17,48.07
-    >>Talk to |cRXP_FRIENDLY_Royal Factor Bathrilor|r
-    .turnin 5022 >>Turn in Better Late Than Never
-    .target Royal Factor Bathrilor
 step << Paladin
     .goto Stormwind City,50.48,47.49
     >>Talk to |cRXP_FRIENDLY_Duthorian Rall|r
     .turnin -4485 >>Turn in The Tome of Nobility
     .target Duthorian Rall
+step
+    .goto Stormwind City,57.17,48.07
+    >>Talk to |cRXP_FRIENDLY_Royal Factor Bathrilor|r
+    .turnin 5022 >>Turn in Better Late Than Never
+    .target Royal Factor Bathrilor
 step
     .goto Stormwind City,80.21,38.35
     >>Talk to |cRXP_FRIENDLY_Highlord Bolvar Fordragon|r

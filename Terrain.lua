@@ -797,13 +797,24 @@ local function Upcoming()
     for i = first, min(#guide.steps, first + STEPS_AHEAD) do
         if i ~= order[1] then order[#order + 1] = i end
     end
+    -- quests you'll pick up on the way, so a turn-in ahead for one of them
+    -- still counts
+    local willHave = {}
     for k, i in ipairs(order) do
         local step = guide.steps[i]
-        -- steps ahead whose quests you've already done aren't stops
+        -- steps ahead whose quests you've already done aren't stops, and
+        -- neither are ones for a quest you don't have and won't get on the
+        -- way (you skipped its pickup): the card will offer to skip them
+        local missing = k > 1 and card and card.MissingQuest and card.MissingQuest(step)
         if step and not step.completed and not step.skip and
-            not (k > 1 and card and card.DoneAhead and card.DoneAhead(step)) then
+            not (k > 1 and card and card.DoneAhead and card.DoneAhead(step)) and
+            not (missing and not willHave[missing]) then
             local map, x, y, a = StepTarget(step)
             if map then out[#out + 1] = {map, x, y, a} end
+            for _, e in ipairs(step.elements or {}) do
+                local id = tonumber(e.questId)
+                if e.tag == "accept" and id then willHave[id] = true end
+            end
         end
     end
     return out

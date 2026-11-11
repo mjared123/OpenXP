@@ -19,15 +19,15 @@ step
     #completewith next
     .zone Thunder Bluff >>Get to Thunder Bluff: Fly to Camp Taurajo, then ride to Thunder Bluff
 step
-    .goto Thunder Bluff,69.85,30.91
-    >>Talk to |cRXP_FRIENDLY_Magatha Grimtotem|r
-    .turnin -5062 >>Turn in Sacred Fire
-    .target Magatha Grimtotem
-step
     .goto Thunder Bluff,22.81,20.89
     >>Talk to |cRXP_FRIENDLY_Apothecary Zamah|r
     .turnin -1067 >>Turn in Return to Thunder Bluff
     .target Apothecary Zamah
+step
+    .goto Thunder Bluff,69.85,30.91
+    >>Talk to |cRXP_FRIENDLY_Magatha Grimtotem|r
+    .turnin -5062 >>Turn in Sacred Fire
+    .target Magatha Grimtotem
 step
     .goto Thunder Bluff,54.01,80.77
     >>Talk to |cRXP_FRIENDLY_Mosarn|r

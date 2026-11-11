@@ -344,6 +344,12 @@ def merge_db(base, extra):
     return {k: {**base.get(k, {}), **extra.get(k, {})} for k in ("q", "n", "o", "i")}
 
 
+class _Straight:
+    """Walking cost in a place without terrain: a straight line."""
+    def cost(self, a, b, lvl=None, arrow=False):
+        return math.dist(a, b)
+
+
 def li(v, i):
     """Lua-style 1-based index into a list or sparse dict."""
     if v is None:
@@ -926,6 +932,7 @@ class Builder:
         t = None if os.environ.get("OXP_NO_TERRAIN") else TERRAIN.for_zone(section["zone"])
         if t is not None:
             return self.simulate_terrain(section, cands, start_pos, t)
+        xp0, lvl0 = self.xp, self.level()
         accepted = set(q for q in self.accepted_before if q in cands)
         objectives_left = {qid: [s[0] for s in c["sites"]] for qid, c in cands.items()}
         turned_in = set()
@@ -1007,6 +1014,10 @@ class Builder:
                 self.xp += x
                 self.xp_from["quests"] += x
             actions.append((kind, ref, where))
+        # Greedy can leave a town criss-crossed (Stormwind: the Keep, the
+        # Cathedral, then back to the Keep), so tidy the order with straight
+        # lines, as the terrain zones do with their paths.
+        actions, _ = self.improve_order(actions, cands, {}, start_pos, xp0, _Straight(), lvl0)
         # Quests finished in a later zone travel on in the quest log.
         for qid in accepted:
             if cands[qid]["obj_later"]:

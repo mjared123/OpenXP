@@ -816,16 +816,16 @@ RXPGuides.RegisterGuide([[
 step
     #completewith next
     .zone Darnassus >>Get to Darnassus: Use your Hearthstone to go back to Astranaar, then fly to Rut'theran Village, then ride to Darnassus
-step
-    .goto Darnassus,61.77,39.18
-    >>Talk to |cRXP_FRIENDLY_Thyn'tel Bladeweaver|r
-    .turnin -1037 >>Turn in Velinde Starsong
-    .target Thyn'tel Bladeweaver
 step << Druid
     .goto Darnassus,35.37,8.40
     >>Talk to |cRXP_FRIENDLY_Mathrengyl Bearwalker|r
     .turnin -6125 >>Turn in Power over Poison
     .target Mathrengyl Bearwalker
+step
+    .goto Darnassus,61.77,39.18
+    >>Talk to |cRXP_FRIENDLY_Thyn'tel Bladeweaver|r
+    .turnin -1037 >>Turn in Velinde Starsong
+    .target Thyn'tel Bladeweaver
 step << Priest
     .goto Darnassus,39.52,81.20
     >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r

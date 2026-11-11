@@ -209,6 +209,30 @@ try("world map and minimap draw without errors", function()
     _G.WorldMapFrame, _G.Minimap, addon.currentGuide, addon.RXPFrame = nil, nil, nil, nil
 end)
 
+try("route line: skips steps ahead for quests you don't have and won't pick up", function()
+    local function at(x, y, ...)
+        local el = {{arrow = true, zone = 1453, x = x, y = y}}
+        for _, e in ipairs({...}) do el[#el + 1] = e end
+        return {elements = el}
+    end
+    local steps = {
+        at(50, 50, {tag = "accept", questId = 343}),          -- you're here
+        at(80, 38, {tag = "turnin", questId = 98190}),        -- never picked up
+        at(48, 50, {tag = "turnin", questId = 98191}),        -- follow-up of it
+        at(77, 30, {tag = "turnin", questId = 343}),          -- picked up on the way
+    }
+    addon.currentGuide = {steps = steps}
+    addon.GetGuideProgress = function() return 1 end
+    addon.card = {MissingQuest = function(step)
+        for _, e in ipairs(step.elements) do
+            if e.tag == "turnin" then return e.questId end
+        end
+    end}
+    local up = tr.draw.Upcoming()
+    assert(#up == 2 and up[2][2] == 77, "you, then Milton: " .. #up)
+    addon.currentGuide, addon.card = nil, nil
+end)
+
 try("every zone: a kill step without .area gets one from Questie's spawns", function()
     local spawns = {}
     for i = 0, 7 do spawns[#spawns + 1] = {30 + (i % 4) * 1.5, 70 + math.floor(i / 4) * 2} end

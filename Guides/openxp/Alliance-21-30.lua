@@ -417,6 +417,11 @@ RXPGuides.RegisterGuide([[
 step
     #completewith next
     .zone Stormwind City >>Get to Stormwind City: Fly to Stormwind
+step
+    .goto Stormwind City,53.02,86.64
+    >>Talk to |cRXP_FRIENDLY_Collin Mauren|r
+    .turnin 1075 >>Turn in A Scroll from Mauren
+    .target Collin Mauren
 step << Rogue
     .goto Stormwind City,78.31,70.74
     >>Talk to |cRXP_FRIENDLY_Master Mathias Shaw|r
@@ -454,6 +459,11 @@ step
     .accept 343 >>Accept Speaking of Fortitude
     .target Brother Kristoff
 step
+    .goto Stormwind City,48.43,50.22
+    >>Talk to |cRXP_FRIENDLY_Lord Grayson Shadowbreaker|r
+    .turnin 98191 >>Turn in A Friend of the Family
+    .target Lord Grayson Shadowbreaker
+step
     .goto Stormwind City,51.05,48.39
     >>Talk to |cRXP_FRIENDLY_Brother Sarno|r
     .accept 2923 >>Accept Tinkmaster Overspark
@@ -473,20 +483,10 @@ step << Priest
     .accept 94819 >>Accept Contingency Plan
     .target High Priestess Laurena
 step
-    .goto Stormwind City,48.43,50.22
-    >>Talk to |cRXP_FRIENDLY_Lord Grayson Shadowbreaker|r
-    .turnin 98191 >>Turn in A Friend of the Family
-    .target Lord Grayson Shadowbreaker
-step
     .goto Stormwind City,77.07,30.21
     >>Talk to |cRXP_FRIENDLY_Milton Sheaf|r
     .turnin 343 >>Turn in Speaking of Fortitude
     .target Milton Sheaf
-step
-    .goto Stormwind City,53.02,86.64
-    >>Talk to |cRXP_FRIENDLY_Collin Mauren|r
-    .turnin 1075 >>Turn in A Scroll from Mauren
-    .target Collin Mauren
 ]])
 
 RXPGuides.RegisterGuide([[

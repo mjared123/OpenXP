@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.33",
+        date = "November 2026",
+        changes = {
+            "The purple route line skips steps for quests you don't have and won't pick up on the way, so it no longer sends you across a city for nothing",
+            "Steps inside cities are put in the shortest order that still picks quests up before turning them in",
+        },
+    },
+    {
         version = "1.3.32",
         date = "November 2026",
         changes = {
