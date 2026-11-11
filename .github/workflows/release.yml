@@ -1,0 +1,45 @@
+# Publishes a new OpenXP version to CurseForge when a version tag is pushed:
+#
+#   git tag v1.3.57
+#   git push origin v1.3.57
+#
+# Pushes to main don't publish anything. The tag must match ## Version in
+# OpenXP.toc and the newest WelcomeFrame.lua changelog entry, or nothing is
+# uploaded. Needs the CF_API_KEY repository secret (a CurseForge API token).
+# Optional repository variables: CF_GAME_VERSIONS (default 1.60.1) and
+# CF_RELEASE_TYPE (release, beta or alpha; default release).
+name: Release to CurseForge
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build zip and upload to CurseForge
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CF_PROJECT_ID: "1792509"
+          CF_GAME_VERSIONS: ${{ vars.CF_GAME_VERSIONS || '1.60.1' }}
+          CF_RELEASE_TYPE: ${{ vars.CF_RELEASE_TYPE || 'release' }}
+          OUT_DIR: ${{ runner.temp }}/dist
+        run: |
+          mkdir -p "$OUT_DIR"
+          python3 tools/curseforge_upload.py "$GITHUB_REF_NAME"
+
+      - name: Attach the zip to a GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP"/dist/OpenXP-*.zip \
+            --title "OpenXP ${GITHUB_REF_NAME#v}" --notes "Also on CurseForge: https://www.curseforge.com/projects/1792509"
