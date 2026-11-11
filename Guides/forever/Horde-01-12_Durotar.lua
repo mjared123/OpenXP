@@ -25,7 +25,7 @@ step
 step << Warrior/Shaman/Warlock/Mage/Priest
     #completewith next
     +|cRXP_WARN_Kill |cRXP_ENEMY_Mottled Boars|r. Loot them until you have 35 copper worth of vendor items (including your armor)|r << Warlock
-    +|cRXP_WARN_Kill |cRXP_ENEMY_Mottled Boars|r. Loot them until you have 60 copper worth of vendor items (including your armor)|r << Maget
+    +|cRXP_WARN_Kill |cRXP_ENEMY_Mottled Boars|r. Loot them until you have 60 copper worth of vendor items (including your armor)|r << Mage
     +|cRXP_WARN_Kill |cRXP_ENEMY_Mottled Boars|r. Loot them until you have 50 copper worth of vendor items (including your armor)|r << Priest
     +|cRXP_WARN_Kill |cRXP_ENEMY_Mottled Boars|r. Loot them until you have 10 copper worth of vendor items (including your armor)|r << Warrior/Shaman
     .goto 1411/1,-4281.07,-720.15,30,0 << Warlock/Mage/Priest

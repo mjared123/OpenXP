@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.49",
+        date = "November 2026",
+        changes = {
+            "Human Paladins: the end of The Tome of Divinity (Redemption) in the 19-20 guide. Revive Henze Faulk and get the Defias Script by Stone Cairn Lake on the way to Redridge, then turn it in at the Stormwind Cathedral before you hearth to Darkshore",
+            "Gnome Priests: Confounding Flash from High Priestess Mims in Ironforge at level 10",
+        },
+    },
+    {
         version = "1.3.48",
         date = "November 2026",
         changes = {

@@ -2474,6 +2474,13 @@ step << Dawrf Priest
     .turnin 5639 >> Turn in Desperate Prayer
     .trainer >> Train your class spells
     .target High Priest Rohan
+step << Gnome Priest
+    .goto Ironforge,24.59,10.0
+    >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_High Priestess Mims|r in the Mystic Ward
+    .accept 94817 >> Accept Confounding Flash
+    .turnin 94817 >> Turn in Confounding Flash
+    .target High Priestess Mims
+    .xp <10,1
 step << Priest/Mage/Warlock
     #ah
     #label OilWandFood

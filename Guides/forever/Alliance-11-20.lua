@@ -5984,6 +5984,34 @@ step
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Theocritus|r at the top
     .accept 94 >> Accept A Watchful Eye
     .xp <20,1
+step << Human Paladin
+    #completewith next
+    .goto Elwynn Forest,72.6,51.4,40 >> Travel to |cRXP_FRIENDLY_Henze Faulk|r's body by Stone Cairn Lake, on your way to Redridge
+    .isOnQuest 1786
+step << Human Paladin
+    .goto Elwynn Forest,72.6,51.4
+    >>|cRXP_WARN_Use the|r [|cRXP_LOOT_Symbol of Life|r] |cRXP_WARN_on|r |cRXP_FRIENDLY_Henze Faulk|r|cRXP_WARN_'s body to bring him back|r
+    .complete 1786,1 --Henze Faulk Revived
+    .use 6866
+    .target Henze Faulk
+    .isOnQuest 1786
+step << Human Paladin
+    .goto Elwynn Forest,72.6,51.4
+    >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Henze Faulk|r
+    .turnin 1786 >> Turn in The Tome of Divinity
+    .accept 1787 >> Accept The Tome of Divinity
+    .target Henze Faulk
+    .isQuestComplete 1786
+step << Human Paladin
+    .goto Elwynn Forest,74.4,49.3,30,0
+    .goto Elwynn Forest,73.4,52.5,30,0
+    .goto Elwynn Forest,76.6,53.4,30,0
+    .goto Elwynn Forest,72.5,56.4,30,0
+    .goto Elwynn Forest,74.4,49.3
+    >>Kill |cRXP_ENEMY_Defias Rogue Wizards|r around the lake. Loot them for the [|cRXP_LOOT_Defias Script|r]
+    .complete 1787,1 --Defias Script (1)
+    .mob Defias Rogue Wizard
+    .isOnQuest 1787
 step
     #label InRR
     #completewith FlyR
@@ -6113,6 +6141,24 @@ step
 	.target Foreman Oslow
     .goto 1433/0,-2267.67,-9280.140
     .turnin 89 >> Turn in The Everstill Bridge
+step << Human Paladin
+    #completewith next
+    .goto Redridge Mountains,30.6,59.4
+    .fly Stormwind >> Fly to Stormwind City to finish The Tome of Divinity (Redemption)
+    .isOnQuest 1787
+step << Human Paladin
+    .goto 1453/0,862.400,-8516.800
+    >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Gazin Tenorm|r in the Cathedral
+    .turnin 1787 >> Turn in The Tome of Divinity
+    .accept 1788 >> Accept The Tome of Divinity
+    .target Gazin Tenorm
+    .isQuestComplete 1787
+step << Human Paladin
+    .goto 1453/0,845.800,-8545.800
+    >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Duthorian Rall|r
+    .turnin 1788 >> Turn in The Tome of Divinity. You learn |cRXP_WARN_Redemption|r
+    .target Duthorian Rall
+    .isOnQuest 1788
 ]])
 
 RXPGuides.RegisterGuide([[
