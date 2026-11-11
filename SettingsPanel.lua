@@ -231,6 +231,7 @@ local settingsDBDefaults = {
         openxpNameplates = true,
         openxpMapRoute = true,
         openxpMapAreas = true,
+        openxpMobPins = false,
         openxpTravel = true,
         openxpRouteColor = {0.72, 0.42, 1.0},
         openxpAutoLoot = false,
@@ -3316,6 +3317,13 @@ function addon.settings:CreateAceOptionsPanel()
                         type = "toggle",
                         width = optionsWidth,
                         order = 5.5125,
+                    },
+                    openxpMobPins = {
+                        name = L("Mob markers on the world map"),
+                        desc = L("Puts a small skull on the world map where each mob or item for your current quests spawns"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.5126,
                     },
                     openxpTravel = {
                         name = L("Show the way to other zones"),

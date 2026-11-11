@@ -657,7 +657,7 @@ end
 local AREA_FILL = {0.20, 0.55, 1.0, 0.30}
 local AREA_EDGE = {0.35, 0.70, 1.0, 0.95}
 local ROUTE_CORE = {0.72, 0.42, 1.0, 0.92}
-local PIN_SIZE = 12
+local PIN_SIZE = 9
 local PIN_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
 local WHITE = "Interface\\Buttons\\WHITE8X8"
 local STEPS_AHEAD = 4      -- route and areas for this many steps after the current one
@@ -1028,7 +1028,12 @@ tr.ObjectiveSpawns = ObjectiveSpawns
 -- World map
 ---------------------------------------------------------------------------
 
-local wmc
+local wmc, wmp
+local function MobPinsOn()
+    local p = addon.settings and addon.settings.profile
+    return p and p.openxpMobPins == true
+end
+tr.MobPinsOn = MobPinsOn
 function tr.DrawMap()
     local wm = _G.WorldMapFrame
     if not (wm and wm:IsShown() and wm.GetCanvas) then return end
@@ -1053,7 +1058,14 @@ function tr.DrawMap()
         end
     end
 
-    local d = addon.terrainData and addon.terrainData[map]
+    -- mob spawn markers: off by default (players found a skull on every
+    -- spawn too busy), on their own low canvas so they never cover the
+    -- map's own pins, the areas or the route
+    if not wmp then
+        wmp = NewCanvas(canvas, (canvas:GetFrameLevel() or 1) + 1)
+    end
+    Clear(wmp)
+    local d = MobPinsOn() and addon.terrainData and addon.terrainData[map]
     if d and d.area and addon.RXPFrame then
         local seen = {}
         for _, step in pairs(addon.RXPFrame.activeSteps or {}) do
@@ -1064,7 +1076,7 @@ function tr.DrawMap()
                         if not seen[key] then
                             seen[key] = true
                             local x, y = P(pt[1], pt[2])
-                            Tex(wmc, PIN_TEXTURE, {1, 1, 1, 0.9}, PIN_SIZE / scale, x, y)
+                            Tex(wmp, PIN_TEXTURE, {1, 1, 1, 0.6}, PIN_SIZE / scale, x, y)
                         end
                     end
                 end
@@ -1211,7 +1223,7 @@ if CreateFrame and C_Timer and C_Timer.NewTicker then
     local Wrap = (addon.perf and addon.perf.Wrap or function(_, f) return f end)
     C_Timer.NewTicker(MAP_TICK, Wrap("world map lines", function()
         local wm = _G.WorldMapFrame
-        if wm and wm:IsShown() then Safe(tr.DrawMap) elseif wmc then Clear(wmc) end
+        if wm and wm:IsShown() then Safe(tr.DrawMap) elseif wmc then Clear(wmc); if wmp then Clear(wmp) end end
     end))
     C_Timer.NewTicker(MINI_TICK, Wrap("minimap lines", function() Safe(tr.DrawMinimap) end))
 end

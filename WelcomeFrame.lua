@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.55",
+        date = "November 2026",
+        changes = {
+            "The skulls on the world map for every quest mob are now off by default. Turn them back on in Settings with \"Mob markers on the world map\". When on, they're smaller and sit under the map's own icons, the kill areas and the route line",
+        },
+    },
+    {
         version = "1.3.54",
         date = "November 2026",
         changes = {
