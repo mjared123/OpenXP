@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.56",
+        date = "November 2026",
+        changes = {
+            "Smart start puts you after the furthest point you've reached in a section, not back at the first quest you skipped. Open steps before that are listed in /oxp catchup",
+            "Smart start skips quests that are gray for your level, but only when the rest of their chain is gray too. Class quests are never skipped this way",
+        },
+    },
+    {
         version = "1.3.55",
         date = "November 2026",
         changes = {

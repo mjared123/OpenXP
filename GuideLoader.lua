@@ -1216,6 +1216,8 @@ function addon.ParseGuide(groupOrContent, text, defaultFor, isEmbedded, group, k
                 guide.steps[currentStep].elements = {}
                 step = guide.steps[currentStep]
                 step.stepId = linenumber + guide.guideId
+                -- kept so Smart start can tell class quests apart
+                step.tagText = classtag
                 --step.index = currentStep
                 addon.step = step
                 --addon.lastObjective = nil
