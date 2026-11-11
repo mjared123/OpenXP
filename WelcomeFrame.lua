@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.52",
+        date = "November 2026",
+        changes = {
+            "Alliance Shamans: Call of Water fixed. It sent you to Silverpine Forest (a Horde zone) and skipped the waterskins. It now has all three waterskins (Wetlands, Redridge, Ashenvale) and the Forgotten Shrine at Stendel's Pond in Westfall, done as the route passes those zones",
+            "Human Warriors: the Burning Rock for Fire Hardened Mail now comes from Gutspill in Duskwood, not a Horde mob in Silverpine",
+            "Class quest trips at the end of a section are now ordered by zone, so you finish what's nearby before travelling (fewer back-and-forth trips for Druids, Warriors, Warlocks and Shamans)",
+        },
+    },
+    {
         version = "1.3.51",
         date = "November 2026",
         changes = {
