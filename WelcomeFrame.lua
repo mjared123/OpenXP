@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.31",
+        date = "November 2026",
+        changes = {
+            "WoW Forever's new boats: Stormwind Harbor to Auberdine, and the Menethil boat that runs Menethil, Southshore, Auberdine and back to Menethil. The arrow, the Getting there lines and the guide's travel steps all use them",
+            "Stormwind to the Wetlands is now the two boats (about 10 minutes) instead of flying to Thelsamar and running through Dun Algaz (about 13)",
+        },
+    },
+    {
         version = "1.3.30",
         date = "November 2026",
         changes = {

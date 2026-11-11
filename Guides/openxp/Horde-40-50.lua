@@ -17,7 +17,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Thunder Bluff >>Get to Thunder Bluff: Fly to Sun Rock Retreat, then ride to Thunder Bluff
+    .zone Thunder Bluff >>Get to Thunder Bluff: Fly to Camp Taurajo, then ride to Thunder Bluff
 step
     .goto Thunder Bluff,69.85,30.91
     >>Talk to |cRXP_FRIENDLY_Magatha Grimtotem|r
@@ -288,7 +288,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Feralas >>Get to Camp Mojache in Feralas: Fly to Camp Taurajo, then ride to Camp Mojache
+    .zone Feralas >>Get to Camp Mojache in Feralas: Fly to Freewind Post, then ride to Camp Mojache
 step
     .goto Feralas,75.45,44.36
     >>Talk to |cRXP_FRIENDLY_Shyn|r
@@ -1072,7 +1072,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone The Hinterlands >>Get to Revantusk Village in The Hinterlands: Fly to Hammerfall, then ride to Revantusk Village
+    .zone The Hinterlands >>Get to Revantusk Village in The Hinterlands: Fly to Grom'gol, then take the zeppelin from Grom'gol to Undercity, then fly to Tarren Mill, then ride to Revantusk Village
 step
     .goto The Hinterlands,81.70,81.76
     >>Talk to |cRXP_FRIENDLY_Gorkas|r

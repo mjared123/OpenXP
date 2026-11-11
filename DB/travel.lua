@@ -33,8 +33,20 @@ addon.travelData = {
     -- how long the trip takes, waiting for it included. faction: who can use it.
     -- oneway = true: only a to b (a boat that runs a loop, one entry per stop).
     transports = {
-        {kind = "boat", a = {1437, 4.6, 57.0}, an = "Menethil Harbor", b = {1439, 32.4, 43.8}, bn = "Auberdine",
-         secs = 240, faction = "Alliance"},
+        -- WoW Forever: the Menethil boat now runs a one-way loop, Menethil ->
+        -- Southshore -> Auberdine -> Menethil (fan sites reading the 1.60.1
+        -- client; Matt confirmed it in game 2026-11-11). secs: about 100 for
+        -- waiting and docking plus the path length at ~13 yd/s.
+        {kind = "boat", a = {1439, 32.4, 43.8}, an = "Auberdine", b = {1437, 4.6, 57.0}, bn = "Menethil Harbor",
+         secs = 265, faction = "Alliance", oneway = true},
+        {kind = "boat", a = {1437, 4.6, 57.0}, an = "Menethil Harbor", b = {1424, 46.4, 50.2}, bn = "Southshore",
+         secs = 355, faction = "Alliance", oneway = true},
+        {kind = "boat", a = {1424, 46.4, 50.2}, an = "Southshore", b = {1439, 32.4, 43.8}, bn = "Auberdine",
+         secs = 250, faction = "Alliance", oneway = true},
+        -- WoW Forever: Stormwind Harbor <-> Auberdine. Dock spot from the
+        -- harbor's Manifest Clerk (Questie), not checked in game.
+        {kind = "boat", a = {1453, 30.5, 28.8}, an = "Stormwind Harbor", b = {1439, 32.4, 43.8}, bn = "Auberdine",
+         secs = 220, faction = "Alliance"},
         {kind = "boat", a = {1437, 5.0, 63.4}, an = "Menethil Harbor", b = {1445, 71.6, 56.4}, bn = "Theramore",
          secs = 240, faction = "Alliance"},
         {kind = "boat", a = {1439, 33.2, 40.0}, an = "Auberdine", b = {1438, 54.9, 96.8}, bn = "Rut'theran Village",

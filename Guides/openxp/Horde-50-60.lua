@@ -345,7 +345,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Un'Goro Crater >>Get to Marshal's Refuge in Un'Goro Crater: Take the zeppelin from Undercity to Orgrimmar, then fly to Freewind Post, then ride to Marshal's Refuge
+    .zone Un'Goro Crater >>Get to Marshal's Refuge in Un'Goro Crater: Take the zeppelin from Undercity to Orgrimmar, then fly to Gadgetzan, then ride to Marshal's Refuge
 step
     .goto Un'Goro Crater,45.23,5.83
     >>Talk to |cRXP_FRIENDLY_Gryfe|r

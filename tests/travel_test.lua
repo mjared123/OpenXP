@@ -114,21 +114,24 @@ end
 local albagorm = target(1442, 37.1, 8.1, "Talk to Keeper Albagorm")
 
 try("Duskwood to Stonetalon: fly, boat, fly, then the Talondeep Path", function()
-    know(12, 7, 26, 28)
+    -- Forever: Stormwind Harbor has a boat to Auberdine, and Menethil's boat
+    -- goes round by Southshore first, so Stormwind's boat is the way
+    know(12, 2, 7, 26, 28)
     at(1431, 77.0, 44.0) -- by the Darkshire flight master
     local plan = tv.PlanFor(albagorm)
     local s = texts(plan)
-    assert(s:find("Fly to Menethil Harbor", 1, true), s)
+    assert(s:find("Fly to Stormwind", 1, true), s)
     assert(s:find("Take the boat to Auberdine", 1, true), s)
+    assert(not s:find("Menethil", 1, true), s)
     assert(s:find("Fly to Astranaar", 1, true), s)
     assert(s:find("Talondeep Path", 1, true), s)
     -- the arrow: the flight master you're standing by, saying where to fly
     local a = tv.ArrowTarget(albagorm)
-    assert(a and a.travel and a.title == "Fly to Menethil Harbor", a and a.title)
+    assert(a and a.travel and a.title == "Fly to Stormwind", a and a.title)
     assert(a.instance == 0)
     -- and the card lists the legs in order
     local lines = tv.Lines()
-    assert(lines[1] == "1. Fly to Menethil Harbor", lines[1])
+    assert(lines[1] == "1. Fly to Stormwind", lines[1])
 end)
 
 try("flight paths you haven't learned aren't used", function()

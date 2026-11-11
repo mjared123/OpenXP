@@ -28,7 +28,7 @@ DOCK_WALK = 1.0           # minutes: from a town's flight master to its dock
 CITY_WALK = 2.0           # minutes: from a capital's flight master to the tram
 RUNNING, MOUNTED = 7.0, 11.2  # yards per second (mount at 40)
 RIDE_FACTOR = 1.5         # roads wind; riding isn't a straight line
-MAX_ZONES_RIDE = 2
+MAX_ZONES_RIDE = 1
 MAX_RIDE = 4500           # yards (straight line): further than this, don't plan a ride between towns
 # Towns you can't ride to: Feathermoon is on an island (boat from the coast).
 NO_RIDE = {"Feathermoon"}
@@ -48,6 +48,11 @@ def _py(v):
     if lupa.lua_type(v) == "table":
         return {k: _py(v[k]) for k in v.keys()}
     return v
+
+
+# Docks named apart from their town's flight master.
+HARBOR = {"Stormwind Harbor": "Stormwind"}
+DOCK = {v: k for k, v in HARBOR.items()}
 
 
 def short(name):
@@ -112,7 +117,8 @@ class Network:
                 continue
             a, b = short(t["an"]), short(t["bn"])
             walk = CITY_WALK if t["kind"] == "tram" else DOCK_WALK
-            self.transports.append((a, b, t["secs"] / 60.0 + walk, t["kind"]))
+            a, b = HARBOR.get(a, a), HARBOR.get(b, b)
+            self.transports.append((a, b, t["secs"] / 60.0 + walk, t["kind"], bool(t.get("oneway"))))
 
     def borders(self, a, b):
         """Zone borders between two towns, walking (99 when unknown)."""
@@ -166,10 +172,10 @@ class Network:
                     m = self.ride_minutes(cur, b, level)
                     if m is not None:
                         edges.append((b, m, "ride"))
-            for a, b, m, kind in self.transports:
+            for a, b, m, kind, oneway in self.transports:
                 if a == cur:
                     edges.append((b, m, kind))
-                elif b == cur:
+                elif b == cur and not oneway:
                     edges.append((a, m, kind))
             for b, m, kind in edges:
                 nd = d + m
@@ -189,8 +195,8 @@ class Network:
         # one flight with stops is still one flight
         merged = []
         for leg in legs:
-            if merged and merged[-1][0] == "fly" and leg[0] == "fly":
-                merged[-1] = ("fly", merged[-1][1], leg[2])
+            if merged and merged[-1][0] == leg[0] and leg[0] in ("fly", "ride"):
+                merged[-1] = (leg[0], merged[-1][1], leg[2])
             else:
                 merged.append(leg)
         return best[to], merged
@@ -208,7 +214,7 @@ def describe(legs):
         elif kind == "tram":
             parts.append("take the Deeprun Tram to %s" % b)
         else:
-            parts.append("take the %s from %s to %s" % (kind, a, b))
+            parts.append("take the %s from %s to %s" % (kind, DOCK.get(a, a), DOCK.get(b, b)))
     if not parts:
         return ""
     text = ", then ".join(parts)
