@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.45",
+        date = "November 2026",
+        changes = {
+            "Fixed no guide loading at all on German, Spanish and Chinese game clients (\"Smart start couldn't find a guide section for your level\"), for both Alliance and Horde",
+        },
+    },
+    {
         version = "1.3.44",
         date = "November 2026",
         changes = {

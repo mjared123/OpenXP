@@ -312,5 +312,21 @@ do
     _G.C_Timer = nil
 end
 
+-- The guide group names Smart start looks in must match the guides' own
+-- #group lines exactly. They were run through the translation table, so a
+-- German/Spanish/Chinese client looked in a group that doesn't exist.
+do
+    local db = readfile(ROOT .. "/DB/forever/db.lua")
+    for fac in ("AH"):gmatch(".") do
+        local want = "RestedXP Forever Guide (" .. fac .. ")"
+        local found = false
+        for line in db:gmatch("addon%.defaultGroup%s*=%s*([^\n]+)") do
+            if line == '"' .. want .. '"' then found = true end
+        end
+        check(found, "default guide group for " .. fac .. " is the untranslated \"" .. want .. "\"")
+    end
+    check(not db:find("defaultGroup%s*=%s*L"), "default guide group is never translated")
+end
+
 print(string.format("%d passed, %d failed", passes, failures))
 return failures

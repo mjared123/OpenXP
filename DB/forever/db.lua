@@ -30,13 +30,16 @@ if class == "HUNTER" then
 end
 ]]
 
-local L = addon.locale.Get
+-- OpenXP: the guide files are English only and register under these exact
+-- group names, so the names must not be translated. (On a German, Spanish or
+-- Chinese client the translated name matched no guide: no guide loaded and
+-- Smart start found nothing.)
 if faction == "Horde" then
-    addon.defaultGroup = L"RestedXP Forever Guide (H)"
-    addon.defaultGroupHC = L"RestedXP Forever Guide (H)"
+    addon.defaultGroup = "RestedXP Forever Guide (H)"
+    addon.defaultGroupHC = "RestedXP Forever Guide (H)"
 elseif faction == "Alliance" then
-    addon.defaultGroup = L"RestedXP Forever Guide (A)"
-    addon.defaultGroupHC = L"RestedXP Forever Guide (A)"
+    addon.defaultGroup = "RestedXP Forever Guide (A)"
+    addon.defaultGroupHC = "RestedXP Forever Guide (A)"
 end
 
 
