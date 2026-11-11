@@ -32,6 +32,24 @@ SS.api = {
     GuideName = function(guide)
         return addon.GetGuideName and addon.GetGuideName(guide) or guide.name
     end,
+    -- the quest's level from Questie, or nil when it isn't known
+    QuestLevel = function(id)
+        local db = SS.api.QuestieDB()
+        local q = db and db.GetQuest and db:GetQuest(id)
+        local l = q and (q.questLevel or q.level)
+        if type(l) == "number" and l > 0 then return l end
+    end,
+    -- how many levels below you a quest can be before it turns gray
+    GreenRange = function()
+        if GetQuestGreenRange then return GetQuestGreenRange() end
+    end,
+    -- the next quest in a chain, from Questie
+    NextInChain = function(id)
+        local db = SS.api.QuestieDB()
+        local q = db and db.GetQuest and db:GetQuest(id)
+        local n = q and q.nextQuestInChain
+        if type(n) == "number" and n > 0 then return n end
+    end,
     QuestieDB = function()
         if _G.QuestieLoader then
             local ok, db = pcall(_G.QuestieLoader.ImportModule, _G.QuestieLoader, "QuestieDB")
@@ -225,10 +243,104 @@ function SS.PickGuide(guides, level, zone)
     return best, bestInfo
 end
 
+-- Classic's quest colours: a quest is gray once it's more than the green
+-- range below you (the game tells us the range; this is the fallback).
+function SS.GreenRange(level)
+    local r = SS.api.GreenRange and SS.api.GreenRange()
+    if r then return r end
+    if level <= 5 then return 5 end
+    if level <= 39 then return 5 + math.floor(level / 10) end
+    return 1 + math.floor(level / 5)
+end
+
+function SS.IsGray(id, level)
+    local ql = SS.api.QuestLevel and SS.api.QuestLevel(id)
+    if not ql or not level then return false end
+    return level - ql > SS.GreenRange(level)
+end
+
+local CLASSES = {"Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid"}
+local function IsClassStep(step)
+    local t = step and step.tagText
+    if not t then return false end
+    for _, c in ipairs(CLASSES) do
+        if t:find(c, 1, true) then return true end
+    end
+    return false
+end
+
+-- Quests in this guide that Smart start may skip for being gray: you don't
+-- have them, they're gray, they're not class quests, and every later quest
+-- in their chain is gray too (so a chain that ends in a green quest or a
+-- good reward is kept).
+function SS.GrayQuests(guide, steps, prereqs, level)
+    local api = SS.api
+    local inGuide, classQuest = {}, {}
+    for i, quests in pairs(steps) do
+        for _, q in ipairs(quests) do
+            inGuide[q.id] = true
+            if IsClassStep(guide.steps[i]) then classQuest[q.id] = true end
+        end
+    end
+    -- later quests in the chain: Questie's next-in-chain, plus quests in
+    -- this guide that need this one
+    local after = {}
+    local function link(a, b)
+        after[a] = after[a] or {}
+        after[a][b] = true
+    end
+    for id in pairs(inGuide) do
+        local n = api.NextInChain and api.NextInChain(id)
+        if n then link(id, n) end
+        for _, p in ipairs(prereqs and prereqs[id] or {}) do link(p, id) end
+        local db = api.QuestieDB and api.QuestieDB()
+        local quest = db and db.GetQuest and db:GetQuest(id)
+        if quest then
+            for _, p in pairs(quest.preQuestGroup or {}) do link(p, id) end
+            for _, p in pairs(quest.preQuestSingle or {}) do link(p, id) end
+        end
+    end
+    local memo = {}
+    local function chainGray(id, depth)
+        if memo[id] ~= nil then return memo[id] end
+        if depth > 30 or classQuest[id] then return false end
+        if not api.IsTurnedIn(id) and not SS.IsGray(id, level) then
+            memo[id] = false
+            return false
+        end
+        memo[id] = true -- guards loops
+        for b in pairs(after[id] or {}) do
+            if not chainGray(b, depth + 1) then
+                memo[id] = false
+                return false
+            end
+        end
+        return true
+    end
+    local gray = {}
+    for id in pairs(inGuide) do
+        if not classQuest[id] and not api.IsTurnedIn(id) and not api.IsOnQuest(id)
+            and SS.IsGray(id, level) and chainGray(id, 0) then
+            gray[id] = true
+        end
+    end
+    return gray
+end
+
+-- When a finished step counts as where you are: of it and the quest steps
+-- just before it, at most GUARD_OPEN are still open and at least
+-- GUARD_QUESTS different quests are done. Stops one quest (or a short
+-- chain) done out of order from jumping you past a whole zone.
+SS.GUARD_STEPS = 6
+SS.GUARD_OPEN = 2
+SS.GUARD_QUESTS = 3
+
 -- Works out, for a loaded guide, which step to start on and which steps to
 -- skip because their quest chain is broken.
--- Returns startStep, skipSteps (set of step indexes), blocked (set of quest ids).
-function SS.PlanSteps(guide, prereqs, skipped, minStart)
+-- Returns startStep, skipSteps (set of step indexes), blocked (set of quest
+-- ids), graySteps (set of step indexes skipped because their quests are gray).
+-- `level` turns on the gray check; without it no quest counts as gray.
+function SS.PlanSteps(guide, prereqs, skipped, minStart, level)
     local steps = SS.QuestSteps(guide)
     skipped = skipped or {}
 
@@ -251,13 +363,16 @@ function SS.PlanSteps(guide, prereqs, skipped, minStart)
         return isBlocked
     end
 
-    local skip = {}
-    local start
-    local lastDoneQuestStep = 0
+    local gray = level and SS.GrayQuests(guide, steps, prereqs, level) or {}
+
+    -- each quest step is "done", "skip" (chain missed, gray, or you
+    -- skipped it) or "todo"
+    local skip, graySteps = {}, {}
+    local state, order = {}, {}
     for i = 1, #(guide.steps or {}) do
         local quests = steps[i]
         if quests then
-            local open, allBlocked = false, true
+            local open, allBlocked, allGray = false, true, true
             for _, q in ipairs(quests) do
                 if not SS.IsSatisfied(q.tag, q.id) then
                     open = true
@@ -271,25 +386,64 @@ function SS.PlanSteps(guide, prereqs, skipped, minStart)
                     elseif not IsBlocked(q.id) then
                         allBlocked = false
                     end
+                    if not gray[q.id] then allGray = false end
                 end
             end
-            -- steps you skipped by hand stay skipped
-            if skipped[i] then open = false end
-            if open and allBlocked then
+            if not open then
+                state[i] = "done"
+            elseif skipped[i] then
+                -- steps you skipped by hand stay skipped
+                state[i] = "skip"
+            elseif allBlocked then
+                state[i] = "skip"
                 skip[i] = true
-            elseif open and not start then
-                start = lastDoneQuestStep + 1
-            elseif not open and not start then
-                lastDoneQuestStep = i
+            elseif allGray then
+                state[i] = "skip"
+                graySteps[i] = true
+            else
+                state[i] = "todo"
             end
+            order[#order + 1] = i
         end
     end
+
+    -- Where you are: the furthest finished step whose last few quest steps
+    -- are finished or skipped too. Open steps before it are behind you.
+    local anchor = 0
+    for k, i in ipairs(order) do
+        if state[i] == "done" then
+            local open, done, nDone = 0, {}, 0
+            for m = math.max(1, k - SS.GUARD_STEPS), k do
+                local j = order[m]
+                if state[j] == "todo" then open = open + 1 end
+                for _, q in ipairs(steps[j]) do
+                    if not done[q.id] and SS.IsSatisfied(q.tag, q.id) then
+                        done[q.id] = true
+                        nDone = nDone + 1
+                    end
+                end
+            end
+            if open <= SS.GUARD_OPEN and nDone >= SS.GUARD_QUESTS then anchor = i end
+        end
+    end
+
+    local start
+    local lastQuestStep = 0
+    for _, i in ipairs(order) do
+        if i > anchor and state[i] == "todo" then
+            start = lastQuestStep + 1
+            break
+        end
+        lastQuestStep = i
+    end
+    -- nothing left to do: after the last quest step
+    start = start or (anchor > 0 and math.min(lastQuestStep + 1, #guide.steps) or 1)
+
     local blockedList = {}
     for id, b in pairs(blocked) do if b then blockedList[id] = true end end
-    start = start or 1
     -- never back to before where you already are in this section
     if minStart and minStart > start then start = minStart end
-    return start, skip, blockedList
+    return start, skip, blockedList, graySteps
 end
 
 function SS.GuideAccepts(steps, id)
@@ -357,11 +511,17 @@ function SS.Run(quiet)
     local current = addon.currentGuide
     if not current or not current.steps then return end
 
-    local start, skip, blocked = SS.PlanSteps(current, SS.Prerequisites(), skippedBefore, wasAt)
+    local start, skip, blocked, graySteps = SS.PlanSteps(current, SS.Prerequisites(), skippedBefore, wasAt, level)
     for index in pairs(skip) do
         OXPCData.stepSkip[index] = true
-        -- every step Smart start skips is one whose quest chain was missed
+        -- these steps' quest chain was missed
         if addon.card and addon.card.MarkStatus then addon.card.MarkStatus(current, index, "chain") end
+    end
+    local nGray = 0
+    for index in pairs(graySteps or {}) do
+        nGray = nGray + 1
+        OXPCData.stepSkip[index] = true
+        if addon.card and addon.card.MarkStatus then addon.card.MarkStatus(current, index, "skipped") end
     end
     if addon.card then addon.card.hold = nil end
     addon.SetStep(start)
@@ -373,6 +533,9 @@ function SS.Run(quiet)
         for _ in pairs(skip) do skipped = skipped + 1 end
         Print(string.format("Smart start: %s, step %d. %d of %d quests already done.",
             SS.api.GuideName(current) or "?", start, info.done, info.total))
+        if nGray > 0 then
+            Print(string.format("Skipped %d steps with quests too low for you (gray). Type /oxp catchup to see them.", nGray))
+        end
         if nBlocked > 0 then
             Print(string.format(
                 "Skipped %d steps for %d quests whose earlier chain quests you haven't done. Type /oxp catchup to see them.",

@@ -46,7 +46,7 @@ local function parseGuides(text)
                 if stepTag and not applies(stepTag) then
                     step = nil
                 else
-                    step = {elements = {}}
+                    step = {elements = {}, tagText = stepTag}
                     table.insert(guide.steps, step)
                 end
             elseif step then
@@ -398,6 +398,94 @@ do
         check(found, "default guide group for " .. fac .. " is the untranslated \"" .. want .. "\"")
     end
     check(not db:find("defaultGroup%s*=%s*L"), "default guide group is never translated")
+end
+
+-- Placing a player who skipped low quests (CurseForge, 2026-11-11: "had to
+-- click through close to a hundred steps").
+do
+    -- the section with the most quest steps
+    local g, steps, order
+    for _, cand in ipairs(guides) do
+        local st = SS.QuestSteps(cand)
+        local o = {}
+        for i = 1, #cand.steps do if st[i] then o[#o + 1] = i end end
+        if not order or #o > #order then g, steps, order = cand, st, o end
+    end
+    check(#order > 20, "found a long section to test placement")
+    local function doStep(i)
+        for _, q in ipairs(steps[i]) do state.turnedIn[q.id] = true end
+    end
+    -- did a run of steps in the middle, skipped the first quests
+    reset()
+    local from, to = math.floor(#order / 2), math.floor(#order / 2) + 5
+    for k = from, to do doStep(order[k]) end
+    local start = SS.PlanSteps(g, prereqs)
+    check(start > order[to], "starts after your furthest progress, got " .. start .. " want > " .. order[to])
+    -- the open steps before it are behind you, not where you start
+    check(start ~= 1, "doesn't start back at the first skipped quest")
+
+    -- one quest done out of order far ahead doesn't jump you there
+    reset()
+    doStep(order[#order - 2])
+    local start2 = SS.PlanSteps(g, prereqs)
+    check(start2 < order[#order - 2], "a single out-of-order quest doesn't move you ahead, got " .. start2)
+
+    -- gray quests: with Questie levels, quests far below you are skipped
+    reset()
+    local levels = {}
+    local oldLevel, oldNext, oldRange = SS.api.QuestLevel, SS.api.NextInChain, SS.api.GreenRange
+    SS.api.GreenRange = function() return 6 end
+    SS.api.NextInChain = function() return nil end
+    SS.api.QuestLevel = function(id) return levels[id] end
+    -- every quest in the first three quest steps is level 10 (gray at 22),
+    -- the rest level 22
+    local early = {}
+    for k = 1, #order do
+        for _, q in ipairs(steps[order[k]]) do
+            if k <= 3 then early[q.id] = true end
+        end
+    end
+    for k = 1, #order do
+        for _, q in ipairs(steps[order[k]]) do
+            levels[q.id] = early[q.id] and 10 or 22
+        end
+    end
+    local _, _, _, grayAt = SS.PlanSteps(g, prereqs, nil, nil, 22)
+    local nGray = 0
+    for _ in pairs(grayAt) do nGray = nGray + 1 end
+    -- a quest gray at 22 whose chain goes on into a green quest is kept
+    local keptForChain = false
+    for id in pairs(early) do
+        for b, pre in pairs(prereqs) do
+            for _, a in ipairs(pre) do
+                if a == id and not early[b] then keptForChain = true end
+            end
+        end
+    end
+    check(nGray > 0 or keptForChain, "gray quests at the start are skipped")
+    local _, _, _, none = SS.PlanSteps(g, prereqs, nil, nil, 12)
+    check(next(none) == nil, "nothing is gray when you're close to the quests' level")
+    local _, _, _, off = SS.PlanSteps(g, prereqs)
+    check(next(off) == nil, "no gray skipping without a level")
+
+    -- a chain whose last quest is green keeps its gray start
+    local a, b = 900001, 900002
+    local fake = {name = "fake", steps = {
+        {elements = {{tag = "accept", questId = a}}},
+        {elements = {{tag = "turnin", questId = a}, {tag = "accept", questId = b}}},
+        {elements = {{tag = "turnin", questId = b}}},
+        {elements = {{tag = "accept", questId = 900003}}, tagText = "Warrior"},
+    }}
+    levels[a], levels[b], levels[900003] = 5, 20, 5
+    local fp = SS.InferPrerequisites({fake})
+    local s3, _, _, g3 = SS.PlanSteps(fake, fp, nil, nil, 22)
+    check(not g3[1] and s3 == 1, "gray quest leading to a green one is kept")
+    check(not g3[4], "class quests are never skipped for being gray")
+    levels[b] = 5
+    local _, _, _, g4 = SS.PlanSteps(fake, fp, nil, nil, 22)
+    check(g4[1] and g4[2] and g4[3], "an all-gray chain is skipped whole")
+    SS.api.QuestLevel, SS.api.NextInChain, SS.api.GreenRange = oldLevel, oldNext, oldRange
+    reset()
 end
 
 print(string.format("%d passed, %d failed", passes, failures))
