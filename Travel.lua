@@ -98,7 +98,7 @@ local function Build()
                 local a = AddNode({wx = ax, wy = ay, inst = ai, zones = {[t.a[1]] = true}, name = t.an, kind = "dock"})
                 local b = AddNode({wx = bx, wy = by, inst = bi, zones = {[t.b[1]] = true}, name = t.bn, kind = "dock"})
                 Link(a, b, t.kind, t.secs, t.bn)
-                Link(b, a, t.kind, t.secs, t.an)
+                if not t.oneway then Link(b, a, t.kind, t.secs, t.an) end
             end
         end
     end

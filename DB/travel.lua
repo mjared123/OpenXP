@@ -31,6 +31,7 @@ addon.travelData = {
 
     -- Boats, zeppelins and the tram: a and b are the two ends. secs: about
     -- how long the trip takes, waiting for it included. faction: who can use it.
+    -- oneway = true: only a to b (a boat that runs a loop, one entry per stop).
     transports = {
         {kind = "boat", a = {1437, 4.6, 57.0}, an = "Menethil Harbor", b = {1439, 32.4, 43.8}, bn = "Auberdine",
          secs = 240, faction = "Alliance"},
