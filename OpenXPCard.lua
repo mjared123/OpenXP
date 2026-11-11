@@ -507,17 +507,27 @@ function card.HasQuestData()
     return Questie() ~= nil or card.data.prereqs ~= nil
 end
 
+-- Questie builds a fresh table on every lookup, and the card, the map and
+-- the tooltips ask for the same few quests and NPCs many times a second,
+-- so keep what it returned (its data doesn't change while you play)
+local qcache, qcount = {}, 0
+local QCACHE_MAX = 3000
 local function QGet(kind, id)
     local db = Questie()
     if not (db and id) then return end
+    local key = kind .. ":" .. tostring(id)
+    local hit = qcache[key]
+    if hit then return hit end
     local fn = db["Get" .. kind]
     if type(fn) ~= "function" then return end
+    if qcount >= QCACHE_MAX then qcache, qcount = {}, 0 end
     -- Questie defines some of these as QuestieDB.GetX(id), others as
     -- QuestieDB:GetX(id); try both
     local ok, obj = pcall(fn, id)
-    if ok and type(obj) == "table" then card.questieStyle = "dot"; return obj end
+    if ok and type(obj) == "table" then card.questieStyle = "dot"; qcache[key] = obj; qcount = qcount + 1; return obj end
     ok, obj = pcall(fn, db, id)
-    if ok and type(obj) == "table" then card.questieStyle = "colon"; return obj end
+    if ok and type(obj) == "table" then card.questieStyle = "colon"; qcache[key] = obj; qcount = qcount + 1; return obj end
+    -- nothing yet: Questie may still be building its database, ask again later
 end
 card.QGet = QGet -- also used by the tooltips (OpenXPTooltips.lua)
 

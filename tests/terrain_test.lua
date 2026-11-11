@@ -23,6 +23,9 @@ local addon = {}
 assert(loadfile(ROOT .. "/DB/terrain.lua"))("OpenXP", addon)
 assert(loadfile(ROOT .. "/Terrain.lua"))("OpenXP", addon)
 local tr = addon.terrain
+-- the route tests below are about where the line goes, not how its searches
+-- are spread over frames (that has its own tests at the end)
+tr.lazyPerFrame = math.huge
 
 local fails = 0
 local function try(label, fn)
@@ -298,6 +301,72 @@ try("roads: the way keeps to the road instead of cutting the corner", function()
         px, py = p[1], p[2]
     end
     assert(on / n > 0.8, "mostly on the road: " .. on .. "/" .. n .. " " .. show(pts))
+end)
+
+---------------------------------------------------------------------------
+-- Hitching: searches are remembered and spread over frames
+---------------------------------------------------------------------------
+
+-- searches started since the clock last moved
+local function searches() return tr.SearchesThisFrame() end
+
+try("a way is worked out once, then remembered", function()
+    clock = 500
+    local a = tr.FindPath(1431, 75.3, 48.7, 66.7, 17.9, 23)
+    assert(searches() == 1, "first time searches")
+    local b = tr.FindPath(1431, 75.6, 48.2, 66.9, 17.5, 23) -- same cells
+    assert(searches() == 1, "same cells: no new search")
+    assert(#a == #b and a[1][1] == b[1][1], "same corners")
+    assert(b[#b][1] == 66.9 and b[#b][2] == 17.5, "still ends on the exact target")
+end)
+
+try("drawing starts one new search per frame, the rest next frame", function()
+    tr.lazyPerFrame = 1
+    clock = 600
+    local p1, wait1 = tr.FindPath(1431, 75.3, 48.7, 66.7, 17.9, 24, true)
+    assert(p1 and not wait1, "first one runs")
+    local p2, wait2 = tr.FindPath(1431, 75.3, 48.7, 30.5, 40.5, 24, true)
+    assert(not p2 and wait2, "second one waits")
+    local p3 = tr.FindPath(1431, 75.3, 48.7, 30.5, 40.5, 24)
+    assert(p3, "the arrow never waits")
+    clock = 600.02
+    local p4, wait4 = tr.FindPath(1431, 75.3, 48.7, 10.5, 70.5, 24, true)
+    assert(not wait4, "next frame: runs")
+    tr.lazyPerFrame = math.huge
+end)
+
+try("the line from you follows you without searching every step", function()
+    clock = 700
+    local first = tr.FollowPath("t", 1431, 75.3, 48.7, 66.7, 17.9, 25)
+    assert(first and #first >= 2, "a way round")
+    local n = 0
+    -- walk the first stretch of the way in small steps
+    local ax, ay = 75.3, 48.7
+    local c = first[1]
+    for i = 1, 10 do
+        clock = 700 + i * 0.1
+        local x, y = ax + (c[1] - ax) * i / 10, ay + (c[2] - ay) * i / 10
+        local before = searches()
+        tr.FollowPath("t", 1431, x, y, 66.7, 17.9, 25)
+        n = n + searches() - before
+    end
+    assert(n == 0, "no new searches while following: " .. n)
+end)
+
+try("arrow: a target sliding along an area's edge doesn't redo the way", function()
+    clock = 800
+    local ctx = {zone = 1431}
+    local t = {wx = 667, wy = 179, instance = 0}
+    tr.Route(t, 753, 487, 0, ctx)
+    local n = 0
+    for i = 1, 20 do
+        clock = 800 + i * 0.2
+        t.wx = 667 + i * 0.5 -- the nearest edge point moves as you walk
+        local before = searches()
+        tr.Route(t, 753 - i, 487 - i, 0, ctx)
+        n = n + searches() - before
+    end
+    assert(n == 0, "searches while the target slid: " .. n)
 end)
 
 return fails

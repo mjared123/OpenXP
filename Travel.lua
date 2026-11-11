@@ -423,14 +423,20 @@ function tv.Lines()
     return out
 end
 
--- The route on `map` as polylines of map points (0-100), or nil
+-- The route on `map` as polylines of map points (0-100), or nil.
+-- Kept per map, so the world map and the minimap (often different maps)
+-- don't keep throwing each other's lines away. The terrain searches behind
+-- the walks are remembered (Terrain.lua), and new ones are spread over
+-- frames: a walk still waiting for its search isn't drawn yet.
 local lineCache = {}
 function tv.Polylines(map, level)
     local plan = tv.Current()
     if not (plan and map) then return end
     local px, py, pmap = HBD:GetPlayerZonePosition()
-    local key = tostring(plan) .. ":" .. map .. ":" .. floor((px or 0) * 200) .. ":" .. floor((py or 0) * 200)
-    if lineCache.key == key then return lineCache.lines end
+    local key = tostring(plan) .. ":" .. floor((px or 0) * 200) .. ":" .. floor((py or 0) * 200)
+    local cached = lineCache[map]
+    if cached and cached.key == key then return cached.lines end
+    local complete = true
     -- only what's on this map's continent
     local _, _, mapInst = HBD:GetWorldCoordinatesFromZone(0.5, 0.5, map)
     local function P(n)
@@ -451,11 +457,20 @@ function tv.Polylines(map, level)
         end
     end
     local function Walk(line, a, b)
+        if not complete then return end -- the line stops where a search waits
         local z = tr and tr.FindPath and Shared(a, b)
         if z then
             local ax, ay = HBD:GetZoneCoordinatesFromWorld(a.wx, a.wy, z, true)
             local bx, by = HBD:GetZoneCoordinatesFromWorld(b.wx, b.wy, z, true)
-            local way = ax and bx and tr.FindPath(z, ax * 100, ay * 100, bx * 100, by * 100, level or 1)
+            local way, pending
+            if ax and bx then
+                -- the walk from where you stand follows you instead of
+                -- being worked out again every few steps
+                local find = (a == cur and tr.FollowPath) and function(...) return tr.FollowPath("travel", ...) end
+                    or tr.FindPath
+                way, pending = find(z, ax * 100, ay * 100, bx * 100, by * 100, level or 1, true)
+            end
+            if pending then complete = false return end
             for _, w in ipairs(way or {}) do
                 local wx, wy, inst = HBD:GetWorldCoordinatesFromZone(w[1] / 100, w[2] / 100, z)
                 local q = wx and P({wx = wx, wy = wy, inst = inst})
@@ -494,8 +509,9 @@ function tv.Polylines(map, level)
             if p[1] > -20 and p[1] < 120 and p[2] > -20 and p[2] < 120 then keep[#keep + 1] = p end
         end
         if #keep >= 2 then lines[#lines + 1] = keep end
+        if not complete then break end
     end
-    lineCache.key, lineCache.lines = key, lines
+    if complete then lineCache[map] = {key = key, lines = lines} end
     return lines
 end
 

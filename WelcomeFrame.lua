@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.36",
+        date = "November 2026",
+        changes = {
+            "Fixed short stutters (hitching) while running: the purple route line and the arrow worked out their way around mountains again every few steps. Ways are now remembered, follow you as you walk, and new ones are spread over frames",
+            "The minimap line is only redrawn when something changed, and with the route line turned off no route work is done at all",
+            "Quest data read from Questie is kept instead of being looked up again many times a second",
+        },
+    },
+    {
         version = "1.3.35",
         date = "November 2026",
         changes = {

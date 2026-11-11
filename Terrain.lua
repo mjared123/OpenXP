@@ -31,6 +31,7 @@ local DANGER_MAX = 40.0 -- 5+ levels above you
 local NEAR = 1.6        -- cells: a corner counts as reached
 local STRAY = 4         -- cells off the way before it's worked out again
 local REPLAN = 15       -- seconds: work the way out again at most this often
+local MOVED = 2         -- cells: a target that moved less than this keeps its way
 
 local grids = {}        -- uiMap -> {cells (byte per cell), kx, ky}
 
@@ -120,34 +121,38 @@ local function NearestOpen(g, x, y)
     return x, y
 end
 
--- Binary heap of {f, index}
-local function Push(h, f, i)
-    local n = #h + 1
-    h[n] = {f, i}
+-- Binary heap kept in two arrays (f values, cell indexes), so a search
+-- doesn't make a table for every cell it looks at
+local function Push(hf, hi, n, f, i)
+    n = n + 1
     while n > 1 do
         local p = floor(n / 2)
-        if h[p][1] <= h[n][1] then break end
-        h[p], h[n] = h[n], h[p]
+        local pf = hf[p]
+        if pf <= f then break end
+        hf[n], hi[n] = pf, hi[p]
         n = p
     end
+    hf[n], hi[n] = f, i
 end
 
-local function Pop(h)
-    local top = h[1]
-    local n = #h
-    h[1] = h[n]
-    h[n] = nil
+local function Pop(hf, hi, n)
+    local topf, topi = hf[1], hi[1]
+    local lf, li = hf[n], hi[n]
+    hf[n], hi[n] = nil, nil
     n = n - 1
-    local i = 1
-    while true do
-        local l, r, s = i * 2, i * 2 + 1, i
-        if l <= n and h[l][1] < h[s][1] then s = l end
-        if r <= n and h[r][1] < h[s][1] then s = r end
-        if s == i then break end
-        h[i], h[s] = h[s], h[i]
-        i = s
+    if n > 0 then
+        local i = 1
+        while true do
+            local l, s, sf = i * 2, i, lf
+            if l <= n and hf[l] < sf then s, sf = l, hf[l] end
+            if l + 1 <= n and hf[l + 1] < sf then s, sf = l + 1, hf[l + 1] end
+            if s == i then break end
+            hf[i], hi[i] = sf, hi[s]
+            i = s
+        end
+        hf[i], hi[i] = lf, li
     end
-    return top
+    return topf, topi, n
 end
 
 -- Cost of walking the straight line from cell a to cell b (cell middles),
@@ -188,70 +193,183 @@ local function Smooth(g, danger, cells, cost)
     return out
 end
 
--- The way from (ax, ay) to (bx, by), zone map coordinates 0-100, for a
--- character of this level. Returns a list of corners {x, y} (map
--- coordinates) after the start, ending at the target, or nil when the
--- straight line is fine or there's no terrain for the map.
-function tr.FindPath(map, ax, ay, bx, by, level)
-    local g = Grid(map)
-    if not g then return end
+-- The grid search itself, from cell (sx, sy) to cell (tx, ty) (1-based,
+-- before NearestOpen). Returns the corners between them as map points, or
+-- false when the straight line is fine or there's no way.
+local function Search(g, level, sx, sy, tx, ty)
     local danger = Danger(g, level)
-    local sx, sy = NearestOpen(g, floor(ax) + 1, floor(ay) + 1)
-    local tx, ty = NearestOpen(g, floor(bx) + 1, floor(by) + 1)
-    if sx == tx and sy == ty then return end
+    sx, sy = NearestOpen(g, sx, sy)
+    tx, ty = NearestOpen(g, tx, ty)
+    if sx == tx and sy == ty then return false end
+    local cells = g.cells
     local kx, ky = g.kx, g.ky
     local diag = sqrt(kx * kx + ky * ky)
-    local steps = {{1, 0, kx}, {-1, 0, kx}, {0, 1, ky}, {0, -1, ky},
-                   {1, 1, diag}, {1, -1, diag}, {-1, 1, diag}, {-1, -1, diag}}
+    local SX = {1, -1, 0, 0, 1, 1, -1, -1}
+    local SY = {0, 0, 1, -1, 1, -1, 1, -1}
+    local SC = {kx, kx, ky, ky, diag, diag, diag, diag}
     local function H(x, y)
         local dx, dy = (x - tx) * kx, (y - ty) * ky
         return sqrt(dx * dx + dy * dy)
     end
+    local function K(x, y)
+        if x < 1 or y < 1 or x > N or y > N then return 0 end
+        return cells[(y - 1) * N + x]
+    end
     local start, goal = (sy - 1) * N + sx, (ty - 1) * N + tx
     local best, came = {[start] = 0}, {}
-    local heap = {}
-    Push(heap, H(sx, sy), start)
+    local hf, hi, n = {}, {}, 0
+    Push(hf, hi, n, H(sx, sy), start)
+    n = 1
     local found
-    while #heap > 0 do
-        local top = Pop(heap)
-        local i = top[2]
+    while n > 0 do
+        local f, i
+        f, i, n = Pop(hf, hi, n)
         if i == goal then found = true break end
         local gi = best[i]
         local x, y = (i - 1) % N + 1, floor((i - 1) / N) + 1
-        if top[1] - H(x, y) <= gi + 0.001 then
-            for _, s in ipairs(steps) do
-                local nx, ny = x + s[1], y + s[2]
-                local k = Kind(g, nx, ny)
-                if k ~= 0 and not (s[1] ~= 0 and s[2] ~= 0 and
-                        (Kind(g, x + s[1], y) == 0 or Kind(g, x, y + s[2]) == 0)) then
+        if f - H(x, y) <= gi + 0.001 then
+            for s = 1, 8 do
+                local dx, dy = SX[s], SY[s]
+                local nx, ny = x + dx, y + dy
+                local k = K(nx, ny)
+                if k ~= 0 and not (s > 4 and (K(x + dx, y) == 0 or K(x, y + dy) == 0)) then
                     local ni = (ny - 1) * N + nx
-                    local cost = s[3] * CellCost(k, danger[ni])
-                    local ng = gi + cost
-                    if not best[ni] or ng < best[ni] then
+                    local ng = gi + SC[s] * CellCost(k, danger[ni])
+                    local bn = best[ni]
+                    if not bn or ng < bn then
                         best[ni] = ng
                         came[ni] = i
-                        Push(heap, ng + H(nx, ny), ni)
+                        Push(hf, hi, n, ng + H(nx, ny), ni)
+                        n = n + 1
                     end
                 end
             end
         end
     end
-    if not found then return end
-    local cells, cost = {}, {}
+    if not found then return false end
+    local rev, rcost = {}, {}
     local i = goal
     while i do
-        table.insert(cells, 1, {(i - 1) % N + 1, floor((i - 1) / N) + 1})
-        table.insert(cost, 1, best[i])
+        rev[#rev + 1] = {(i - 1) % N + 1, floor((i - 1) / N) + 1}
+        rcost[#rcost + 1] = best[i]
         i = came[i]
     end
-    cells = Smooth(g, danger, cells, cost)
-    if #cells <= 2 then return end -- straight there
-    local pts = {}
-    for k = 2, #cells - 1 do
-        pts[#pts + 1] = {cells[k][1] - 0.5, cells[k][2] - 0.5}
+    local cellList, cost = {}, {}
+    for k = #rev, 1, -1 do
+        cellList[#cellList + 1] = rev[k]
+        cost[#cost + 1] = rcost[k]
     end
+    cellList = Smooth(g, danger, cellList, cost)
+    if #cellList <= 2 then return false end -- straight there
+    local pts = {}
+    for k = 2, #cellList - 1 do
+        pts[#pts + 1] = {cellList[k][1] - 0.5, cellList[k][2] - 0.5}
+    end
+    return pts
+end
+
+-- Ways already worked out. The answer only depends on the map, the start
+-- and target cells and your level, so a way is never worked out twice: the
+-- route line, the arrow and the travel line all share these.
+local found, foundCount = {}, 0
+local FOUND_MAX = 600
+
+-- Searches cost a few milliseconds each (a lot more on a slow PC), so the
+-- drawing code (lazy) starts at most this many new ones per frame and
+-- draws the rest of the route a frame or two later. The arrow always gets
+-- its way at once.
+tr.lazyPerFrame = 1
+local frameAt, frameSearches = nil, 0
+
+function tr.SearchesThisFrame()
+    local now = GetTime and GetTime() or 0
+    if now ~= frameAt then frameAt, frameSearches = now, 0 end
+    return frameSearches
+end
+
+-- The way from (ax, ay) to (bx, by), zone map coordinates 0-100, for a
+-- character of this level. Returns a list of corners {x, y} (map
+-- coordinates) after the start, ending at the target, or nil when the
+-- straight line is fine or there's no terrain for the map.
+-- lazy: when this frame already had its searches, return nil, true
+-- ("not yet") instead of searching now.
+function tr.FindPath(map, ax, ay, bx, by, level, lazy)
+    local g = Grid(map)
+    if not g then return end
+    level = floor(level or 0)
+    local sx, sy, tx, ty = floor(ax) + 1, floor(ay) + 1, floor(bx) + 1, floor(by) + 1
+    local key = map .. ":" .. sx .. ":" .. sy .. ":" .. tx .. ":" .. ty .. ":" .. level
+    local corners = found[key]
+    if corners == nil then
+        local used = tr.SearchesThisFrame()
+        if lazy and used >= tr.lazyPerFrame then tr.waited = true return nil, true end
+        frameSearches = used + 1
+        corners = Search(g, level, sx, sy, tx, ty)
+        if foundCount >= FOUND_MAX then found, foundCount = {}, 0 end
+        found[key] = corners
+        foundCount = foundCount + 1
+    end
+    if not corners then return end
+    local pts = {}
+    for k = 1, #corners do pts[k] = {corners[k][1], corners[k][2]} end
     pts[#pts + 1] = {bx, by}
     return pts
+end
+
+-- The way from where you stand (ax, ay) to (bx, by) for a line drawn from
+-- you, kept between calls in `slot`: while you follow it (or stray less than
+-- STRAY cells) it's only trimmed as you pass corners, and worked out again
+-- at most every REPLAN seconds. Without this every step you took into a new
+-- grid cell meant a new search. Returns the corners after you, ending at
+-- the target; nil, true while a lazy search has to wait a frame.
+local follows = {}
+local function Remaining(f, ax, ay, bx, by)
+    local pts = f.pts
+    while f.idx < #pts do
+        local p = pts[f.idx]
+        local dx, dy = p[1] - ax, p[2] - ay
+        if dx * dx + dy * dy > NEAR * NEAR then break end
+        f.idx = f.idx + 1
+    end
+    local out = {}
+    for k = f.idx, #pts - 1 do out[#out + 1] = {pts[k][1], pts[k][2]} end
+    out[#out + 1] = {bx, by}
+    return out
+end
+
+local function Strayed(f, ax, ay)
+    local p = f.pts[f.idx]
+    local prev = f.pts[f.idx - 1] or f.from
+    if not (p and prev) then return true end
+    local vx, vy = p[1] - prev[1], p[2] - prev[2]
+    local len2 = vx * vx + vy * vy
+    local t = len2 > 0 and max(0, min(1, ((ax - prev[1]) * vx + (ay - prev[2]) * vy) / len2)) or 0
+    local qx, qy = prev[1] + vx * t - ax, prev[2] + vy * t - ay
+    return qx * qx + qy * qy > STRAY * STRAY
+end
+
+function tr.FollowPath(slot, map, ax, ay, bx, by, level, lazy)
+    if not Grid(map) then return end
+    level = floor(level or 0)
+    local now = GetTime and GetTime() or 0
+    local f = follows[slot]
+    local same = f and f.map == map and f.level == level
+    if same then
+        local mx, my = f.bx - bx, f.by - by
+        same = mx * mx + my * my <= MOVED * MOVED
+    end
+    if same and now - f.at < REPLAN and not Strayed(f, ax, ay) then
+        return Remaining(f, ax, ay, bx, by)
+    end
+    local pts, pending = tr.FindPath(map, ax, ay, bx, by, level, lazy)
+    if pending then
+        if same then return Remaining(f, ax, ay, bx, by) end -- the old way, one more frame
+        return nil, true
+    end
+    f = {map = map, level = level, bx = bx, by = by, at = now, from = {ax, ay}, idx = 1,
+         pts = pts or {{bx, by}}}
+    follows[slot] = f
+    return Remaining(f, ax, ay, bx, by)
 end
 
 ---------------------------------------------------------------------------
@@ -282,8 +400,12 @@ function tr.Route(target, px, py, inst, ctx)
     local now = GetTime and GetTime() or 0
 
     local pts = state.pts
-    local fresh = state.target ~= target or state.tx ~= target.wx or state.ty ~= target.wy
-        or state.map ~= map or state.level ~= level
+    -- a target that slides along as you walk (the nearest edge of a kill
+    -- area) keeps its way until it has moved a fair bit: working the way
+    -- out again 5 times a second made the game stutter
+    local mx, my = (state.bx or bx) - bx, (state.by or by) - by
+    local fresh = state.target ~= target or state.map ~= map or state.level ~= level
+        or mx * mx + my * my > MOVED * MOVED
     if not fresh and pts then
         -- drop corners you've reached
         while state.idx <= #pts do
@@ -305,7 +427,7 @@ function tr.Route(target, px, py, inst, ctx)
         if now - (state.at or 0) >= REPLAN and state.idx > 1 then fresh = true end
     end
     if fresh or (not pts and now - (state.at or 0) >= REPLAN) then
-        state = {target = target, tx = target.wx, ty = target.wy, map = map, level = level,
+        state = {target = target, bx = bx, by = by, map = map, level = level,
                  at = now, from = {ax, ay}, idx = 1}
         state.pts = tr.FindPath(map, ax, ay, bx, by, level)
         pts = state.pts
@@ -820,27 +942,38 @@ local function Upcoming()
     return out
 end
 
--- Map points (0-100) of the route on `map` starting at (px, py), or {}
+-- Map points (0-100) of the route on `map` starting at (px, py), or {}.
+-- Legs between steps are worked out once (tr.FindPath remembers them); the
+-- leg from you follows you (tr.FollowPath). A leg that has to wait for its
+-- search ends the line there for a frame or two.
 local legCache = {}
 local function RoutePoints(map, px, py, stops, level)
     -- no terrain for this map (the capitals): a straight line would go
     -- through walls and water, so leave it to the arrow
     if not Grid(map) then return {} end
-    local key = map .. ":" .. floor(px) .. ":" .. floor(py) .. ":" .. level
+    local key = map .. ":" .. floor(px * 4) .. ":" .. floor(py * 4) .. ":" .. level
     for _, s in ipairs(stops) do key = key .. ":" .. s[1] .. "/" .. floor(s[2] * 10) .. "/" .. floor(s[3] * 10) end
     if legCache.key == key then return legCache.pts end
     local pts = {{px, py}}
     local ax, ay = px, py
+    local fromYou, complete = true, true
     for k, s in ipairs(stops) do
         if s[1] ~= map then break end
         local inside = s[4] and InsidePoly(s[4].area, ax, ay)
         if not (k == 1 and inside) then
-            local path = Grid(map) and tr.FindPath(map, ax, ay, s[2], s[3], level) or nil
+            local path, pending
+            if fromYou then
+                path, pending = tr.FollowPath("route", map, ax, ay, s[2], s[3], level, true)
+            else
+                path, pending = tr.FindPath(map, ax, ay, s[2], s[3], level, true)
+            end
+            if pending then complete = false break end
             for _, p in ipairs(path or {{s[2], s[3]}}) do pts[#pts + 1] = {p[1], p[2]} end
             ax, ay = s[2], s[3]
+            fromYou = false
         end
     end
-    legCache.key, legCache.pts = key, pts
+    if complete then legCache.key, legCache.pts = key, pts end
     return pts
 end
 
@@ -937,6 +1070,7 @@ function tr.DrawMap()
     -- the next step is in another zone: the whole way there (Travel.lua),
     -- on this zone's map or the continent map
     local tv = addon.travel
+    if not RouteOn() then return end
     local tlines = tv and tv.Polylines(map, PlayerLevel())
     if tlines and #tlines > 0 then
         for _, line in ipairs(tlines) do
@@ -975,22 +1109,35 @@ local function MinimapRadius()
     return MINI_SIZE[indoors][zoom + 1] / 2
 end
 
-function tr.DrawMinimap()
+local lastMini
+local function DrawMinimap()
     local mm = _G.Minimap
     if not (mm and mm:IsShown()) then return end
     if not mmc then mmc = NewCanvas(mm, mm:GetFrameLevel() + 2) end
-    Clear(mmc)
     local stops = Upcoming()
     local tv = addon.travel
-    if #stops == 0 and not (tv and tv.Current and tv.Current()) then return end
+    local plan = tv and tv.Current and tv.Current()
+    if #stops == 0 and not plan then lastMini = nil return Clear(mmc) end
     local wx, wy, inst = HBD:GetPlayerWorldPosition()
     local px, py, pmap = HBD:GetPlayerZonePosition()
-    if not (wx and px) then return end
+    if not (wx and px) then lastMini = nil return Clear(mmc) end
     local radius = MinimapRadius()
     local size = mm:GetWidth() / 2
     local rotate = GetCVar("rotateMinimap") == "1"
     local facing = rotate and GetPlayerFacing and GetPlayerFacing() or 0
-    if rotate and not facing then return end
+    if rotate and not facing then lastMini = nil return Clear(mmc) end
+    -- nothing moved since the last frame (standing, fighting, looting):
+    -- keep what's drawn instead of laying out hundreds of lines again
+    local col = RouteColor()
+    local sig = {pmap, floor(wx * 2), floor(wy * 2), floor(facing * 200), radius, size, tostring(plan),
+                 RouteOn() and 1 or 0, AreasOn() and 1 or 0, col[1], col[2], col[3]}
+    for _, st in ipairs(stops) do
+        sig[#sig + 1] = st[1] .. "/" .. floor(st[2] * 10) .. "/" .. floor(st[3] * 10) .. "/" .. tostring(st[4])
+    end
+    sig = table.concat(sig, ":")
+    if sig == lastMini then return end
+    Clear(mmc)
+    lastMini = sig
     local sin, cos = math.sin(facing or 0), math.cos(facing or 0)
     local clip = {size, size, size - 2}
     -- map point (0-100 on pmap) to minimap pixels from its top left
@@ -1016,6 +1163,7 @@ function tr.DrawMinimap()
             end
         end
     end
+    if not RouteOn() then return end
     local tlines = tv and tv.Polylines(pmap, PlayerLevel())
     if tlines and #tlines > 0 then
         for _, line in ipairs(tlines) do
@@ -1034,6 +1182,13 @@ function tr.DrawMinimap()
         if x then route[#route + 1] = {x, y} end
     end
     RouteLeg(mmc, route, 1.5, clip)
+end
+
+function tr.DrawMinimap()
+    tr.waited = false
+    DrawMinimap()
+    -- part of the route waited for its search: draw again next frame
+    if tr.waited then lastMini = nil end
 end
 
 tr.draw = {Fill = Fill, ClipSegment = ClipSegment, Smooth = Smooth, Upcoming = Upcoming, RoutePoints = RoutePoints}
