@@ -189,6 +189,8 @@ local settingsDBDefaults = {
         phase = 6,
         xprate = 1,
         guideFontSize = 12,
+        guideFont = "default",
+        guideFontOutline = "",
         activeItemsScale = 1,
         questLogSize = addon.game == "CLASSIC" and 20 or addon.game == "FOREVER" and 40 or 25,
 
@@ -3118,7 +3120,7 @@ function addon.settings:CreateAceOptionsPanel()
                         width = optionsWidth,
                         order = 3.2,
                         min = 9,
-                        max = 18,
+                        max = 20,
                         step = 1,
                         set = function(info, value)
                             -- OpenXP: the guide card reads this on every
@@ -3126,6 +3128,53 @@ function addon.settings:CreateAceOptionsPanel()
                             SetProfileOption(info, value)
                             if addon.card and addon.card.enabled then
                                 addon.card.Refresh(true)
+                            end
+                        end
+                    },
+                    guideFont = {
+                        name = L("Font"),
+                        desc = L("Font for the guide card, step list and arrow. Fonts shared by other addons through SharedMedia show up here too"),
+                        type = "select",
+                        width = optionsWidth,
+                        order = 3.21,
+                        values = function()
+                            return (addon.fonts.Choices())
+                        end,
+                        sorting = function()
+                            local _, order = addon.fonts.Choices()
+                            return order
+                        end,
+                        get = function()
+                            local key = self.profile.guideFont or "default"
+                            local values = addon.fonts.Choices()
+                            -- a SharedMedia font whose addon is gone
+                            if not values[key] then return "default" end
+                            return key
+                        end,
+                        set = function(info, value)
+                            SetProfileOption(info, value)
+                            addon.font = addon.fonts.Path()
+                            if addon.card and addon.card.ApplyFonts then
+                                addon.card.ApplyFonts()
+                            end
+                        end
+                    },
+                    guideFontOutline = {
+                        name = L("Text outline"),
+                        desc = L("A dark edge around the letters makes text easier to read over busy backgrounds"),
+                        type = "select",
+                        width = optionsWidth,
+                        order = 3.22,
+                        values = {[""] = _G.NONE or "None", OUTLINE = L("Thin"),
+                                  THICKOUTLINE = L("Thick")},
+                        sorting = {"", "OUTLINE", "THICKOUTLINE"},
+                        get = function()
+                            return addon.fonts.Outline()
+                        end,
+                        set = function(info, value)
+                            SetProfileOption(info, value)
+                            if addon.card and addon.card.ApplyFonts then
+                                addon.card.ApplyFonts()
                             end
                         end
                     },

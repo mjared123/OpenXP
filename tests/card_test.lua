@@ -147,6 +147,13 @@ try("font size change applies on the next redraw", function()
     card.Refresh(true)
     addon.settings.profile.guideFontSize = 12
 end)
+try("font and outline settings apply right away", function()
+    addon.fonts = {Path = function() return "Fonts\\FRIZQT__.TTF" end,
+                   Outline = function() return "THICKOUTLINE" end}
+    card.ApplyFonts()
+    addon.fonts = nil
+    card.Refresh(true)
+end)
 try("turn in for a quest not in the log offers skip / get", function()
     steps[5] = {index = 5, elements = {el{tag = "accept", questId = 581, text = "Accept The Night Watch"}}}
     steps[9] = {index = 9, elements = {el{tag = "turnin", questId = 581, title = "The Night Watch",

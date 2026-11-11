@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.38",
+        date = "November 2026",
+        changes = {
+            "Pick your own font: Settings > Guide Window > Font. Choose one of the game's fonts, or any font from another addon that shares fonts through SharedMedia (ElvUI, Details, SharedMedia and others)",
+            "New Text outline setting (thin or thick) to make text easier to read over busy backgrounds",
+            "Guide Font Size now goes up to 20, and the step list and DONE tags grow with it",
+        },
+    },
+    {
         version = "1.3.37",
         date = "November 2026",
         changes = {

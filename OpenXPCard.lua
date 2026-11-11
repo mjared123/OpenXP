@@ -18,7 +18,11 @@ local fmt = string.format
 
 local TEX = "Interface/AddOns/" .. addonName .. "/Textures/Card/"
 local WHITE = "Interface/Buttons/WHITE8X8"
-local FONT = (addon.SafeFont and addon.SafeFont("Fonts\\ARIALN.TTF") or "Fonts\\ARIALN.TTF")
+-- The font comes from Settings > Guide Window > Font (Locale.lua, addon.fonts)
+local DEFAULT_FONT = (addon.SafeFont and addon.SafeFont("Fonts\\ARIALN.TTF") or "Fonts\\ARIALN.TTF")
+local function Font()
+    return (addon.fonts and addon.fonts.Path()) or DEFAULT_FONT
+end
 local WIDTH = 330 -- default; the card can be resized
 local MIN_W, MIN_H, MAX_W, MAX_H = 200, 120, 640, 900
 local MAX_UPNEXT = 12
@@ -60,8 +64,25 @@ local function FontSize(offset)
     return ((p and p.guideFontSize) or 12) + (offset or 0)
 end
 
+-- The Text outline setting; text that already has an outline (the arrow)
+-- only changes when a thick outline is picked.
+local function Flags(flags)
+    local chosen = addon.fonts and addon.fonts.Outline() or ""
+    if chosen == "" then return flags or "" end
+    if flags and flags ~= "" and chosen ~= "THICKOUTLINE" then return flags end
+    return chosen
+end
+
 local function SetFont(fs, offset, flags)
-    fs:SetFont(FONT, FontSize(offset), flags or "")
+    fs:SetFont(Font(), FontSize(offset), Flags(flags))
+end
+
+-- Text with a size of its own (button labels): remembered so a font change
+-- reaches it without a /reload.
+local fixedText = {}
+local function FixedFont(fs, size, flags)
+    fixedText[fs] = {size, flags}
+    fs:SetFont(Font(), size, Flags(flags))
 end
 
 local function Tint(tex, color, alpha)
@@ -252,13 +273,14 @@ local function MakePill(parent)
     function pill:SetStatus(status)
         local st = status and STATUS[status]
         if not st then self:Hide(); return end
-        self.text:SetFont(FONT, 9, "")
+        self.text:SetFont(Font(), FontSize(-3), Flags(""))
         self.text:SetText(L(st.text))
         self.text:SetTextColor(st.color[1], st.color[2], st.color[3], 1)
         for _, t in ipairs({self.bg, self.l, self.r}) do
             t:SetVertexColor(st.color[1], st.color[2], st.color[3], 0.16)
         end
         self:SetWidth((self.text:GetStringWidth() or 30) + 12)
+        self:SetHeight(math.max(14, FontSize(-3) + 5))
         self:Show()
     end
     pill:Hide()
@@ -334,7 +356,7 @@ local function MakeBadge(parent, size)
         Tint(self.ring, k.color, 1)
         if k.glyph then
             self.icon:Hide()
-            self.glyph:SetFont(FONT, math.floor(size * 0.6), "")
+            self.glyph:SetFont(Font(), math.floor(size * 0.6), "")
             self.glyph:SetText(k.glyph)
             self.glyph:SetTextColor(unpack(k.color))
             self.glyph:Show()
@@ -751,7 +773,7 @@ local function TextButton(parent, text, tip, onClick)
     btn.bg:SetColorTexture(1, 1, 1, 0.08)
     btn.label = btn:CreateFontString(nil, "OVERLAY")
     btn.label:SetPoint("CENTER")
-    btn.label:SetFont(FONT, 12, "")
+    FixedFont(btn.label, 12, "")
     btn.label:SetTextColor(unpack(C.text))
     btn.label:SetText(text)
     btn:SetWidth(math.max(70, (btn.label:GetStringWidth() or 60) + 18))
@@ -1385,7 +1407,7 @@ local function MakeButton(parent, icon, tip, onClick, label)
         btn.icon:SetPoint("LEFT", 10, 0)
         Tint(btn.icon, {159 / 255, 212 / 255, 1})
         btn.label = btn:CreateFontString(nil, "OVERLAY")
-        btn.label:SetFont(FONT, 13, "")
+        FixedFont(btn.label, 13, "")
         btn.label:SetPoint("LEFT", btn.icon, "RIGHT", 6, 0)
         btn.label:SetText(label)
         btn.label:SetTextColor(159 / 255, 212 / 255, 1)
@@ -1839,6 +1861,15 @@ function card.Signature()
     return table.concat(parts, "\031")
 end
 
+-- Called when the Font or Text outline setting changes
+function card.ApplyFonts()
+    for fs, spec in pairs(fixedText) do
+        fs:SetFont(Font(), spec[1], Flags(spec[2]))
+    end
+    if card.SkinPanels then pcall(card.SkinPanels) end
+    card.Refresh(true)
+end
+
 function card.Refresh(force)
     if not Visible() then
         f:Hide()
@@ -2158,10 +2189,10 @@ local function StyleArrow()
     af.UpdateVisuals = function(self) self.texture:SetTexture(TEX .. "pointer") end
 
     af.oxpDist = af:CreateFontString(nil, "OVERLAY")
-    af.oxpDist:SetFont(FONT, 17, "OUTLINE")
+    af.oxpDist:SetFont(Font(), 17, Flags("OUTLINE"))
     af.oxpDist:SetPoint("TOP", af.dialBg, "BOTTOM", 0, -6)
     af.oxpLabel = af:CreateFontString(nil, "OVERLAY")
-    af.oxpLabel:SetFont(FONT, 12, "OUTLINE")
+    af.oxpLabel:SetFont(Font(), 12, Flags("OUTLINE"))
     af.oxpLabel:SetPoint("TOP", af.oxpDist, "BOTTOM", 0, -3)
     af.oxpLabel:SetTextColor(0.72, 0.74, 0.8)
     af:SetHitRectInsets(-22 * scale, -22 * scale, -22 * scale, -22 * scale)
@@ -2176,15 +2207,17 @@ local function ArrowSizes(af)
     local p = Profile()
     local scale = (p and p.arrowScale) or 1
     local textSize = (p and p.arrowText) or 12
-    if af.oxpScale == scale and af.oxpText == textSize then return end
-    af.oxpScale, af.oxpText = scale, textSize
+    local font, flags = Font(), Flags("OUTLINE")
+    if af.oxpScale == scale and af.oxpText == textSize and af.oxpFont == font
+        and af.oxpFlags == flags then return end
+    af.oxpScale, af.oxpText, af.oxpFont, af.oxpFlags = scale, textSize, font, flags
     af.dialBg:SetSize(76 * scale, 76 * scale)
     af.dialRing:SetSize(76 * scale, 76 * scale)
     af.arrived:SetSize(36 * scale, 36 * scale)
     af.texture:SetSize(44 * scale, 44 * scale)
     af:SetHitRectInsets(-22 * scale, -22 * scale, -22 * scale, -22 * scale)
-    af.oxpDist:SetFont(FONT, textSize + 5, "OUTLINE")
-    af.oxpLabel:SetFont(FONT, textSize, "OUTLINE")
+    af.oxpDist:SetFont(font, textSize + 5, flags)
+    af.oxpLabel:SetFont(font, textSize, flags)
 end
 
 local function ArrowUpdate(self, ...)
@@ -2356,6 +2389,18 @@ function card.FillStepList()
     list.count = #steps
     list.title:SetText((StripCodes((guide and (guide.displayname or guide.name)) or ""):gsub("\n", " ")))
     SetFont(list.title, -1)
+    -- rows grow with the font size so big text doesn't overlap
+    local rowH = math.max(18, FontSize(-1) + 6)
+    if list.rowH ~= rowH then
+        list.rowH = rowH
+        for r, row in ipairs(list.rows) do
+            row:SetHeight(rowH)
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT", 4, -28 - (r - 1) * rowH)
+            row:SetPoint("TOPRIGHT", -4, -28 - (r - 1) * rowH)
+        end
+        list:SetHeight(28 + LIST_ROWS * rowH + 8)
+    end
     local cur = CurrentStep()
     for r, row in ipairs(list.rows) do
         local i = steps[list.offset + r]
@@ -2701,8 +2746,8 @@ function card.SkinPanel(frame)
     local text = title and title.text
     if text and text.GetFont then
         local font = text:GetFont()
-        if font ~= FONT then
-            text:SetFont(FONT, 11, "")
+        if font ~= Font() then
+            text:SetFont(Font(), 11, "")
             text:SetTextColor(unpack(C.dim))
             local raw = text:GetText()
             if raw then text:SetText(raw:upper()) end
@@ -2716,7 +2761,7 @@ function card.SkinPanel(frame)
         local fs = frame[key]
         if fs and fs.GetFont then
             local font, size = fs:GetFont()
-            if font ~= FONT then fs:SetFont(FONT, size or 12, "") end
+            if font ~= Font() then fs:SetFont(Font(), size or 12, "") end
         end
     end
 end

@@ -286,7 +286,12 @@ function addon:LoadActiveTheme()
     -- TOOD fix legacy calls
     addon.colors = addon.activeTheme
 
-    addon.font = addon.SafeFont(addon.activeTheme.font)
+    -- Settings > Guide Window > Font wins over the theme's font
+    if addon.fonts and addon.settings and addon.settings.profile then
+        addon.font = addon.fonts.Path()
+    else
+        addon.font = addon.SafeFont(addon.activeTheme.font)
+    end
 
     return addon.activeTheme
 end
