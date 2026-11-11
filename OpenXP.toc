@@ -56,6 +56,7 @@ SmartStart.lua
 WelcomeFrame.lua
 Feedback.lua
 OpenXPCard.lua
+PartySync.lua
 OpenXPTooltips.lua
 QuestDataDump.lua
 

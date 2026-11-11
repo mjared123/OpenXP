@@ -282,6 +282,8 @@ function addon.comms:OnCommReceived(prefix, data, _, sender)
         -- Don't respond on REPLY
     elseif obj.command == 'STEP' and type(obj.encodedPayload) == "string" then
         addon.v2.events:Trigger("UpdateActiveSteps", obj.encodedPayload, sender)
+    elseif obj.command == 'SYNC' and addon.partySync and addon.partySync.Enabled() then
+        addon.partySync.OnStatus(sender, obj)
     end
 
 end

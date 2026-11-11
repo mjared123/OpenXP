@@ -136,6 +136,8 @@ function addon.settings.ChatCommand(input)
         if addon.pathHints then addon.pathHints.Command(input:sub(5)) end
     elseif input == "perf" then
         addon.perf.Start()
+    elseif input == "party" then
+        if addon.partySync then addon.partySync.Report() end
     elseif input == "catchup" then
         addon.smartStart.ShowCatchUp()
     elseif input == "help" then
@@ -280,6 +282,8 @@ local settingsDBDefaults = {
 
         -- Grouping
         shareQuests = false,
+        partySync = true,
+        partyFollowLeader = false,
 
         -- Grouping/V2
         activePartyStepsV2WindowScale = 1.0,
@@ -2275,6 +2279,21 @@ function addon.settings:CreateAceOptionsPanel()
                         type = "toggle",
                         width = optionsWidth,
                         order = 3.2
+                    },
+                    partySync = {
+                        name = L("Party sync"),
+                        desc = L("Share your step and quest progress with party members who use OpenXP, and show theirs under the guide card"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 3.3
+                    },
+                    partyFollowLeader = {
+                        name = L("Follow the party leader"),
+                        desc = L("Each time the party leader moves to a new step in the same guide, your card goes to that step too"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 3.4,
+                        disabled = function() return self.profile.partySync == false end
                     },
                     activePartyStepsV2Header = {
                         name = L("Active Party Step v2 (Beta)"),
