@@ -350,11 +350,18 @@ def build(db, sections, chains, faction):
     ends = {}
     for chain in chains:
         carried, turned = free_guide_state(faction, chain["cls"])
-        quests, alts = chain_events(db, chain, skip=turned | in_route)
+        # from_start: the 1-20 guide does the first parts, but players often
+        # haven't (Matt still had part 1 of the Prospector at 23), so the
+        # chain starts at the beginning and parts you've done skip themselves
+        done_before = turned if chain.get("from_start") else set()
+        quests, alts = chain_events(db, chain, skip=(turned - done_before) | in_route)
         accepted_in = {}
 
         def sign(q, pos):
-            # picked up in another file (or before 21): skip if not in the log
+            # picked up in another file (or before 21), or maybe done
+            # already: skip if not in the log
+            if q.id in done_before:
+                return -1
             return 1 if accepted_in.get(q.id) == sections[pos[0]].path else -1
         cursor = ends.get(chain.get("after"), (0, 0))
         added, detours, minutes = [], [], 0
