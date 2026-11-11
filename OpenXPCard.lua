@@ -2718,6 +2718,11 @@ loader:RegisterEvent("PLAYER_ENTERING_WORLD")
 loader:SetScript("OnEvent", function(self)
     self:UnregisterAllEvents()
     C_Timer.After(2, function() card.Enable() end)
+    -- a bundled font can still be loading at login; paint everything again
+    -- once it's surely in, so button labels don't keep the fallback
+    C_Timer.After(6, function()
+        if card.enabled and card.ApplyFonts then pcall(card.ApplyFonts) end
+    end)
 end)
 
 ---------------------------------------------------------------------------

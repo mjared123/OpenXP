@@ -114,6 +114,8 @@ function addon.settings.ChatCommand(input)
         addon.settings.ToggleActive()
     elseif input == "bug" or input == "feedback" or input == "rate" then
         addon.feedback.Show()
+    elseif input == "fonts" then
+        addon.fonts.Report()
     elseif input == "bugform" then
         addon.comms.OpenBugReport()
     elseif input == "preview" then

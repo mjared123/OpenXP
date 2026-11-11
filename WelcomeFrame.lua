@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.41",
+        date = "November 2026",
+        changes = {
+            "Fixed the new fonts sometimes not changing anything. /oxp fonts shows which fonts load",
+        },
+    },
+    {
         version = "1.3.40",
         date = "November 2026",
         changes = {

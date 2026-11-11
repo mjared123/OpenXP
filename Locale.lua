@@ -74,23 +74,34 @@ local function LSM()
     return LibStub and LibStub("LibSharedMedia-3.0", true)
 end
 
--- SetFont returns false for a path the client can't load; check once per
--- path so a missing or broken font file falls back to the default.
-local probe, checked = nil, {}
-local function Loads(path)
-    if checked[path] ~= nil then return checked[path] end
+-- SetFont returns false for a path the client can't load. A good result
+-- is kept; a failed one is tried again after a few seconds, because a font
+-- file can fail while the game is still loading it, and a font that failed
+-- once must not stay on the fallback for the whole session.
+local probe, good, lastTry = nil, {}, {}
+local function Probe()
     if not probe and CreateFrame then
-        local ok, frame = pcall(CreateFrame, "Frame")
-        probe = ok and frame and frame.CreateFontString and frame:CreateFontString()
+        local ok, frame = pcall(CreateFrame, "Frame", nil, UIParent)
+        probe = ok and frame and frame.CreateFontString and frame:CreateFontString(nil, "OVERLAY")
+        if probe and probe.SetText then probe:SetText("Aa") end
     end
-    local good = true
-    if probe and probe.SetFont then
-        local ok, res = pcall(probe.SetFont, probe, path, 12, "")
-        good = ok and res ~= false
-    end
-    checked[path] = good
-    return good
+    return probe
 end
+local function Loads(path)
+    if good[path] then return true end
+    local now = GetTime and GetTime() or 0
+    if lastTry[path] and now - lastTry[path] < 3 then return false end
+    lastTry[path] = now
+    local fs = Probe()
+    local result = true
+    if fs and fs.SetFont then
+        local ok, res = pcall(fs.SetFont, fs, path, 12, "")
+        result = ok and res ~= false
+    end
+    if result then good[path] = true end
+    return result
+end
+fonts.Loads = Loads
 
 -- {value = label} for the settings dropdown, plus a sorted key list.
 function fonts.Choices()
@@ -140,6 +151,25 @@ function fonts.Path()
     end
     if not path or not Loads(path) then path = builtinByKey.default.path end
     return addon.SafeFont(path)
+end
+
+-- /oxp fonts: what each font in the list resolves to and whether it loads
+function fonts.Report()
+    local values, order = fonts.Choices()
+    local p = addon.settings and addon.settings.profile
+    print("|cFF66BB6AOpenXP fonts|r (chosen: " .. tostring(p and p.guideFont) .. ", using " .. fonts.Path() .. ")")
+    for _, key in ipairs(order) do
+        local path
+        if builtinByKey[key] then
+            path = builtinByKey[key].path
+        else
+            local lsm = LSM()
+            path = lsm and lsm:Fetch("font", key:sub(5), true)
+        end
+        local ok = path and Loads(path)
+        print(string.format("  %s %s: %s", ok and "|cFF3DBB7Aok|r" or "|cFFFF7043FAILED|r",
+                            values[key], tostring(path)))
+    end
 end
 
 -- "", "OUTLINE" or "THICKOUTLINE": an outline makes text easier to pick out

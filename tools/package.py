@@ -17,7 +17,7 @@ import os, re, shutil, subprocess, sys, tempfile, zipfile
 
 KEEP_TYPES = {"vanilla", "camelot"}
 DROP = [
-    "tests", "tools", "Scripts", ".github", ".vscode", ".editorconfig", ".gitignore", ".pkgmeta",
+    "tests", "tools", "Scripts", ".github", ".vscode", ".editorconfig", ".gitignore", ".gitattributes", ".pkgmeta",
     "Textures/OpenXP-source", "OpenXP_TBC.toc",
     "Guides/Retail", "Guides/tbc", "Guides/cata", "Guides/mop", "Guides/SoD",
     "Guides/SurvivalGuide", "Guides/Dailies", "Guides/GuideList.xml",
