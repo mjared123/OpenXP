@@ -1185,6 +1185,28 @@ function addon.IsOnTurnInGuide(self)
 end
 
 addon.pickUpList = {}
+-- A breadcrumb quest whose follow-up you already have or did can't be picked
+-- up or turned in any more: say so once and let its accept/turn-in go.
+local breadcrumbTold = {}
+local function BreadcrumbClosed(id)
+    local card = addon.card
+    if not (card and card.BreadcrumbClosed) then return end
+    local ok, to = pcall(card.BreadcrumbClosed, id)
+    if ok then return to end
+end
+
+local function SkipBreadcrumb(self, element, id, to)
+    if element.completed then return end
+    local name = addon.GetQuestName(id) or ("#" .. id)
+    local nextName = addon.GetQuestName(to) or ("#" .. to)
+    element.tooltip = fmt(L("Skipped: you already have or did %s, the quest %s leads to, so it isn't offered any more"), nextName, name)
+    addon.SetElementComplete(self, true)
+    if not breadcrumbTold[id] then
+        breadcrumbTold[id] = true
+        addon.comms.PrettyPrint(fmt(L("Skipping %s: you already have or did %s, the quest it leads to, so the game won't offer it any more."), name, nextName))
+    end
+end
+
 function addon.functions.accept(self, ...)
     if type(self) == "string" then -- on parse
         local text, id, flags, arg1 = ...
@@ -1307,10 +1329,13 @@ function addon.functions.accept(self, ...)
         element.tooltipText = addon.icons.accept .. element.text
         local completed = element.completed
 
+        local closedBy = not isQuestAccepted and step.active and BreadcrumbClosed(id)
         if isQuestAccepted then
             addon.SetElementComplete(self, true)
             -- elseif skip then
             --    addon.SetElementComplete(self)
+        elseif closedBy then
+            SkipBreadcrumb(self, element, id, closedBy)
         elseif event == "QUEST_REMOVED" and arg1 == id and not element.skip then
             addon.SetElementIncomplete(self)
         end
@@ -1540,8 +1565,13 @@ function addon.functions.turnin(self, ...)
             addon.SetElementComplete(self, true)
         end
 
+        local closedBy = step.active and not isComplete and not IsOnQuest(id) and BreadcrumbClosed(id)
         if step.active then
-            if (element.skipIfMissing and not IsOnQuest(id)) or (element.skipIfIncomplete and not IsQuestComplete(id)) then
+            if closedBy then
+                SkipBreadcrumb(self, element, id, closedBy)
+                ProcessItems(false, step, id, true)
+                addon.UpdateItemFrame()
+            elseif (element.skipIfMissing and not IsOnQuest(id)) or (element.skipIfIncomplete and not IsQuestComplete(id)) then
                 addon.SetElementComplete(self, true)
                 ProcessItems(false, step, id, true)
                 addon.UpdateItemFrame()

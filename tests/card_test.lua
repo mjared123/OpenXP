@@ -524,5 +524,20 @@ try("skipped quest chains list reads the guide, not just the last Smart start", 
     addon.currentGuide = {name = "28-30 Duskwood", steps = steps}
     addon.GetGuideProgress = function() return 1 end
 end)
+try("breadcrumb: closed once you have or did the quest it leads to", function()
+    card.data.breadcrumbs = {[165] = 148}
+    local done, log = {}, {}
+    addon.IsQuestTurnedIn = function(id) return done[id] end
+    addon.IsOnQuest = function(id) return log[id] end
+    assert(card.BreadcrumbFor(165) == 148 and card.BreadcrumbFor(148) == nil)
+    assert(card.BreadcrumbClosed(165) == nil, "nothing yet: The Hermit is open")
+    log[148] = true
+    assert(card.BreadcrumbClosed(165) == 148, "Supplies from Darkshire in the log closes it")
+    log[148], done[148] = nil, true
+    assert(card.BreadcrumbClosed(165) == 148, "and so does having done it")
+    log[165] = true
+    assert(card.BreadcrumbClosed(165) == nil, "but not when you already have The Hermit")
+    card.data.breadcrumbs = nil
+end)
 print(fails == 0 and "card smoke test passed" or (fails .. " failed"))
 return fails

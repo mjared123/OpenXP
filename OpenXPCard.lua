@@ -671,6 +671,25 @@ local function TurnedIn(id)
     return addon.IsQuestTurnedIn and addon.IsQuestTurnedIn(math.abs(id))
 end
 
+-- A breadcrumb only sends you to another quest's giver (The Hermit sends you
+-- to Abercrombie for Supplies from Darkshire). Once you have, or have done,
+-- the quest it leads to, the game stops offering the breadcrumb. Returns
+-- that quest's id when this quest is such a breadcrumb, else nil.
+function card.BreadcrumbFor(id)
+    if card.data.breadcrumbs then return card.data.breadcrumbs[id] end
+    local q = QGet("Quest", id)
+    local to = q and tonumber(q.breadcrumbForQuestId)
+    if to and to ~= 0 then return math.abs(to) end
+end
+
+-- The quest a breadcrumb leads to, when you have it or did it already (so
+-- the breadcrumb can't be picked up or turned in any more), else nil
+function card.BreadcrumbClosed(id)
+    if (addon.IsOnQuest and addon.IsOnQuest(id)) or TurnedIn(id) then return end
+    local to = card.BreadcrumbFor(id)
+    if to and ((addon.IsOnQuest and addon.IsOnQuest(to)) or TurnedIn(to)) then return to end
+end
+
 -- Returns the quest that has to be done first, or nil when it can be picked up
 function card.QuestBlocked(id)
     local pre = card.Prereqs(id)

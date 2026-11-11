@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.27",
+        date = "November 2026",
+        changes = {
+            "Breadcrumb quests you can't get any more are skipped: if you already have or did the quest a breadcrumb leads to (like Supplies from Darkshire for The Hermit in Duskwood), its pickup and turn-in are ticked off and chat tells you why",
+        },
+    },
+    {
         version = "1.3.26",
         date = "November 2026",
         changes = {
