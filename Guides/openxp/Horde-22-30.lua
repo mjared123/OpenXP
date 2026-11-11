@@ -657,7 +657,6 @@ step << Warlock
     .goto The Barrens,49.31,57.21
     >>Talk to |cRXP_FRIENDLY_Doan Karhan|r
     .accept 1740 >>Accept The Orb of Soran'ruk
-    .turnin 1740 >>Turn in The Orb of Soran'ruk
     .target Doan Karhan
 step
     .goto The Barrens,44.55,59.26
@@ -813,6 +812,13 @@ step
     >>Talk to |cRXP_FRIENDLY_Seereth Stonebreak|r
     .turnin -1068 >>Turn in Shredding Machines
     .target Seereth Stonebreak
+step << Warlock
+    --oxp-class
+    .goto Ashenvale,14.50,14.20
+    >>Kill |cRXP_ENEMY_Twilight Acolyte|r in Blackfathom Deeps (dungeon). Loot them for |cRXP_LOOT_Soran'ruk Fragment|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1740,1 --The Orb of Soran'ruk
+    .mob Twilight Acolyte
 step << Shaman
     --oxp-class
     .goto Ashenvale,33.55,67.47
@@ -1260,19 +1266,13 @@ step
     >>Talk to |cRXP_FRIENDLY_Scooty|r
     .turnin -2842 >>Turn in Chief Engineer Scooty
     .target Scooty
-step << Undead Paladin
+step << Warlock
     --oxp-class
-    .goto Silverpine Forest,43.40,40.99
-    >>Talk to |cRXP_FRIENDLY_Lumina Windsinger|r
-    .accept 95036 >>Accept A Moon-Kissed Blade
-    .target Lumina Windsinger
-step << Undead Paladin
-    --oxp-class
-    .goto Silverpine Forest,43.40,41.10
-    >>Talk to |cRXP_FRIENDLY_Trevan Rol|r
-    .turnin 95036 >>Turn in A Moon-Kissed Blade
-    .accept 95111 >>Accept An Underrated Talent
-    .target Trevan Rol
+    .goto Silverpine Forest,44.80,67.80
+    >>Kill |cRXP_ENEMY_Shadowfang Darksoul|r in Shadowfang Keep (dungeon). Loot them for |cRXP_LOOT_Large Soran'ruk Fragment|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1740,2 --The Orb of Soran'ruk
+    .mob Shadowfang Darksoul
 step << Shaman
     --oxp-class
     .goto Silverpine Forest,38.78,44.26
@@ -1296,37 +1296,7 @@ step << Shaman
     .turnin 100 >>Turn in Call of Water
     .accept 96 >>Accept Call of Water
     .target Minor Manifestation of Water
-step << Rogue
-    --oxp-class
-    .goto Hillsbrad Foothills,78.64,17.84
-    >>Kill |cRXP_ENEMY_Ravenholdt|r
-    .complete -6681,1 --The Manor, Ravenholdt
-    .mob Ravenholdt
-step << Rogue
-    --oxp-class
-    .goto Alterac Mountains,84.45,80.32
-    >>Talk to |cRXP_FRIENDLY_Fahrad|r
-    .turnin -6681 >>Turn in The Manor, Ravenholdt
-    .target Fahrad
-step << Rogue
-    --oxp-class
-    .goto Alterac Mountains,84.93,80.38
-    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
-    .accept 96779 >>Accept Syndicate Sabotage
-    .target Myrokos Silentform
-step << Rogue
-    --oxp-class
-    .goto Hillsbrad Foothills,79.92,46.04
-    >>Kill |cRXP_ENEMY_Lord Tomas|r
-    .complete 96779,1 --Syndicate Sabotage
-    .mob Lord Tomas
-step << Rogue
-    --oxp-class
-    .goto Alterac Mountains,84.93,80.38
-    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
-    .turnin 96779 >>Turn in Syndicate Sabotage
-    .target Myrokos Silentform
-step << Undead Mage/Troll Mage
+step << Troll Mage/Undead Mage
     --oxp-class
     .goto Undercity,85.14,10.03
     >>Talk to |cRXP_FRIENDLY_Anastasia Hartwell|r

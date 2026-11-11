@@ -12,13 +12,16 @@ quest from different givers: whichever the route reaches first. `group` = quests
 elite or dungeon part: added, but marked so solo players can skip them.
 `race` = only these races ("Dwarf/Gnome"). `after` = starts where that
 chain ends. `from_start` = begin at the chain's first part even if the 1-20
-guide does it (parts you've done skip themselves).
+guide does it (parts you've done skip themselves). `only` = {quest id:
+"Race/Race"} for a part only some races do.
 """
 
 ALLIANCE = [
     # Warlock: demons and the mount are trained by quest
+    # (Gakin's Summons 1717 from Lago in Ironforge is left out: it only sends
+    # you to Gakin, and the 1-20 guide already takes every warlock to him)
     dict(cls="Warlock", name="Succubus", why="need",
-         quests=[1717, 1738, 1739]),
+         quests=[1738, 1739]),
     dict(cls="Warlock", name="Orb of Soran'ruk", why="off-hand for levelling",
          quests=[1740]),
     dict(cls="Warlock", name="Felhunter", why="need",

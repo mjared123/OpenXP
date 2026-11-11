@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.53",
+        date = "November 2026",
+        changes = {
+            "Class quests that several trainers give are now picked up from your own race's capital: no more trips to Darnassus or Ironforge for quests your own city has",
+            "Warlocks: the Succubus chain no longer sends you to Ironforge for Gakin's Summons. You already meet Gakin in Stormwind at 20",
+            "Class quest parts we don't have good location data for yet are left out for now instead of showing a step with no directions. Dungeon parts now point to the dungeon entrance",
+        },
+    },
+    {
         version = "1.3.52",
         date = "November 2026",
         changes = {

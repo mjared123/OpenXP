@@ -72,36 +72,29 @@ step
     >>Talk to |cRXP_FRIENDLY_Shael'dryn|r
     .turnin 1024 >>Turn in Raene's Cleansing
     .target Shael'dryn
-step << Warrior
+step << Warlock
+    --oxp-class
+    .goto The Barrens,49.31,57.10
+    >>Talk to |cRXP_FRIENDLY_Takar the Seer|r
+    .accept 1738 >>Accept Heartswood
+    .target Takar the Seer
+step << Warlock
+    --oxp-class
+    .goto Ashenvale,31.55,31.57
+    >>Loot the |cRXP_PICK_Heartswood|r
+    .complete 1738,1 --Heartswood
+step << NightElf Warrior/Skyborne Warrior
     --oxp-class
     .goto Darnassus,58.94,35.35
     >>Talk to |cRXP_FRIENDLY_Darnath Bladesinger|r
     .accept 1698 >>Accept Yorus Barleybrew
     .target Darnath Bladesinger
-step << Dwarf Priest
-    --oxp-class
-    .goto Darnassus,39.52,81.20
-    >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r
-    .accept 5647 >>Accept A Lack of Fear
-    .target Priestess Alathea
 step << NightElf Priest
     --oxp-class
     .goto Darnassus,39.52,81.20
     >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r
     .accept 5672 >>Accept Elune's Grace
     .turnin 5672 >>Turn in Elune's Grace
-    .target Priestess Alathea
-step << Human Priest
-    --oxp-class
-    .goto Darnassus,39.52,81.20
-    >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r
-    .accept 5678 >>Accept Arcane Feedback
-    .target Priestess Alathea
-step << Gnome Priest
-    --oxp-class
-    .goto Darnassus,39.52,81.20
-    >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r
-    .accept 94820 >>Accept Contingency Plan
     .target Priestess Alathea
 step << NightElf Druid
     --oxp-class
@@ -472,16 +465,28 @@ step
     .target Karl Boran
 step << Warlock
     --oxp-class
-    .goto Ironforge,47.63,9.26
-    >>Talk to |cRXP_FRIENDLY_Lago Blackwrench|r
-    .accept 1717 >>Accept Gakin's Summons
-    .target Lago Blackwrench
+    .goto Stormwind City,39.22,85.23
+    >>Talk to |cRXP_FRIENDLY_Gakin the Darkbinder|r
+    .turnin 1738 >>Turn in Heartswood
+    .target Gakin the Darkbinder
 step << Human Paladin/Dwarf Paladin
     --oxp-class
     .goto Westfall,41.69,89.24
     >>Talk to |cRXP_FRIENDLY_Daphne Stilwell|r
     .turnin -1650 >>Turn in The Tome of Valor
     .target Daphne Stilwell
+step << Human Warrior
+    --oxp-class
+    .goto Stormwind City,80.55,59.87
+    >>Talk to |cRXP_FRIENDLY_Wu Shen|r
+    .accept 1698 >>Accept Yorus Barleybrew
+    .target Wu Shen
+step << Dwarf Warrior/Gnome Warrior
+    --oxp-class
+    .goto Ironforge,70.34,90.65
+    >>Talk to |cRXP_FRIENDLY_Kelv Sternhammer|r
+    .accept 1698 >>Accept Yorus Barleybrew
+    .target Kelv Sternhammer
 step << Shaman
     --oxp-class
     .goto Ironforge,47.10,13.79
@@ -526,13 +531,14 @@ step << Dwarf Priest
     --oxp-class
     .goto Ironforge,24.73,8.16
     >>Talk to |cRXP_FRIENDLY_High Priest Rohan|r
-    .turnin 5647 >>Turn in A Lack of Fear
+    .accept 5641 >>Accept A Lack of Fear
+    .turnin 5641 >>Turn in A Lack of Fear
     .target High Priest Rohan
 step << Human Priest
     --oxp-class
     .goto Stormwind City,49.53,44.60
     >>Talk to |cRXP_FRIENDLY_High Priestess Laurena|r
-    .turnin 5678 >>Turn in Arcane Feedback
+    .accept 5676 >>Accept Arcane Feedback
     .target High Priestess Laurena
 ]])
 
@@ -860,7 +866,19 @@ step << Warrior
     >>Talk to |cRXP_FRIENDLY_Yorus Barleybrew|r
     .accept 1699 >>Accept The Rethban Gauntlet
     .target Yorus Barleybrew
-step << Warrior
+step << Human Warrior
+    --oxp-class
+    .goto Redridge Mountains,21.49,44.72
+    >>Talk to |cRXP_FRIENDLY_Yorus Barleybrew|r
+    .turnin 1698 >>Turn in Yorus Barleybrew
+    .target Yorus Barleybrew
+step << Dwarf Warrior/Gnome Warrior
+    --oxp-class
+    .goto Redridge Mountains,21.49,44.72
+    >>Talk to |cRXP_FRIENDLY_Yorus Barleybrew|r
+    .turnin 1698 >>Turn in Yorus Barleybrew
+    .target Yorus Barleybrew
+step << NightElf Warrior/Skyborne Warrior
     --oxp-class
     .goto Redridge Mountains,21.49,44.72
     >>Talk to |cRXP_FRIENDLY_Yorus Barleybrew|r
@@ -991,36 +1009,6 @@ step << Human Paladin/Dwarf Paladin
     .turnin 1651 >>Turn in The Tome of Valor
     .accept 1652 >>Accept The Tome of Valor
     .target Daphne Stilwell
-step << Rogue
-    --oxp-class
-    .goto Hillsbrad Foothills,78.64,17.84
-    >>Kill |cRXP_ENEMY_Ravenholdt|r
-    .complete -6681,1 --The Manor, Ravenholdt
-    .mob Ravenholdt
-step << Rogue
-    --oxp-class
-    .goto Alterac Mountains,84.45,80.32
-    >>Talk to |cRXP_FRIENDLY_Fahrad|r
-    .turnin -6681 >>Turn in The Manor, Ravenholdt
-    .target Fahrad
-step << Rogue
-    --oxp-class
-    .goto Alterac Mountains,84.93,80.38
-    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
-    .accept 96779 >>Accept Syndicate Sabotage
-    .target Myrokos Silentform
-step << Rogue
-    --oxp-class
-    .goto Hillsbrad Foothills,79.92,46.04
-    >>Kill |cRXP_ENEMY_Lord Tomas|r
-    .complete 96779,1 --Syndicate Sabotage
-    .mob Lord Tomas
-step << Rogue
-    --oxp-class
-    .goto Alterac Mountains,84.93,80.38
-    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
-    .turnin 96779 >>Turn in Syndicate Sabotage
-    .target Myrokos Silentform
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1055,7 +1043,19 @@ step << Warlock
     --oxp-class
     .goto Stormwind City,39.22,85.23
     >>Talk to |cRXP_FRIENDLY_Gakin the Darkbinder|r
-    .turnin 1717 >>Turn in Gakin's Summons
+    .accept 1739 >>Accept The Binding
+    .target Gakin the Darkbinder
+step << Warlock
+    --oxp-class
+    .goto Stormwind City,39.09,84.37
+    >>Kill |cRXP_ENEMY_Summoned Succubus|r
+    .complete 1739,1 --The Binding
+    .mob Summoned Succubus
+step << Warlock
+    --oxp-class
+    .goto Stormwind City,39.22,85.23
+    >>Talk to |cRXP_FRIENDLY_Gakin the Darkbinder|r
+    .turnin 1739 >>Turn in The Binding
     .target Gakin the Darkbinder
 step << Human Mage/Gnome Mage
     --oxp-class
@@ -1136,6 +1136,12 @@ step << Human Paladin/Dwarf Paladin
     .turnin 1652 >>Turn in The Tome of Valor
     .accept 1653 >>Accept The Test of Righteousness
     .target Duthorian Rall
+step << Human Priest
+    --oxp-class
+    .goto Stormwind City,49.53,44.60
+    >>Talk to |cRXP_FRIENDLY_High Priestess Laurena|r
+    .turnin 5676 >>Turn in Arcane Feedback
+    .target High Priestess Laurena
 step
     .goto Stormwind City,48.43,50.22
     >>Talk to |cRXP_FRIENDLY_Lord Grayson Shadowbreaker|r
@@ -1297,22 +1303,17 @@ step
     .target Krolg
 step << Warlock
     --oxp-class
-    .goto The Barrens,49.31,57.10
-    >>Talk to |cRXP_FRIENDLY_Takar the Seer|r
-    .accept 1738 >>Accept Heartswood
-    .target Takar the Seer
-step << Warlock
-    --oxp-class
     .goto The Barrens,49.31,57.21
     >>Talk to |cRXP_FRIENDLY_Doan Karhan|r
     .accept 1740 >>Accept The Orb of Soran'ruk
-    .turnin 1740 >>Turn in The Orb of Soran'ruk
     .target Doan Karhan
 step << Warlock
     --oxp-class
-    .goto Ashenvale,31.55,31.57
-    >>Loot the |cRXP_PICK_Heartswood|r
-    .complete 1738,1 --Heartswood
+    .goto Ashenvale,14.50,14.20
+    >>Kill |cRXP_ENEMY_Twilight Acolyte|r in Blackfathom Deeps (dungeon). Loot them for |cRXP_LOOT_Soran'ruk Fragment|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1740,1 --The Orb of Soran'ruk
+    .mob Twilight Acolyte
 step << Human Paladin/Dwarf Paladin
     --oxp-class
     .goto Darkshore,37.40,40.13
@@ -1515,18 +1516,13 @@ step
     >>Talk to |cRXP_FRIENDLY_James Halloran|r
     .turnin 98072 >>Turn in Crocs of the Sky
     .target James Halloran
-step << Human Paladin/Dwarf Paladin
+step << Warlock
     --oxp-class
-    .goto Dun Morogh,52.49,36.92
-    >>Talk to |cRXP_FRIENDLY_Jordan Stilwell|r
-    .accept 1654 >>Accept The Test of Righteousness
-    .target Jordan Stilwell
-step << Human Paladin/Dwarf Paladin
-    --oxp-class
-    .goto Loch Modan,35.95,44.91
-    >>Kill |cRXP_ENEMY_Bailor Stonehand|r. Loot them for |cRXP_LOOT_Jordan's Refined Ore Shipment|r
-    .complete 1654,2 --The Test of Righteousness
-    .mob Bailor Stonehand
+    .goto Silverpine Forest,44.80,67.80
+    >>Kill |cRXP_ENEMY_Shadowfang Darksoul|r in Shadowfang Keep (dungeon). Loot them for |cRXP_LOOT_Large Soran'ruk Fragment|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1740,2 --The Orb of Soran'ruk
+    .mob Shadowfang Darksoul
 step << Human Mage/Gnome Mage
     --oxp-class
     .goto Redridge Mountains,73.77,47.61
@@ -1736,25 +1732,6 @@ step
     .turnin 1242 >>Turn in The Missing Diplomat
     .accept 1243 >>Accept The Missing Diplomat
     .target Elling Trias
-step << Warlock
-    --oxp-class
-    .goto Stormwind City,39.22,85.23
-    >>Talk to |cRXP_FRIENDLY_Gakin the Darkbinder|r
-    .turnin 1738 >>Turn in Heartswood
-    .accept 1739 >>Accept The Binding
-    .target Gakin the Darkbinder
-step << Warlock
-    --oxp-class
-    .goto Stormwind City,39.09,84.37
-    >>Kill |cRXP_ENEMY_Summoned Succubus|r
-    .complete 1739,1 --The Binding
-    .mob Summoned Succubus
-step << Warlock
-    --oxp-class
-    .goto Stormwind City,39.22,85.23
-    >>Talk to |cRXP_FRIENDLY_Gakin the Darkbinder|r
-    .turnin 1739 >>Turn in The Binding
-    .target Gakin the Darkbinder
 step << Rogue
     --oxp-class
     .goto Stormwind City,80.06,69.90
