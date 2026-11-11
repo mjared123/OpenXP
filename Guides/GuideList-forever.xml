@@ -18,4 +18,6 @@
     <Script file="Guides/openxp/Horde-50-60.lua"/>
     <Script file="Guides/openxp/Dungeons-Alliance.lua"/>
     <Script file="Guides/openxp/Dungeons-Horde.lua"/>
+    <Script file="Guides/openxp/Dungeons-Forever-Alliance.lua"/>
+    <Script file="Guides/openxp/Dungeons-Forever-Horde.lua"/>
 </Ui>
