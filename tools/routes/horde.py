@@ -35,16 +35,19 @@ def hub(key, zone, area, start, continent, town, fpm=None, ride=0, first_text=No
     first += list(extra)
     again = travel(zone, ("Fly to %s in %s" % (town, zone)) if fpm else
                    (first_text or "Travel to %s in %s" % (town, zone)))
+    # town: where the hub's flight master is (named like in the flight
+    # data), for working out how long the trip there takes. Hubs without a
+    # flight master list `anchors`: (flight master town, minutes riding).
     d = dict(key=key, zone=zone, area=area, start=start, continent=continent,
-             first=first, again=again, ride=ride)
+             first=first, again=again, ride=ride, town=town, has_fp=bool(fpm))
     d.update(kw)
     return d
 
 
-def city(key, name, area, start, continent):
+def city(key, name, area, start, continent, **kw):
     t = travel(name, "Travel to %s" % name)
     return dict(key=key, zone=name, area=area, start=start, continent=continent,
-                first=t, again=t, city=True)
+                first=t, again=t, city=True, town=name.replace(" City", ""), has_fp=True, **kw)
 
 
 K, E = "Kalimdor", "Eastern Kingdoms"
@@ -56,12 +59,12 @@ HUBS = [
     hub("needles", "Thousand Needles", 400, (45.14, 49.11), K, "Freewind Post", "Nyse",
         extra=home("Thousand Needles", 46.07, 51.52, "Innkeeper Abeqwa", "Freewind Post")),
     hub("flats", "Thousand Needles", 400, (78.0, 77.0), K, "the Shimmering Flats", ride=5,
-        first_text="Fly to Freewind Post and ride east to the Shimmering Flats in Thousand Needles"),
+        first_text="Fly to Freewind Post and ride east to the Shimmering Flats in Thousand Needles", anchors=[("Freewind Post", 5)]),
     hub("desolace", "Desolace", 405, (21.6, 74.13), K, "Shadowprey Village", "Thalon"),
     # Forever's new zone, walked into from southern Desolace through the
     # Valley of Bones (no flight master).
     hub("shendralas", "Shen'dralas", 16651, (35.6, 12.0), K, "Shen'dralas", ride=5,
-        first_text="Fly to Shadowprey Village in Desolace and head east through the Valley of Bones into Shen'dralas"),
+        first_text="Fly to Shadowprey Village in Desolace and head east through the Valley of Bones into Shen'dralas", anchors=[("Shadowprey Village", 5)]),
     hub("dustwallow", "Dustwallow Marsh", 15, (35.56, 31.88), K, "Brackenwall Village", "Shardi"),
     hub("tanaris", "Tanaris", 440, (51.6, 25.44), K, "Gadgetzan", "Bulkrek Ragefist"),
     hub("feralas", "Feralas", 357, (75.45, 44.36), K, "Camp Mojache", "Shyn"),
@@ -86,10 +89,10 @@ HUBS = [
     hub("hinterlands", "The Hinterlands", 47, (81.7, 81.76), E, "Revantusk Village", "Gorkas"),
     hub("searing", "Searing Gorge", 51, (34.84, 30.87), E, "Thorium Point", "Grisha"),
     hub("blasted", "Blasted Lands", 4, (50.55, 14.2), E, "the Blasted Lands", ride=4,
-        first_text="Fly to Stonard in the Swamp of Sorrows and ride south into the Blasted Lands"),
+        first_text="Fly to Stonard in the Swamp of Sorrows and ride south into the Blasted Lands", anchors=[("Stonard", 4)]),
     hub("steppes", "Burning Steppes", 46, (65.69, 24.22), E, "Flame Crest", "Vahgruk"),
     hub("wpl", "Western Plaguelands", 28, (83.0, 70.0), E, "the Bulwark", ride=3,
-        first_text="Fly to Undercity and ride east to the Bulwark in the Western Plaguelands"),
+        first_text="Fly to Undercity and ride east to the Bulwark in the Western Plaguelands", anchors=[("Undercity", 3)]),
     hub("epl", "Eastern Plaguelands", 139, (70.53, 47.55), E, "Light's Hope Chapel", "Georgia"),
     city("undercity", "Undercity", 1497, (63.25, 48.56), E),
 ]

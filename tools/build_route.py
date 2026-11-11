@@ -39,6 +39,7 @@ from lupa import luajit21 as lupa
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import terrain as TERRAIN  # noqa: E402
+import travel_graph  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -106,8 +107,10 @@ MINUTES_TALK = 0.2
 # and flights), plus a zone's own extra ride when it has no flight master.
 MINUTES_HOP = 8.0
 MINUTES_SEA = 20.0
-# Stopping in a capital costs a flight in and out plus the walk inside.
+# Stopping in a capital costs a flight in and out plus the walk inside
+# (MINUTES_CITY when the travel network can't work the trip out).
 MINUTES_CITY = 12.0
+MINUTES_CITY_INSIDE = 4.0
 # Quest XP per minute below this share of what grinding mobs gives isn't
 # worth the trip; the planner levels a little instead.
 GRIND_KILLS_PER_MINUTE = 2.0
@@ -1825,11 +1828,59 @@ def plan_hubs(builder, route):
     cur = None
     pending_grind = 0.0
 
+    net = travel_graph.Network(FACTION)
+    known = builder.known_fps
+
+    def ends(h, arriving_first=False):
+        """(flight master town, minutes riding from there) for a hub."""
+        if arriving_first and h.get("first_anchors"):
+            return h["first_anchors"]
+        out = list(h.get("anchors") or [])
+        if h.get("has_fp") and not h.get("anchors"):
+            out.append((fp_town(h["town"]), 0))
+        return out
+
+    def trip(frm, hub, first, lvl):
+        """Fastest way from one hub to the next, in minutes, with the
+        guide's text for it; (None, None) when the network doesn't know."""
+        best = (None, None)
+        for a, ma in ends(frm):
+            for b, mb in ends(hub, first):
+                have = known | {a}
+                m, legs = net.route(a, b, have, lvl)
+                if m is None:
+                    continue
+                total = ma + m + mb
+                if best[0] is None or total < best[0]:
+                    parts = []
+                    if ma:
+                        parts.append("ride back to %s" % a)
+                    if legs:
+                        parts.append(travel_graph.describe(legs))
+                    if mb:
+                        tail = hub.get("first_tail") if first and hub.get("first_anchors") else None
+                        parts.append(tail or "ride to %s" % hub["town"])
+                    text = ", then ".join(p[0].lower() + p[1:] for p in parts)
+                    best = (total, text[:1].upper() + text[1:] if text else "")
+        return best
+
     def visit(hub, commit, frm=None):
         frm = cur if frm is None else frm
         section = dict(hub)
         first = visits.get(hub["key"], 0) == 0
         section["intro"] = hub["first"] if first else hub["again"]
+        way = (None, None)
+        if frm is not None and frm["key"] != hub["key"]:
+            way = trip(frm, hub, first, builder.level())
+            if way[1]:
+                town = hub["town"]
+                if hub.get("city") or town.lower().endswith(hub["zone"].lower()):
+                    where = hub["zone"]  # "the Badlands", not "the Badlands in Badlands"
+                else:
+                    where = "%s in %s" % (town, hub["zone"])
+                lines = ["step", "    #completewith next",
+                         "    .zone %s >>Get to %s: %s" % (hub["zone"], where, way[1])]
+                section["intro"] = lines + list(section["intro"][3:])
         section["grind"] = False
         builder.rollouts = commit  # the slow, careful ordering only for the visit you take
         before_xp, before_min = builder.xp, builder.minutes
@@ -1838,11 +1889,15 @@ def plan_hubs(builder, route):
         actions, done = builder.simulate(section, cands, section["start"])
         worth = len({qid for qid in (a[1] if a[0] != "obj" else a[1][0] for a in actions if a[0] != "accept")
                      if not cands[qid]["q"].class_tag()})
-        hop = 0.0 if frm is None or frm["key"] == hub["key"] else (
-            MINUTES_HOP if frm["continent"] == hub["continent"] else MINUTES_SEA)
-        hop += hub.get("ride", 0) if first else 0
-        if hub.get("city") and hop:
-            hop = max(hop, MINUTES_CITY)
+        if way[0] is not None:
+            # the real trip: flights, boats and rides, in minutes
+            hop = way[0] + (MINUTES_CITY_INSIDE if hub.get("city") else 0)
+        else:
+            hop = 0.0 if frm is None or frm["key"] == hub["key"] else (
+                MINUTES_HOP if frm["continent"] == hub["continent"] else MINUTES_SEA)
+            hop += hub.get("ride", 0) if first else 0
+            if hub.get("city") and hop:
+                hop = max(hop, MINUTES_CITY)
         spent = hop + builder.minutes - before_min
         gain = builder.xp - before_xp
         rate = gain / spent if spent > 0 else 0
@@ -1963,6 +2018,8 @@ def plan_hubs(builder, route):
         hub = best[0]
         section, cands, actions, done, start, worth, rate = visit(hub, True)
         visits[hub["key"]] = visits.get(hub["key"], 0) + 1
+        if hub.get("has_fp") and not hub.get("anchors"):
+            known.add(fp_town(hub["town"]))  # its flight path is the visit's first step
         if pending_grind:
             section["_grind_to"] = int(start)
         plan.append(dict(section=section, cands=cands, actions=actions, done=done,
@@ -2001,10 +2058,34 @@ def plan_hubs(builder, route):
     return out, report
 
 
+FP_ALIAS = {"Redridge Mountains": "Lakeshire", "Westfall": "Sentinel Hill", "Teldrassil": "Rut'theran Village",
+            "Feathermoon Stronghold": "Feathermoon", "Darnassus": "Rut'theran Village", "": "Crossroads"}
+
+
+def fp_town(name):
+    """A town or .fp name as the flight data names it ('the Crossroads' -> 'Crossroads')."""
+    n = name.strip()
+    n = n[4:] if n.lower().startswith("the ") else n
+    return FP_ALIAS.get(n, n)
+
+
+def free_guide_fps():
+    """Flight paths the free 1-20 guides have you pick up (all races)."""
+    out = set()
+    for path in glob.glob(os.path.join(ROOT, "Guides", "forever", "%s*.lua" % FACTION)):
+        if re.search(CLASS_GUIDE, os.path.basename(path)):
+            continue
+        for m in re.finditer(r"^\s*\.fp\s*([^>\n]*)", open(path, encoding="utf-8").read(), re.M):
+            out.add(fp_town(m.group(1)))
+    return out
+
+
 def main_hubs(route, args, db):
     accepted, turned = free_guide_quests(
         skip_all={os.path.abspath(os.path.join(ROOT, o[1])) for o in route.OUTPUTS})
     builder = Builder(db, done_before=turned, carried=accepted - turned)
+    builder.known_fps = free_guide_fps()
+    print("flight paths from the 1-20 guides:", ", ".join(sorted(builder.known_fps)))
     builder.used |= set(getattr(route, "SKIP", ()))
     builder.xp = xp_at_level(route.START_LEVEL)
     plan, report = plan_hubs(builder, route)

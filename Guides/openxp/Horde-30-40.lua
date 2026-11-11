@@ -17,7 +17,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Thousand Needles >>Fly to Freewind Post in Thousand Needles
+    .zone Thousand Needles >>Get to Freewind Post in Thousand Needles: Take the zeppelin from Grom'gol to Orgrimmar, then fly to Freewind Post
 step
     .xp 30 >>Kill mobs on the way, or run the Scarlet Monastery Graveyard and Library, until you're level 30: the quests here are a bit high for you before that
 step
@@ -114,7 +114,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Hillsbrad Foothills >>Fly to Tarren Mill in Hillsbrad Foothills
+    .zone Hillsbrad Foothills >>Get to Tarren Mill in Hillsbrad Foothills: Fly to Orgrimmar, then take the zeppelin from Orgrimmar to Undercity, then fly to Tarren Mill
 step
     .xp 31 >>Kill mobs on the way, or run the Scarlet Monastery Graveyard and Library, until you're level 31: the quests here are a bit high for you before that
 step
@@ -243,7 +243,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Arathi Highlands >>Travel to Hammerfall in Arathi Highlands
+    .zone Arathi Highlands >>Get to Hammerfall in Arathi Highlands: Ride to Hammerfall
 step
     .goto Arathi Highlands,73.02,32.70
     >>Talk to |cRXP_FRIENDLY_Urda|r
@@ -340,7 +340,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Dustwallow Marsh >>Travel to Brackenwall Village in Dustwallow Marsh
+    .zone Dustwallow Marsh >>Get to Brackenwall Village in Dustwallow Marsh: Fly to Undercity, then take the zeppelin from Undercity to Orgrimmar, then fly to Camp Taurajo, then ride to Brackenwall Village
 step
     .goto Dustwallow Marsh,35.56,31.88
     >>Talk to |cRXP_FRIENDLY_Shardi|r
@@ -443,7 +443,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Desolace >>Travel to Shadowprey Village in Desolace
+    .zone Desolace >>Get to Shadowprey Village in Desolace: Fly to Sun Rock Retreat, then ride to Shadowprey Village
 step
     .goto Desolace,21.60,74.13
     >>Talk to |cRXP_FRIENDLY_Thalon|r
@@ -590,11 +590,11 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
 #name 34-36 Stranglethorn Vale
-#next 36-37 Arathi Highlands
+#next 36-37 Dustwallow Marsh
 
 step
     #completewith next
-    .zone Stranglethorn Vale >>Fly to Grom'gol in Stranglethorn Vale
+    .zone Stranglethorn Vale >>Get to Grom'gol in Stranglethorn Vale: Fly to Orgrimmar, then take the zeppelin from Orgrimmar to Grom'gol
 step
     .goto Stranglethorn Vale,32.17,28.90
     >>Talk to |cRXP_FRIENDLY_Commander Aggro'gosh|r
@@ -884,12 +884,196 @@ RXPGuides.RegisterGuide([[
 << Horde
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
-#name 36-37 Arathi Highlands
+#name 36-37 Dustwallow Marsh
 #next 36-37 Desolace
 
 step
     #completewith next
-    .zone Arathi Highlands >>Fly to Hammerfall in Arathi Highlands
+    .zone Dustwallow Marsh >>Get to Brackenwall Village in Dustwallow Marsh: Take the zeppelin from Grom'gol to Orgrimmar, then fly to Brackenwall Village
+step
+    .goto Dustwallow Marsh,35.15,38.26
+    >>Talk to |cRXP_FRIENDLY_Mudcrush Durtfeet|r
+    .accept 1177 >>Accept Hungry!
+    .target Mudcrush Durtfeet
+step
+    .goto Dustwallow Marsh,29.83,48.24
+    >>Click the |cRXP_PICK_Theramore Guard Badge|r
+    .accept 1269 >>Accept Lieutenant Paval Reethe
+step
+    .goto Dustwallow Marsh,36.53,30.79
+    >>Talk to |cRXP_FRIENDLY_Do'gol|r
+    .accept 1322 >>Accept The Black Shield
+    .target Do'gol
+step
+    .goto Dustwallow Marsh,36.42,31.88
+    >>Talk to |cRXP_FRIENDLY_Krog|r
+    .turnin 1269 >>Turn in Lieutenant Paval Reethe
+    .target Krog
+step
+    .goto Dustwallow Marsh,40.96,36.69
+    >>Talk to |cRXP_FRIENDLY_Ogron|r
+    .accept 1273 >>Accept Questioning Reethe
+    .target Ogron
+step
+    .goto Dustwallow Marsh,42.47,38.07
+    >>Kill |cRXP_ENEMY_Paval Reethe|r
+    >>Question Reethe with Ogron
+    .complete 1273,1 --Questioning Reethe
+    .complete 1273,2 --Questioning Reethe
+    .mob Paval Reethe
+step
+    .goto Dustwallow Marsh,43.31,41.49
+    >>Kill |cRXP_ENEMY_Darkfang Creeper|r. Loot them for |cRXP_LOOT_Acidic Venom Sac|r (about 25% drop)
+    .complete 1322,1 --The Black Shield
+    .mob Darkfang Creeper
+step
+    .goto Dustwallow Marsh,46.88,17.52
+    >>Talk to |cRXP_FRIENDLY_"Stinky" Ignatz|r
+    .accept 1270 >>Accept Stinky's Escape
+    .target "Stinky" Ignatz
+step
+    .goto Dustwallow Marsh,57.80,19.20
+    >>Kill |cRXP_ENEMY_Mirefin Warrior|r and |cRXP_ENEMY_Mirefin Muckdweller|r and |cRXP_ENEMY_Mirefin Oracle|r. Loot them for |cRXP_LOOT_Mirefin Head|r (about 35% drop)
+    .complete 1177,1 --Hungry!
+    .mob Mirefin Warrior
+    .mob Mirefin Muckdweller
+    .mob Mirefin Oracle
+step
+    .goto Dustwallow Marsh,48.87,24.58
+    >>Help Stinky find Bogbean Leaves
+    .complete 1270,1 --Stinky's Escape
+step
+    .goto Dustwallow Marsh,36.53,30.79
+    >>Talk to |cRXP_FRIENDLY_Do'gol|r
+    .turnin 1322 >>Turn in The Black Shield
+    .accept 1323 >>Accept The Black Shield
+    .target Do'gol
+step
+    .goto Dustwallow Marsh,36.42,31.88
+    >>Talk to |cRXP_FRIENDLY_Krog|r
+    .turnin 1323 >>Turn in The Black Shield
+    .turnin 1273 >>Turn in Questioning Reethe
+    .accept 1276 >>Accept The Black Shield
+    .target Krog
+step
+    .goto Dustwallow Marsh,35.15,38.26
+    >>Talk to |cRXP_FRIENDLY_Mudcrush Durtfeet|r
+    .turnin 1177 >>Turn in Hungry!
+    .target Mudcrush Durtfeet
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Horde
+#group RestedXP Forever Guide (H)
+#subgroup OpenXP 21-60
+#name 36-37 Desolace
+#next 37-38 Arathi Highlands
+
+step
+    #completewith next
+    .zone Desolace >>Get to Shadowprey Village in Desolace: Fly to Shadowprey Village
+step
+    .goto Desolace,25.82,68.21
+    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
+    .accept 5381 >>Accept Hand of Iruxos
+    .target Taiga Wisemane
+step
+    .goto Desolace,45.40,75.29
+    >>Talk to |cRXP_FRIENDLY_Rigger Gizelton|r
+    .accept 5943 >>Accept Gizelton Caravan
+    .target Rigger Gizelton
+step
+    .goto Desolace,55.69,67.79
+    >>Escort Gizelton Caravan past Mannoroc Coven
+    .complete 5943,1 --Gizelton Caravan
+step
+    .goto Desolace,60.86,61.86
+    >>Talk to |cRXP_FRIENDLY_Smeed Scrabblescrew|r
+    .turnin 5943 >>Turn in Gizelton Caravan
+    .target Smeed Scrabblescrew
+step
+    .goto Desolace,55.41,55.81
+    >>Talk to |cRXP_FRIENDLY_Nataka Longhorn|r
+    .accept 5386 >>Accept Catch of the Day
+    .target Nataka Longhorn
+step
+    .goto Desolace,55.00,26.60
+    >>Kill |cRXP_ENEMY_Demon Spirit|r. Loot them for |cRXP_LOOT_Demon Box|r
+    .complete 5381,1 --Hand of Iruxos
+    .mob Demon Spirit
+step
+    .goto Desolace,38.88,27.16
+    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
+    .accept 6027 >>Accept Book of the Ancients
+    .target Azore Aldamort
+step
+    .goto Desolace,28.24,6.67
+    >>Kill |cRXP_ENEMY_Lord Kragaru|r. Loot them for |cRXP_LOOT_Book of the Ancients|r
+    .complete 6027,1 --Book of the Ancients
+    .mob Lord Kragaru
+step
+    .goto Desolace,38.88,27.16
+    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
+    .turnin 6027 >>Turn in Book of the Ancients
+    .target Azore Aldamort
+step
+    .goto Desolace,25.82,68.21
+    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
+    .turnin 5381 >>Turn in Hand of Iruxos
+    .accept 5581 >>Accept Portals of the Legion
+    .target Taiga Wisemane
+step
+    .goto Desolace,22.45,73.12
+    >>Kill |cRXP_ENEMY_Jinar'Zillen|r. Loot them for |cRXP_LOOT_Bloodbelly Fish|r
+    .complete 5386,1 --Catch of the Day
+    .mob Jinar'Zillen
+step
+    .goto Desolace,51.40,71.60
+    >>Kill |cRXP_ENEMY_Demon Portal Guardian|r
+    .complete 5581,1 --Portals of the Legion
+    .mob Demon Portal Guardian
+step
+    .goto Desolace,55.41,55.81
+    >>Talk to |cRXP_FRIENDLY_Nataka Longhorn|r
+    .turnin 5386 >>Turn in Catch of the Day
+    .target Nataka Longhorn
+step
+    .goto Desolace,25.82,68.21
+    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
+    .turnin 5581 >>Turn in Portals of the Legion
+    .target Taiga Wisemane
+step
+    .goto Desolace,33.95,53.50
+    >>Talk to |cRXP_FRIENDLY_Melizza Brimbuzzle|r
+    .accept 6132 >>Accept Get Me Out of Here!
+    .target Melizza Brimbuzzle
+step
+    .goto Desolace,40.15,61.58
+    >>Melizza Brimbuzzle escorted to safety
+    .complete 6132,1 --Get Me Out of Here!
+step
+    .goto Desolace,47.83,61.83
+    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
+    .turnin 6132 >>Turn in Get Me Out of Here!
+    .target Hornizz Brimbuzzle
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Horde
+#group RestedXP Forever Guide (H)
+#subgroup OpenXP 21-60
+#name 37-38 Arathi Highlands
+#next 38-39 Badlands
+
+step
+    #completewith next
+    .zone Arathi Highlands >>Get to Hammerfall in Arathi Highlands: Fly to Orgrimmar, then take the zeppelin from Orgrimmar to Undercity, then fly to Hammerfall
 step
     .goto Arathi Highlands,62.50,33.73
     >>Click the |cRXP_PICK_Shards of Myzrael|r
@@ -991,222 +1175,8 @@ RXPGuides.RegisterGuide([[
 << Horde
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
-#name 36-37 Desolace
-#next 37-38 Dustwallow Marsh
-
-step
-    #completewith next
-    .zone Desolace >>Fly to Shadowprey Village in Desolace
-step
-    .goto Desolace,25.82,68.21
-    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
-    .accept 5381 >>Accept Hand of Iruxos
-    .target Taiga Wisemane
-step
-    .goto Desolace,45.40,75.29
-    >>Talk to |cRXP_FRIENDLY_Rigger Gizelton|r
-    .accept 5943 >>Accept Gizelton Caravan
-    .target Rigger Gizelton
-step
-    .goto Desolace,55.69,67.79
-    >>Escort Gizelton Caravan past Mannoroc Coven
-    .complete 5943,1 --Gizelton Caravan
-step
-    .goto Desolace,60.86,61.86
-    >>Talk to |cRXP_FRIENDLY_Smeed Scrabblescrew|r
-    .turnin 5943 >>Turn in Gizelton Caravan
-    .target Smeed Scrabblescrew
-step
-    .goto Desolace,55.41,55.81
-    >>Talk to |cRXP_FRIENDLY_Nataka Longhorn|r
-    .accept 5386 >>Accept Catch of the Day
-    .target Nataka Longhorn
-step
-    .goto Desolace,22.45,73.12
-    >>Kill |cRXP_ENEMY_Jinar'Zillen|r. Loot them for |cRXP_LOOT_Bloodbelly Fish|r
-    .complete 5386,1 --Catch of the Day
-    .mob Jinar'Zillen
-step
-    .goto Desolace,55.41,55.81
-    >>Talk to |cRXP_FRIENDLY_Nataka Longhorn|r
-    .turnin 5386 >>Turn in Catch of the Day
-    .target Nataka Longhorn
-step
-    .goto Desolace,55.00,26.60
-    >>Kill |cRXP_ENEMY_Demon Spirit|r. Loot them for |cRXP_LOOT_Demon Box|r
-    .complete 5381,1 --Hand of Iruxos
-    .mob Demon Spirit
-step
-    .goto Desolace,38.88,27.16
-    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
-    .accept 6027 >>Accept Book of the Ancients
-    .target Azore Aldamort
-step
-    .goto Desolace,28.24,6.67
-    >>Kill |cRXP_ENEMY_Lord Kragaru|r. Loot them for |cRXP_LOOT_Book of the Ancients|r
-    .complete 6027,1 --Book of the Ancients
-    .mob Lord Kragaru
-step
-    .goto Desolace,38.88,27.16
-    >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
-    .turnin 6027 >>Turn in Book of the Ancients
-    .target Azore Aldamort
-step
-    .goto Desolace,25.82,68.21
-    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
-    .turnin 5381 >>Turn in Hand of Iruxos
-    .accept 5581 >>Accept Portals of the Legion
-    .target Taiga Wisemane
-step
-    .goto Desolace,33.95,53.50
-    >>Talk to |cRXP_FRIENDLY_Melizza Brimbuzzle|r
-    .accept 6132 >>Accept Get Me Out of Here!
-    .target Melizza Brimbuzzle
-step
-    .goto Desolace,40.15,61.58
-    >>Melizza Brimbuzzle escorted to safety
-    .complete 6132,1 --Get Me Out of Here!
-step
-    .goto Desolace,47.83,61.83
-    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
-    .turnin 6132 >>Turn in Get Me Out of Here!
-    .target Hornizz Brimbuzzle
-step
-    .goto Desolace,51.40,71.60
-    >>Kill |cRXP_ENEMY_Demon Portal Guardian|r
-    .complete 5581,1 --Portals of the Legion
-    .mob Demon Portal Guardian
-step
-    .goto Desolace,25.82,68.21
-    >>Talk to |cRXP_FRIENDLY_Taiga Wisemane|r
-    .turnin 5581 >>Turn in Portals of the Legion
-    .target Taiga Wisemane
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Horde
-#group RestedXP Forever Guide (H)
-#subgroup OpenXP 21-60
-#name 37-38 Dustwallow Marsh
-#next 37-38 Thunder Bluff
-
-step
-    #completewith next
-    .zone Dustwallow Marsh >>Fly to Brackenwall Village in Dustwallow Marsh
-step
-    .goto Dustwallow Marsh,35.15,38.26
-    >>Talk to |cRXP_FRIENDLY_Mudcrush Durtfeet|r
-    .accept 1177 >>Accept Hungry!
-    .target Mudcrush Durtfeet
-step
-    .goto Dustwallow Marsh,29.83,48.24
-    >>Click the |cRXP_PICK_Theramore Guard Badge|r
-    .accept 1269 >>Accept Lieutenant Paval Reethe
-step
-    .goto Dustwallow Marsh,36.53,30.79
-    >>Talk to |cRXP_FRIENDLY_Do'gol|r
-    .accept 1322 >>Accept The Black Shield
-    .target Do'gol
-step
-    .goto Dustwallow Marsh,36.42,31.88
-    >>Talk to |cRXP_FRIENDLY_Krog|r
-    .turnin 1269 >>Turn in Lieutenant Paval Reethe
-    .target Krog
-step
-    .goto Dustwallow Marsh,40.96,36.69
-    >>Talk to |cRXP_FRIENDLY_Ogron|r
-    .accept 1273 >>Accept Questioning Reethe
-    .target Ogron
-step
-    .goto Dustwallow Marsh,42.47,38.07
-    >>Kill |cRXP_ENEMY_Paval Reethe|r
-    >>Question Reethe with Ogron
-    .complete 1273,1 --Questioning Reethe
-    .complete 1273,2 --Questioning Reethe
-    .mob Paval Reethe
-step
-    .goto Dustwallow Marsh,43.31,41.49
-    >>Kill |cRXP_ENEMY_Darkfang Creeper|r. Loot them for |cRXP_LOOT_Acidic Venom Sac|r (about 25% drop)
-    .complete 1322,1 --The Black Shield
-    .mob Darkfang Creeper
-step
-    .goto Dustwallow Marsh,46.88,17.52
-    >>Talk to |cRXP_FRIENDLY_"Stinky" Ignatz|r
-    .accept 1270 >>Accept Stinky's Escape
-    .target "Stinky" Ignatz
-step
-    .goto Dustwallow Marsh,57.80,19.20
-    >>Kill |cRXP_ENEMY_Mirefin Warrior|r and |cRXP_ENEMY_Mirefin Muckdweller|r and |cRXP_ENEMY_Mirefin Oracle|r. Loot them for |cRXP_LOOT_Mirefin Head|r (about 35% drop)
-    .complete 1177,1 --Hungry!
-    .mob Mirefin Warrior
-    .mob Mirefin Muckdweller
-    .mob Mirefin Oracle
-step
-    .goto Dustwallow Marsh,48.87,24.58
-    >>Help Stinky find Bogbean Leaves
-    .complete 1270,1 --Stinky's Escape
-step
-    .goto Dustwallow Marsh,36.53,30.79
-    >>Talk to |cRXP_FRIENDLY_Do'gol|r
-    .turnin 1322 >>Turn in The Black Shield
-    .accept 1323 >>Accept The Black Shield
-    .target Do'gol
-step
-    .goto Dustwallow Marsh,36.42,31.88
-    >>Talk to |cRXP_FRIENDLY_Krog|r
-    .turnin 1323 >>Turn in The Black Shield
-    .turnin 1273 >>Turn in Questioning Reethe
-    .accept 1276 >>Accept The Black Shield
-    .target Krog
-step
-    .goto Dustwallow Marsh,35.15,38.26
-    >>Talk to |cRXP_FRIENDLY_Mudcrush Durtfeet|r
-    .turnin 1177 >>Turn in Hungry!
-    .target Mudcrush Durtfeet
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Horde
-#group RestedXP Forever Guide (H)
-#subgroup OpenXP 21-60
-#name 37-38 Thunder Bluff
-#next 38-39 Badlands
-
-step
-    #completewith next
-    .zone Thunder Bluff >>Travel to Thunder Bluff
-step
-    .goto Thunder Bluff,69.85,30.91
-    >>Talk to |cRXP_FRIENDLY_Magatha Grimtotem|r
-    .turnin -5062 >>Turn in Sacred Fire
-    .target Magatha Grimtotem
-step
-    .goto Thunder Bluff,22.81,20.89
-    >>Talk to |cRXP_FRIENDLY_Apothecary Zamah|r
-    .turnin -1067 >>Turn in Return to Thunder Bluff
-    .target Apothecary Zamah
-step
-    .goto Thunder Bluff,54.01,80.77
-    >>Talk to |cRXP_FRIENDLY_Mosarn|r
-    .turnin 1276 >>Turn in The Black Shield
-    .target Mosarn
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Horde
-#group RestedXP Forever Guide (H)
-#subgroup OpenXP 21-60
 #name 38-39 Badlands
-#next 38-39 Swamp of Sorrows
+#next 38-39 Arathi Highlands
 
 step
     #completewith next
@@ -1322,85 +1292,12 @@ RXPGuides.RegisterGuide([[
 << Horde
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
-#name 38-39 Swamp of Sorrows
-#next 39-40 Arathi Highlands
+#name 38-39 Arathi Highlands
+#next 38-39 Swamp of Sorrows
 
 step
     #completewith next
-    .zone Swamp of Sorrows >>Travel to Stonard in Swamp of Sorrows
-step
-    .goto Swamp of Sorrows,46.07,54.83
-    >>Talk to |cRXP_FRIENDLY_Breyk|r
-    .fp Stonard >>Get the Stonard flight path
-    .target Breyk
-step
-    .goto Swamp of Sorrows,47.74,55.20
-    >>Talk to |cRXP_FRIENDLY_Helgrum the Swift|r
-    .turnin 1420 >>Turn in Report to Helgrum
-    .target Helgrum the Swift
-step
-    .goto Swamp of Sorrows,44.70,57.21
-    >>Talk to |cRXP_FRIENDLY_Dar|r
-    .accept 698 >>Accept Lack of Surplus
-    .target Dar
-step
-    .goto Swamp of Sorrows,25.10,54.21
-    >>Talk to |cRXP_FRIENDLY_Amaryllis Webb|r
-    .accept 93176 >>Accept My Little Friends
-    .turnin 93176 >>Turn in My Little Friends
-    .target Amaryllis Webb
-step
-    .goto Swamp of Sorrows,25.98,31.40
-    >>Talk to |cRXP_FRIENDLY_Magtoor|r
-    .accept 1389 >>Accept Draenethyst Crystals
-    .target Magtoor
-step
-    .goto Swamp of Sorrows,62.08,22.45
-    >>Loot the |cRXP_PICK_Draenethyst Crystal|r
-    .complete 1389,1 --Draenethyst Crystals
-step
-    .goto Swamp of Sorrows,65.47,18.16
-    >>Talk to |cRXP_FRIENDLY_Galen Goodward|r
-    .accept 1393 >>Accept Galen's Escape
-    .target Galen Goodward
-step
-    .goto Swamp of Sorrows,53.08,29.55
-    >>Escort Galen out of the Fallow Sanctuary.
-    .complete 1393,1 --Galen's Escape
-step
-    .goto Swamp of Sorrows,25.98,31.40
-    >>Talk to |cRXP_FRIENDLY_Magtoor|r
-    .turnin 1389 >>Turn in Draenethyst Crystals
-    .target Magtoor
-step
-    .goto Swamp of Sorrows,47.81,39.76
-    >>Click the |cRXP_PICK_Galen's Strongbox|r
-    .turnin 1393 >>Turn in Galen's Escape
-step
-    .goto Swamp of Sorrows,56.07,56.47
-    >>Kill |cRXP_ENEMY_Sawtooth Snapper|r. Loot them for |cRXP_LOOT_Unprepared Sawtooth Flank|r (about 80% drop)
-    .complete 698,1 --Lack of Surplus
-    .mob Sawtooth Snapper
-step
-    .goto Swamp of Sorrows,81.32,80.97
-    >>Talk to |cRXP_FRIENDLY_Tok'Kar|r
-    .turnin 698 >>Turn in Lack of Surplus
-    .target Tok'Kar
-]])
-
-RXPGuides.RegisterGuide([[
-#forever
-#disabledungeons
-#version 1
-<< Horde
-#group RestedXP Forever Guide (H)
-#subgroup OpenXP 21-60
-#name 39-40 Arathi Highlands
-#next 39-40 Stranglethorn Vale
-
-step
-    #completewith next
-    .zone Arathi Highlands >>Fly to Hammerfall in Arathi Highlands
+    .zone Arathi Highlands >>Get to Hammerfall in Arathi Highlands: Fly to Hammerfall
 step
     .goto Arathi Highlands,34.00,80.80
     >>Talk to |cRXP_FRIENDLY_Captain Steelgut|r
@@ -1477,12 +1374,85 @@ RXPGuides.RegisterGuide([[
 << Horde
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
+#name 38-39 Swamp of Sorrows
+#next 39-40 Stranglethorn Vale
+
+step
+    #completewith next
+    .zone Swamp of Sorrows >>Travel to Stonard in Swamp of Sorrows
+step
+    .goto Swamp of Sorrows,46.07,54.83
+    >>Talk to |cRXP_FRIENDLY_Breyk|r
+    .fp Stonard >>Get the Stonard flight path
+    .target Breyk
+step
+    .goto Swamp of Sorrows,47.74,55.20
+    >>Talk to |cRXP_FRIENDLY_Helgrum the Swift|r
+    .turnin 1420 >>Turn in Report to Helgrum
+    .target Helgrum the Swift
+step
+    .goto Swamp of Sorrows,44.70,57.21
+    >>Talk to |cRXP_FRIENDLY_Dar|r
+    .accept 698 >>Accept Lack of Surplus
+    .target Dar
+step
+    .goto Swamp of Sorrows,25.10,54.21
+    >>Talk to |cRXP_FRIENDLY_Amaryllis Webb|r
+    .accept 93176 >>Accept My Little Friends
+    .turnin 93176 >>Turn in My Little Friends
+    .target Amaryllis Webb
+step
+    .goto Swamp of Sorrows,25.98,31.40
+    >>Talk to |cRXP_FRIENDLY_Magtoor|r
+    .accept 1389 >>Accept Draenethyst Crystals
+    .target Magtoor
+step
+    .goto Swamp of Sorrows,62.08,22.45
+    >>Loot the |cRXP_PICK_Draenethyst Crystal|r
+    .complete 1389,1 --Draenethyst Crystals
+step
+    .goto Swamp of Sorrows,65.47,18.16
+    >>Talk to |cRXP_FRIENDLY_Galen Goodward|r
+    .accept 1393 >>Accept Galen's Escape
+    .target Galen Goodward
+step
+    .goto Swamp of Sorrows,53.08,29.55
+    >>Escort Galen out of the Fallow Sanctuary.
+    .complete 1393,1 --Galen's Escape
+step
+    .goto Swamp of Sorrows,25.98,31.40
+    >>Talk to |cRXP_FRIENDLY_Magtoor|r
+    .turnin 1389 >>Turn in Draenethyst Crystals
+    .target Magtoor
+step
+    .goto Swamp of Sorrows,47.81,39.76
+    >>Click the |cRXP_PICK_Galen's Strongbox|r
+    .turnin 1393 >>Turn in Galen's Escape
+step
+    .goto Swamp of Sorrows,56.07,56.47
+    >>Kill |cRXP_ENEMY_Sawtooth Snapper|r. Loot them for |cRXP_LOOT_Unprepared Sawtooth Flank|r (about 80% drop)
+    .complete 698,1 --Lack of Surplus
+    .mob Sawtooth Snapper
+step
+    .goto Swamp of Sorrows,81.32,80.97
+    >>Talk to |cRXP_FRIENDLY_Tok'Kar|r
+    .turnin 698 >>Turn in Lack of Surplus
+    .target Tok'Kar
+]])
+
+RXPGuides.RegisterGuide([[
+#forever
+#disabledungeons
+#version 1
+<< Horde
+#group RestedXP Forever Guide (H)
+#subgroup OpenXP 21-60
 #name 39-40 Stranglethorn Vale
 #next 39-40 Desolace
 
 step
     #completewith next
-    .zone Stranglethorn Vale >>Fly to Grom'gol in Stranglethorn Vale
+    .zone Stranglethorn Vale >>Get to Grom'gol in Stranglethorn Vale: Fly to Grom'gol
 step
     .goto Stranglethorn Vale,32.12,29.24
     >>Talk to |cRXP_FRIENDLY_Far Seer Mok'thardin|r
@@ -1654,37 +1624,26 @@ RXPGuides.RegisterGuide([[
 #group RestedXP Forever Guide (H)
 #subgroup OpenXP 21-60
 #name 39-40 Desolace
-#next 40-41 Stranglethorn Vale
+#next 40-41 Thunder Bluff
 
 step
     #completewith next
-    .zone Desolace >>Fly to Shadowprey Village in Desolace
-step
-    .goto Desolace,47.83,61.83
-    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
-    .accept 6134 >>Accept Ghost-o-plasm Round Up
-    .target Hornizz Brimbuzzle
-step
-    .goto Desolace,56.29,59.68
-    >>Talk to |cRXP_FRIENDLY_Gurda Wildmane|r
-    .accept 93225 >>Accept Carved Centaur Totems
-    .target Gurda Wildmane
+    .zone Desolace >>Get to Shadowprey Village in Desolace: Take the zeppelin from Grom'gol to Orgrimmar, then fly to Shadowprey Village
 step
     .goto Desolace,62.33,38.99
     >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
     .accept 5501 >>Accept Bone Collector
     .target Bibbly F'utzbuckle
 step
-    .goto Desolace,74.97,68.16
-    >>Talk to |cRXP_FRIENDLY_Warug|r
-    .accept 92743 >>Accept A Conqueror's Crown
-    .turnin 92743 >>Turn in A Conqueror's Crown
-    .target Warug
+    .goto Desolace,56.29,59.68
+    >>Talk to |cRXP_FRIENDLY_Gurda Wildmane|r
+    .accept 93225 >>Accept Carved Centaur Totems
+    .target Gurda Wildmane
 step
-    .goto Desolace,64.18,91.63
-    >>Kill |cRXP_ENEMY_Magrami Spectre|r. Loot them for |cRXP_LOOT_Ghost-o-plasm|r (about 80% drop)
-    .complete 6134,1 --Ghost-o-plasm Round Up
-    .mob Magrami Spectre
+    .goto Desolace,47.83,61.83
+    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
+    .accept 6134 >>Accept Ghost-o-plasm Round Up
+    .target Hornizz Brimbuzzle
 step
     .goto Desolace,32.17,55.50
     >>Kill |cRXP_ENEMY_Maraudine Windchaser|r and |cRXP_ENEMY_Maraudine Mauler|r and |cRXP_ENEMY_Maraudine Wrangler|r. Loot them for |cRXP_LOOT_Carved Centaur Totem|r
@@ -1692,11 +1651,6 @@ step
     .mob Maraudine Windchaser
     .mob Maraudine Mauler
     .mob Maraudine Wrangler
-step
-    .goto Desolace,47.83,61.83
-    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
-    .turnin 6134 >>Turn in Ghost-o-plasm Round Up
-    .target Hornizz Brimbuzzle
 step
     .goto Desolace,50.79,58.70
     >>Loot the |cRXP_PICK_Kodo Bone|r
@@ -1707,8 +1661,24 @@ step
     .turnin 93225 >>Turn in Carved Centaur Totems
     .target Gurda Wildmane
 step
+    .goto Desolace,64.18,91.63
+    >>Kill |cRXP_ENEMY_Magrami Spectre|r. Loot them for |cRXP_LOOT_Ghost-o-plasm|r (about 80% drop)
+    .complete 6134,1 --Ghost-o-plasm Round Up
+    .mob Magrami Spectre
+step
+    .goto Desolace,74.97,68.16
+    >>Talk to |cRXP_FRIENDLY_Warug|r
+    .accept 92743 >>Accept A Conqueror's Crown
+    .turnin 92743 >>Turn in A Conqueror's Crown
+    .target Warug
+step
     .goto Desolace,62.33,38.99
     >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
     .turnin 5501 >>Turn in Bone Collector
     .target Bibbly F'utzbuckle
+step
+    .goto Desolace,47.83,61.83
+    >>Talk to |cRXP_FRIENDLY_Hornizz Brimbuzzle|r
+    .turnin 6134 >>Turn in Ghost-o-plasm Round Up
+    .target Hornizz Brimbuzzle
 ]])

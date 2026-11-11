@@ -216,7 +216,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Ashenvale >>Travel to Splintertree Post in Ashenvale
+    .zone Ashenvale >>Get to Splintertree Post in Ashenvale: Fly to Undercity, then take the zeppelin from Undercity to Orgrimmar, then fly to Splintertree Post
 step
     .goto Ashenvale,73.18,61.59
     >>Talk to |cRXP_FRIENDLY_Vhulgra|r
@@ -348,7 +348,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Stonetalon Mountains >>Travel to Sun Rock Retreat in Stonetalon Mountains
+    .zone Stonetalon Mountains >>Get to Sun Rock Retreat in Stonetalon Mountains: Fly to Sun Rock Retreat
 step
     .goto Stonetalon Mountains,45.12,59.84
     >>Talk to |cRXP_FRIENDLY_Tharm|r
@@ -504,7 +504,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone The Barrens >>Travel to the Crossroads in The Barrens
+    .zone The Barrens >>Get to the Crossroads in The Barrens: Fly to Crossroads
 step
     .goto The Barrens,51.50,30.34
     >>Talk to |cRXP_FRIENDLY_Devrak|r
@@ -663,7 +663,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Hillsbrad Foothills >>Fly to Tarren Mill in Hillsbrad Foothills
+    .zone Hillsbrad Foothills >>Get to Tarren Mill in Hillsbrad Foothills: Fly to Orgrimmar, then take the zeppelin from Orgrimmar to Undercity, then fly to Tarren Mill
 step
     .goto Hillsbrad Foothills,61.44,19.06
     >>Talk to |cRXP_FRIENDLY_Apothecary Lydon|r
@@ -768,7 +768,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Thousand Needles >>Travel to Freewind Post in Thousand Needles
+    .zone Thousand Needles >>Get to Freewind Post in Thousand Needles: Fly to Undercity, then take the zeppelin from Undercity to Orgrimmar, then fly to Camp Taurajo, then ride to Freewind Post
 step
     .goto Thousand Needles,45.14,49.11
     >>Talk to |cRXP_FRIENDLY_Nyse|r
@@ -953,7 +953,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Stranglethorn Vale >>Travel to Grom'gol in Stranglethorn Vale
+    .zone Stranglethorn Vale >>Get to Grom'gol in Stranglethorn Vale: Fly to Orgrimmar, then take the zeppelin from Orgrimmar to Grom'gol
 step
     .goto Stranglethorn Vale,32.54,29.35
     >>Talk to |cRXP_FRIENDLY_Thysta|r

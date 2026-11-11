@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.30",
+        date = "November 2026",
+        changes = {
+            "Levels 21-60: the step that sends you to the next zone now names the fastest way by time, like \"Fly to Auberdine, then take the boat from Auberdine to Menethil Harbor, then take the boat from Menethil Harbor to Theramore\", instead of always saying fly",
+            "The route planner picks zones with real trip times: flight times, boats and the tram with their waits, and riding to towns you don't have the flight path for yet",
+        },
+    },
+    {
         version = "1.3.29",
         date = "November 2026",
         changes = {

@@ -37,16 +37,19 @@ def hub(key, zone, area, start, continent, town, fpm=None, ride=0, first_text=No
     first += list(extra)
     again = travel(zone, ("Fly to %s in %s" % (town, zone)) if fpm else
                    (first_text or "Travel to %s in %s" % (town, zone)))
+    # town: where the hub's flight master is (named like in the flight
+    # data), for working out how long the trip there takes. Hubs without a
+    # flight master list `anchors`: (flight master town, minutes riding).
     d = dict(key=key, zone=zone, area=area, start=start, continent=continent,
-             first=first, again=again, ride=ride)
+             first=first, again=again, ride=ride, town=town, has_fp=bool(fpm))
     d.update(kw)
     return d
 
 
-def city(key, name, area, start, continent):
+def city(key, name, area, start, continent, **kw):
     t = travel(name, "Travel to %s" % name)
     return dict(key=key, zone=name, area=area, start=start, continent=continent,
-                first=t, again=t, city=True)
+                first=t, again=t, city=True, town=name.replace(" City", ""), has_fp=True, **kw)
 
 
 K, E = "Kalimdor", "Eastern Kingdoms"
@@ -59,19 +62,20 @@ HUBS = [
     # Forever's new zone, walked into from southern Desolace through the
     # Valley of Bones (no flight master).
     hub("shendralas", "Shen'dralas", 16651, A.SHENDRALAS, K, "Shen'dralas", ride=5,
-        first_text="Fly to Nijel's Point and ride south through the Valley of Bones into Shen'dralas"),
+        first_text="Fly to Nijel's Point and ride south through the Valley of Bones into Shen'dralas", anchors=[("Nijel's Point", 5)]),
     hub("dustwallow", "Dustwallow Marsh", 15, A.THERAMORE, K, "Theramore", "Baldruc"),
     hub("needles", "Thousand Needles", 400, A.SHIMMERING_FLATS, K, "the Shimmering Flats", ride=5,
-        first_text="Fly to Gadgetzan or Theramore and ride to the Shimmering Flats in Thousand Needles"),
+        first_text="Fly to Gadgetzan or Theramore and ride to the Shimmering Flats in Thousand Needles", anchors=[("Gadgetzan", 4), ("Theramore", 6)]),
     hub("tanaris", "Tanaris", 440, A.GADGETZAN, K, "Gadgetzan", "Bera Stonehammer"),
     hub("feralas", "Feralas", 357, A.FEATHERMOON, K, "Feathermoon Stronghold", "Fyldren Moonfeather",
-        first_text="Travel to Feathermoon Stronghold in Feralas (boat from the Forgotten Coast)"),
+        first_text="Travel to Feathermoon Stronghold in Feralas (boat from the Forgotten Coast)", first_anchors=[("Nijel's Point", 9), ("Thalanaar", 8)],
+        first_tail="ride to the Forgotten Coast and take the boat to Feathermoon Stronghold"),
     hub("azshara", "Azshara", 16, A.TALRENDIS, K, "Talrendis Point", "Jarrodenus"),
     hub("ungoro", "Un'Goro Crater", 490, A.MARSHALS_REFUGE, K, "Marshal's Refuge", "Gryfe"),
     hub("felwood", "Felwood", 361, A.TALONBRANCH, K, "Talonbranch Glade", "Mishellena"),
     hub("winterspring", "Winterspring", 618, A.EVERLOOK, K, "Everlook", "Maethrya"),
     hub("silithus", "Silithus", 1377, A.CENARION_HOLD, K, "Cenarion Hold", "Cloud Skydancer"),
-    city("darnassus", "Darnassus", 1657, A.DARNASSUS, K),
+    city("darnassus", "Darnassus", 1657, A.DARNASSUS, K, anchors=[("Rut'theran Village", 1)]),
     # Eastern Kingdoms
     hub("wetlands", "Wetlands", 11, A.MENETHIL, E, "Menethil Harbor", "Shellei Brondir"),
     hub("redridge", "Redridge Mountains", 44, A.LAKESHIRE, E, "Lakeshire", "Ariena Stormfeather"),
@@ -84,12 +88,12 @@ HUBS = [
         nearby=[(36, "Alterac Mountains", (0.6, 15.0, -25.0))]),
     hub("arathi", "Arathi Highlands", 45, A.REFUGE_POINTE, E, "Refuge Pointe", "Cedrik Prose"),
     hub("stv_north", "Stranglethorn Vale", 33, A.REBEL_CAMP, E, "the Rebel Camp", ride=3,
-        first_text="Fly to Darkshire and ride south to the Rebel Camp in Stranglethorn Vale"),
+        first_text="Fly to Darkshire and ride south to the Rebel Camp in Stranglethorn Vale", anchors=[("Darkshire", 3), ("Booty Bay", 6)]),
     hub("stv_south", "Stranglethorn Vale", 33, A.BOOTY_BAY, E, "Booty Bay", "Gyll"),
     hub("swamp", "Swamp of Sorrows", 8, A.SWAMP_WEST, E, "the Swamp of Sorrows", ride=4,
-        first_text="Fly to Darkshire and ride east through Deadwind Pass into the Swamp of Sorrows"),
+        first_text="Fly to Darkshire and ride east through Deadwind Pass into the Swamp of Sorrows", anchors=[("Darkshire", 4), ("Nethergarde Keep", 3)]),
     hub("badlands", "Badlands", 3, A.THELSAMAR_ROAD, E, "the Badlands", ride=4,
-        first_text="Fly to Thelsamar in Loch Modan and ride south into the Badlands"),
+        first_text="Fly to Thelsamar in Loch Modan and ride south into the Badlands", anchors=[("Thelsamar", 4)]),
     hub("hinterlands", "The Hinterlands", 47, A.AERIE_PEAK, E, "Aerie Peak", "Guthrum Thunderfist"),
     hub("searing", "Searing Gorge", 51, A.THORIUM_POINT, E, "Thorium Point", "Lanie Reed"),
     hub("blasted", "Blasted Lands", 4, A.NETHERGARDE, E, "Nethergarde Keep", "Alexandra Constantine"),
