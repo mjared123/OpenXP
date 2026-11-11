@@ -22,4 +22,7 @@ for name in sorted(os.listdir(os.path.join(ROOT, "tests"))):
     with open(os.path.join(ROOT, "tests", name), encoding="utf-8") as f:
         fn = rt.execute("return function(src, root) return assert(loadstring(src))(root) end")
         failures += int(fn(f.read(), ROOT) or 0)
+print("== route_frozen.py")
+import subprocess
+failures += subprocess.call([sys.executable, os.path.join(ROOT, "tests", "route_frozen.py")])
 sys.exit(1 if failures else 0)

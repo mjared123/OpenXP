@@ -65,12 +65,44 @@ step
     >>Talk to |cRXP_FRIENDLY_Gerrig Bonegrip|r
     .turnin -727 >>Turn in To Ironforge for Yagyin's Digest
     .target Gerrig Bonegrip
+step << Warlock
+    --oxp-class
+    .goto Ironforge,50.35,5.66
+    >>Talk to |cRXP_FRIENDLY_Briarthorn|r
+    .accept 4487 >>Accept Summon Felsteed
+    .target Briarthorn
 step
     .goto Ironforge,69.95,21.26
     >>Talk to |cRXP_FRIENDLY_Roetten Stonehammer|r
     .turnin -1457 >>Turn in The Karnitol Shipwreck
     .turnin -1467 >>Turn in Reagents for Reclaimers Inc.
     .target Roetten Stonehammer
+step << Warlock
+    --oxp-class
+    .goto Ironforge,74.19,9.39
+    >>Talk to |cRXP_FRIENDLY_Krom Stoutarm|r
+    .accept 1804 >>Accept Tome of the Cabal
+    .target Krom Stoutarm
+step << Warlock
+    --oxp-class
+    .goto Wetlands,49.28,47.47
+    >>Kill |cRXP_ENEMY_Dragonmaw Shadowwarder|r and |cRXP_ENEMY_Dragonmaw Bonewarder|r. Loot them for |cRXP_LOOT_Rod of Channeling|r
+    .complete 1804,1 --Tome of the Cabal
+    .mob Dragonmaw Shadowwarder
+    .mob Dragonmaw Bonewarder
+step << Shaman
+    --oxp-class
+    .goto Arathi Highlands,59.84,27.57
+    >>Talk to |cRXP_FRIENDLY_Veyric Thunderhame|r
+    .turnin -96135 >>Turn in Heed My Call
+    .accept 96016 >>Accept The Tempest's Weapons
+    .target Veyric Thunderhame
+step << Shaman
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .turnin 96016 >>Turn in The Tempest's Weapons
+    .target Bath'rah the Windwatcher
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -188,6 +220,28 @@ step
     .goto Feralas,45.44,64.96
     >>Click the |cRXP_PICK_Wrecked Row Boat|r
     .turnin 4125 >>Turn in The Missing Courier
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.63,35.50
+    >>Talk to |cRXP_FRIENDLY_Strahad Farsan|r
+    .turnin 1804 >>Turn in Tome of the Cabal
+    .accept 1795 >>Accept The Binding
+    .target Strahad Farsan
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.60,35.31
+    >>Kill |cRXP_ENEMY_Summoned Felhunter|r
+    .complete 1795,1 --The Binding
+    .mob Summoned Felhunter
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.63,35.50
+    >>Talk to |cRXP_FRIENDLY_Strahad Farsan|r
+    .turnin 1795 >>Turn in The Binding
+    .turnin 4487 >>Turn in Summon Felsteed
+    .accept 4490 >>Accept Summon Felsteed
+    .turnin 4490 >>Turn in Summon Felsteed
+    .target Strahad Farsan
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -228,6 +282,13 @@ step
     >>Talk to |cRXP_FRIENDLY_Dizzy One-Eye|r
     .accept 576 >>Accept Keep An Eye Out
     .target Dizzy One-Eye
+step << Warlock
+    --oxp-class
+    .goto Stranglethorn Vale,28.71,76.89
+    >>Talk to |cRXP_FRIENDLY_Xizk Goodstitch|r
+    .accept 4785 >>Accept Fine Gold Thread
+    .turnin 4785 >>Turn in Fine Gold Thread
+    .target Xizk Goodstitch
 step
     .goto Stranglethorn Vale,28.23,82.40
     >>Kill |cRXP_ENEMY_Bloodsail Deckhand|r and |cRXP_ENEMY_Bloodsail Swabby|r and |cRXP_ENEMY_Bloodsail Warlock|r. Loot them for |cRXP_LOOT_Dizzy's Eye|r (about 10% drop)
@@ -346,6 +407,12 @@ step
     .goto Feralas,73.32,56.31
     >>Click the |cRXP_PICK_Large Leather Backpacks|r
     .turnin 4131 >>Turn in The Woodpaw Gnolls
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .accept 4784 >>Accept Components for the Enchanted Gold Bloodrobe
+    .target Menara Voidrender
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -505,6 +572,12 @@ step
     >>Talk to |cRXP_FRIENDLY_"Sea Wolf" MacKinley|r
     .accept 609 >>Accept Voodoo Dues
     .target "Sea Wolf" MacKinley
+step << Warlock
+    --oxp-class
+    .goto Stranglethorn Vale,28.71,76.89
+    >>Kill |cRXP_ENEMY_Xizk Goodstitch|r. Loot them for |cRXP_LOOT_Fine Gold Thread|r
+    .complete 4784,1 --Components for the Enchanted Gold Bloodrobe
+    .mob Xizk Goodstitch
 step
     .goto Stranglethorn Vale,27.12,77.21
     >>Talk to |cRXP_FRIENDLY_Crank Fizzlebub|r
@@ -581,6 +654,12 @@ step
     >>Talk to |cRXP_FRIENDLY_Krazek|r
     .accept 2864 >>Accept Tran'rek
     .target Krazek
+step << Warlock
+    --oxp-class
+    .goto Arathi Highlands,25.81,30.65
+    >>Kill |cRXP_ENEMY_Burning Exile|r. Loot them for |cRXP_LOOT_Smoldering Coal|r
+    .complete 4784,2 --Components for the Enchanted Gold Bloodrobe
+    .mob Burning Exile
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -661,6 +740,25 @@ step
     >>Talk to |cRXP_FRIENDLY_Pratt McGrubben|r
     .turnin 2821 >>Turn in The Mark of Quality
     .target Pratt McGrubben
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4784 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .accept 4786 >>Accept The Completed Robe
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Kill |cRXP_ENEMY_Menara Voidrender|r
+    .complete 4786,1 --The Completed Robe
+    .mob Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4786 >>Turn in The Completed Robe
+    .target Menara Voidrender
 ]])
 
 RXPGuides.RegisterGuide([[

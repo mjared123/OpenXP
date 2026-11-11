@@ -171,6 +171,25 @@ step
     >>Talk to |cRXP_FRIENDLY_Illiyana|r
     .turnin 1032 >>Turn in Satyr Slaying!
     .target Illiyana
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Darkshore,37.40,40.13
+    >>Kill |cRXP_ENEMY_Thundris Windweaver|r. Loot them for |cRXP_LOOT_Purified Kor Gem|r
+    .complete -1654,4 --The Test of Righteousness
+    .mob Thundris Windweaver
+step << Warrior
+    --oxp-class
+    .goto Stonetalon Mountains,32.84,72.68
+    >>Kill |cRXP_ENEMY_Fledgling Chimaera|r and |cRXP_ENEMY_Young Chimaera|r. Loot them for |cRXP_LOOT_Charred Horn|r
+    .complete -1701,2 --Fire Hardened Mail
+    .mob Fledgling Chimaera
+    .mob Young Chimaera
+step << Warrior
+    --oxp-class
+    .goto Stonetalon Mountains,33.64,74.66
+    >>Kill |cRXP_ENEMY_Chimaera Matriarch|r. Loot them for |cRXP_LOOT_Galvanized Horn|r
+    .complete -1701,3 --Fire Hardened Mail
+    .mob Chimaera Matriarch
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -191,6 +210,18 @@ step << Shaman
     >>Talk to |cRXP_FRIENDLY_Eldrun Stormbreaker|r
     .accept 94789 >>Accept Call of Air
     .target Eldrun Stormbreaker
+step << Warlock
+    --oxp-class
+    .goto Ironforge,47.63,9.26
+    >>Talk to |cRXP_FRIENDLY_Lago Blackwrench|r
+    .accept 1798 >>Accept Seeking Strahad
+    .target Lago Blackwrench
+step << Warlock
+    --oxp-class
+    .goto Ironforge,50.35,5.66
+    >>Talk to |cRXP_FRIENDLY_Briarthorn|r
+    .accept 4736 >>Accept In Search of Menara Voidrender
+    .target Briarthorn
 step
     .goto Ironforge,77.54,11.82
     >>Talk to |cRXP_FRIENDLY_Historian Karnik|r
@@ -211,6 +242,26 @@ step
     >>Talk to |cRXP_FRIENDLY_Lomac Gearstrip|r
     .turnin -1072 >>Turn in An Old Colleague
     .target Lomac Gearstrip
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Dun Morogh,52.49,36.92
+    >>Talk to |cRXP_FRIENDLY_Jordan Stilwell|r
+    .turnin -1654 >>Turn in The Test of Righteousness
+    .accept 1806 >>Accept The Test of Righteousness
+    .turnin 1806 >>Turn in The Test of Righteousness
+    .target Jordan Stilwell
+step << Warrior
+    --oxp-class
+    .goto Stormwind City,64.62,37.23
+    >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
+    .turnin -1701 >>Turn in Fire Hardened Mail
+    .target Furen Longbeard
+step << Warrior
+    --oxp-class
+    .goto Ironforge,70.34,90.65
+    >>Talk to |cRXP_FRIENDLY_Kelv Sternhammer|r
+    .accept 1718 >>Accept The Islander
+    .target Kelv Sternhammer
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -481,6 +532,47 @@ step
     >>Talk to |cRXP_FRIENDLY_Azore Aldamort|r
     .turnin 5741 >>Turn in Sceptre of Light
     .target Azore Aldamort
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.63,35.50
+    >>Talk to |cRXP_FRIENDLY_Strahad Farsan|r
+    .turnin 1798 >>Turn in Seeking Strahad
+    .accept 1758 >>Accept Tome of the Cabal
+    .target Strahad Farsan
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4736 >>Turn in In Search of Menara Voidrender
+    .accept 1796 >>Accept Components for the Enchanted Gold Bloodrobe
+    .turnin 1796 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .accept 4781 >>Accept Components for the Enchanted Gold Bloodrobe
+    .target Menara Voidrender
+step << Warrior
+    --oxp-class
+    .goto The Barrens,68.62,49.16
+    >>Talk to |cRXP_FRIENDLY_Klannoc Macleod|r
+    .turnin 1718 >>Turn in The Islander
+    .accept 1719 >>Accept The Affray
+    .target Klannoc Macleod
+step << Warrior
+    --oxp-class
+    .goto The Barrens,68.61,48.72
+    >>Kill |cRXP_ENEMY_Big Will|r
+    .complete 1719,1 --The Affray
+    .mob Big Will
+step << Warrior
+    --oxp-class
+    .goto The Barrens,68.60,48.72
+    >>Step on the grate to begin the Affray
+    .complete 1719,2 --The Affray
+step << Warrior
+    --oxp-class
+    .goto The Barrens,68.62,49.16
+    >>Talk to |cRXP_FRIENDLY_Klannoc Macleod|r
+    .turnin 1719 >>Turn in The Affray
+    .accept 1791 >>Accept The Windwatcher
+    .target Klannoc Macleod
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -542,6 +634,31 @@ step
     >>Talk to |cRXP_FRIENDLY_Vincent Hyal|r
     .accept 1302 >>Accept James Hyal
     .target Vincent Hyal
+step << Warlock
+    --oxp-class
+    .goto Ironforge,74.19,9.39
+    >>Talk to |cRXP_FRIENDLY_Krom Stoutarm|r
+    .turnin 1758 >>Turn in Tome of the Cabal
+    .accept 1802 >>Accept Tome of the Cabal
+    .target Krom Stoutarm
+step << Warlock
+    --oxp-class
+    .goto Hillsbrad Foothills,27.78,72.79
+    >>Loot the |cRXP_PICK_Moldy Tome|r
+    .complete 1802,1 --Tome of the Cabal
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .turnin 1791 >>Turn in The Windwatcher
+    .target Bath'rah the Windwatcher
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.93,80.38
+    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
+    .accept 96783 >>Accept A Way In
+    .turnin -96786 >>Turn in The Syndicate Sting
+    .target Myrokos Silentform
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -747,6 +864,13 @@ step << Shaman
     >>Talk to |cRXP_FRIENDLY_Veyric Thunderhame|r
     .turnin 94789 >>Turn in Call of Air
     .target Veyric Thunderhame
+step << Shaman
+    --oxp-class
+    .goto Arathi Highlands,59.84,27.57
+    >>Talk to |cRXP_FRIENDLY_Veyric Thunderhame|r
+    .accept 96264 >>Accept Elemental Aid
+    .turnin 96264 >>Turn in Elemental Aid
+    .target Veyric Thunderhame
 step
     .goto Arathi Highlands,60.18,53.85
     >>Talk to |cRXP_FRIENDLY_Quae|r
@@ -839,6 +963,13 @@ step
     .turnin 1244 >>Turn in The Missing Diplomat
     .accept 1245 >>Accept The Missing Diplomat
     .target Watcher Backus
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.93,80.38
+    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
+    .accept 96781 >>Accept What's the Big Idea?
+    .turnin 96781 >>Turn in What's the Big Idea?
+    .target Myrokos Silentform
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -909,6 +1040,11 @@ step
     >>Kill |cRXP_ENEMY_Lashtail Raptor|r
     .complete 195,1 --Raptor Mastery
     .mob Lashtail Raptor
+step << Warlock
+    --oxp-class
+    .goto Stranglethorn Vale,44.33,45.06
+    >>Loot the |cRXP_PICK_Gold Bar|r
+    .complete 4781,1 --Components for the Enchanted Gold Bloodrobe
 step
     .goto Stranglethorn Vale,33.53,18.31
     >>Kill |cRXP_ENEMY_Elder Stranglethorn Tiger|r
@@ -931,6 +1067,13 @@ step
     >>Talk to |cRXP_FRIENDLY_Drizzlik|r
     .turnin 577 >>Turn in Some Assembly Required
     .target Drizzlik
+step << Warlock
+    --oxp-class
+    .goto Stranglethorn Vale,28.71,76.89
+    >>Talk to |cRXP_FRIENDLY_Xizk Goodstitch|r
+    .turnin 4781 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .accept 4782 >>Accept Components for the Enchanted Gold Bloodrobe
+    .target Xizk Goodstitch
 step
     .goto Stranglethorn Vale,27.00,77.13
     >>Talk to |cRXP_FRIENDLY_Kebok|r
@@ -1052,6 +1195,12 @@ step
     .turnin 1245 >>Turn in The Missing Diplomat
     .accept 1246 >>Accept The Missing Diplomat
     .target Elling Trias
+step << Warlock
+    --oxp-class
+    .goto Stormwind City,39.24,84.96
+    >>Talk to |cRXP_FRIENDLY_Demisette Cloyce|r
+    .accept 4968 >>Accept Knowledge of the Orb of Orahil
+    .target Demisette Cloyce
 step
     .goto Stormwind City,74.26,59.17
     >>Talk to |cRXP_FRIENDLY_Dashel Stonefist|r
@@ -1084,6 +1233,80 @@ step
     >>Talk to |cRXP_FRIENDLY_Grimand Elmore|r
     .turnin -322 >>Turn in Blessed Arm
     .target Grimand Elmore
+step << Warrior
+    --oxp-class
+    .goto Stormwind City,64.62,37.23
+    >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
+    .accept 1782 >>Accept Furen's Armor
+    .turnin 1782 >>Turn in Furen's Armor
+    .target Furen Longbeard
+step << Human Warrior
+    --oxp-class
+    .goto Stormwind City,64.62,37.23
+    >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
+    .accept 1700 >>Accept Grimand Elmore
+    .target Furen Longbeard
+step << Human Warrior
+    --oxp-class
+    .goto Stormwind City,59.73,33.78
+    >>Talk to |cRXP_FRIENDLY_Grimand Elmore|r
+    .turnin 1700 >>Turn in Grimand Elmore
+    .accept 1705 >>Accept Burning Blood
+    .target Grimand Elmore
+step << Human Warrior
+    --oxp-class
+    .goto Duskwood,63.95,73.72
+    >>Kill |cRXP_ENEMY_Nightbane Dark Runner|r and |cRXP_ENEMY_Nightbane Vile Fang|r and |cRXP_ENEMY_Nightbane Shadow Weaver|r. Loot them for |cRXP_LOOT_Burning Blood|r
+    .complete 1705,1 --Burning Blood
+    .mob Nightbane Dark Runner
+    .mob Nightbane Vile Fang
+    .mob Nightbane Shadow Weaver
+step << Human Warrior
+    --oxp-class
+    .goto Silverpine Forest,49.83,85.60
+    >>Kill |cRXP_ENEMY_Old Fire-Eye|r. Loot them for |cRXP_LOOT_Burning Rock|r
+    .complete 1705,2 --Burning Blood
+    .mob Old Fire-Eye
+step << Human Warrior
+    --oxp-class
+    .goto Stormwind City,59.73,33.78
+    >>Talk to |cRXP_FRIENDLY_Grimand Elmore|r
+    .turnin 1705 >>Turn in Burning Blood
+    .accept 1706 >>Accept Grimand's Armor
+    .turnin 1706 >>Turn in Grimand's Armor
+    .target Grimand Elmore
+step << NightElf Warrior
+    --oxp-class
+    .goto Stormwind City,64.62,37.23
+    >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
+    .accept 1703 >>Accept Mathiel
+    .target Furen Longbeard
+step << Dwarf Warrior/Gnome Warrior
+    --oxp-class
+    .goto Stormwind City,64.62,37.23
+    >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
+    .accept 1704 >>Accept Klockmort Spannerspan
+    .target Furen Longbeard
+step << Dwarf Warrior/Gnome Warrior
+    --oxp-class
+    .goto Ironforge,67.92,46.10
+    >>Talk to |cRXP_FRIENDLY_Klockmort Spannerspan|r
+    .turnin 1704 >>Turn in Klockmort Spannerspan
+    .accept 1708 >>Accept Iron Coral
+    .target Klockmort Spannerspan
+step << Dwarf Warrior/Gnome Warrior
+    --oxp-class
+    .goto Wetlands,8.69,71.12
+    >>Loot the |cRXP_PICK_Searing Coral|r
+    .complete 1708,1 --Iron Coral
+step << Dwarf Warrior/Gnome Warrior
+    --oxp-class
+    .goto Ironforge,67.92,46.10
+    >>Talk to |cRXP_FRIENDLY_Klockmort Spannerspan|r
+    .turnin 1708 >>Turn in Iron Coral
+    .accept 1709 >>Accept Klockmort's Creation
+    .turnin 1709 >>Turn in Klockmort's Creation
+    .target Klockmort Spannerspan
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1244,6 +1467,39 @@ step
     >>Talk to |cRXP_FRIENDLY_Kreldig Ungor|r
     .turnin 1459 >>Turn in Reagents for Reclaimers Inc.
     .target Kreldig Ungor
+step << Warlock
+    --oxp-class
+    .goto Thousand Needles,43.44,32.69
+    >>Loot the |cRXP_PICK_Tattered Manuscript|r
+    .complete 1802,2 --Tome of the Cabal
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4782 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .accept 4783 >>Accept Components for the Enchanted Gold Bloodrobe
+    .turnin 4968 >>Turn in Knowledge of the Orb of Orahil
+    .target Menara Voidrender
+step << NightElf Warrior
+    --oxp-class
+    .goto Darnassus,59.51,45.38
+    >>Talk to |cRXP_FRIENDLY_Mathiel|r
+    .turnin 1703 >>Turn in Mathiel
+    .accept 1710 >>Accept Sunscorched Shells
+    .target Mathiel
+step << NightElf Warrior
+    --oxp-class
+    .goto Thousand Needles,11.41,36.76
+    >>Loot the |cRXP_PICK_Sunscorched Shell|r
+    .complete 1710,1 --Sunscorched Shells
+step << NightElf Warrior
+    --oxp-class
+    .goto Darnassus,59.51,45.38
+    >>Talk to |cRXP_FRIENDLY_Mathiel|r
+    .turnin 1710 >>Turn in Sunscorched Shells
+    .accept 1711 >>Accept Mathiel's Armor
+    .turnin 1711 >>Turn in Mathiel's Armor
+    .target Mathiel
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1477,6 +1733,18 @@ step
     >>Talk to |cRXP_FRIENDLY_Shakes O'Breen|r
     .turnin 663 >>Turn in Land Ho!
     .target Shakes O'Breen
+step << Warlock
+    --oxp-class
+    .goto Ironforge,74.19,9.39
+    >>Talk to |cRXP_FRIENDLY_Krom Stoutarm|r
+    .turnin 1802 >>Turn in Tome of the Cabal
+    .target Krom Stoutarm
+step << Mage
+    --oxp-class
+    .goto Stormwind City,49.56,85.80
+    >>Talk to |cRXP_FRIENDLY_Jennea Cannon|r
+    .accept 1947 >>Accept Journey to the Marsh
+    .target Jennea Cannon
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1708,11 +1976,51 @@ step
     .turnin 1286 >>Turn in The Deserters
     .accept 1287 >>Accept The Deserters
     .target Balos Jacken
+step << Mage
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin 1947 >>Turn in Journey to the Marsh
+    .accept 1949 >>Accept Hidden Secrets
+    .target Tabetha
 step
     .goto Dustwallow Marsh,68.21,48.62
     >>Talk to |cRXP_FRIENDLY_Captain Garran Vimes|r
     .turnin 1287 >>Turn in The Deserters
     .target Captain Garran Vimes
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .accept 1799 >>Accept Fragments of the Orb of Orahil
+    .target Menara Voidrender
+step << Mage
+    --oxp-class
+    .goto Thousand Needles,78.29,75.70
+    >>Talk to |cRXP_FRIENDLY_Magus Tirth|r
+    .turnin 1949 >>Turn in Hidden Secrets
+    .accept 1950 >>Accept Get the Scoop
+    .target Magus Tirth
+step << Mage
+    --oxp-class
+    .goto Thousand Needles,79.61,75.63
+    >>Kill |cRXP_ENEMY_"Plucky" Johnson|r
+    .complete 1950,1 --Get the Scoop
+    .mob "Plucky" Johnson
+step << Mage
+    --oxp-class
+    .goto Thousand Needles,78.29,75.70
+    >>Talk to |cRXP_FRIENDLY_Magus Tirth|r
+    .turnin 1950 >>Turn in Get the Scoop
+    .accept 1951 >>Accept Rituals of Power
+    .target Magus Tirth
+step << Mage
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin 1951 >>Turn in Rituals of Power
+    .accept 1948 >>Accept Items of Power
+    .target Tabetha
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1801,6 +2109,12 @@ step
     >>Talk to |cRXP_FRIENDLY_Sigrun Ironhew|r
     .turnin 733 >>Turn in Scrounging
     .target Sigrun Ironhew
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .accept 1712 >>Accept Cyclonian
+    .target Bath'rah the Windwatcher
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1836,6 +2150,12 @@ step
     .turnin 665 >>Turn in Sunken Treasure
     .accept 666 >>Accept Sunken Treasure
     .target Doctor Draxlegauge
+step << Shaman
+    --oxp-class
+    .goto Arathi Highlands,59.84,27.57
+    >>Talk to |cRXP_FRIENDLY_Veyric Thunderhame|r
+    .accept 96135 >>Accept Heed My Call
+    .target Veyric Thunderhame
 step
     .goto Arathi Highlands,32.80,81.48
     >>Talk to |cRXP_FRIENDLY_First Mate Nilzlix|r
@@ -1903,6 +2223,21 @@ step
     >>Talk to |cRXP_FRIENDLY_Hemet Nesingwary|r
     .accept 196 >>Accept Raptor Mastery
     .target Hemet Nesingwary
+step << Warrior
+    --oxp-class
+    .goto Stranglethorn Vale,35.62,23.19
+    >>Loot the |cRXP_PICK_Liferoot|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1712,1 --Cyclonian
+step << Warrior
+    --oxp-class
+    .goto Stranglethorn Vale,24.40,11.18
+    >>Kill |cRXP_ENEMY_Bloodscalp Warrior|r and |cRXP_ENEMY_Bloodscalp Scout|r and |cRXP_ENEMY_Bloodscalp Hunter|r. Loot them for |cRXP_LOOT_Bloodscalp Tusk|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1712,2 --Cyclonian
+    .mob Bloodscalp Warrior
+    .mob Bloodscalp Scout
+    .mob Bloodscalp Hunter
 step
     .goto Stranglethorn Vale,30.14,43.56
     >>Kill |cRXP_ENEMY_Jungle Stalker|r
@@ -1940,6 +2275,11 @@ step
     .mob Venture Co. Strip Miner
     .mob Venture Co. Tinkerer
     .mob Venture Co. Surveyor
+step << Mage
+    --oxp-class
+    .goto Stranglethorn Vale,44.33,45.06
+    >>Loot the |cRXP_PICK_Jade|r
+    .complete 1948,1 --Items of Power
 step
     .goto Stranglethorn Vale,35.66,10.81
     >>Talk to |cRXP_FRIENDLY_Hemet Nesingwary|r
@@ -1994,6 +2334,33 @@ step
     >>Talk to |cRXP_FRIENDLY_Deeg|r
     .turnin 587 >>Turn in Up to Snuff
     .target Deeg
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .turnin 1712 >>Turn in Cyclonian
+    .accept 1713 >>Accept The Summoning
+    .target Bath'rah the Windwatcher
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.32,62.14
+    >>Kill |cRXP_ENEMY_Cyclonian|r. Loot them for |cRXP_LOOT_Whirlwind Heart|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1713,1 --The Summoning
+    .mob Cyclonian
+step << Warrior
+    --oxp-class
+    .goto Alterac Mountains,80.50,66.92
+    >>Talk to |cRXP_FRIENDLY_Bath'rah the Windwatcher|r
+    .turnin 1713 >>Turn in The Summoning
+    .accept 1792 >>Accept Whirlwind Weapon
+    .turnin 1792 >>Turn in Whirlwind Weapon
+    .target Bath'rah the Windwatcher
+step << Mage
+    --oxp-class
+    .goto Arathi Highlands,52.00,50.80
+    >>Loot the |cRXP_PICK_Bolt Charged Bramble|r
+    .complete 1948,2 --Items of Power
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -2025,6 +2392,14 @@ step
     >>Talk to |cRXP_FRIENDLY_Captain Pentigast|r
     .accept 93224 >>Accept Carved Centaur Totems
     .target Captain Pentigast
+step << Warlock
+    --oxp-class
+    .goto Desolace,75.96,22.45
+    >>Kill |cRXP_ENEMY_Hatefury Rogue|r and |cRXP_ENEMY_Hatefury Trickster|r and |cRXP_ENEMY_Hatefury Felsworn|r. Loot them for |cRXP_LOOT_Vial of Hatefury Blood|r
+    .complete 4783,1 --Components for the Enchanted Gold Bloodrobe
+    .mob Hatefury Rogue
+    .mob Hatefury Trickster
+    .mob Hatefury Felsworn
 step
     .goto Desolace,62.33,38.99
     >>Talk to |cRXP_FRIENDLY_Bibbly F'utzbuckle|r
@@ -2073,6 +2448,13 @@ step
     .mob Nether Sorceress
     .mob Nether Maiden
     .mob Nether Sister
+step << Warlock
+    --oxp-class
+    .goto Desolace,53.00,80.00
+    >>Kill |cRXP_ENEMY_Lesser Infernal|r and |cRXP_ENEMY_Demon Portal Guardian|r. Loot them for |cRXP_LOOT_Lesser Infernal Stone|r
+    .complete 4783,2 --Components for the Enchanted Gold Bloodrobe
+    .mob Lesser Infernal
+    .mob Demon Portal Guardian
 step
     .goto Desolace,63.03,90.00
     >>Kill |cRXP_ENEMY_Undead Ravager|r
@@ -2088,6 +2470,12 @@ step
     .accept 92743 >>Accept A Conqueror's Crown
     .turnin 92743 >>Turn in A Conqueror's Crown
     .target Warug
+step << Warlock
+    --oxp-class
+    .goto Desolace,80.47,77.84
+    >>Kill |cRXP_ENEMY_Burning Blade Summoner|r. Loot them for |cRXP_LOOT_Infernal Orb|r
+    .complete 1799,1 --Fragments of the Orb of Orahil
+    .mob Burning Blade Summoner
 step
     .goto Desolace,50.79,58.70
     >>Loot the |cRXP_PICK_Kodo Bone|r
@@ -2133,4 +2521,88 @@ step
     .turnin 261 >>Turn in Down the Scarlet Path
     .accept 1052 >>Accept Down the Scarlet Path
     .target Brother Anton
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4783 >>Turn in Components for the Enchanted Gold Bloodrobe
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin 1799 >>Turn in Fragments of the Orb of Orahil
+    .target Tabetha
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.64,35.30
+    >>Talk to |cRXP_FRIENDLY_Acolyte Wytula|r
+    .accept 4962 >>Accept Shard of a Felhound
+    .target Acolyte Wytula
+step << Warlock
+    --oxp-class
+    .goto Desolace,52.91,68.14
+    >>Kill |cRXP_ENEMY_Mana Eater|r. Loot them for |cRXP_LOOT_Imprisoned Felhound Spirit|r
+    .complete 4962,1 --Shard of a Felhound
+    .mob Mana Eater
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4962 >>Turn in Shard of a Felhound
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .accept 4961 >>Accept Cleansing of the Orb of Orahil
+    .target Tabetha
+step << Warlock
+    --oxp-class
+    .goto Dustwallow Marsh,45.79,56.97
+    >>Kill |cRXP_ENEMY_Demon of the Orb|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 4961,1 --Cleansing of the Orb of Orahil
+    .mob Demon of the Orb
+step << Warlock
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin 4961 >>Turn in Cleansing of the Orb of Orahil
+    .accept 4976 >>Accept Returning the Cleansed Orb
+    .target Tabetha
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4976 >>Turn in Returning the Cleansed Orb
+    .accept 4964 >>Accept The Completed Orb of Dar'Orahil
+    .target Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Kill |cRXP_ENEMY_Menara Voidrender|r
+    .complete 4964,1 --The Completed Orb of Dar'Orahil
+    .mob Menara Voidrender
+step << Warlock
+    --oxp-class
+    .goto The Barrens,62.51,35.45
+    >>Talk to |cRXP_FRIENDLY_Menara Voidrender|r
+    .turnin 4964 >>Turn in The Completed Orb of Dar'Orahil
+    .target Menara Voidrender
+step << Shaman
+    --oxp-class
+    .goto Thousand Needles,36.68,39.08
+    >>Kill |cRXP_ENEMY_Ravaging Tempest|r. Loot them for |cRXP_LOOT_Eye of the Tempest|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 96135,1 --Heed My Call
+    .mob Ravaging Tempest
+step << Mage
+    --oxp-class
+    .goto Dustwallow Marsh,46.06,57.09
+    >>Talk to |cRXP_FRIENDLY_Tabetha|r
+    .turnin 1948 >>Turn in Items of Power
+    .accept 1952 >>Accept Mage's Wand
+    .turnin 1952 >>Turn in Mage's Wand
+    .target Tabetha
 ]])

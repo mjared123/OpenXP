@@ -72,6 +72,49 @@ step
     >>Talk to |cRXP_FRIENDLY_Shael'dryn|r
     .turnin 1024 >>Turn in Raene's Cleansing
     .target Shael'dryn
+step << Warrior
+    --oxp-class
+    .goto Darnassus,58.94,35.35
+    >>Talk to |cRXP_FRIENDLY_Darnath Bladesinger|r
+    .accept 1698 >>Accept Yorus Barleybrew
+    .target Darnath Bladesinger
+step << Dwarf Priest
+    --oxp-class
+    .goto Darnassus,39.52,81.20
+    >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r
+    .accept 5647 >>Accept A Lack of Fear
+    .target Priestess Alathea
+step << NightElf Priest
+    --oxp-class
+    .goto Darnassus,39.52,81.20
+    >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r
+    .accept 5672 >>Accept Elune's Grace
+    .turnin 5672 >>Turn in Elune's Grace
+    .target Priestess Alathea
+step << Human Priest
+    --oxp-class
+    .goto Darnassus,39.52,81.20
+    >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r
+    .accept 5678 >>Accept Arcane Feedback
+    .target Priestess Alathea
+step << Gnome Priest
+    --oxp-class
+    .goto Darnassus,39.52,81.20
+    >>Talk to |cRXP_FRIENDLY_Priestess Alathea|r
+    .accept 94820 >>Accept Contingency Plan
+    .target Priestess Alathea
+step << NightElf Druid
+    --oxp-class
+    .goto Moonglade,56.21,30.64
+    >>Talk to |cRXP_FRIENDLY_Dendrite Starblaze|r
+    .turnin -98731 >>Turn in Blessings of the Great Cat Spirit
+    .target Dendrite Starblaze
+step << Hunter
+    --oxp-class
+    .goto Darnassus,31.24,84.51
+    >>Talk to |cRXP_FRIENDLY_Chief Archaeologist Greywhisker|r
+    .accept 942 >>Accept The Absent Minded Prospector
+    .target Chief Archaeologist Greywhisker
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -205,6 +248,13 @@ step
     >>Talk to |cRXP_FRIENDLY_First Mate Fitzsimmons|r
     .accept 463 >>Accept The Greenwarden
     .target First Mate Fitzsimmons
+step << Hunter
+    --oxp-class
+    .goto Wetlands,10.84,60.43
+    >>Talk to |cRXP_FRIENDLY_Archaeologist Flagongut|r
+    .turnin 942 >>Turn in The Absent Minded Prospector
+    .accept 943 >>Accept The Absent Minded Prospector
+    .target Archaeologist Flagongut
 step
     .goto Wetlands,11.88,58.82
     >>Talk to |cRXP_FRIENDLY_Caitlin Grassman|r
@@ -379,6 +429,100 @@ step
     >>Talk to |cRXP_FRIENDLY_Karl Boran|r
     .turnin 286 >>Turn in Return the Statuette
     .target Karl Boran
+step << Warlock
+    --oxp-class
+    .goto Ironforge,47.63,9.26
+    >>Talk to |cRXP_FRIENDLY_Lago Blackwrench|r
+    .accept 1717 >>Accept Gakin's Summons
+    .target Lago Blackwrench
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Westfall,41.69,89.24
+    >>Talk to |cRXP_FRIENDLY_Daphne Stilwell|r
+    .turnin -1650 >>Turn in The Tome of Valor
+    .target Daphne Stilwell
+step << Shaman
+    --oxp-class
+    .goto Ironforge,47.10,13.79
+    >>Talk to |cRXP_FRIENDLY_Eldrun Stormbreaker|r
+    .accept 94494 >>Accept Call of Water
+    .target Eldrun Stormbreaker
+step << Shaman
+    --oxp-class
+    .goto Loch Modan,41.76,19.05
+    >>Talk to |cRXP_FRIENDLY_Norric Lochthane|r
+    .turnin 94494 >>Turn in Call of Water
+    .accept 94616 >>Accept Water Sapta
+    .turnin 94616 >>Turn in Water Sapta
+    .accept 94495 >>Accept Call of Water
+    .target Norric Lochthane
+step << Shaman
+    --oxp-class
+    .goto Wetlands,65.76,76.52
+    >>Talk to |cRXP_FRIENDLY_Hervdana Saegrund|r
+    .turnin 94495 >>Turn in Call of Water
+    .accept 94497 >>Accept Call of Water
+    .turnin 94497 >>Turn in Call of Water
+    .accept 94499 >>Accept Call of Water
+    .turnin 94499 >>Turn in Call of Water
+    .accept 94500 >>Accept Call of Water
+    .turnin 94500 >>Turn in Call of Water
+    .accept 94501 >>Accept Call of Water
+    .target Hervdana Saegrund
+step << Shaman
+    --oxp-class
+    .goto Loch Modan,41.76,19.05
+    >>Talk to |cRXP_FRIENDLY_Norric Lochthane|r
+    .turnin 94501 >>Turn in Call of Water
+    .accept 94502 >>Accept Call of Water
+    .target Norric Lochthane
+step << Shaman
+    --oxp-class
+    .goto Silverpine Forest,38.78,44.26
+    >>Kill |cRXP_ENEMY_Corrupt Minor Manifestation of Water|r. Loot them for |cRXP_LOOT_Corrupt Manifestation's Bracers|r
+    .complete 94502,1 --Call of Water
+    .mob Corrupt Minor Manifestation of Water
+step << Shaman
+    --oxp-class
+    .goto Westfall,45.60,59.88
+    >>Click the |cRXP_PICK_Forgotten Shrine|r
+    .turnin 94502 >>Turn in Call of Water
+step << Shaman
+    --oxp-class
+    .goto Westfall,45.60,59.88
+    >>Click the |cRXP_PICK_Forgotten Shrine|r
+    .accept 94503 >>Accept Call of Water
+step << Shaman
+    --oxp-class
+    .goto Silverpine Forest,38.65,44.58
+    >>Talk to |cRXP_FRIENDLY_Minor Manifestation of Water|r
+    .turnin 94503 >>Turn in Call of Water
+    .accept 94505 >>Accept Call of Water
+    .target Minor Manifestation of Water
+step << Shaman
+    --oxp-class
+    .goto Loch Modan,41.76,19.05
+    >>Talk to |cRXP_FRIENDLY_Norric Lochthane|r
+    .turnin 94505 >>Turn in Call of Water
+    .target Norric Lochthane
+step << Rogue
+    --oxp-class
+    .goto Stormwind City,78.31,70.74
+    >>Talk to |cRXP_FRIENDLY_Master Mathias Shaw|r
+    .accept 2607 >>Accept The Touch of Zanzil
+    .target Master Mathias Shaw
+step << Dwarf Priest
+    --oxp-class
+    .goto Ironforge,24.73,8.16
+    >>Talk to |cRXP_FRIENDLY_High Priest Rohan|r
+    .turnin 5647 >>Turn in A Lack of Fear
+    .target High Priest Rohan
+step << Human Priest
+    --oxp-class
+    .goto Stormwind City,49.53,44.60
+    >>Talk to |cRXP_FRIENDLY_High Priestess Laurena|r
+    .turnin 5678 >>Turn in Arcane Feedback
+    .target High Priestess Laurena
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -654,6 +798,12 @@ step
     >>Talk to |cRXP_FRIENDLY_Abercrombie|r
     .turnin 133 >>Turn in Ghoulish Effigy
     .target Abercrombie
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Westfall,41.69,89.24
+    >>Talk to |cRXP_FRIENDLY_Daphne Stilwell|r
+    .accept 1651 >>Accept The Tome of Valor
+    .target Daphne Stilwell
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -698,6 +848,12 @@ step << Warrior
     .goto Redridge Mountains,21.49,44.72
     >>Talk to |cRXP_FRIENDLY_Yorus Barleybrew|r
     .accept 1699 >>Accept The Rethban Gauntlet
+    .target Yorus Barleybrew
+step << Warrior
+    --oxp-class
+    .goto Redridge Mountains,21.49,44.72
+    >>Talk to |cRXP_FRIENDLY_Yorus Barleybrew|r
+    .turnin 1698 >>Turn in Yorus Barleybrew
     .target Yorus Barleybrew
 step
     .goto Redridge Mountains,22.56,21.38
@@ -807,6 +963,48 @@ step
     >>Talk to |cRXP_FRIENDLY_Guard Howe|r
     .turnin 128 >>Turn in Blackrock Bounty
     .target Guard Howe
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Westfall,42.15,88.44
+    >>Protect Daphne Stilwell
+    .complete 1651,1 --The Tome of Valor
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Westfall,41.69,89.24
+    >>Talk to |cRXP_FRIENDLY_Daphne Stilwell|r
+    .turnin 1651 >>Turn in The Tome of Valor
+    .accept 1652 >>Accept The Tome of Valor
+    .target Daphne Stilwell
+step << Rogue
+    --oxp-class
+    .goto Hillsbrad Foothills,78.64,17.84
+    >>Kill |cRXP_ENEMY_Ravenholdt|r
+    .complete -6681,1 --The Manor, Ravenholdt
+    .mob Ravenholdt
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.45,80.32
+    >>Talk to |cRXP_FRIENDLY_Fahrad|r
+    .turnin -6681 >>Turn in The Manor, Ravenholdt
+    .target Fahrad
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.93,80.38
+    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
+    .accept 96779 >>Accept Syndicate Sabotage
+    .target Myrokos Silentform
+step << Rogue
+    --oxp-class
+    .goto Hillsbrad Foothills,79.92,46.04
+    >>Kill |cRXP_ENEMY_Lord Tomas|r
+    .complete 96779,1 --Syndicate Sabotage
+    .mob Lord Tomas
+step << Rogue
+    --oxp-class
+    .goto Alterac Mountains,84.93,80.38
+    >>Talk to |cRXP_FRIENDLY_Myrokos Silentform|r
+    .turnin 96779 >>Turn in Syndicate Sabotage
+    .target Myrokos Silentform
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -837,15 +1035,67 @@ step << Mage
     >>Talk to |cRXP_FRIENDLY_High Sorcerer Andromath|r
     .turnin 1939 >>Turn in High Sorcerer Andromath
     .target High Sorcerer Andromath
+step << Warlock
+    --oxp-class
+    .goto Stormwind City,39.22,85.23
+    >>Talk to |cRXP_FRIENDLY_Gakin the Darkbinder|r
+    .turnin 1717 >>Turn in Gakin's Summons
+    .target Gakin the Darkbinder
+step << Human Mage/Gnome Mage
+    --oxp-class
+    .goto Stormwind City,48.71,87.62
+    >>Talk to |cRXP_FRIENDLY_High Sorcerer Andromath|r
+    .accept 1938 >>Accept Ur's Treatise on Shadow Magic
+    .target High Sorcerer Andromath
 step
     .goto Stormwind City,55.04,54.16
     >>Talk to |cRXP_FRIENDLY_Brother Kristoff|r
     .accept 343 >>Accept Speaking of Fortitude
     .target Brother Kristoff
+step << Rogue
+    --oxp-class
+    .goto Stormwind City,80.06,69.90
+    >>Talk to |cRXP_FRIENDLY_Doc Mixilpixil|r
+    .turnin 2607 >>Turn in The Touch of Zanzil
+    .accept 2608 >>Accept The Touch of Zanzil
+    .target Doc Mixilpixil
+step << Rogue
+    --oxp-class
+    .goto Stormwind City,80.06,70.09
+    >>Diagnosis Complete
+    .complete 2608,1 --The Touch of Zanzil
+step << Rogue
+    --oxp-class
+    .goto Stormwind City,80.06,69.90
+    >>Talk to |cRXP_FRIENDLY_Doc Mixilpixil|r
+    .turnin 2608 >>Turn in The Touch of Zanzil
+    .accept 2609 >>Accept The Touch of Zanzil
+    .target Doc Mixilpixil
+step << Rogue
+    --oxp-class
+    .goto Stormwind City,69.24,71.84
+    >>Kill |cRXP_ENEMY_Bernard Gump|r and |cRXP_ENEMY_Felicia Gump|r. Loot them for |cRXP_LOOT_Simple Wildflowers|r
+    .complete 2609,1 --The Touch of Zanzil
+    .mob Bernard Gump
+    .mob Felicia Gump
+step << Rogue
+    --oxp-class
+    .goto Stormwind City,55.90,85.64
+    >>Kill |cRXP_ENEMY_Edna Mullby|r and |cRXP_ENEMY_Maria Lumere|r and |cRXP_ENEMY_Sloan McCoy|r. Loot them for |cRXP_LOOT_Leaded Vial|r
+    .complete 2609,2 --The Touch of Zanzil
+    .mob Edna Mullby
+    .mob Maria Lumere
+    .mob Sloan McCoy
 step << Warrior
     .goto Stormwind City,64.62,37.23
     >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
     .turnin 1702 >>Turn in The Shieldsmith
+    .target Furen Longbeard
+step << Warrior
+    --oxp-class
+    .goto Stormwind City,64.62,37.23
+    >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r
+    .accept 1701 >>Accept Fire Hardened Mail
     .target Furen Longbeard
 step
     .goto Stormwind City,77.07,30.21
@@ -863,11 +1113,41 @@ step
     >>Talk to |cRXP_FRIENDLY_Brother Sarno|r
     .accept 2923 >>Accept Tinkmaster Overspark
     .target Brother Sarno
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Stormwind City,50.48,47.49
+    >>Talk to |cRXP_FRIENDLY_Duthorian Rall|r
+    .turnin 1652 >>Turn in The Tome of Valor
+    .accept 1653 >>Accept The Test of Righteousness
+    .target Duthorian Rall
 step
     .goto Stormwind City,48.43,50.22
     >>Talk to |cRXP_FRIENDLY_Lord Grayson Shadowbreaker|r
     .turnin 98191 >>Turn in A Friend of the Family
     .target Lord Grayson Shadowbreaker
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Dun Morogh,52.49,36.92
+    >>Talk to |cRXP_FRIENDLY_Jordan Stilwell|r
+    .turnin 1653 >>Turn in The Test of Righteousness
+    .target Jordan Stilwell
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Loch Modan,35.95,44.91
+    >>Talk to |cRXP_FRIENDLY_Bailor Stonehand|r
+    .accept 1655 >>Accept Bailor's Ore Shipment
+    .target Bailor Stonehand
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Loch Modan,71.60,21.61
+    >>Loot the |cRXP_PICK_Jordan's Ore Shipment|r
+    .complete 1655,1 --Bailor's Ore Shipment
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Loch Modan,35.95,44.91
+    >>Talk to |cRXP_FRIENDLY_Bailor Stonehand|r
+    .turnin 1655 >>Turn in Bailor's Ore Shipment
+    .target Bailor Stonehand
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -999,6 +1279,48 @@ step
     >>Talk to |cRXP_FRIENDLY_Krolg|r
     .turnin 1030 >>Turn in Raene's Cleansing
     .target Krolg
+step << Warlock
+    --oxp-class
+    .goto The Barrens,49.31,57.10
+    >>Talk to |cRXP_FRIENDLY_Takar the Seer|r
+    .accept 1738 >>Accept Heartswood
+    .target Takar the Seer
+step << Warlock
+    --oxp-class
+    .goto Ashenvale,31.55,31.57
+    >>Loot the |cRXP_PICK_Heartswood|r
+    .complete 1738,1 --Heartswood
+step << Warlock
+    --oxp-class
+    .goto The Barrens,49.31,57.21
+    >>Talk to |cRXP_FRIENDLY_Doan Karhan|r
+    .accept 1740 >>Accept The Orb of Soran'ruk
+    .turnin 1740 >>Turn in The Orb of Soran'ruk
+    .target Doan Karhan
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Darkshore,37.40,40.13
+    >>Talk to |cRXP_FRIENDLY_Thundris Windweaver|r
+    .accept 1442 >>Accept Seeking the Kor Gem
+    .target Thundris Windweaver
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Darkshore,31.80,92.44
+    >>Kill |cRXP_ENEMY_Blackfathom Oracle|r. Loot them for |cRXP_LOOT_Corrupted Kor Gem|r
+    >>|cRXP_WARN_This is an elite or group part: bring help, or skip this step|r
+    .complete 1442,1 --Seeking the Kor Gem
+    .mob Blackfathom Oracle
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Darkshore,37.40,40.13
+    >>Talk to |cRXP_FRIENDLY_Thundris Windweaver|r
+    .turnin 1442 >>Turn in Seeking the Kor Gem
+    .target Thundris Windweaver
+step << Rogue
+    --oxp-class
+    .goto The Barrens,47.81,84.93
+    >>Loot the |cRXP_PICK_Bronze Tube|r
+    .complete 2609,3 --The Touch of Zanzil
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1043,6 +1365,13 @@ step
     >>Talk to |cRXP_FRIENDLY_Prospector Whelgar|r
     .accept 299 >>Accept Uncovering the Past
     .target Prospector Whelgar
+step << Warrior
+    --oxp-class
+    .goto Wetlands,49.01,61.42
+    >>Kill |cRXP_ENEMY_Leech Stalker|r and |cRXP_ENEMY_Cave Stalker|r. Loot them for |cRXP_LOOT_Scorched Spider Fang|r
+    .complete 1701,1 --Fire Hardened Mail
+    .mob Leech Stalker
+    .mob Cave Stalker
 step
     .goto Wetlands,34.44,50.91
     >>Kill |cRXP_ENEMY_Mottled Scytheclaw|r
@@ -1061,6 +1390,14 @@ step
     .complete 299,3 --Uncovering the Past
     .complete 299,4 --Uncovering the Past
     .mob Mottled Razormaw
+step << Hunter
+    --oxp-class
+    .goto Wetlands,33.31,46.95
+    >>Kill |cRXP_ENEMY_Mottled Raptor|r and |cRXP_ENEMY_Mottled Screecher|r and |cRXP_ENEMY_Mottled Scytheclaw|r. Loot them for |cRXP_LOOT_Stone of Relu|r
+    .complete 943,1 --The Absent Minded Prospector
+    .mob Mottled Raptor
+    .mob Mottled Screecher
+    .mob Mottled Scytheclaw
 step
     .goto Wetlands,38.18,50.89
     >>Talk to |cRXP_FRIENDLY_Ormer Ironbraid|r
@@ -1072,6 +1409,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Prospector Whelgar|r
     .turnin 299 >>Turn in Uncovering the Past
     .target Prospector Whelgar
+step << Hunter
+    --oxp-class
+    .goto Wetlands,38.86,52.21
+    >>Loot the |cRXP_PICK_Flagongut's Fossil|r
+    .complete 943,2 --The Absent Minded Prospector
 step
     .goto Wetlands,33.26,51.51
     >>Kill |cRXP_ENEMY_Sarltooth|r. Loot them for |cRXP_LOOT_Sarltooth's Talon|r
@@ -1139,11 +1481,34 @@ step
     >>Talk to |cRXP_FRIENDLY_Captain Stoutfist|r
     .turnin 464 >>Turn in War Banners
     .target Captain Stoutfist
+step << Hunter
+    --oxp-class
+    .goto Wetlands,10.84,60.43
+    >>Talk to |cRXP_FRIENDLY_Archaeologist Flagongut|r
+    .turnin 943 >>Turn in The Absent Minded Prospector
+    .target Archaeologist Flagongut
 step
     .goto Wetlands,8.55,55.74
     >>Talk to |cRXP_FRIENDLY_James Halloran|r
     .turnin 98072 >>Turn in Crocs of the Sky
     .target James Halloran
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Dun Morogh,52.49,36.92
+    >>Talk to |cRXP_FRIENDLY_Jordan Stilwell|r
+    .accept 1654 >>Accept The Test of Righteousness
+    .target Jordan Stilwell
+step << Human Paladin/Dwarf Paladin
+    --oxp-class
+    .goto Loch Modan,35.95,44.91
+    >>Kill |cRXP_ENEMY_Bailor Stonehand|r. Loot them for |cRXP_LOOT_Jordan's Refined Ore Shipment|r
+    .complete 1654,2 --The Test of Righteousness
+    .mob Bailor Stonehand
+step << Human Mage/Gnome Mage
+    --oxp-class
+    .goto Redridge Mountains,73.77,47.61
+    >>Loot the |cRXP_PICK_Ur's Treatise on Shadow Magic|r
+    .complete 1938,1 --Ur's Treatise on Shadow Magic
 ]])
 
 RXPGuides.RegisterGuide([[
@@ -1314,6 +1679,11 @@ step
     >>Talk to |cRXP_FRIENDLY_Lord Grayson Shadowbreaker|r
     .accept 98219 >>Accept The Shamed Lieutenant
     .target Lord Grayson Shadowbreaker
+step << Rogue
+    --oxp-class
+    .goto Stormwind City,50.58,60.14
+    >>Loot the |cRXP_PICK_Spool of Light Chartreuse Silk Thread|r
+    .complete 2609,4 --The Touch of Zanzil
 step
     .goto Stormwind City,49.93,45.99
     >>Talk to |cRXP_FRIENDLY_Bishop Farthing|r
@@ -1343,6 +1713,53 @@ step
     .turnin 1242 >>Turn in The Missing Diplomat
     .accept 1243 >>Accept The Missing Diplomat
     .target Elling Trias
+step << Warlock
+    --oxp-class
+    .goto Stormwind City,39.22,85.23
+    >>Talk to |cRXP_FRIENDLY_Gakin the Darkbinder|r
+    .turnin 1738 >>Turn in Heartswood
+    .accept 1739 >>Accept The Binding
+    .target Gakin the Darkbinder
+step << Warlock
+    --oxp-class
+    .goto Stormwind City,39.09,84.37
+    >>Kill |cRXP_ENEMY_Summoned Succubus|r
+    .complete 1739,1 --The Binding
+    .mob Summoned Succubus
+step << Warlock
+    --oxp-class
+    .goto Stormwind City,39.22,85.23
+    >>Talk to |cRXP_FRIENDLY_Gakin the Darkbinder|r
+    .turnin 1739 >>Turn in The Binding
+    .target Gakin the Darkbinder
+step << Rogue
+    --oxp-class
+    .goto Stormwind City,80.06,69.90
+    >>Talk to |cRXP_FRIENDLY_Doc Mixilpixil|r
+    .turnin 2609 >>Turn in The Touch of Zanzil
+    .target Doc Mixilpixil
+step << Human Mage/Gnome Mage
+    --oxp-class
+    .goto Stormwind City,48.71,87.62
+    >>Talk to |cRXP_FRIENDLY_High Sorcerer Andromath|r
+    .turnin 1938 >>Turn in Ur's Treatise on Shadow Magic
+    .accept 1940 >>Accept Pristine Spider Silk
+    .target High Sorcerer Andromath
+step << Human Mage/Gnome Mage
+    --oxp-class
+    .goto Duskwood,30.11,51.19
+    >>Kill |cRXP_ENEMY_Black Widow Hatchling|r and |cRXP_ENEMY_Carrion Recluse|r. Loot them for |cRXP_LOOT_Pristine Spider Silk|r
+    .complete 1940,1 --Pristine Spider Silk
+    .mob Black Widow Hatchling
+    .mob Carrion Recluse
+step << Human Mage/Gnome Mage
+    --oxp-class
+    .goto Stormwind City,51.84,83.51
+    >>Talk to |cRXP_FRIENDLY_Wynne Larson|r
+    .turnin 1940 >>Turn in Pristine Spider Silk
+    .accept 1942 >>Accept Astral Knot Garment
+    .turnin 1942 >>Turn in Astral Knot Garment
+    .target Wynne Larson
 ]])
 
 RXPGuides.RegisterGuide([[
