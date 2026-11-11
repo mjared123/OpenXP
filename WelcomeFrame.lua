@@ -14,6 +14,16 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.32",
+        date = "November 2026",
+        changes = {
+            "Checked every zone-to-zone trip in the 21-60 guides against flights, boats, the tram, riding and your Hearthstone, and picked the fastest each time",
+            "Travel steps now use your Hearthstone when it's ready and gets you there sooner",
+            "First trips to towns you don't have a flight path for yet name the real way in, like the boat to Feathermoon or riding through Deadwind Pass to Nethergarde Keep",
+            "Fixed where the Stormwind Harbor boat docks",
+        },
+    },
+    {
         version = "1.3.31",
         date = "November 2026",
         changes = {

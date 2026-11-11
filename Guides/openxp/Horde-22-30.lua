@@ -663,7 +663,7 @@ RXPGuides.RegisterGuide([[
 
 step
     #completewith next
-    .zone Hillsbrad Foothills >>Get to Tarren Mill in Hillsbrad Foothills: Fly to Orgrimmar, then take the zeppelin from Orgrimmar to Undercity, then fly to Tarren Mill
+    .zone Hillsbrad Foothills >>Get to Tarren Mill in Hillsbrad Foothills: Use your Hearthstone to go back to Tarren Mill
 step
     .goto Hillsbrad Foothills,61.44,19.06
     >>Talk to |cRXP_FRIENDLY_Apothecary Lydon|r

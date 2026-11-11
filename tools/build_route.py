@@ -1843,17 +1843,24 @@ def plan_hubs(builder, route):
     def trip(frm, hub, first, lvl):
         """Fastest way from one hub to the next, in minutes, with the
         guide's text for it; (None, None) when the network doesn't know."""
-        best = (None, None)
-        for a, ma in ends(frm):
+        best = (None, None, False)
+        starts = [(a, ma, False) for a, ma in ends(frm)]
+        # your Hearthstone, when it's off cooldown and home is a town on the network
+        home = builder.home
+        if home and home in net.pos and builder.minutes - builder.hearth_at >= HEARTH_COOLDOWN:
+            starts.append((home, MINUTES_HEARTH, True))
+        for a, ma, hs in starts:
             for b, mb in ends(hub, first):
                 have = known | {a}
                 m, legs = net.route(a, b, have, lvl)
                 if m is None:
                     continue
                 total = ma + m + mb
-                if best[0] is None or total < best[0]:
+                if best[0] is None or total < best[0] - 0.01:
                     parts = []
-                    if ma:
+                    if hs:
+                        parts.append("use your Hearthstone to go back to %s" % a)
+                    elif ma:
                         parts.append("ride back to %s" % a)
                     if legs:
                         parts.append(travel_graph.describe(legs))
@@ -1861,7 +1868,7 @@ def plan_hubs(builder, route):
                         tail = hub.get("first_tail") if first and hub.get("first_anchors") else None
                         parts.append(tail or "ride to %s" % hub["town"])
                     text = ", then ".join(p[0].lower() + p[1:] for p in parts)
-                    best = (total, text[:1].upper() + text[1:] if text else "")
+                    best = (total, text[:1].upper() + text[1:] if text else "", hs)
         return best
 
     def visit(hub, commit, frm=None):
@@ -1869,7 +1876,7 @@ def plan_hubs(builder, route):
         section = dict(hub)
         first = visits.get(hub["key"], 0) == 0
         section["intro"] = hub["first"] if first else hub["again"]
-        way = (None, None)
+        way = (None, None, False)
         if frm is not None and frm["key"] != hub["key"]:
             way = trip(frm, hub, first, builder.level())
             if way[1]:
@@ -1881,6 +1888,8 @@ def plan_hubs(builder, route):
                 lines = ["step", "    #completewith next",
                          "    .zone %s >>Get to %s: %s" % (hub["zone"], where, way[1])]
                 section["intro"] = lines + list(section["intro"][3:])
+            section["_hearth"] = way[2]
+            section["_hearth_min"] = builder.minutes
         section["grind"] = False
         builder.rollouts = commit  # the slow, careful ordering only for the visit you take
         before_xp, before_min = builder.xp, builder.minutes
@@ -2020,6 +2029,11 @@ def plan_hubs(builder, route):
         visits[hub["key"]] = visits.get(hub["key"], 0) + 1
         if hub.get("has_fp") and not hub.get("anchors"):
             known.add(fp_town(hub["town"]))  # its flight path is the visit's first step
+        if section.get("_hearth"):
+            builder.hearth_at = section["_hearth_min"]
+        new_home = home_in(section["intro"])
+        if new_home:
+            builder.home = new_home
         if pending_grind:
             section["_grind_to"] = int(start)
         plan.append(dict(section=section, cands=cands, actions=actions, done=done,
@@ -2058,6 +2072,31 @@ def plan_hubs(builder, route):
     return out, report
 
 
+# Your Hearthstone: an hour's cooldown, half a minute to cast and load.
+HEARTH_COOLDOWN = 60.0
+MINUTES_HEARTH = 0.5
+
+
+def home_in(lines):
+    """The town a list of guide lines sets your Hearthstone to, if any."""
+    town = None
+    for l in lines:
+        m = re.search(r"\.home\s*>>\s*Set your Hearthstone to ([^|<\n]+)", l)
+        if m:
+            town = fp_town(m.group(1).strip().replace(" City", ""))
+    return town
+
+
+def free_guide_home():
+    """Where the 1-20 guides leave your Hearthstone (the last .home of the
+    faction's final 1-20 guide)."""
+    last = "Alliance-11-20.lua" if FACTION == "Alliance" else "Horde-12-22_Barrens.lua"
+    path = os.path.join(ROOT, "Guides", "forever", last)
+    if not os.path.exists(path):
+        return None
+    return home_in(open(path, encoding="utf-8").read().split("\n"))
+
+
 FP_ALIAS = {"Redridge Mountains": "Lakeshire", "Westfall": "Sentinel Hill", "Teldrassil": "Rut'theran Village",
             "Feathermoon Stronghold": "Feathermoon", "Darnassus": "Rut'theran Village", "": "Crossroads"}
 
@@ -2085,6 +2124,8 @@ def main_hubs(route, args, db):
         skip_all={os.path.abspath(os.path.join(ROOT, o[1])) for o in route.OUTPUTS})
     builder = Builder(db, done_before=turned, carried=accepted - turned)
     builder.known_fps = free_guide_fps()
+    builder.home, builder.hearth_at = free_guide_home(), -HEARTH_COOLDOWN
+    print("Hearthstone from the 1-20 guides:", builder.home)
     print("flight paths from the 1-20 guides:", ", ".join(sorted(builder.known_fps)))
     builder.used |= set(getattr(route, "SKIP", ()))
     builder.xp = xp_at_level(route.START_LEVEL)

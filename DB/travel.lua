@@ -43,9 +43,10 @@ addon.travelData = {
          secs = 355, faction = "Alliance", oneway = true},
         {kind = "boat", a = {1424, 46.4, 50.2}, an = "Southshore", b = {1439, 32.4, 43.8}, bn = "Auberdine",
          secs = 250, faction = "Alliance", oneway = true},
-        -- WoW Forever: Stormwind Harbor <-> Auberdine. Dock spot from the
-        -- harbor's Manifest Clerk (Questie), not checked in game.
-        {kind = "boat", a = {1453, 30.5, 28.8}, an = "Stormwind Harbor", b = {1439, 32.4, 43.8}, bn = "Auberdine",
+        -- WoW Forever: Stormwind Harbor <-> Auberdine. Both docks from the
+        -- free Forever guides' "Take the boat" steps (world coords
+        -- 1330.1,-8645.4 in Stormwind and 929.1,6543.6 in Darkshore).
+        {kind = "boat", a = {1453, 3.8, 40.9}, an = "Stormwind Harbor", b = {1439, 30.7, 41.0}, bn = "Auberdine",
          secs = 220, faction = "Alliance"},
         {kind = "boat", a = {1437, 5.0, 63.4}, an = "Menethil Harbor", b = {1445, 71.6, 56.4}, bn = "Theramore",
          secs = 240, faction = "Alliance"},

@@ -29,7 +29,7 @@ CITY_WALK = 2.0           # minutes: from a capital's flight master to the tram
 RUNNING, MOUNTED = 7.0, 11.2  # yards per second (mount at 40)
 RIDE_FACTOR = 1.5         # roads wind; riding isn't a straight line
 MAX_ZONES_RIDE = 1
-MAX_RIDE = 4500           # yards (straight line): further than this, don't plan a ride between towns
+MAX_RIDE = 6500           # yards (straight line): further than this, don't plan a ride between towns
 # Towns you can't ride to: Feathermoon is on an island (boat from the coast).
 NO_RIDE = {"Feathermoon"}
 
