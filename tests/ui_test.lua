@@ -243,16 +243,35 @@ do
     local game, OXP = newGame({ level = 21, map = 1453, x = 50, y = 50 })
     local g = addGuide(OXP, {
         { { "goto", zone = "Stormwind City", x = 10, y = 10 }, { "accept", quest = 901 } },
-        { { "goto", zone = "Stormwind City", x = 50, y = 51 }, { "turnin", quest = 902 } },
+        { { "goto", zone = "Stormwind City", x = 50, y = 51 }, { "turnin", quest = 902 }, { "accept", quest = 99903, text = "Accept 903" } },
+        { { "goto", zone = "Stormwind City", x = 50, y = 51 }, { "turnin", quest = 904 } },
     })
     game:Accept(902, 0)
     OXP.Engine.Load(g.key)
     local C = OXP.Card
     t.ok(C.CheckHere(), "a ready turn-in right here")
-    t.eq(OXP.Engine.GetPosition(), 2, "moved to it")
+    t.eq(OXP.Engine.GetPosition(), 1, "the guide stays on your step (in game: it jumped 12 -> 29)")
+    C.Refresh(true)
+    t.ok(C.blocks[1].title.text:find("WHILE YOU'RE HERE", 1, true), "the turn-in is shown on top: " .. tostring(C.blocks[1].title.text))
+    local lines = {}
+    for _, l in ipairs(C.blocks[1].lines) do if l.shown then lines[#lines + 1] = tostring(l.text.text) end end
+    local all = table.concat(lines, " | ")
+    t.ok(C.blocks[1].title.text:find("Turn in", 1, true) and all:find("Accept 903", 1, true), "its turn-in and its pickup: " .. all)
+    t.ok(C.blocks[2] and C.blocks[2].shown, "your own step still under it")
+    local real = OXP.Target.Real()
+    t.ok(real and real.pos == 2, "the arrow goes to the turn-in first")
     game:TurnIn(902)
     C.CheckHere()
-    t.eq(OXP.Engine.GetPosition(), 1, "back to the step you were on")
+    t.ok(C.here ~= nil, "handed in but not picked up yet: still shown")
+    game:Accept(99903, 1)
+    C.CheckHere()
+    C.Refresh(true)
+    t.ok(C.here == nil and not C.blocks[1].title.text:find("WHILE", 1, true), "all done: the block goes away")
+    t.eq(OXP.Engine.GetPosition(), 1, "still on your step: nothing in between skipped")
+    -- walking away also ends it
+    game:Accept(904, 0)
+    t.ok(C.CheckHere() and C.here, "another ready turn-in")
+    t.ok(C.CheckHere(OXP.Places.ToWorld(1453, 10, 12)) and C.here == nil, "walked away: gone")
 end
 
 ------------------------------------------------------------------------

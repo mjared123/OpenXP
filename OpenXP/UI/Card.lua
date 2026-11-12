@@ -670,9 +670,9 @@ local function LayoutBlock(b, step, pos, first)
                 break
             end
         end
-        local here = Card.here
-        if here and pos == here.pos then
-            table.insert(lines, 1, { text = "|cFFF2C35C" .. fmt(L("You're right here, so do this first. Then back to step %d."), here.from) .. "|r", plain = true })
+        if step.here and Card.here then
+            title = "|cFFF2C35C" .. L("WHILE YOU'RE HERE") .. ":|r " .. title
+            table.insert(lines, 1, { text = "|cFFF2C35C" .. fmt(L("This is step %d. Do it now while you're here: the guide stays on step %d, nothing is skipped."), pos, Card.here.from) .. "|r", plain = true })
         end
         -- the step is in another zone: how to get there
         local plan = OXP.Travel.Current()
@@ -1149,6 +1149,9 @@ function Card.Refresh(force)
     end
     local shown = now_
     for _, e in ipairs(side) do shown[#shown + 1] = e end
+    -- a later step's turn-ins for the person you're standing by go on top
+    local hereStep, herePos = Card.HereStep()
+    if hereStep then table.insert(shown, 1, { hereStep, herePos }) end
     while #shown > MAX_BLOCKS do table.remove(shown) end
 
     -- walking through a quest chain: the card shows that instead
@@ -1339,11 +1342,19 @@ end
 local function HereDone(step)
     for _, g in ipairs(step.goals) do
         if g[1] == "turnin" and not TurnedIn(g.quest) then return false end
+        if g[1] == "accept" and not g.optional and OXP.Goals.State(g, step.marks) == "todo"
+            and not QuestDB.Blocked(g.quest) then return false end
     end
     return true
 end
 
 -- px, py, inst: player world position (tests pass it in)
+--
+-- Standing by the person a later step hands a finished quest in to: the
+-- card shows that step on top ("While you're here": its turn-ins and the
+-- quests the same person hands out) and the arrow points there, while the
+-- guide stays on your step: nothing between is skipped. Gone once it's
+-- done, you walk away or you move on.
 function Card.CheckHere(px, py, inst)
     if not Engine.GetGuide() then Card.here = nil return end
     if not px then px, py, inst = OXP.Places.Player() end
@@ -1352,19 +1363,10 @@ function Card.CheckHere(px, py, inst)
     local h = Card.here
     local Dist = OXP.Places.Distance
     if h then
-        if h.guide ~= Engine.GetGuide() then
+        local spot = steps[h.pos] and OXP.Areas.StepSpot(steps[h.pos])
+        local away = spot and px and (inst ~= spot.instance or Dist(px, py, spot.wx, spot.wy) > HERE_AWAY)
+        if h.guide ~= Engine.GetGuide() or cur ~= h.from or not steps[h.pos] or HereDone(steps[h.pos]) or away then
             Card.here = nil
-            return
-        end
-        local spot = OXP.Areas.StepSpot(steps[h.pos])
-        local away = cur == h.pos and spot and px and (inst ~= spot.instance or Dist(px, py, spot.wx, spot.wy) > HERE_AWAY)
-        if cur ~= h.pos and not HereDone(steps[h.pos]) then
-            Card.here = nil -- you moved on by hand
-            return
-        end
-        if HereDone(steps[h.pos]) or away then
-            Card.here = nil
-            Engine.GoTo(h.from, true)
             Card.Refresh(true)
             return true
         end
@@ -1381,12 +1383,30 @@ function Card.CheckHere(px, py, inst)
             local sp = OXP.Areas.StepSpot(s)
             if sp and sp.instance == inst and Dist(px, py, sp.wx, sp.wy) <= HERE_RADIUS then
                 Card.here = { guide = Engine.GetGuide(), from = cur, pos = pos }
-                Engine.GoTo(pos, true)
                 Card.Refresh(true)
                 return true
             end
         end
     end
+end
+
+--- The "while you're here" block: the later step's spot, its turn-ins for
+--- finished quests and its pickups. nil when there's none.
+function Card.HereStep()
+    local h = Card.here
+    local step = h and Engine.GetSteps()[h.pos]
+    if not step then return nil end
+    local goals = {}
+    for _, g in ipairs(step.goals) do
+        if g[1] == "goto" or g[1] == "target" then
+            goals[#goals + 1] = g
+        elseif g[1] == "turnin" and not TurnedIn(g.quest) and Quests.IsOnQuest(g.quest) and Quests.IsComplete(g.quest) then
+            goals[#goals + 1] = g
+        elseif g[1] == "accept" then
+            goals[#goals + 1] = g
+        end
+    end
+    return { here = true, goals = goals, marks = step.marks, index = step.index, data = step.data }, h.pos
 end
 
 ---------------------------------------------------------------------------

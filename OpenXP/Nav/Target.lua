@@ -45,7 +45,15 @@ local real = {}
 --- The guide's spot for the shown steps: {wx, wy, instance, map, title, step,
 --- pos}, or nil when the shown steps have no spot.
 function Target.Real()
-    for _, pos in ipairs(Engine.GetActive()) do
+    local order = Engine.GetActive()
+    -- a later step's turn-in you're standing by comes first (UI/Card.lua)
+    local here = OXP.Card and OXP.Card.here
+    if here and Engine.GetSteps()[here.pos] then
+        local o = { here.pos }
+        for _, pos in ipairs(order) do o[#o + 1] = pos end
+        order = o
+    end
+    for _, pos in ipairs(order) do
         local step = Engine.GetSteps()[pos]
         local spots = {}
         for _, g in ipairs(step.goals) do
