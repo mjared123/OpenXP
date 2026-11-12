@@ -109,6 +109,70 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- auto turn-in: any completed quest in your log, not just the guide's")
+do
+    local game, OXP = newGame({ level = 21 })
+    addGuide(OXP, {
+        { { "accept", quest = 7001 } },
+        { { "turnin", quest = 7001 } },
+    })
+    local w = questWindow(game)
+    game:Accept(8500, 1)          -- in your log, the guide never turns it in
+    game:FinishObjective(8500, 1)
+    w.questID = 8500
+    t.eq(w.event("QUEST_PROGRESS"), "complete", "a quest outside the guide is handed in")
+    t.eq(w.event("QUEST_COMPLETE"), "reward 1", "and its reward taken (no choice)")
+    w.choices, w.links, w.prices = 2, { "a", "b" }, { a = 1, b = 2 }
+    local printed = {}
+    local oldPrint = print
+    print = function(s) printed[#printed + 1] = tostring(s) end
+    local r = w.event("QUEST_COMPLETE")
+    print = oldPrint
+    t.eq(r, "", "a real reward choice is left open for you")
+    t.ok(printed[1] and printed[1]:find("Pick your reward", 1, true), "with a chat note")
+    w.choices = 0
+    w.questID = 8999
+    t.eq(w.event("QUEST_PROGRESS"), "", "not a quest you aren't on")
+    w.questID = 8500
+    QuestIsDaily = function() return true end
+    t.eq(w.event("QUEST_PROGRESS"), "", "not a daily outside the guide")
+    QuestIsDaily = nil
+    GetQuestMoneyToGet = function() return 500 end
+    t.eq(w.event("QUEST_PROGRESS"), "", "not one that asks for gold")
+    w.questID = 7001
+    game:Accept(7001, 1)
+    t.eq(w.event("QUEST_PROGRESS"), "complete", "the guide's own quest still goes in as the route says")
+    GetQuestMoneyToGet = nil
+    w.questID, w.shift = 8500, true
+    t.eq(w.event("QUEST_PROGRESS"), "", "Shift still pauses it")
+    w.shift = false
+    OXP.settings.autoTurnInAny = false
+    t.eq(w.event("QUEST_PROGRESS"), "", "off in settings: only the guide's")
+    OXP.settings.autoTurnInAny = true
+    OXP.settings.autoTurnIn = false
+    t.eq(w.event("QUEST_PROGRESS"), "", "auto turn-in off: nothing")
+    OXP.settings.autoTurnIn = true
+    -- gossip and the quest-list window
+    w.gossip.active = { { questID = 8500, isComplete = true } }
+    t.eq(w.event("GOSSIP_SHOW"), "gossip turnin 8500", "gossip: any completed quest")
+    w.gossip.active = { { questID = 8500, isComplete = true, frequency = 1 } }
+    t.eq(w.event("GOSSIP_SHOW"), "", "but not a daily")
+    w.gossip.active = { { questID = 8500, isComplete = false } }
+    t.eq(w.event("GOSSIP_SHOW"), "", "nor one still in progress")
+    w.gossip.active = {}
+    local active = { { "Something Else", false }, { "Not In The Guide", true } }
+    GetNumAvailableQuests = function() return 0 end
+    GetNumActiveQuests = function() return #active end
+    GetActiveTitle = function(i) return active[i][1], active[i][2] end
+    SelectActiveQuest = function(i) w.calls[#w.calls + 1] = "select active " .. active[i][1] end
+    t.eq(w.event("QUEST_GREETING"), "select active Not In The Guide", "quest-list window: the completed one")
+    OXP.settings.autoTurnInAny = false
+    t.eq(w.event("QUEST_GREETING"), "", "setting off: left alone")
+    OXP.settings.autoTurnInAny = true
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
 print("-- quest item and target buttons")
 do
     local game, OXP = newGame({ level = 21 })
@@ -209,7 +273,7 @@ do
     local _, OXP = newGame({ level = 1 })
     OXP.Settings.Show()
     local s = OXP.settings
-    for _, key in ipairs({ "autoAccept", "autoTurnIn", "autoReward", "autoBestReward", "skipGossip",
+    for _, key in ipairs({ "autoAccept", "autoTurnIn", "autoTurnInAny", "autoReward", "autoBestReward", "skipGossip",
                            "itemButton", "targetButton", "flightTimer", "hearthReminder" }) do
         t.ok(s[key] ~= nil, "setting " .. key .. " has a default")
     end

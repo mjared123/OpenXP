@@ -1,6 +1,7 @@
 -- Quest automation, each part its own setting; hold Shift to pause it:
 --   auto accept    quests the loaded guide picks up
---   auto turn in   quests the loaded guide turns in, once they're complete
+--   auto turn in   quests the loaded guide turns in, once they're complete,
+--                  and (on by default) any other completed quest in your log
 --   auto reward    take the reward when there is no choice (or only one);
 --                  with "best reward" on, pick the choice that sells for most
 --   skip gossip    pick a quest-giver's guide quest in the gossip window, or
@@ -34,6 +35,35 @@ local function GuideQuests(kind)
 end
 Auto.GuideQuests = GuideQuests
 
+-- Turn in this quest? The guide's own, and (setting "any completed quest",
+-- on by default) any other quest in your log: quests the guide picked up
+-- somewhere it doesn't turn them in, quests you took yourself.
+-- Quests outside the guide are only turned in when that is safe to do
+-- without asking: not a daily or weekly, and nothing to pay (gold or
+-- currency). The guide's own quests are turned in as the route says.
+local function Call(name, ...)
+    local fn = _G[name]
+    if type(fn) ~= "function" then return nil end
+    local ok, v = pcall(fn, ...)
+    return ok and v or nil
+end
+
+local function WindowAsksToPay()
+    if (Call("QuestIsDaily") or Call("QuestIsWeekly")) then return true end
+    if (tonumber(Call("GetQuestMoneyToGet")) or 0) > 0 then return true end
+    if (tonumber(Call("GetNumQuestCurrencies")) or 0) > 0 then return true end
+    return false
+end
+
+local function TurnInOK(id, inWindow)
+    if not id then return false end
+    if GuideQuests("turnin")[id] then return true end
+    if not On("autoTurnIn") or OXP.settings.autoTurnInAny == false then return false end
+    if not OXP.Quests.IsOnQuest(id) then return false end
+    return not (inWindow and WindowAsksToPay())
+end
+Auto.TurnInOK = TurnInOK
+
 local function QuestIdHere()
     return GetQuestID and GetQuestID() or nil
 end
@@ -51,7 +81,7 @@ end)
 OXP.On("QUEST_PROGRESS", function()
     if not On("autoTurnIn") then return end
     local id = QuestIdHere()
-    if id and GuideQuests("turnin")[id] and IsQuestCompletable and IsQuestCompletable() then
+    if TurnInOK(id, true) and IsQuestCompletable and IsQuestCompletable() then
         CompleteQuest()
         Auto.last = "complete " .. id
     end
@@ -77,9 +107,17 @@ end
 OXP.On("QUEST_COMPLETE", function()
     if not On("autoTurnIn") or not On("autoReward") then return end
     local id = QuestIdHere()
-    if not (id and GuideQuests("turnin")[id]) then return end
+    if not TurnInOK(id, true) then return end
     local choice = Auto.RewardChoice()
-    if choice == false then return end
+    if choice == false then
+        -- a real choice: the window stays open for you
+        if Auto.noted ~= id then
+            Auto.noted = id
+            OXP.Print(OXP.L("Pick your reward to turn in this quest."))
+        end
+        Auto.last = "choose " .. id
+        return
+    end
     GetQuestReward(choice or 1)
     Auto.last = "reward " .. id .. " " .. tostring(choice)
 end)
@@ -112,7 +150,8 @@ OXP.On("GOSSIP_SHOW", function()
     local active, available = Lists()
     local turnins, accepts = GuideQuests("turnin"), GuideQuests("accept")
     for _, q in ipairs(active) do
-        if q.isComplete and turnins[q.questID] then
+        local repeats = q.repeatable or (q.frequency and q.frequency ~= 0)
+        if q.isComplete and (turnins[q.questID] or (not repeats and TurnInOK(q.questID))) then
             G.SelectActiveQuest(q.questID)
             Auto.last = "gossip turnin " .. q.questID
             return
@@ -150,8 +189,9 @@ OXP.On("QUEST_GREETING", function()
         for id in pairs(accepts) do if same(id, title) then return id end end
     end
     for i = 1, (GetNumActiveQuests and GetNumActiveQuests() or 0) do
-        local id = idOf(GetActiveTitle(i))
-        if id and turnins[id] then
+        local title, isComplete = GetActiveTitle(i)
+        local id = idOf(title)
+        if (id and turnins[id]) or (isComplete and On("autoTurnIn") and OXP.settings.autoTurnInAny ~= false) then
             SelectActiveQuest(i)
             return
         end

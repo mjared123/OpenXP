@@ -33,6 +33,7 @@ local ACCOUNT_DEFAULTS = {
         -- automation (hold Shift to pause it)
         autoAccept = true,         -- accept the quests the guide picks up
         autoTurnIn = true,         -- turn in the guide's quests once complete
+        autoTurnInAny = true,      -- and any other completed quest in your log
         autoReward = true,         -- take the reward when there is no real choice
         autoBestReward = false,    -- with a choice, take the one that sells for most
         skipGossip = true,         -- pick the guide's quest, or the only option, in gossip

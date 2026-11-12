@@ -131,6 +131,8 @@ local function Build()
     y = Section(content, L("Automation (hold Shift to pause)"), y)
     y = Check(content, "autoAccept", L("Accept the guide's quests"), L("Only quests the loaded guide picks up."), y)
     y = Check(content, "autoTurnIn", L("Turn in the guide's quests"), L("Only quests the loaded guide turns in, once they're complete."), y)
+    y = Check(content, "autoTurnInAny", L("Turn in any completed quest, not just the guide's"),
+        L("Quests the guide picked up but doesn't turn in, and quests you took yourself."), y)
     y = Check(content, "autoReward", L("Take the reward when there's no choice"), nil, y)
     y = Check(content, "autoBestReward", L("With a choice of rewards, take the one that sells for most"),
         L("Off: you pick the reward yourself when there's a choice."), y)
