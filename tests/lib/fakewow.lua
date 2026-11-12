@@ -105,7 +105,14 @@ function Game:InstallGlobals()
         SetShown = function(self, v) self.shown = v and true or false end,
         IsShown = function(self) return self.shown end,
         IsVisible = function(self) return self.shown end,
-        SetText = function(self, t) self.text = t end,
+        SetText = function(self, t)
+            -- like the game: a font string with no font can't take text
+            if self.kind == "FontString" and not self.fontSet and t and t ~= "" then
+                error("FontString:SetText(): Font not set", 2)
+            end
+            self.text = t
+        end,
+        SetFontObject = function(self) self.fontSet = true end,
         GetText = function(self) return self.text end,
         SetFormattedText = function(self, f, ...) self.text = f:format(...) end,
         SetSize = function(self, w, h) self.w, self.h = w, h end,
@@ -130,7 +137,7 @@ function Game:InstallGlobals()
         GetParent = function(self) return self.parent end,
         SetParent = function(self, p) self.parent = p end,
         GetFont = function() return "Fonts\\ARIALN.TTF", 12, "" end,
-        SetFont = function() return true end,
+        SetFont = function(self) self.fontSet = true return true end,
         IsMouseOver = function() return false end,
         GetChecked = function(self) return self.checked end,
         SetChecked = function(self, v) self.checked = v end,
@@ -146,7 +153,11 @@ function Game:InstallGlobals()
         end
     end
     methods.CreateTexture = Creator("Texture")
-    methods.CreateFontString = Creator("FontString")
+    methods.CreateFontString = function(self, name, layer, template)
+        local w = Widget("FontString", name)
+        w.parent, w.fontSet = self, template ~= nil
+        return w
+    end
     methods.CreateLine = Creator("Line")
     methods.CreateAnimationGroup = Creator("AnimationGroup")
     methods.CreateAnimation = Creator("Animation")

@@ -124,6 +124,9 @@ do
     combat = false
     game:Fire("PLAYER_REGEN_ENABLED")
     t.ok(B.target:GetAttribute("macrotext"):find("Gryan", 1, true) == nil or true, "after combat it catches up")
+    local anchor = B.item.points[1] and B.item.points[1][2]
+    t.ok(anchor ~= OXP.Card.frame and B.target.points[1][2] ~= OXP.Card.frame,
+        "secure buttons aren't anchored to the card (in game the card got blocked in combat)")
     OXP.settings.targetButton = false
     B.Refresh()
     t.ok(not B.target:IsShown(), "target button off in settings")

@@ -178,8 +178,12 @@ function Buttons.Place()
     local pos = OXP.settings.itemButtonPos
     if pos then
         item:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
-    elseif card then
-        item:SetPoint("TOPRIGHT", card, "TOPLEFT", -8, 0)
+    elseif card and card:GetLeft() and card:GetTop() then
+        -- next to the card, but never anchored to it: a secure button anchored
+        -- to a frame makes the game protect that frame, and the card could
+        -- then no longer show or hide during combat
+        local scale = card:GetEffectiveScale() / UIParent:GetEffectiveScale()
+        item:SetPoint("TOPRIGHT", UIParent, "BOTTOMLEFT", card:GetLeft() * scale - 8, card:GetTop() * scale)
     else
         item:SetPoint("CENTER", UIParent, "CENTER", -200, 0)
     end

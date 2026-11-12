@@ -324,9 +324,9 @@ do
     t.eq(E.StepState(3), "skipped", "marked skipped")
     E.GoTo(3)
     t.eq(E.StepState(3), "current", "going to a skipped step un-skips it")
+    t.ok(not E.IsHeld(), "a step still to do isn't held")
     game:Accept(82, 0)
-    t.eq(E.GetPosition(), 3, "held step waits for the player")
-    E.Next()
+    t.eq(E.GetPosition(), 4, "doing it moves on by itself (in game: Wetlands step 8 sat held)")
     t.eq(E.StepState(3), "done", "done, not skipped")
 end
 

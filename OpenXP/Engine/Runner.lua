@@ -211,16 +211,17 @@ function Engine.Unload()
     OXP.Send("GUIDE_LOADED", nil)
 end
 
---- Show step `pos` (a position in Engine.GetSteps()) and stay there until
---- the player moves on, even if it is already done. Un-skips it.
---- With noHold, the guide moves on by itself as usual once it is done.
+--- Show step `pos` (a position in Engine.GetSteps()). Un-skips it.
+--- A step that is already done when you go to it (looking back) stays shown
+--- until you move on; a step still to do moves on by itself once you do it,
+--- like any other. With noHold, never held.
 function Engine.GoTo(pos, noHold)
     if not run or not run.steps[pos] then return false end
     run.pos = pos
-    run.held = not noHold and pos or nil
     run.finished = nil
     run.save.skipped[run.steps[pos].index] = nil
     run.save.status[run.steps[pos].index] = nil
+    run.held = (not noHold and stepDone(pos)) and pos or nil
     savePosition()
     OXP.Send("STEP_CHANGED", pos)
     lastSignature = nil
