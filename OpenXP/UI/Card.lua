@@ -1343,7 +1343,7 @@ local function HereDone(step)
     for _, g in ipairs(step.goals) do
         if g[1] == "turnin" and not TurnedIn(g.quest) then return false end
         if g[1] == "accept" and not g.optional and OXP.Goals.State(g, step.marks) == "todo"
-            and not QuestDB.Blocked(g.quest) then return false end
+            and not QuestDB.Blocked(g.quest) and (Quests.FreeSlots() or 1) > 0 then return false end
     end
     return true
 end
@@ -1397,13 +1397,18 @@ function Card.HereStep()
     local step = h and Engine.GetSteps()[h.pos]
     if not step then return nil end
     local goals = {}
+    local free = Quests.FreeSlots()
     for _, g in ipairs(step.goals) do
         if g[1] == "goto" or g[1] == "target" then
             goals[#goals + 1] = g
         elseif g[1] == "turnin" and not TurnedIn(g.quest) and Quests.IsOnQuest(g.quest) and Quests.IsComplete(g.quest) then
             goals[#goals + 1] = g
-        elseif g[1] == "accept" then
-            goals[#goals + 1] = g
+        elseif g[1] == "accept" and OXP.Goals.State(g, step.marks) == "todo" then
+            -- only what fits in your quest log; the rest waits for that step
+            if not free or free > 0 then
+                goals[#goals + 1] = g
+                if free then free = free - 1 end
+            end
         end
     end
     return { here = true, goals = goals, marks = step.marks, index = step.index, data = step.data }, h.pos

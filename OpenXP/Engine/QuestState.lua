@@ -88,6 +88,24 @@ local function lookup(questID)
 end
 
 --- The quest is in the log.
+--- Free places in the quest log, or nil when the client doesn't say.
+--- (WoW Forever's log holds more than Classic's 20.)
+function Quests.FreeSlots()
+    local max = C_QuestLog and C_QuestLog.GetMaxNumQuestsCanAccept and C_QuestLog.GetMaxNumQuestsCanAccept()
+        or _G.MAX_QUESTLOG_QUESTS
+    if type(max) ~= "number" or max <= 0 or not GetNumQuestLogEntries then return nil end
+    local _, quests = GetNumQuestLogEntries()
+    if type(quests) ~= "number" then
+        quests = 0
+        local n = GetNumQuestLogEntries() or 0
+        for i = 1, n do
+            local _, _, _, isHeader = GetQuestLogTitle(i)
+            if not isHeader then quests = quests + 1 end
+        end
+    end
+    return max - quests
+end
+
 function Quests.IsOnQuest(questID)
     return lookup(questID) ~= nil
 end

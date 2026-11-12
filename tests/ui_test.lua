@@ -258,6 +258,14 @@ do
     local all = table.concat(lines, " | ")
     t.ok(C.blocks[1].title.text:find("Turn in", 1, true) and all:find("Accept 903", 1, true), "its turn-in and its pickup: " .. all)
     t.ok(C.blocks[2] and C.blocks[2].shown, "your own step still under it")
+    -- a full quest log: only the turn-in, the pickup waits for its step
+    _G.MAX_QUESTLOG_QUESTS = #game.log
+    C.Refresh(true)
+    local full = {}
+    for _, l in ipairs(C.blocks[1].lines) do if l.shown then full[#full + 1] = tostring(l.text.text) end end
+    t.ok(not table.concat(full, " "):find("Accept 903", 1, true), "full quest log: no pickup offered")
+    _G.MAX_QUESTLOG_QUESTS = 40
+    C.Refresh(true)
     local real = OXP.Target.Real()
     t.ok(real and real.pos == 2, "the arrow goes to the turn-in first")
     game:TurnIn(902)
