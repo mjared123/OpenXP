@@ -285,6 +285,61 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- route style and walls you record (in game: out of Menethil over the wall, not by the road)")
+do
+    local game, OXP = newGame({ level = 23, map = 1437, x = 12.6, y = 50.8 })
+    local T = OXP.Terrain
+    local function kindAt(x, y)
+        local g = T.Grid(1437)
+        local cx, cy = math.floor(x) + 1, math.floor(y) + 1
+        return g.cells[(cy - 1) * 100 + cx]
+    end
+    local function crossesBlocked(pts, ax, ay)
+        return crosses(pts, ax, ay, function(x, y) return kindAt(x, y) == 0 end)
+    end
+    local function onRoad(pts, ax, ay)
+        local n, road, px, py = 0, 0, ax, ay
+        for _, p in ipairs(pts) do
+            for s = 1, 20 do
+                local x, y = px + (p[1] - px) * s / 20, py + (p[2] - py) * s / 20
+                n = n + 1
+                if kindAt(x, y) == 3 then road = road + 1 end
+            end
+            px, py = p[1], p[2]
+        end
+        return road / math.max(n, 1)
+    end
+    t.eq(OXP.settings.routeStyle, "roads", "follow roads by default")
+    local roads = T.FindPath(1437, 12.6, 50.8, 38.18, 50.89, 23)
+    OXP.settings.routeStyle = "direct"
+    local direct = T.FindPath(1437, 12.6, 50.8, 38.18, 50.89, 23)
+    OXP.settings.routeStyle = "roads"
+    t.ok(roads and direct, "a way in both styles")
+    local rr, dr = onRoad(roads, 12.6, 50.8), onRoad(direct, 12.6, 50.8)
+    t.ok(rr >= dr and rr > 0.5, ("roads: most of the way on the road (%.2f vs %.2f)"):format(rr, dr))
+    t.ok(length(direct, 12.6, 50.8) <= length(roads, 12.6, 50.8) + 0.01, "the shortest way is no longer")
+    -- Ashenvale-sized check elsewhere: the style is part of the remembered way
+    t.ok(T.FindPath(1437, 12.6, 50.8, 38.18, 50.89, 23) ~= nil, "switching back works")
+
+    -- a wall across the way: record it like in game (/oxp wall at each end)
+    game:MoveTo(1437, 13.8, 40)
+    T.WallCommand("")
+    game:MoveTo(1437, 13.8, 53.6)
+    T.WallCommand("")
+    T.WallCommand("done")
+    t.ok(OXP.db.walls[1437] and #OXP.db.walls[1437] == 1, "the wall is saved")
+    local around = T.FindPath(1437, 12.6, 50.8, 38.18, 50.89, 23)
+    t.ok(around and not crossesBlocked(around, 12.6, 50.8), "the way doesn't go through the wall")
+    local south = false
+    for _, p in ipairs(around or {}) do if p[2] > 53.6 or p[2] < 40 then south = true end end
+    t.ok(south, "it goes round an end of the wall")
+    game:MoveTo(1437, 13.8, 45)
+    T.WallCommand("clear")
+    t.eq(#OXP.db.walls[1437], 0, "/oxp wall clear removes it")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
 print("-- one objective left: the arrow, card and map follow it (in game: Gobbler, 22-23 Wetlands)")
 do
     local game, OXP = newGame({ level = 23, map = 1437, x = 10, y = 40 })

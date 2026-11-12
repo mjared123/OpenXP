@@ -299,7 +299,7 @@ end
 local legCache = {}
 local function RoutePoints(map, px, py, stops, level)
     if not Terrain.Grid(map) then return {} end -- a city: leave it to the arrow
-    local key = map .. ":" .. floor(px * 4) .. ":" .. floor(py * 4) .. ":" .. level
+    local key = map .. ":" .. floor(px * 4) .. ":" .. floor(py * 4) .. ":" .. level .. ":" .. Terrain.Style()
     for _, s in ipairs(stops) do key = key .. ":" .. s[1] .. "/" .. floor(s[2] * 10) .. "/" .. floor(s[3] * 10) end
     if legCache.key == key then return legCache.pts end
     local pts = { { px, py } }

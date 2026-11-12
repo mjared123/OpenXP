@@ -117,6 +117,9 @@ local function Build()
         function(v) S().arrowScale = v end, function(v) return math.floor(v * 100 + 0.5) .. "%" end)
     y = Stepper(content, L("Arrow text size"), y, sizes, function() return S().arrowText end,
         function(v) S().arrowText = v end, function(v) return tostring(v) end)
+    y = Stepper(content, L("Route"), y, { "roads", "direct" }, function() return S().routeStyle or "roads" end,
+        function(v) S().routeStyle = v; OXP.Terrain.Reset() end,
+        function(v) return v == "direct" and L("Shortest way") or L("Follow roads") end)
     y = Check(content, "travel", L("Plan trips to other zones (flights, boats, hearth)"), nil, y,
         function() OXP.Travel.Reset() end)
 

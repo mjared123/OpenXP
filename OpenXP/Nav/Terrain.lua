@@ -32,6 +32,40 @@ function Terrain.Data(map)
     return OXP.terrainData and OXP.terrainData[map]
 end
 
+------------------------------------------------------------------------
+-- Walls you record in game (/oxp wall): town walls and the like the
+-- terrain data doesn't have. Kept in OpenXPDB.walls[map] as lines of map
+-- points; every cell a line crosses is blocked.
+------------------------------------------------------------------------
+
+local function SavedWalls()
+    local db = OXP.db
+    if not db then return nil end
+    db.walls = db.walls or {}
+    return db.walls
+end
+Terrain.SavedWalls = SavedWalls
+
+function Terrain.ApplyWalls(map, cells)
+    local saved = SavedWalls()
+    for _, line in ipairs(saved and saved[map] or {}) do
+        for k = 1, #line - 1 do
+            local a, b = line[k], line[k + 1]
+            local steps = floor(max(abs(b[1] - a[1]), abs(b[2] - a[2])) * 10) + 1
+            local lx, ly
+            for s = 0, steps do
+                local x = floor(a[1] + (b[1] - a[1]) * s / steps) + 1
+                local y = floor(a[2] + (b[2] - a[2]) * s / steps) + 1
+                if x >= 1 and y >= 1 and x <= N and y <= N then
+                    cells[(y - 1) * N + x] = 0
+                    -- a diagonal step: close the corner so the way can't slip through
+                    if lx and lx ~= x and ly ~= y and ly >= 1 and ly <= N then cells[(ly - 1) * N + x] = 0 end
+                end
+                lx, ly = x, y
+            end
+        end
+    end
+end
 local function Grid(map)
     local g = grids[map]
     if g ~= nil then return g or nil end
@@ -48,6 +82,7 @@ local function Grid(map)
             cells[(y - 1) * N + x] = (c == "#" and 0) or (c == "~" and 2) or (c == "=" and 3) or 1
         end
     end
+    Terrain.ApplyWalls(map, cells)
     g = { cells = cells, kx = d.yards and d.yards[1] or 1, ky = d.yards and d.yards[2] or 1,
           packs = d.packs or {}, danger = {} }
     grids[map] = g
@@ -56,6 +91,29 @@ end
 Terrain.Grid = Grid
 
 local FACTOR = { [1] = 1, [2] = WATER, [3] = ROAD }
+
+-- Route style (setting "routeStyle"):
+--   roads   follow roads: a road counts as much less than open ground and
+--           swimming as a lot more, so the way goes to the nearest road and
+--           keeps to it (safer, and what 1.x felt like)
+--   direct  the shortest way: roads only a little cheaper, swimming at its
+--           real speed (about two thirds of running)
+local STYLES = {
+    roads = { water = 4.0, road = 0.4 },
+    direct = { water = 1.5, road = 0.9 },
+}
+local style
+
+local function Style()
+    local s = OXP.settings and OXP.settings.routeStyle
+    if not STYLES[s] then s = "roads" end
+    if s ~= style then
+        style = s
+        FACTOR[2], FACTOR[3] = STYLES[s].water, STYLES[s].road
+    end
+    return s
+end
+Terrain.Style = Style
 
 local function CellCost(k, d)
     d = d or 0
@@ -194,9 +252,12 @@ local function Search(g, level, sx, sy, tx, ty)
     local SX = { 1, -1, 0, 0, 1, 1, -1, -1 }
     local SY = { 0, 0, 1, -1, 1, -1, 1, -1 }
     local SC = { kx, kx, ky, ky, diag, diag, diag, diag }
+    -- the cheapest a cell can cost (a road): keeps the estimate from ever
+    -- overshooting, so the search really finds the road
+    local hk = min(1, FACTOR[3])
     local function H(x, y)
         local dx, dy = (x - tx) * kx, (y - ty) * ky
-        return sqrt(dx * dx + dy * dy)
+        return sqrt(dx * dx + dy * dy) * hk
     end
     local function K(x, y)
         if x < 1 or y < 1 or x > N or y > N then return 0 end
@@ -277,7 +338,7 @@ function Terrain.FindPath(map, ax, ay, bx, by, level, lazy)
     if not g then return nil end
     level = floor(level or 0)
     local sx, sy, tx, ty = floor(ax) + 1, floor(ay) + 1, floor(bx) + 1, floor(by) + 1
-    local key = map .. ":" .. sx .. ":" .. sy .. ":" .. tx .. ":" .. ty .. ":" .. level
+    local key = map .. ":" .. sx .. ":" .. sy .. ":" .. tx .. ":" .. ty .. ":" .. level .. ":" .. Style()
     local corners = found[key]
     if corners == nil then
         local used = Terrain.SearchesThisFrame()
@@ -333,7 +394,7 @@ function Terrain.FollowPath(slot, map, ax, ay, bx, by, level, lazy)
     level = floor(level or 0)
     local now = GetTime and GetTime() or 0
     local f = follows[slot]
-    local same = f and f.map == map and f.level == level
+    local same = f and f.map == map and f.level == level and f.style == Style()
     if same then
         local mx, my = f.bx - bx, f.by - by
         same = mx * mx + my * my <= MOVED * MOVED
@@ -346,7 +407,7 @@ function Terrain.FollowPath(slot, map, ax, ay, bx, by, level, lazy)
         if same then return Remaining(f, ax, ay, bx, by) end
         return nil, true
     end
-    f = { map = map, level = level, bx = bx, by = by, at = now, from = { ax, ay }, idx = 1,
+    f = { map = map, level = level, style = Style(), bx = bx, by = by, at = now, from = { ax, ay }, idx = 1,
           pts = pts or { { bx, by } } }
     follows[slot] = f
     return Remaining(f, ax, ay, bx, by)
@@ -427,3 +488,79 @@ function Terrain.NearestEdge(poly, x, y, kx, ky)
     end
     return bx, by
 end
+
+------------------------------------------------------------------------
+-- /oxp wall
+------------------------------------------------------------------------
+
+local recording
+
+local function WallsChanged(map)
+    grids[map] = nil
+    found, foundCount = {}, 0
+    follows = {}
+    Terrain.Reset()
+    OXP.Send("ARROW_CHANGED")
+end
+
+local function WallCommand(args)
+    local cmd = (OXP.Util.Trim(args or ""):match("^(%S*)") or ""):lower()
+    local px, py, map = OXP.Places.PlayerZone()
+    if cmd == "" or cmd == "add" then
+        if not px then return OXP.Print("Can't tell where you are right now.") end
+        if not Terrain.Data(map) then return OXP.Print("This map has no terrain data (cities are left to the arrow).") end
+        if recording and recording.map ~= map then recording = nil end
+        recording = recording or { map = map, pts = {} }
+        recording.pts[#recording.pts + 1] = { floor(px * 100 + 0.5) / 100, floor(py * 100 + 0.5) / 100 }
+        if #recording.pts == 1 then
+            OXP.Print("Wall started at %.1f, %.1f. Walk along the wall and type /oxp wall at each corner, then /oxp wall done at its end. Leave gates out.", px, py)
+        else
+            OXP.Print("Corner %d at %.1f, %.1f. /oxp wall for the next, /oxp wall done to finish.", #recording.pts, px, py)
+        end
+    elseif cmd == "done" or cmd == "save" then
+        if not recording or #recording.pts < 2 then
+            return OXP.Print("A wall needs at least two spots: stand at one end and type /oxp wall, then at the other.")
+        end
+        local saved = SavedWalls()
+        saved[recording.map] = saved[recording.map] or {}
+        table.insert(saved[recording.map], recording.pts)
+        OXP.Print("Saved a wall with %d spots. The arrow and the route line go around it from now on.", #recording.pts)
+        local m = recording.map
+        recording = nil
+        WallsChanged(m)
+    elseif cmd == "undo" then
+        if recording and #recording.pts > 0 then
+            table.remove(recording.pts)
+            return OXP.Print("Removed the last spot (%d left).", #recording.pts)
+        end
+        OXP.Print("Nothing to undo.")
+    elseif cmd == "clear" then
+        local saved = SavedWalls()
+        local list = saved and map and saved[map]
+        local n = 0
+        -- any wall passing within 3 map units of you
+        local function near(line)
+            for k = 1, #line - 1 do
+                local a, b = line[k], line[k + 1]
+                local vx, vy = b[1] - a[1], b[2] - a[2]
+                local len2 = vx * vx + vy * vy
+                local s = len2 > 0 and max(0, min(1, ((px - a[1]) * vx + (py - a[2]) * vy) / len2)) or 0
+                local dx, dy = a[1] + vx * s - px, a[2] + vy * s - py
+                if dx * dx + dy * dy <= 9 then return true end
+            end
+        end
+        for i = #(list or {}), 1, -1 do
+            if near(list[i]) then
+                table.remove(list, i)
+                n = n + 1
+            end
+        end
+        recording = nil
+        WallsChanged(map)
+        OXP.Print("Removed %d wall(s) near you.", n)
+    else
+        OXP.Print("/oxp wall: mark a wall the arrow tries to walk through. Stand at one end and type /oxp wall, again at each corner, /oxp wall done at the end. /oxp wall undo, /oxp wall clear (walls near you).")
+    end
+end
+Terrain.WallCommand = WallCommand
+OXP.AddCommand("wall", "mark a wall the arrow walks through: /oxp wall, /oxp wall done, clear", WallCommand)
