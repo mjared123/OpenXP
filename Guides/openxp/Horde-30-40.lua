@@ -483,6 +483,11 @@ RXPGuides.RegisterGuide([[
 #next 33-34 Desolace
 
 step
+    .goto Thousand Needles,46.21,51.51
+    >>Buy 3 |cRXP_LOOT_Soothing Spices|r from |cRXP_FRIENDLY_Jandia|r in Freewind Post before you leave. Nobody in Brackenwall sells them, and the vendor in Theramore is Alliance
+    .collect 3713,3,1218
+    .target Jandia
+step
     #completewith next
     .zone Dustwallow Marsh >>Get to Brackenwall Village in Dustwallow Marsh: Use your Hearthstone to go back to Freewind Post, then fly to Camp Taurajo, then ride to Brackenwall Village
 step
@@ -531,11 +536,6 @@ step
     .turnin 1251 >>Turn in The Black Shield
     .accept 1321 >>Accept The Black Shield
     .target Krog
-step
-    .goto Dustwallow Marsh,66.44,51.46
-    >>Kill |cRXP_ENEMY_Helenia Olden|r. Loot them for |cRXP_LOOT_Soothing Spices|r
-    .complete 1218,1 --Soothing Spices
-    .mob Helenia Olden
 step
     .goto Dustwallow Marsh,71.53,51.19
     >>Loot the |cRXP_PICK_Captain's Documents|r

@@ -1090,18 +1090,18 @@ step << Rogue
 step << Rogue
     --oxp-class
     .goto Stormwind City,69.24,71.84
-    >>Kill |cRXP_ENEMY_Bernard Gump|r and |cRXP_ENEMY_Felicia Gump|r. Loot them for |cRXP_LOOT_Simple Wildflowers|r
+    >>Buy |cRXP_LOOT_Simple Wildflowers|r from |cRXP_FRIENDLY_Bernard Gump|r or |cRXP_FRIENDLY_Felicia Gump|r (flower vendors)
     .complete 2609,1 --The Touch of Zanzil
-    .mob Bernard Gump
-    .mob Felicia Gump
+    .target Bernard Gump
+    .target Felicia Gump
 step << Rogue
     --oxp-class
     .goto Stormwind City,55.90,85.64
-    >>Kill |cRXP_ENEMY_Edna Mullby|r and |cRXP_ENEMY_Maria Lumere|r and |cRXP_ENEMY_Sloan McCoy|r. Loot them for |cRXP_LOOT_Leaded Vial|r
+    >>Buy a |cRXP_LOOT_Leaded Vial|r from |cRXP_FRIENDLY_Edna Mullby|r, |cRXP_FRIENDLY_Maria Lumere|r or |cRXP_FRIENDLY_Sloan McCoy|r (vial vendors)
     .complete 2609,2 --The Touch of Zanzil
-    .mob Edna Mullby
-    .mob Maria Lumere
-    .mob Sloan McCoy
+    .target Edna Mullby
+    .target Maria Lumere
+    .target Sloan McCoy
 step << Warrior
     .goto Stormwind City,64.62,37.23
     >>Talk to |cRXP_FRIENDLY_Furen Longbeard|r

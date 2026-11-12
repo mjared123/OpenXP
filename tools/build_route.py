@@ -675,6 +675,18 @@ class Builder:
                 return None
             droppers = [self.npc(nid) for nid in as_list(li(item, 2))]
             droppers = [n for n in droppers if n and (li(n, 6) or 0) not in (1, 2, 3)]
+            # Questie lists some vendors as droppers (Soothing Spices from
+            # Helenia Olden). Those are bought, not killed, and only from
+            # vendors of our own faction.
+            sellers = set(as_list(li(item, 14)))
+            sold = [n for n in droppers if self.npc_id(n) in sellers]
+            buy = bool(sold) and len(sold) == len(droppers)
+            if buy:
+                droppers = [n for n in sold if FACTION[0] in (li(n, 13) or "AH")]
+                if not droppers:
+                    return None  # only the other faction sells it here
+            else:
+                droppers = [n for n in droppers if n not in sold]
             # Leave out droppers more than 2 levels above the quest (the
             # Fetid Corpses for Ghoul Fangs), unless nothing else drops it.
             def top(n):
@@ -705,6 +717,8 @@ class Builder:
             mobs = mobs or [li(n, 1) for n in droppers if spawns_in(n, area, 7)]
             sites.append((idx, "loot", li(item, 1), mobs[:3], pt, place))
             info.append(self._loot_info(q, entry[0], droppers, objs, area, spot, fq))
+            if buy:
+                info[-1].update(buy=True, kills=1.0, known=True, chance=None, mob_level=0)
         # reputation (4) objectives are never part of a leveling route
         if li(obj, 4):
             return None
@@ -1571,7 +1585,7 @@ def render_section(builder, section, cands, actions, group, nxt):
                and (place_of(actions[j]) or (None,))[0] == (place0 or (None,))[0]):
             group_objs.append(actions[j])
             j += 1
-        texts, completes, mobs_all, tags = [], [], [], set()
+        texts, completes, mobs_all, tags, buys = [], [], [], set(), set()
         for _, (qid, oi), _w in group_objs:
             c = cands[qid]
             site = next(s for s in c["sites"] if s[0] == oi)
@@ -1581,7 +1595,12 @@ def render_section(builder, section, cands, actions, group, nxt):
             if okind == "kill":
                 t = "Kill |cRXP_ENEMY_%s|r" % label
             elif okind == "loot":
-                if mobs:
+                inf = builder.oinfo.get((qid, section["area"], oi)) or {}
+                if mobs and inf.get("buy"):
+                    t = "Buy |cRXP_LOOT_%s|r from |cRXP_FRIENDLY_%s|r (vendor)" % (
+                        label, "|r or |cRXP_FRIENDLY_".join(mobs))
+                    buys.update(mobs)
+                elif mobs:
                     t = "Kill |cRXP_ENEMY_%s|r. Loot them for |cRXP_LOOT_%s|r" % (
                         "|r and |cRXP_ENEMY_".join(mobs), label)
                     # the chance per kill, from the 1.12 data
@@ -1622,7 +1641,7 @@ def render_section(builder, section, cands, actions, group, nxt):
             lines.append("    >>" + t)
         lines.extend(completes)
         for m in mobs_all:
-            lines.append("    .mob %s" % m)
+            lines.append("    .%s %s" % ("target" if m in buys else "mob", m))
         i = j
 
     for t in section.get("outro", []):

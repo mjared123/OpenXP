@@ -792,9 +792,9 @@ step
     .target Magistrate Henry Maleb
 step
     .goto Hillsbrad Foothills,48.94,55.03
-    >>Kill |cRXP_ENEMY_Micha Yance|r. Loot them for |cRXP_LOOT_Soothing Spices|r
+    >>Buy |cRXP_LOOT_Soothing Spices|r from |cRXP_FRIENDLY_Micha Yance|r (trade goods vendor)
     .complete 555,2 --Soothing Turtle Bisque
-    .mob Micha Yance
+    .target Micha Yance
 step
     .goto Hillsbrad Foothills,52.42,55.96
     >>Talk to |cRXP_FRIENDLY_Darren Malvew|r
@@ -1673,9 +1673,9 @@ step
     .target Captain Garran Vimes
 step
     .goto Dustwallow Marsh,66.44,51.46
-    >>Kill |cRXP_ENEMY_Helenia Olden|r. Loot them for |cRXP_LOOT_Soothing Spices|r
+    >>Buy 3 |cRXP_LOOT_Soothing Spices|r from |cRXP_FRIENDLY_Helenia Olden|r (trade supplies vendor)
     .complete 1218,1 --Soothing Spices
-    .mob Helenia Olden
+    .target Helenia Olden
 step
     .goto Dustwallow Marsh,64.75,50.43
     >>Talk to |cRXP_FRIENDLY_Caz Twosprocket|r

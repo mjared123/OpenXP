@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.61",
+        date = "November 2026",
+        changes = {
+            "Horde Dustwallow Marsh: Soothing Spices are bought, not looted. The guide now has you buy 3 from Jandia in Freewind Post before you leave, since nobody in Brackenwall sells them (thanks xordon1)",
+            "Alliance: the Soothing Spices, Simple Wildflowers and Leaded Vial steps now say to buy them from the vendor instead of killing the vendor",
+        },
+    },
+    {
         version = "1.3.60",
         date = "November 2026",
         changes = {
