@@ -15460,6 +15460,76 @@
    ]
   },
   {
+   "at": 16,
+   "carry": true,
+   "guide": "25-26 Redridge Mountains",
+   "source": "carry:150",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": "22.60",
+        "y": "47.40",
+        "zone": "Redridge Mountains"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 150,
+        "text": "Turn in Murloc Poachers (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Dockmaster Baren"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
+  },
+  {
+   "at": 3,
+   "carry": true,
+   "guide": "21-22 Stonetalon Mountains",
+   "source": "carry:945",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": "58.40",
+        "y": "7.40",
+        "zone": "Stonetalon Mountains"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 945,
+        "text": "Turn in Therylune's Escape (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Therysil"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
+  },
+  {
    "at": 11,
    "carry": true,
    "guide": "26-27 Ashenvale",
@@ -31597,6 +31667,76 @@
    ]
   },
   {
+   "at": 37,
+   "carry": true,
+   "guide": "22-23 Hillsbrad/Alterac",
+   "source": "carry:516",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": "44.00",
+        "y": "40.90",
+        "zone": "Silverpine Forest"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 516,
+        "text": "Turn in Beren's Peril (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Shadow Priest Allister"
+       }
+      ]
+     ],
+     "only": "Horde"
+    }
+   ]
+  },
+  {
+   "at": 22,
+   "carry": true,
+   "guide": "30-31 Thousand Needles",
+   "source": "carry:1094",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": "34.00",
+        "y": "76.90",
+        "zone": "Durotar"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 1094,
+        "text": "Turn in Further Instructions (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Sputtervalve"
+       }
+      ]
+     ],
+     "only": "Horde"
+    }
+   ]
+  },
+  {
    "at": 13,
    "carry": true,
    "guide": "26-27 The Barrens",
@@ -31659,6 +31799,76 @@
        "target",
        {
         "name": "Tammra Windfield"
+       }
+      ]
+     ],
+     "only": "Horde"
+    }
+   ]
+  },
+  {
+   "at": 29,
+   "carry": true,
+   "guide": "30-31 Thousand Needles",
+   "source": "carry:93739",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": "31.70",
+        "y": "37.80",
+        "zone": "Orgrimmar"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 93739,
+        "text": "Turn in Exploring the Horde (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Thrall"
+       }
+      ]
+     ],
+     "only": "Horde"
+    }
+   ]
+  },
+  {
+   "at": 37,
+   "carry": true,
+   "guide": "22-23 Hillsbrad/Alterac",
+   "source": "carry:95981",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": "44.00",
+        "y": "40.90",
+        "zone": "Silverpine Forest"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 95981,
+        "text": "Turn in Watching the Roads (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Shadow Priest Allister"
        }
       ]
      ],

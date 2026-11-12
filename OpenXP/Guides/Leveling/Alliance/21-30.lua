@@ -864,6 +864,11 @@ OXP.AddGuides({
         { "turnin", quest = 1056, optional = true, text = "Turn in Journey to Stonetalon Peak" },
         { "target", name = "Keeper Albagorm" },
       },
+      { only = "Alliance", source = "carry:945",
+        { "goto", x = "58.40", y = "7.40", zone = "Stonetalon Mountains" },
+        { "turnin", optional = true, quest = 945, text = "Turn in Therylune's Escape (picked up earlier)" },
+        { "target", name = "Therysil" },
+      },
       {
         { "goto", zone = "Stonetalon Mountains", x = 58.99, y = 62.6 },
         { "text", text = "Talk to |cOXP_FRIENDLY_Ziz Fizziks|r" },
@@ -1940,6 +1945,11 @@ OXP.AddGuides({
         { "goto", zone = "Redridge Mountains", x = 21.66, y = 46.44 },
         { "text", text = "Click the |cOXP_PICK_Wanted: Lieutenant Fangore|r" },
         { "accept", quest = 180, text = "Accept WANTED: Lieutenant Fangore" },
+      },
+      { only = "Alliance", source = "carry:150",
+        { "goto", x = "22.60", y = "47.40", zone = "Redridge Mountains" },
+        { "turnin", optional = true, quest = 150, text = "Turn in Murloc Poachers (picked up earlier)" },
+        { "target", name = "Dockmaster Baren" },
       },
       {
         { "goto", zone = "Redridge Mountains", x = 27.05, y = 48.64 },

@@ -690,6 +690,19 @@ def quest_enders():
     return out
 
 
+def quest_ender_spot(q):
+    """(zone name, x, y) of whoever takes quest q, from OpenXP's quest data."""
+    places = open(os.path.join(ROOT, "OpenXP", "Engine", "Places.lua"), encoding="utf-8").read()
+    names = {int(i): n for n, i in re.findall(r'\["([^"]+)"\] = (\d+)', places)}
+    text = open(os.path.join(ROOT, "OpenXP", "Data", "QuestDB.lua"), encoding="utf-8").read()
+    m = re.search(r'^Q\[%d\] = \{.*?f = \{\{"n",(\d+)\}' % q, text, re.M)
+    if not m:
+        return None
+    n = re.search(r'^N\[%s\] = \{.*?spawns = \{\[(\d+)\]="([\d.]+),([\d.]+)' % m.group(1), text, re.M)
+    if not n or int(n.group(1)) not in names:
+        return None
+    return names[int(n.group(1))], float(n.group(2)), float(n.group(3))
+
 def carried_turnins(conv, faction, built):
     """Quests the 1-20 guides pick up but don't turn in (PoleStar turns them
     in later in its own route): an optional turn-in step right after the
@@ -730,6 +743,26 @@ def carried_turnins(conv, faction, built):
                     break
             if placed:
                 break
+        if not placed and who:
+            # nobody in the route talks to them: go to them, after the route's
+            # nearest spot in their zone (OpenXP's quest data has where)
+            spot = quest_ender_spot(q)
+            best = None
+            for g in route if spot else []:
+                for i, st in enumerate(g["steps"], 1):
+                    for goal in st["goals"]:
+                        if goal.get("kind") == "goto" and goal.get("zone") == spot[0]:
+                            d = (float(goal["x"]) - spot[1]) ** 2 + (float(goal["y"]) - spot[2]) ** 2
+                            if best is None or d < best[0]:
+                                best = (d, g["name"], i)
+            if best:
+                goals = [["goto", {"zone": spot[0], "x": "%.2f" % spot[1], "y": "%.2f" % spot[2]}],
+                         ["turnin", {"quest": q, "optional": True,
+                                     "text": "Turn in %s (picked up earlier)" % title.split(" (")[0]}],
+                         ["target", {"name": who}]]
+                out.append({"guide": best[1], "at": best[2], "source": "carry:%d" % q, "carry": True,
+                            "steps": [{"only": faction, "goals": goals}]})
+                placed = True
         if not placed:
             missing.append(q)
     conv.carry_missing = getattr(conv, "carry_missing", []) + [(faction, q) for q in missing]
