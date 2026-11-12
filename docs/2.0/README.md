@@ -17,7 +17,7 @@ it has been tested in game; 1.3.x fixes keep going to `main`.
 | 2 | Card UI, arrow, smart start, terrain, travel and map pins on the new engine | done (test build) |
 | 3 | 1-20 guides for every race and Skyborne | done (test build) |
 | 4 | Settings, automation, item and target buttons, timers, data from forever-db | done (test build) |
-| 5 | 1.3.x save importer, private test build | |
+| 5 | 1.3.x save importer, private test build | importer done; in-game test next |
 | 6 | CurseForge beta, then release | |
 
 ## Layout
@@ -104,7 +104,7 @@ the repository's `OpenXP/` folder, not the root.
   isn't listed there). Forever-only flight masters are recorded in game from
   the flight map and added at run time.
 - Not in 2.0 yet: talents and inventory and vendor helpers; importing 1.x
-  progress and learned paths (phase 5).
+  progress is done (phase 5, below).
 - `Data/PathHints.lua`'s first entries are cave and ramp spots taken from the
   RestedXP 1-20 guides; they get replaced when phase 3 brings our own 1-20
   routes.
@@ -177,6 +177,30 @@ until done or until step n, never holding the guide up).
   writes `tools/class_inserts.json` and `tools/convert_guides.py` adds them.
   `tests/convert_roundtrip.py` checks that every shared step is unchanged and
   that every added step is class-only.
+## Phase 5: coming from 1.x
+
+- `OpenXP.toc` lists every 1.x saved variable (`OXPData`, `OXPDB`,
+  `OXPSettings`, `OXPString`, `OXPQuestieDump`; per character `OXPCData`,
+  `OXPCTrackingData`, `OXPCComms`, `OXPCSettings`). The game only keeps an
+  addon's saved variables that its .toc lists, so this keeps them in the file
+  while 2.0 runs; 2.0 reads them and never changes them, and going back to
+  1.3.x finds them as they were. (1.3.x doesn't list 2.0's `OpenXPDB` and
+  `OpenXPCharDB`, so going back drops 2.0's own progress; 1.x's is safe.)
+- `Engine/Import.lua`, per character on the first 2.0 login: the guide and
+  step you were on (21-60 and dungeon guides map 1:1; class steps 2.0 added
+  are skipped when counting), skipped and chain-missed steps, your saved
+  place in every other guide, and known flight paths. A 1-20 guide (new route
+  in 2.0) or anything unmatched goes to smart start. `UI/ImportNote.lua`
+  then says once where you are, with Find my place and Go back.
+- Per account, once: the settings that still exist (card place, size, scale
+  and collapse, font, size and outline, arrow size and text, lock, map route
+  and areas, spawn marks, route colour, travel, tooltips, nameplates, auto
+  loot, camera, smart start on login, minimap button) and the arrow paths you
+  recorded or OpenXP learned. Everything else in the 1.x profile is ignored.
+- `tests/import_test.lua` covers a mid 21-60 guide (two classes, with 2.0's
+  added class steps in the way), a mid dungeon guide, a mid 1-20 guide (smart
+  start), a fresh character, broken data, settings, running only once, and
+  that the 1.x data is left untouched.
 ## Testing a build in game
 
 `python3 tools/package_2.py` writes `dist/OpenXP-<version>.zip`. 2.0 and 1.x

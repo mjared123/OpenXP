@@ -7,8 +7,10 @@
 ## Category: Quests
 ## IconTexture: Interface\AddOns\OpenXP\Media\openxp_logo-64
 ## OptionalDeps: Questie
-## SavedVariables: OpenXPDB, OXPQuestieDump
-## SavedVariablesPerCharacter: OpenXPCharDB
+## SavedVariables: OpenXPDB, OXPData, OXPDB, OXPSettings, OXPString, OXPQuestieDump
+## SavedVariablesPerCharacter: OpenXPCharDB, OXPCData, OXPCTrackingData, OXPCComms, OXPCSettings
+# The OXP* ones are 1.x's: listed so the game keeps them (2.0 only reads them,
+# Engine/Import.lua) and going back to 1.x finds them as they were.
 
 # Libraries (BSD / public domain, see docs/2.0/README.md)
 Libs\LibStub.lua
@@ -35,6 +37,7 @@ Engine\ForeverDB.lua
 Engine\QuestDB.lua
 Engine\Goals.lua
 Engine\Registry.lua
+Engine\Import.lua
 Engine\Runner.lua
 Engine\SmartStart.lua
 
@@ -66,6 +69,7 @@ UI\Settings.lua
 UI\MinimapButton.lua
 UI\Tooltips.lua
 UI\Welcome.lua
+UI\ImportNote.lua
 UI\Feedback.lua
 
 # Guide-making tools
