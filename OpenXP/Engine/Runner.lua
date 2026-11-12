@@ -407,12 +407,23 @@ end
 
 -- Goals that depend on where you stand ("be here", "fly to") are looked at
 -- again twice a second while one is shown; nothing else costs anything.
+-- Everything else is looked at again every 2 seconds too, as a safety net:
+-- the game doesn't always send an event when a quest's state settles (a
+-- turn-in can show as done a moment after its event), and a step that is
+-- done must never wait for an unrelated event to move on.
 local positional = CreateFrame("Frame")
-local wait = 0
+local wait, safety = 0, 0
 positional:SetScript("OnUpdate", function(_, elapsed)
     wait = wait + elapsed
+    safety = safety + elapsed
     if wait < 0.5 or not run then return end
     wait = 0
+    if safety >= 2 then
+        safety = 0
+        OXP.Quests.Invalidate()
+        Engine.Refresh()
+        return
+    end
     for _, pos in ipairs(activePositions()) do
         for _, goal in ipairs(run.steps[pos].goals) do
             if Goals.IsPositional(goal[1]) then

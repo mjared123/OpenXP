@@ -53,6 +53,7 @@ function FakeWoW.New(root, opts, saved)
         pos = { map = opts.map or 1429, x = opts.x or 50, y = opts.y or 50 },
         noObjectiveAPI = opts.noObjectiveAPI,
         collapsed = {},    -- [questID] = true: hidden under a collapsed header
+        unloaded = {},     -- [questID] = true: in the log, details not loaded by the client yet
     }, Game)
     game:InstallGlobals()
     saved = saved or {}
@@ -242,7 +243,8 @@ function Game:InstallGlobals()
         local q = visible()[i]
         if not q then return nil end
         if q.header then return q.title, 0, nil, true, false, nil, 0, 0 end
-        return q.title, 20, nil, false, false, isComplete(q) and 1 or nil, 0, q.id
+        -- a quest whose details the client hasn't loaded yet shows no id
+        return q.title, 20, nil, false, false, isComplete(q) and 1 or nil, 0, game.unloaded[q.id] and 0 or q.id
     end
     GetNumQuestLeaderBoards = function(i)
         local q = visible()[i]
@@ -255,7 +257,7 @@ function Game:InstallGlobals()
         return obj.text, "monster", obj.done
     end
     C_QuestLog = {
-        IsOnQuest = function(id) return find(id) ~= nil end,
+        IsOnQuest = function(id) return find(id) ~= nil and not game.unloaded[id] end,
         IsQuestFlaggedCompleted = function(id) return game.completed[id] == true end,
         GetTitleForQuestID = function(id) local q = find(id) return q and q.title end,
     }

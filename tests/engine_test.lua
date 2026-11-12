@@ -156,6 +156,30 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- a quest whose details load late still moves the guide on (Wetlands step 8)")
+do
+    -- In game: accepting one of WoW Forever's own quests, the log entry had no
+    -- quest id yet when the events came, no event followed when it loaded,
+    -- and the step only moved on when an unrelated trainer window opened.
+    local game, OXP = newGame({ level = 22 })
+    game:Login()
+    local g = addGuide(OXP, {
+        { { "accept", quest = 98197 } },
+        { { "complete", quest = 98197, obj = 1 } },
+    })
+    OXP.Engine.Load(g.key)
+    game.unloaded[98197] = true
+    game:Accept(98197, 1)
+    t.eq(OXP.Engine.GetPosition(), 1, "not in the log yet as far as the game says")
+    game.unloaded[98197] = nil -- loads, no event
+    game:Advance(1)
+    game:Advance(1)
+    game:Advance(1)
+    t.eq(OXP.Engine.GetPosition(), 2, "moves on within a few seconds without any event")
+    t.eq(OXP.Engine.GoalState(2, g.steps[2][1]), "todo", "an objective isn't taken as done while details are missing")
+end
+
+------------------------------------------------------------------------
 print("-- quests under a collapsed header still count")
 do
     local game, OXP = newGame()

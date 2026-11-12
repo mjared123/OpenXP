@@ -18,8 +18,10 @@ local C_QuestLog = C_QuestLog or {}
 
 local function objectivesFromAPI(questID)
     if not C_QuestLog.GetQuestObjectives then return nil end
-    local list = C_QuestLog.GetQuestObjectives(questID)
-    if type(list) ~= "table" then return nil end
+    -- right after you accept one of WoW Forever's own quests the client may
+    -- not have its details yet; never let that stop the guide
+    local ok, list = pcall(C_QuestLog.GetQuestObjectives, questID)
+    if not ok or type(list) ~= "table" then return nil end
     local out = {}
     for i, o in ipairs(list) do
         out[i] = {
@@ -66,9 +68,16 @@ local function lookup(questID)
     if q then return q end
     if C_QuestLog.IsOnQuest and C_QuestLog.IsOnQuest(questID) then
         local objectives = objectivesFromAPI(questID) or {}
-        local complete = true
-        for _, o in ipairs(objectives) do
-            if not o.done then complete = false end
+        local complete
+        if #objectives > 0 then
+            complete = true
+            for _, o in ipairs(objectives) do
+                if not o.done then complete = false end
+            end
+        else
+            -- no objectives listed: a talk-to quest, or one whose details the
+            -- client hasn't loaded yet; the game knows which
+            complete = C_QuestLog.IsComplete and C_QuestLog.IsComplete(questID) and true or false
         end
         q = { title = C_QuestLog.GetTitleForQuestID and C_QuestLog.GetTitleForQuestID(questID),
               complete = complete, failed = false, objectives = objectives }

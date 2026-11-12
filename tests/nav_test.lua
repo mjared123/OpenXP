@@ -266,6 +266,18 @@ do
     t.ok(#pts >= 2, "route points in Duskwood")
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 
+    -- the route line's first stop is always where the arrow points
+    local aim = OXP.Target.Real()
+    local first = OXP.MapDraw.Upcoming()[1]
+    local ax, ay = OXP.Places.ToZone(aim.wx, aim.wy, aim.map)
+    t.ok(first and first[1] == aim.map and math.abs(first[2] - ax) < 0.01 and math.abs(first[3] - ay) < 0.01,
+        "route line starts where the arrow points")
+    OXP.Target.SetOverride({ wx = aim.wx + 300, wy = aim.wy, instance = aim.instance, map = aim.map, title = "chain" })
+    first = OXP.MapDraw.Upcoming()[1]
+    local ox = OXP.Places.ToZone(aim.wx + 300, aim.wy, aim.map)
+    t.ok(first and math.abs(first[2] - ox) < 0.01, "and follows the arrow on a chain walk")
+    OXP.Target.SetOverride(nil)
+
     -- fill and clip
     local ax, _, bx = OXP.MapDraw.ClipSegment(0, 50, 100, 50, { 50, 50, 20 })
     t.ok(math.abs(ax - 30) < 0.01 and math.abs(bx - 70) < 0.01, "segment clipped to the circle")

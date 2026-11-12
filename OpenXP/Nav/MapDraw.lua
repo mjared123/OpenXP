@@ -262,8 +262,24 @@ function Draw.Upcoming()
     local steps = Engine.GetSteps()
     local first = Engine.GetPosition()
     if not first then return out end
+    -- The first stop is always where the arrow points (its real target:
+    -- the shown step's current waypoint, a chain walk or /oxp path to), so
+    -- the line and the arrow never lead to different places.
+    local aim = OXP.Target.Real and (OXP.PathHints.go or OXP.Target.override or OXP.Target.Real())
+    local startAt = first
+    if aim and aim.wx then
+        local map = aim.map
+        local x, y
+        if map then x, y = Places.ToZone(aim.wx, aim.wy, map) end
+        if x then
+            out[1] = { map, x, y, aim.step and Areas.ForStep(aim.step) or nil }
+            -- an "as you go" step behind you: the current step still follows
+            startAt = (aim.pos and aim.pos >= first) and aim.pos + 1 or first
+            if OXP.PathHints.go or OXP.Target.override then return out end
+        end
+    end
     local willHave = {}
-    for pos = first, min(#steps, first + STEPS_AHEAD) do
+    for pos = startAt, min(#steps, first + STEPS_AHEAD) do
         local step = steps[pos]
         local state = Engine.StepState(pos)
         local missing = pos > first and OXP.QuestDB.MissingQuest(step)
