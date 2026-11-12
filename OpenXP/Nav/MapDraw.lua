@@ -267,6 +267,7 @@ function Draw.Upcoming()
     -- the line and the arrow never lead to different places.
     local aim = OXP.Target.Real and (OXP.PathHints.go or OXP.Target.override or OXP.Target.Real())
     local startAt = first
+    if aim and aim.none then return out end -- chain walk with no spot: no line either
     if aim and aim.wx then
         local map = aim.map
         local x, y

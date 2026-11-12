@@ -281,6 +281,8 @@ local function DetourDone(d)
     return not QuestDB.Blocked(d.target)
 end
 
+local NO_SPOT, SameSpot
+
 local function SpotTarget(spot, title)
     if not (spot and spot[2] and spot[2] > 0) then return nil end
     local wx, wy, inst = OXP.Places.ToWorld(spot[2], spot[3], spot[4])
@@ -335,7 +337,21 @@ function Card.DetourStep()
             target = SpotTarget(info.f)
         end
     end
+    if not target then
+        lines[#lines + 1] = { text = L("|cFFF2C35CNo map spot for this one in the quest data: no arrow|r"), plain = true }
+    end
     return { detour = true, goals = {}, marks = {}, title = title, lines = lines }, index, target
+end
+
+-- The arrow's spot for a chain-walk quest that has none (Nav/Target.lua).
+NO_SPOT = { none = true }
+
+function SameSpot(a, b)
+    if a == b then return true end
+    if not (a and b) then return false end
+    if a.none or b.none then return a.none == b.none end
+    return a.map == b.map and a.instance == b.instance
+        and math.abs(a.wx - b.wx) < 0.5 and math.abs(a.wy - b.wy) < 0.5
 end
 
 ---------------------------------------------------------------------------
@@ -1110,7 +1126,11 @@ function Card.Refresh(force)
         detourStep, detourIndex, target = Card.DetourStep()
         if detourStep then
             shown = { { detourStep, nil } }
-            if OXP.Target.override ~= target then OXP.Target.SetOverride(target) end
+            -- a new table every refresh: only tell the arrow when the spot moves
+            local want = target or NO_SPOT
+            if not SameSpot(OXP.Target.override, want) then OXP.Target.SetOverride(want) end
+        elseif OXP.Target.override then
+            OXP.Target.SetOverride(nil) -- nothing left to show: back to the guide's arrow
         end
     end
 

@@ -133,6 +133,45 @@ do
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
+print("-- Do the chain from far away, and a chain quest with no spot (in game: hunter in the Wetlands)")
+do
+    local game, OXP = newGame({ level = 22, class = "HUNTER", map = 1437, x = 0.10, y = 0.60 })
+    OXP.QuestDB.data = { prereqs = { [702] = { all = { 701, 703 } } }, chains = { [702] = { 701, 703 } },
+                         info = { [701] = { n = "Part One", l = 20, s = { "Bob", 1457, 40, 40 }, f = { "Bob", 1457, 40, 40 }, o = {} },
+                                  [703] = { n = "Part Three", l = 20, o = {} } } }
+    local g = addGuide(OXP, {
+        { { "accept", quest = 702, text = "Accept Part Two" } },
+        { { "turnin", quest = 702 } },
+    })
+    OXP.Engine.Load(g.key)
+    local C = OXP.Card
+    C.Refresh(true)
+    C.blocks[1].warn.chain.scripts.OnClick()
+    C.Refresh(true)
+    local sent = 0
+    OXP.Listen("ARROW_CHANGED", function() sent = sent + 1 end)
+    local first = OXP.Target.override
+    for _ = 1, 5 do C.Refresh(true) end
+    t.ok(OXP.Target.override == first and sent == 0, "the arrow's target is set once, not every refresh (" .. sent .. ")")
+    local aim = OXP.Target.Update()
+    t.ok(aim ~= nil, "the arrow has somewhere to go")
+    t.ok(aim and aim.real == first, "on the way to the chain's quest")
+    t.ok(aim and (aim.travel or aim.map == 1437), "a trip is planned to Darnassus: " .. tostring(aim and aim.title))
+    -- the next quest of the chain has no spot in the data
+    game:Accept(701, 0)
+    game:TurnIn(701)
+    C.Refresh(true)
+    t.ok(OXP.Target.override and OXP.Target.override.none, "no spot: the arrow is told so")
+    t.ok(OXP.Target.Update() == nil, "and shows nothing rather than the guide's step")
+    local lines = {}
+    for _, l in ipairs(C.blocks[1].lines) do if l.shown then lines[#lines + 1] = tostring(l.text.text) end end
+    t.ok(table.concat(lines, " "):find("No map spot", 1, true), "the card says there's no spot: " .. table.concat(lines, " | "))
+    C.StopDetour()
+    t.ok(OXP.Target.override == nil, "Back to guide clears it")
+    OXP.QuestDB.data = {}
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
 ------------------------------------------------------------------------
 print("-- a turn-in for a quest you don't have: get it, then return")
 do

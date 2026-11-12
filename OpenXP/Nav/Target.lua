@@ -73,14 +73,17 @@ function Target.Current() return current end
 
 --- Work the arrow's point out again. Returns it (or nil).
 function Target.Update()
-    local go = OXP.PathHints.go or Target.override
-    local base = go or Target.Real()
-    if not base then
+    local hint = OXP.PathHints.go
+    local base = hint or Target.override or Target.Real()
+    -- a chain walk with no spot for its quest: no arrow, rather than the
+    -- guide's spot for a step the card isn't showing
+    if not base or base.none then
         current = nil
         return nil
     end
-    local trav = not go and OXP.Travel.ArrowTarget(base)
-    local area = not go and not trav and base.step and OXP.Areas.Target(base.step, base.title)
+    -- a chain quest in another zone gets the trip planned like a guide step
+    local trav = not hint and OXP.Travel.ArrowTarget(base)
+    local area = not hint and not trav and base.step and OXP.Areas.Target(base.step, base.title)
     local aim = trav or area or base
     local via = not (area and area.inside) and OXP.PathHints.ForArrow(aim)
     if via and trav then via.title = trav.title end
