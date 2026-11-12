@@ -1,0 +1,183 @@
+# OpenXP: third-party notices
+
+OpenXP (this folder) is licensed under the GNU General Public License,
+version 3; see LICENSE. These parts come from elsewhere and keep their own
+licences and credits.
+
+## PoleStar guides (levels 1-20)
+
+`Guides/Leveling/Alliance/01-20.lua` and `Guides/Leveling/Horde/01-20.lua`
+are adapted from PoleStar's guides by tools/import_polestar.py:
+
+- PoleStar, https://github.com/fitzforge/polestar, commit
+  c0c99712a7b907455dd49cc928484aa0114765d8
+- Portions Copyright (c) 2026 The Polestar authors
+- Licence: GNU General Public License, version 3 (the same licence as OpenXP)
+
+The route, step text and class quest guides are PoleStar's, converted to
+OpenXP's guide format; class quest guides were merged into the leveling
+routes and the routes were joined to OpenXP's own 21-60 guides. PoleStar's
+walking legs (Legs.lua) are not used.
+
+PoleStar's guide data names the sources its quest titles, names and
+coordinates were filled in from. Its notice follows unchanged.
+
+```
+Polestar guide data: third-party notices
+========================================
+
+The guides in this folder were written for Polestar. Quest titles, names and
+coordinates in them were filled in from the reference data sources below.
+
+CMaNGOS classic-db: creature and gameobject spawn heights
+---------------------------------------------------------
+URL: https://raw.githubusercontent.com/cmangos/classic-db/22b51464f1625f6ef6275771de1f5466c6f5d19e/Full_DB/ClassicDB_1_12_1_z2815.sql.gz
+Revision: 22b51464f1625f6ef6275771de1f5466c6f5d19e
+License: GPL-3.0; spawn heights (z) only, used as facts like the transport periods: a guide goal, spawn spot or smart-target candidate at an NPC or object (and Core/ClassTrainers.lua's class trainers) carries its spawn's height
+CMaNGOS (https://github.com/cmangos/classic-db)
+
+CMaNGOS classic-db: creature walks
+----------------------------------
+URL: https://raw.githubusercontent.com/cmangos/classic-db/22b51464f1625f6ef6275771de1f5466c6f5d19e/Full_DB/ClassicDB_1_12_1_z2815.sql.gz
+Revision: 22b51464f1625f6ef6275771de1f5466c6f5d19e
+License: GPL-3.0; the extent of a creature's walk (its spawn, the centre and radius of the ground its random or waypoint movement covers) only, used as facts: a goal at an NPC who walks around gets that ground as its spawn area, and the guides say so
+CMaNGOS (https://github.com/cmangos/classic-db)
+
+CMaNGOS classic-db: quest objective counts
+------------------------------------------
+URL: https://raw.githubusercontent.com/cmangos/classic-db/22b51464f1625f6ef6275771de1f5466c6f5d19e/Full_DB/ClassicDB_1_12_1_z2815.sql.gz
+Revision: 22b51464f1625f6ef6275771de1f5466c6f5d19e
+License: GPL-3.0; quest objective counts only, used as facts: an objective whose count QuestieDB and pfQuest lack takes the matching quest_template count
+CMaNGOS (https://github.com/cmangos/classic-db)
+
+EG Link output: World of Warcraft: Forever
+------------------------------------------
+URL: https://github.com/JIVESCORP/eg-link-output-wowf
+Revision: d98f94821b69cccf81b03a542df3755b60055217
+License: CC BY 4.0; facts used: quest levels, XP, objectives and counts, next quests, givers and enders, races, quest-tied drop rates
+EG Link output: World of Warcraft: Forever (https://github.com/JIVESCORP/eg-link-output-wowf), data from Efficient Games (https://efficient.games), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); reduced to quest facts for Polestar.
+
+Factoruide databases (with the VMaNGOS values they carry)
+---------------------------------------------------------
+URL: https://github.com/Factoruide
+License: GPL-2.0-or-later, taken under GPL-3.0; facts used where the sources above lack them
+Factoruide contributors
+
+Forever TrinityCore world database (sniffed spawns, quest objectives, timers, loot, class and profession trainers)
+------------------------------------------------------------------------------------------------------------------
+URL: https://github.com/advocaite/TrinityCore/tree/forever
+Revision: forever-tdb-2026-10-14 + 367ac384fa20
+License: GPL-2.0; used as facts: objective counts, quest time limits and next quests, sniffed spawn positions (gathering nodes too), sniffed drop rates, class trainer lists and costs, profession trainers' learn ranks and costs
+TrinityCore (https://www.trinitycore.org) and the advocaite/TrinityCore `forever` branch
+
+forever-vo captures
+-------------------
+URL: https://github.com/quinn-dougherty/forever-vo
+Revision: f3b8d4c600394a094bc7729b2bdcbbc1ddbbdb52
+License: NOASSERTION; quest givers and enders captured in game, used as facts
+forever-vo contributors
+
+pfQuest
+-------
+URL: https://github.com/shagu/pfQuest
+Revision: 104f35678ca39ab1fb78b655f815cc7016f5e0c8
+License: MIT
+
+MIT License
+
+Copyright (c) 2017-2021 Eric Mauser (Shagu)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Polestar quest mechanics: kinds, parameters and steps (facts in our own words), checked against the Forever TrinityCore world DB
+--------------------------------------------------------------------------------------------------------------------------------
+License: Polestar original work; structured facts from CMaNGOS classic-db (GPL-3.0) and the Forever TrinityCore world DB (GPL-2.0) used as facts
+TrinityCore and the advocaite/TrinityCore `forever` branch; CMaNGOS (https://github.com/cmangos/classic-db)
+
+Quest XP for quests QuestieDB lacks: two Forever web quest databases (one from the beta client's quest cache)
+-------------------------------------------------------------------------------------------------------------
+Revision: 522 quests; cache data/sources/webxp/quest-xp.json
+License: Public web pages; facts (XP numbers) only, used locally with permission
+
+QuestieDB (Questie-Forever), baked Forever store and support data
+-----------------------------------------------------------------
+URL: https://github.com/Questie/QuestieDB
+Revision: 1.0.10 a37877c1490027ee48e5722bf602adf34f95a6dc
+License: No license file in Questie/Questie or Questie/QuestieDB; CurseForge lists GPL-3.0, and the maintainers ask that it be treated as all rights reserved (https://github.com/Questie/Questie/issues/4447). Read from the local install; facts only (quest, NPC, object and item facts, no code or text) ship in Polestar's packs, credited here, and come out if the maintainers ask (data build --no-questie).
+Code: Logonz Data: Muehe/TheCrux(BreakBB)/Drejjmit/Dyaxler/Cheeq/TechnoHunter/Yttrium/Everyone else
+
+the web quest database: zone quest lists (XP, levels, Forever change notes)
+---------------------------------------------------------------------------
+Revision: 4234 listed quests read 2026-10-16T16:29:21.749Z; cache data/sources/web/zones.json
+License: Public web pages; facts (ids, XP, levels, instance categories, rewards) only, used locally
+
+World of Warcraft Classic Era client tables (UiMap, UiMapAssignment, AreaTable, Faction) via wago.tools
+-------------------------------------------------------------------------------------------------------
+URL: https://wago.tools/db2?build=1.15.9.70576
+Revision: wow_classic_era 1.15.9.70576
+License: Blizzard Entertainment game client data; factual map geometry, names and faction hierarchy only
+World of Warcraft (c) Blizzard Entertainment, Inc.
+
+World of Warcraft: Forever client tables (UiMap, UiMapAssignment, AreaTable, ChrRaces, ChrClasses, CharBaseInfo, Faction, Map, ItemSparse, SpellName, SpellEffect) read from the installed client
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Revision: wow_classic_beta 1.60.1.70532
+License: Blizzard Entertainment game client data; factual map geometry, names, item durations and race/class combinations only
+World of Warcraft (c) Blizzard Entertainment, Inc.
+
+Baked walking legs
+------------------
+The walks into the guides' steps (Legs.lua in the race parts) were routed on
+Leffe's navigation maps, used with Leffe's permission given to Polestar's author.
+Credit: Leffe's navigation maps.
+
+Guide pack permission
+---------------------
+This folder was produced by Polestar's compiler. Polestar's LICENSE-EXCEPTION.md
+gives permission to distribute guide packs produced by the compiler, including
+the parts of Polestar's reference data placed in them, under terms of your
+choice. It does not cover guide text copied from Polestar's own guides, or
+Polestar's code.
+
+```
+
+## Libraries
+
+- LibStub (`Libs/LibStub.lua`): public domain.
+- CallbackHandler-1.0 (`Libs/CallbackHandler-1.0.lua`) by the Ace3 team:
+  BSD-style licence (https://www.wowace.com/projects/ace3).
+- HereBeDragons-2.0 and HereBeDragons-Pins-2.0 (`Libs/HereBeDragons*.lua`)
+  by Hendrik "nevcairiel" Leppkes: BSD licence (X-License in its .toc).
+
+## Fonts
+
+The fonts in `Media/Fonts` (Atkinson Hyperlegible, Fira Sans, Lexend, Noto
+Sans, Open Sans, Roboto) are under the SIL Open Font License 1.1; the licence
+and copyright of each is in `Media/Fonts/licenses`.
+
+## Game data
+
+`Data/Flights.lua` (flight masters and flight times) is generated by
+tools/build_flights.py from World of Warcraft Classic Era client data tables
+(TaxiNodes, TaxiPath, TaxiPathNode) published by wago.tools. Game data
+(c) Blizzard Entertainment, used as facts for interoperability.
+
+## Questie
+
+When Questie is installed, OpenXP reads its quest database while the game
+runs (Engine/QuestDB.lua). Nothing of Questie's is copied into OpenXP.

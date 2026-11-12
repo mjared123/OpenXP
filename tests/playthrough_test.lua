@@ -1,5 +1,5 @@
 -- OpenXP 2.0 play-through: for every race and class of each faction, play
--- the whole 21-60 chain and every dungeon guide in the headless client,
+-- the whole route from level 1 (the race's starting guide) to 60 and every dungeon guide in the headless client,
 -- doing exactly what each step asks (accept, kill, turn in, travel, learn a
 -- flight path, ...). Checks that every step can be finished by doing what it
 -- says, that the engine never gets stuck or throws, and that each guide hands
@@ -59,6 +59,18 @@ local function play(game, OXP, goal, objectives)
         game:Bind(OXP.Goals.HearthTarget(goal) or ("Inn " .. binds))
     elseif kind == "collect" then
         game:AddItem(goal.item, goal.count)
+    elseif kind == "finish" then
+        have()
+        for i = 1, objectives[q] or 0 do game:FinishObjective(q, i) end
+    elseif kind == "reach" then
+        game:MoveTo(OXP.Places.MapID(goal.zone), goal.x, goal.y)
+        game:Advance(1)
+    elseif kind == "fly" then
+        if goal.wx then game:MoveToWorld(goal.wx, goal.wy, goal.inst) else game:EnterZone(goal.name) end
+        game:Advance(1)
+    elseif kind == "train" then
+        game:Fire("TRAINER_SHOW")
+        game:Flush()
     else
         error("don't know how to play a " .. tostring(kind) .. " goal")
     end
@@ -90,7 +102,7 @@ local function playToEnd(game, OXP, objectives, who)
             E.Next()
         end
         guard = guard + 1
-        if guard > 5000 then
+        if guard > 20000 then
             t.ok(false, who .. ": runaway at " .. guide.key)
             break
         end
@@ -104,7 +116,7 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
         for _, class in ipairs(CLASSES) do
             local who = faction .. " " .. race .. " " .. class
             -- Leveling chain.
-            local game = FakeWoW.New(ROOT, { faction = faction, race = race, class = class, level = 21 })
+            local game = FakeWoW.New(ROOT, { faction = faction, race = race, class = class, level = 1 })
             local OXP = game:LoadAddon()
             game:Login()
             local objectives = objectiveCounts(OXP)

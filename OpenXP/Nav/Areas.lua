@@ -82,7 +82,7 @@ end
 --- The first goto spot of an Engine step, or nil.
 function Areas.StepSpot(step)
     for _, g in ipairs(step and step.goals or {}) do
-        if g[1] == "goto" then
+        if g[1] == "goto" or g[1] == "reach" then
             local s = Places.Spot(g)
             if s then return s end
         end

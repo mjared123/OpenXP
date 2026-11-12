@@ -36,7 +36,7 @@ function Target.Real()
         local step = Engine.GetSteps()[pos]
         local spots = {}
         for _, g in ipairs(step.goals) do
-            if g[1] == "goto" then
+            if g[1] == "goto" or g[1] == "reach" then
                 local s = Places.Spot(g)
                 if s then spots[#spots + 1] = s end
             end

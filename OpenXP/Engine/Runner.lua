@@ -40,6 +40,11 @@ local function buildSteps(guide)
                 data = data,
                 goals = goals,
                 completewith = data.completewith == "next",
+                -- "as you go": never holds the guide up; shown beside the
+                -- current step until done or until step `untilIndex` is passed
+                along = data.along and true or nil,
+                untilIndex = data["until"],
+                when = data.when,
                 marks = {},                    -- one-off events seen while shown
             }
         end
@@ -76,7 +81,10 @@ local function stepDone(pos)
     while true do
         local step = steps[pos]
         if not step then return false end
-        if run.save.skipped[step.index] or ownGoalsDone(step) then return true end
+        if run.save.skipped[step.index] or step.along or not Goals.WhenHolds(step.when)
+            or ownGoalsDone(step) then
+            return true
+        end
         if not step.completewith then return false end
         pos = pos + 1
     end
@@ -92,6 +100,16 @@ local function activePositions()
         out[#out + 1] = pos
         if not run.steps[pos].completewith then break end
         pos = pos + 1
+    end
+    -- "as you go" steps you've passed that are still open
+    local here = run.steps[run.pos]
+    local hereIndex = here and here.index or math.huge
+    for p = 1, run.pos - 1 do
+        local step = run.steps[p]
+        if step.along and not run.save.skipped[step.index] and (step.untilIndex or 0) >= hereIndex
+            and Goals.WhenHolds(step.when) and not ownGoalsDone(step) then
+            out[#out + 1] = p
+        end
     end
     return out
 end
@@ -378,9 +396,32 @@ OXP.Listen("HEARTH_CHANGED", function()
     refreshSoon()
 end)
 
+OXP.Listen("TRAINED", function()
+    markShown("train", function() return true end)
+    refreshSoon()
+end)
+
 for _, message in ipairs({ "QUESTS_CHANGED", "PLAYER_LEVEL", "ZONE_CHANGED", "BAGS_CHANGED", "FLIGHTPATHS_CHANGED" }) do
     OXP.Listen(message, refreshSoon)
 end
+
+-- Goals that depend on where you stand ("be here", "fly to") are looked at
+-- again twice a second while one is shown; nothing else costs anything.
+local positional = CreateFrame("Frame")
+local wait = 0
+positional:SetScript("OnUpdate", function(_, elapsed)
+    wait = wait + elapsed
+    if wait < 0.5 or not run then return end
+    wait = 0
+    for _, pos in ipairs(activePositions()) do
+        for _, goal in ipairs(run.steps[pos].goals) do
+            if Goals.IsPositional(goal[1]) then
+                Engine.Refresh()
+                return
+            end
+        end
+    end
+end)
 
 OXP.OnReady(function()
     local key = OXP.char.currentGuide

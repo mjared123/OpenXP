@@ -340,6 +340,7 @@ function FakeWoW.InstallHBD(game)
     end
     function hbd:GetPlayerWorldPosition()
         local p = game.pos
+        if p.wx then return p.wx, p.wy, p.inst end
         return self:GetWorldCoordinatesFromZone(p.x / 100, p.y / 100, p.map)
     end
     function hbd:GetPlayerZonePosition()
@@ -366,6 +367,12 @@ end
 --- Put the player on a map at x, y (0-100).
 function Game:MoveTo(map, x, y)
     self.pos = { map = map, x = x, y = y }
+end
+
+--- Put the player at a world spot (real game coordinates, like a flight
+--- master's), keeping the map they're on.
+function Game:MoveToWorld(wx, wy, inst)
+    self.pos = { map = self.pos.map, x = self.pos.x, y = self.pos.y, wx = wx, wy = wy, inst = inst }
 end
 
 --- Let `secs` of game time pass: OnUpdate scripts and tickers run once.

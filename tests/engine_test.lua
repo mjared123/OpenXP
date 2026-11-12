@@ -64,9 +64,15 @@ do
     for _, g in ipairs(all) do
         if g.name == "17-24 Wailing Caverns" then wc = wc + 1 end
         if g.next then
-            local p = { faction = g.faction or "Alliance", race = "Human", class = "WARRIOR", level = 60 }
-            if g.faction == "Horde" then p.race = "Orc" end
-            t.ok(OXP.Registry.Next(g, p), g.key .. ": #next '" .. g.next .. "' not found")
+            -- a player who can use this guide: the race it names, if any
+            local races = g.faction == "Horde" and { "Orc", "Troll", "Scourge", "Tauren", "Skyborne" }
+                or { "Human", "Dwarf", "Gnome", "NightElf", "Skyborne" }
+            local p
+            for _, race in ipairs(races) do
+                local try = { faction = g.faction or "Alliance", race = race, class = "WARRIOR", level = 60 }
+                if OXP.Registry.IsAvailable(g, try) then p = try break end
+            end
+            t.ok(p and OXP.Registry.Next(g, p), g.key .. ": #next '" .. g.next .. "' not found")
         end
     end
     t.eq(wc, 2, "Alliance and Horde Wailing Caverns both kept")

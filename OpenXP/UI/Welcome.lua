@@ -15,7 +15,7 @@ Welcome.CHANGELOG = {
         version = "2.0.0-dev", date = "2026-11",
         changes = {
             "OpenXP 2.0 test build: a new engine and a new home for every part of OpenXP, written by OpenXP's own contributors.",
-            "Guides for levels 21-60 and the dungeons for both factions. The 1-20 guides come in a later test build.",
+            "Guides from level 1 to 60 and the dungeons for both factions. Levels 1-20 are adapted from PoleStar's guides (GPL-3.0), with every class quest up to level 20 for every race.",
             "The guide card, arrow, smart start, route line, kill areas, travel planner, tooltips and settings all run on the new engine.",
             "Flight paths come from the game's own data; flight masters only WoW Forever has are learned when you open their flight map.",
             "Settings and progress are saved fresh for 2.0 and don't touch your 1.x settings.",

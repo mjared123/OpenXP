@@ -54,7 +54,7 @@ function Pins.Refresh()
         local step = Engine.GetSteps()[pos]
         local title = OXP.Target.StepTitle(step)
         for _, g in ipairs(step.goals) do
-            if g[1] == "goto" then
+            if g[1] == "goto" or g[1] == "reach" then
                 local s = Places.Spot(g)
                 if s then
                     used = used + 1

@@ -15,7 +15,7 @@ it has been tested in game; 1.3.x fixes keep going to `main`.
 | 0 | Branch, library licences, guide converter and its test | done |
 | 1 | Core engine: guide data loader, step engine, quest state, guide list | done |
 | 2 | Card UI, arrow, smart start, terrain, travel and map pins on the new engine | done (test build) |
-| 3 | 1-20 guides for every race and Skyborne | next |
+| 3 | 1-20 guides for every race and Skyborne | done (test build) |
 | 4 | Settings, automation, item and target buttons, timers, data from forever-db | |
 | 5 | 1.3.x save importer, private test build | |
 | 6 | CurseForge beta, then release | |
@@ -103,13 +103,53 @@ the repository's `OpenXP/` folder, not the root.
   (`tools/build_flights.py`, Classic Era tables from wago.tools; WoW Forever
   isn't listed there). Forever-only flight masters are recorded in game from
   the flight map and added at run time.
-- Not in 2.0 yet: 1-20 guides (phase 3); item and target buttons, timers,
+- Not in 2.0 yet: item and target buttons, timers,
   talents, inventory and vendor helpers (phase 4); importing 1.x progress and
   learned paths (phase 5).
 - `Data/PathHints.lua`'s first entries are cave and ramp spots taken from the
   RestedXP 1-20 guides; they get replaced when phase 3 brings our own 1-20
   routes.
 
+## Licences (until phase 6)
+
+Licences are per folder for now:
+
+- `OpenXP/` (the 2.0 addon) is GPL-3.0: `OpenXP/LICENSE`, with
+  `OpenXP/NOTICE.md` crediting PoleStar (the 1-20 guides), the data sources
+  named in PoleStar's guide data, the libraries, fonts and game data.
+- The 1.x files at the repository root keep CC BY-NC-SA 4.0 (they still
+  contain RestedXP's work) until phase 6 removes them.
+- `tools/` and `tests/` are OpenXP's own.
+
+## Levels 1-20
+
+`tools/import_polestar.py` builds `OpenXP/Guides/Leveling/<Faction>/01-20.lua`
+from PoleStar's compiled guides (https://github.com/fitzforge/polestar, pinned
+commit in the script; the clone is read as data with `tools/lua_data.py`,
+nothing of it is run). Per faction: each race's starting guide, then the
+shared zones to the hand-off into our 21-60 guides (Alliance `21-22
+Ashenvale`, Horde `22-23 Hillsbrad/Alterac`). PoleStar's class quest guides
+that start before level 20 are merged into each race's route at the level
+they open, for that class only, when the route doesn't already do them.
+Re-run the script to take a newer PoleStar (update the pin first) or to
+change the merge; the play-through test then checks every race and class
+from level 1 to 60.
+
+The importer added these to the engine (all usable by any guide):
+
+| Goal | Done when |
+| --- | --- |
+| `finish` | the whole quest is ready to turn in (or turned in) |
+| `reach` | you've been within `radius` yards (default 15) of the spot |
+| `train` | you opened a trainer's window at your current level |
+| `fly` | you landed within 250 yards of the flight master (`wx`, `wy`, `inst`) |
+| `item` | a hint (an item to use or keep) |
+
+Steps can also carry `when = { {kind, ...}, ... }` (shown only while every
+condition holds: `turnedin`, `onquest`, `complete`, `money`, `skill`,
+`zone`, `group`, `level`, `has`, each with `neg = true` to invert) and
+`along = true, ["until"] = n` ("as you go": shown beside the current step
+until done or until step n, never holding the guide up).
 ## Testing a build in game
 
 `python3 tools/package_2.py` writes `dist/OpenXP-<version>.zip`. 2.0 and 1.x
@@ -176,7 +216,8 @@ cue), plus `QUESTS_CHANGED`, `ZONE_CHANGED`, `BAGS_CHANGED`, `PLAYER_LEVEL`.
   character's place, handing over to `#next`, the UI messages, and the quest
   log read both through the per-quest API and the old leaderboard calls.
 - `tests/playthrough_test.lua`: for every race and class of both factions
-  (90 characters), plays the whole 21-60 chain and every dungeon guide in the
+  (90 characters), plays the whole route from level 1 (the race's starting
+  guide) to 60 and every dungeon guide in the
   headless client, doing what each step says. It fails if any step can't be
   finished that way, the engine stalls or throws, or the guides don't hand
   over in `#next` order to the end of the chain.

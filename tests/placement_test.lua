@@ -130,7 +130,8 @@ print("-- logging in far past your section moves you on")
 do
     local game, OXP = newGame({ faction = "Alliance", race = "Human", class = "WARRIOR", level = 21 })
     game:Login()
-    t.eq(OXP.Engine.GetGuide() and OXP.Engine.GetGuide().name, "21-22 Ashenvale", "starts in 21-22")
+    local first = OXP.Engine.GetGuide()
+    t.ok(first and first.minLevel == 21, "starts in a section for level 21: " .. tostring(first and first.name))
     local saved = game:SavedVariables()
     local game2, OXP2 = newGame({ faction = "Alliance", race = "Human", class = "WARRIOR", level = 30 })
     OpenXPDB, OpenXPCharDB = saved.OpenXPDB, saved.OpenXPCharDB
@@ -138,6 +139,21 @@ do
     local g = OXP2.Engine.GetGuide()
     t.ok(g and g.minLevel and g.minLevel >= 28, "moved to a section for level 30: " .. tostring(g and g.name))
     t.eq(#game2.errors, 0, "no Lua errors: " .. table.concat(game2.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- a new level 1 character starts at the top of their race's guide")
+do
+    for _, c in ipairs({ { "Alliance", "Human", "1-11 Elwynn Forest" }, { "Alliance", "NightElf", "1-12 Teldrassil" },
+                         { "Alliance", "Skyborne", "1-14 Zephras Isle" }, { "Horde", "Scourge", "1-13 Tirisfal Glades" },
+                         { "Horde", "Tauren", "1-12 Mulgore" }, { "Horde", "Skyborne", "1-14 Zephras Isle" } }) do
+        local game, OXP = newGame({ faction = c[1], race = c[2], class = "WARRIOR", level = 1 })
+        game:Login()
+        local g = OXP.Engine.GetGuide()
+        t.eq(g and g.name, c[3], c[1] .. " " .. c[2] .. " starts in")
+        t.ok(g and g.faction == c[1], c[2] .. " gets their own faction's guide")
+        t.eq(OXP.Engine.GetPosition(), 1, c[2] .. " at step 1")
+    end
 end
 
 return t.fails

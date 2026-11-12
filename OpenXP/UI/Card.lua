@@ -149,7 +149,8 @@ progress:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 1)
 -- What a step says
 ---------------------------------------------------------------------------
 
-local BLOCKING = { accept = true, turnin = true, complete = true, collect = true, xp = true, zone = true, fp = true, home = true }
+local BLOCKING = { accept = true, turnin = true, complete = true, collect = true, xp = true, zone = true, fp = true, home = true,
+                   finish = true, reach = true, train = true, fly = true }
 
 --- The badge kind for a step.
 function Card.StepKind(step)
@@ -193,6 +194,14 @@ function Card.GoalText(g)
         return g.text or fmt(L("Get the %s flight path"), g.name)
     elseif kind == "home" then
         return g.text or L("Set your Hearthstone here")
+    elseif kind == "finish" then
+        return g.text or fmt(L("Finish %s"), QuestDB.QuestName(g.quest))
+    elseif kind == "reach" then
+        return g.text or L("Go to the marked spot")
+    elseif kind == "train" then
+        return g.text or L("Train your new spells")
+    elseif kind == "fly" then
+        return g.text or fmt(L("Fly to %s"), g.name)
     end
     return g.text
 end
@@ -210,7 +219,7 @@ function Card.StepContent(step)
                     lines[#lines + 1] = { text = Text.Format(text), done = state == "done", goal = g }
                 end
             end
-        elseif kind == "text" or (kind == "goto" and g.text) then
+        elseif kind == "text" or ((kind == "goto" or kind == "item") and g.text) then
             if not title then
                 title = Text.Format(g.text)
             else
@@ -236,7 +245,7 @@ function Card.StepRole(step, pos)
         if OXP.Goals.State(g, step.marks) == "todo" then open = true end
     end
     if not open and pos then return "done" end
-    if step.completewith then return "side" end
+    if step.completewith or step.along then return "side" end
     return "now"
 end
 
