@@ -19,6 +19,8 @@ KEEP_TYPES = {"vanilla", "camelot"}
 DROP = [
     "tests", "tools", "Scripts", ".github", ".vscode", ".editorconfig", ".gitignore", ".gitattributes", ".pkgmeta",
     "Textures/OpenXP-source", "OpenXP_TBC.toc",
+    "OpenXP",  # the 2.0 addon, not part of a 1.x release
+
     "Guides/Retail", "Guides/tbc", "Guides/cata", "Guides/mop", "Guides/SoD",
     "Guides/SurvivalGuide", "Guides/Dailies", "Guides/GuideList.xml",
     "Guides/GuideList-mainline.xml", "Guides/GuideList-cata.xml",

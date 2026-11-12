@@ -170,10 +170,11 @@ def main(argv):
         else:
             errs, steps, n = res
         name = os.path.basename(f)
-        committed = os.path.join(ROOT, "Guides", "v2", name)
+        committed = C.out_path(f)
         if f.startswith(src) and (not os.path.exists(committed)
                                   or open(committed, encoding="utf-8").read() != C.convert_file(f)[0]):
-            errs = errs + ["Guides/v2/%s is out of date: run python3 tools/convert_guides.py" % name]
+            errs = errs + ["%s is out of date: run python3 tools/convert_guides.py"
+                           % os.path.relpath(committed, ROOT)]
         if errs:
             failures += 1
             print("FAIL %s" % name)
@@ -181,6 +182,10 @@ def main(argv):
                 print("    " + e)
         else:
             print("ok   %s: %d guides, %d steps unchanged in 2.0 data" % (name, n, steps))
+    xml = os.path.join(C.GUIDES_DIR, "Guides.xml")
+    if not os.path.exists(xml) or open(xml, encoding="utf-8").read() != C.guide_list_xml():
+        failures += 1
+        print("FAIL OpenXP/Guides/Guides.xml is out of date: run python3 tools/convert_guides.py")
     return 1 if failures else 0
 
 
