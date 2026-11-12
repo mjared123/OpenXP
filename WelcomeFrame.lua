@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.59",
+        date = "November 2026",
+        changes = {
+            "Fixed the arrow pointing Night Elf Druids and Priests at Ironforge (Loch Modan) for the rest of Darkshore. The Ironforge auction house tip in 11-16 Darkshore never ended, so the arrow kept going back to it whenever a step's map point was done",
+            "Fixed two more tips that never went away: the Shadowglen vendor tip (Hunter/Druid/Warrior) and the Warrior throwing knives tip in Ironforge",
+        },
+    },
+    {
         version = "1.3.58",
         date = "November 2026",
         changes = {

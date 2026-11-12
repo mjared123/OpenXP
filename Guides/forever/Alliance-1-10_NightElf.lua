@@ -242,6 +242,7 @@ step << Druid
     +|cRXP_WARN_Stop casting |T136006:0|t[|cRXP_LOOT_Wrath|r] altogether!|r Only use |T135158:0|t[|cRXP_LOOT_Melee|r] and |T136096:0|t[|cRXP_LOOT_Moonfire|r] from now on!
     >>Try to only Moonfire right after Meleeing |cRXP_WARN_to not reset your swing timer!|r
 step
+    #label htraining
     .goto 1438/1,863.96,10534.840,10,0
     .goto 1438/1,873.64,10566.40,10,0
     .goto 1438/1,850.72,10595.920,10,0

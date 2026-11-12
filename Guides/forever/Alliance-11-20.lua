@@ -3012,7 +3012,7 @@ step << Warrior
     .itemStat 18,ITEM_MOD_DAMAGE_PER_SECOND_SHORT,<6.3
 step << Warrior
     #optional
-    #completewith DRT
+    #completewith IFExit
     +|cRXP_WARN_Equip the|r |T135425:0|t[Keen Throwing Knives]
     .use 3107
     .itemcount 3107,1
@@ -3575,7 +3575,7 @@ step << Priest
 step << Priest/Druid
     #ah
     #label OilWandFood
-    #completewith AHCheck
+    #completewith next
     .goto 1455/0,-917.57,-4967.58,-1--c:Ironforge,25.800,75.500
     .goto 1455/0,-904.92,-4962.83,-1--c:Ironforge,24.200,74.600
     .goto 1455/0,-901.76,-4948.06,-1--c:Ironforge,23.800,71.800
