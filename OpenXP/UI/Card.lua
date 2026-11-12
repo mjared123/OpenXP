@@ -646,6 +646,8 @@ local function LayoutBlock(b, step, pos, first)
         local plan = OXP.Travel.Current()
         local real = plan and plan.target and (plan.target.real or plan.target)
         local travel = plan and real and real.pos == pos and OXP.Travel.Lines()
+        local hearth = OXP.Timers and OXP.Timers.HearthLine(step)
+        if hearth then lines[#lines + 1] = { text = hearth, plain = true } end
         if travel and #travel > 0 then
             lines[#lines + 1] = { text = "|cFFB36BFF" .. L("Getting there:") .. "|r", plain = true }
             for _, t in ipairs(travel) do

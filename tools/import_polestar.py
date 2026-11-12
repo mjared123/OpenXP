@@ -305,9 +305,11 @@ class Converter:
                             g = {1: "goto", "only": cls_only}
                             g.update(s)
                             out.append(g)
+                        who = c.get("npcName")
                         out.append({1: "train", "only": cls_only,
-                                    "text": "Train at |cOXP_FRIENDLY_%s|r" % c.get("npcName")})
-                        out.append({1: "target", "only": cls_only, "name": c.get("npcName")})
+                                    "text": ("Train at |cOXP_FRIENDLY_%s|r" % who) if who else "Train at your class trainer"})
+                        if who:
+                            out.append({1: "target", "only": cls_only, "name": who})
                 if not seen:
                     add("train", text=text)
         elif t == "buy":
@@ -319,7 +321,8 @@ class Converter:
                 add("item", item=goal.get("item"), text=text)
             else:
                 add("collect", item=goal.get("item"), count=goal.get("count") or 1, text=text)
-            add("target", name=goal.get("npcName"))
+            if goal.get("npcName"):
+                add("target", name=goal["npcName"])
         elif t == "vendor":
             first = next((c for c in lst(goal.get("candidates")) if isinstance(c, dict)), None)
             if first:
@@ -535,6 +538,8 @@ def merge_class_quests(conv, guides, faction, out, race_guides, shared):
     conv.class_covered = getattr(conv, "class_covered", [])
     for cg in class_guides:
         cls = cg["id"].split("/")[2].upper()
+        if cls not in CLASSES:
+            continue
         placed = set()
         for race in RACES[faction]:
             start = next(r for r, o in race_guides if race in o)
@@ -569,7 +574,123 @@ def merge_class_quests(conv, guides, faction, out, race_guides, shared):
                 conv.class_merged.append((faction, cg["id"], g["name"]))
 
 
-def resolve_along(g):
+CLASS_UNTIL = 55      # class guides from level 20 up to (not including) this go into 21-60
+
+
+def old_filter(expr, race, cls):
+    """A 1.x / 2.0 guide filter ("Human Paladin/!Warrior") for one race and class."""
+    if not expr:
+        return True
+    words_race = {"undead": "Scourge"}
+    for choice in expr.split("/"):
+        ok = True
+        for w in choice.split():
+            neg = w.startswith("!")
+            w = w.lstrip("!")
+            lw = w.lower()
+            if lw in ("alliance", "horde"):
+                hit = True  # the route is one faction's already
+            elif lw.upper() in CLASSES:
+                hit = lw.upper() == cls
+            elif w.isdigit():
+                hit = True
+            else:
+                hit = words_race.get(lw, w) == race
+            if hit == neg:
+                ok = False
+                break
+        if ok:
+            return True
+    return False
+
+
+def our_route(faction):
+    """Our 21-60 guides (parsed 1.x sources) in route order from the hand-off."""
+    import convert_guides
+    src = os.path.join(ROOT, "Guides", "openxp")
+    by = {}
+    for f in sorted(os.listdir(src)):
+        if f.startswith(faction + "-"):
+            text = open(os.path.join(src, f), encoding="utf-8").read()
+            for i, body in enumerate(convert_guides.GUIDE_RE.findall(text)):
+                g = convert_guides.parse_guide(body, "%s guide %d" % (f, i + 1))
+                by[g["name"]] = g
+    route, name = [], HANDOFF[faction]
+    while name and name in by and name not in [r["name"] for r in route]:
+        route.append(by[name])
+        name = by[name].get("next")
+    return route
+
+
+def class_inserts(conv, guides, faction):
+    """Class guides from level 20 that the 21-60 route doesn't already do,
+    as insertions into our 21-60 guides."""
+    route = our_route(faction)
+    levels = []
+    for g in route:
+        lo, hi = re.match(r"(\d+)-(\d+)", g["name"]).groups()
+        levels.append((int(lo), int(hi)))
+    out, placed = [], set()
+    class_guides = sorted(
+        (g for g in guides.values() if g.get("category") == "Class" and CLASS_BEFORE <= (g.get("minLevel") or 0) < CLASS_UNTIL
+         and g.get("faction") in (None, faction)),
+        key=lambda g: (g["minLevel"], g["id"]))
+    for cg in class_guides:
+        cls = cg["id"].split("/")[2].upper()
+        if cls not in CLASSES:
+            continue  # class guides filed by topic (mounts and so on)
+        for race in RACES[faction]:
+            want = quests_for(cg, race, cls)
+            if not want:
+                continue
+            have = set()
+            for g in route:
+                for st in g["steps"]:
+                    if not old_filter(st.get("only"), race, cls):
+                        continue
+                    for goal in st["goals"]:
+                        if goal.get("kind") in ("accept", "turnin") and goal.get("quest") and old_filter(goal.get("only"), race, cls):
+                            have.add(goal["quest"])
+            if not (want - have):
+                conv.class_covered.append((faction, race, cg["id"]))
+                continue
+            target = cg["minLevel"] + 1
+            k = next((i for i, (lo, hi) in enumerate(levels) if hi >= target), len(route) - 1)
+            if (k, cg["id"]) in placed:
+                continue
+            placed.add((k, cg["id"]))
+            g, (lo, hi) = route[k], levels[k]
+            n = len(g["steps"])
+            at = n if target > hi else max(1, min(n, round((target - lo) / max(1, hi - lo) * n)))
+            steps = []
+            for st in lst(cg.get("steps")):
+                s = conv.convert_step(st, cg.get("names"), cg["id"], CLASS_WORD[cls])
+                if s:
+                    steps.append(s)
+            if not steps:
+                continue
+            steps[0]["goals"] = [{1: "text", "text": "Class quest: %s" % cg["title"]}] + steps[0]["goals"]
+            resolve_along({"steps": steps}, relative=True)
+            out.append({"guide": g["name"], "at": at, "source": "polestar:" + cg["id"],
+                        "steps": [json_step(s) for s in steps]})
+            conv.class_merged.append((faction, cg["id"], g["name"]))
+    return out
+
+
+def json_step(st):
+    out = {k: v for k, v in st.items() if k != "goals"}
+    if "when" in out:
+        out["when"] = [json_goal(c) for c in out["when"]]
+    out["goals"] = [[g[1], {k: v for k, v in g.items() if k != 1}] for g in st["goals"]]
+    return out
+
+
+def json_goal(c):
+    # a when-condition { 1 = kind, ... } -> { "1": kind, ... } in Lua as { kind, ... }
+    return [c[1], {k: v for k, v in c.items() if k != 1}]
+
+
+def resolve_along(g, relative=False):
     """'as you go' steps run until the step with their label: an index."""
     labels = {}
     for i, st in enumerate(g["steps"], 1):
@@ -578,7 +699,8 @@ def resolve_along(g):
     for i, st in enumerate(g["steps"], 1):
         if st.get("along"):
             until = labels.get(st["along"])
-            st["until"] = until if until and until > i else len(g["steps"])
+            until = until if until and until > i else len(g["steps"])
+            st["until_rel" if relative else "until"] = until
             st["along"] = True
     for st in g["steps"]:
         st.pop("label", None)
@@ -682,6 +804,15 @@ def main(argv):
                                                 os.path.relpath(dest, ROOT)))
         for g in out:
             print("   %-28s %-22s next %s" % (g["name"], g["only"], g["next"]))
+    # class quests from level 20 go into our 21-60 guides through the converter
+    import json
+    inserts = {"commit": commit}
+    for faction in ("Alliance", "Horde"):
+        inserts[faction] = class_inserts(conv, guides, faction)
+    with open(convert_guides.INSERTS, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(inserts, f, indent=1, sort_keys=True)
+        f.write("\n")
+    convert_guides.main([])
     with open(os.path.join(convert_guides.GUIDES_DIR, "Guides.xml"), "w", encoding="utf-8", newline="\n") as f:
         f.write(convert_guides.guide_list_xml())
     print("class quest guides merged: %d; already in the route: %d" % (len(conv.class_merged), len(conv.class_covered)))

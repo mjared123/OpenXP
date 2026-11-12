@@ -1,0 +1,159 @@
+-- Quest automation, each part its own setting; hold Shift to pause it:
+--   auto accept    quests the loaded guide picks up
+--   auto turn in   quests the loaded guide turns in, once they're complete
+--   auto reward    take the reward when there is no choice (or only one);
+--                  with "best reward" on, pick the choice that sells for most
+--   skip gossip    pick a quest-giver's guide quest in the gossip window, or
+--                  the only option when there is just one (never the
+--                  innkeeper's "make this inn your home")
+local _, OXP = ...
+
+local Auto = {}
+OXP.Automation = Auto
+
+local Engine = OXP.Engine
+local LOOKAHEAD = 60
+
+local function On(key)
+    if IsShiftKeyDown and IsShiftKeyDown() then return false end
+    return OXP.settings[key] ~= false
+end
+
+-- Quests the loaded guide accepts / turns in, from the current step on (and
+-- the steps just before it, in case you're a little ahead).
+local function GuideQuests(kind)
+    local out = {}
+    local steps = Engine.GetSteps()
+    local cur = Engine.GetPosition() or 1
+    for pos = math.max(1, cur - 5), math.min(#steps, cur + LOOKAHEAD) do
+        for _, g in ipairs(steps[pos].goals) do
+            if g[1] == kind and g.quest then out[g.quest] = true end
+        end
+    end
+    return out
+end
+Auto.GuideQuests = GuideQuests
+
+local function QuestIdHere()
+    return GetQuestID and GetQuestID() or nil
+end
+
+-- The quest window: offered, asking for items, or the reward
+OXP.On("QUEST_DETAIL", function()
+    if not On("autoAccept") then return end
+    local id = QuestIdHere()
+    if id and GuideQuests("accept")[id] then
+        AcceptQuest()
+        Auto.last = "accept " .. id
+    end
+end)
+
+OXP.On("QUEST_PROGRESS", function()
+    if not On("autoTurnIn") then return end
+    local id = QuestIdHere()
+    if id and GuideQuests("turnin")[id] and IsQuestCompletable and IsQuestCompletable() then
+        CompleteQuest()
+        Auto.last = "complete " .. id
+    end
+end)
+
+--- Which reward to take: 1 (or nil with no choice) when there is no real
+--- choice, the best-selling choice when "best reward" is on, else false.
+function Auto.RewardChoice()
+    local n = GetNumQuestChoices and GetNumQuestChoices() or 0
+    if n <= 1 then return n == 1 and 1 or nil end
+    if OXP.settings.autoBestReward ~= true then return false end
+    local best, bestPrice
+    for i = 1, n do
+        local link = GetQuestItemLink and GetQuestItemLink("choice", i)
+        if not link then return false end -- item info not loaded yet: let the player choose
+        local price = select(11, GetItemInfo(link))
+        if price == nil then return false end
+        if not bestPrice or price > bestPrice then best, bestPrice = i, price end
+    end
+    return best
+end
+
+OXP.On("QUEST_COMPLETE", function()
+    if not On("autoTurnIn") or not On("autoReward") then return end
+    local id = QuestIdHere()
+    if not (id and GuideQuests("turnin")[id]) then return end
+    local choice = Auto.RewardChoice()
+    if choice == false then return end
+    GetQuestReward(choice or 1)
+    Auto.last = "reward " .. id .. " " .. tostring(choice)
+end)
+
+------------------------------------------------------------------------
+-- Gossip: the quest-giver's options
+------------------------------------------------------------------------
+
+local function Gossip() return C_GossipInfo end
+
+local function Lists()
+    local G = Gossip()
+    local active, available = {}, {}
+    if G and G.GetActiveQuests then
+        for _, q in ipairs(G.GetActiveQuests() or {}) do active[#active + 1] = q end
+        for _, q in ipairs(G.GetAvailableQuests() or {}) do available[#available + 1] = q end
+    end
+    return active, available
+end
+
+local function Options()
+    local G = Gossip()
+    if G and G.GetOptions then return G.GetOptions() or {} end
+    return {}
+end
+
+OXP.On("GOSSIP_SHOW", function()
+    if not On("skipGossip") then return end
+    local G = Gossip()
+    local active, available = Lists()
+    local turnins, accepts = GuideQuests("turnin"), GuideQuests("accept")
+    for _, q in ipairs(active) do
+        if q.isComplete and turnins[q.questID] then
+            G.SelectActiveQuest(q.questID)
+            Auto.last = "gossip turnin " .. q.questID
+            return
+        end
+    end
+    for _, q in ipairs(available) do
+        if accepts[q.questID] then
+            G.SelectAvailableQuest(q.questID)
+            Auto.last = "gossip accept " .. q.questID
+            return
+        end
+    end
+    if #active == 0 and #available == 0 then
+        local opts = Options()
+        if #opts == 1 and opts[1].type ~= "binder" and G.SelectOption then
+            G.SelectOption(opts[1].gossipOptionID or 1)
+            Auto.last = "gossip option"
+        end
+    end
+end)
+
+-- A quest-giver with only quests to offer (no gossip): the old greeting window
+OXP.On("QUEST_GREETING", function()
+    if not On("skipGossip") then return end
+    local turnins, accepts = GuideQuests("turnin"), GuideQuests("accept")
+    local function idOf(title)
+        for id in pairs(turnins) do if OXP.QuestDB.QuestName(id) == title then return id end end
+        for id in pairs(accepts) do if OXP.QuestDB.QuestName(id) == title then return id end end
+    end
+    for i = 1, (GetNumActiveQuests and GetNumActiveQuests() or 0) do
+        local id = idOf(GetActiveTitle(i))
+        if id and turnins[id] then
+            SelectActiveQuest(i)
+            return
+        end
+    end
+    for i = 1, (GetNumAvailableQuests and GetNumAvailableQuests() or 0) do
+        local id = idOf(GetAvailableTitle(i))
+        if id and accepts[id] then
+            SelectAvailableQuest(i)
+            return
+        end
+    end
+end)

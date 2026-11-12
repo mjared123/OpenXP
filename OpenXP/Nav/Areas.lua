@@ -106,7 +106,7 @@ local function AutoArea(step)
     local spot = Areas.StepSpot(step)
     if not spot or #objs == 0 then return nil end
     local d = OXP.Terrain.Data(spot.map)
-    if not (d and d.area) then return nil end
+    local area = d and d.area
     local key = spot.map .. ":" .. spot.x .. ":" .. spot.y
     for _, g in ipairs(objs) do key = key .. ":" .. g.quest .. "/" .. g.obj end
     if c and c.key == key then
@@ -115,13 +115,13 @@ local function AutoArea(step)
     end
     local pts, ready = {}, false
     for _, g in ipairs(objs) do
-        local sp = OXP.QuestDB.ObjectiveSpawns(g.quest, g.obj, d.area)
+        local sp = OXP.QuestDB.ObjectiveSpawns(g.quest, g.obj, spot.map, area)
         if sp then
             ready = true
             for _, p in ipairs(sp) do pts[#pts + 1] = p end
         end
     end
-    if not ready then return nil end -- Questie isn't ready: ask again later
+    if not ready then return nil end -- no quest data yet: ask again later
     local poly = Areas.KillArea(pts, spot.x, spot.y)
     local a = poly and { poly = poly, map = spot.map, auto = true } or false
     auto[step] = { key = key, area = a, at = now }

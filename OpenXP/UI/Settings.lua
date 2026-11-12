@@ -128,6 +128,25 @@ local function Build()
     y = Check(content, "mobPins", L("A mark on every spawn of the mobs you need"), L("Needs Questie."), y)
 
     y = y - 8
+    y = Section(content, L("Automation (hold Shift to pause)"), y)
+    y = Check(content, "autoAccept", L("Accept the guide's quests"), L("Only quests the loaded guide picks up."), y)
+    y = Check(content, "autoTurnIn", L("Turn in the guide's quests"), L("Only quests the loaded guide turns in, once they're complete."), y)
+    y = Check(content, "autoReward", L("Take the reward when there's no choice"), nil, y)
+    y = Check(content, "autoBestReward", L("With a choice of rewards, take the one that sells for most"),
+        L("Off: you pick the reward yourself when there's a choice."), y)
+    y = Check(content, "skipGossip", L("Skip gossip: pick the guide's quest, or the only option"),
+        L("Never picks the innkeeper's \"make this inn your home\"."), y)
+
+    y = y - 8
+    y = Section(content, L("Buttons and timers"), y)
+    y = Check(content, "itemButton", L("Quest item button"), L("Bind a key: Key Bindings > AddOns > OpenXP. Shift-drag to move."), y,
+        function() OXP.ActionButtons.Refresh() end)
+    y = Check(content, "targetButton", L("Target button for the step's NPC or mob"), L("Bind a key: Key Bindings > AddOns > OpenXP."), y,
+        function() OXP.ActionButtons.Refresh() end)
+    y = Check(content, "flightTimer", L("Flight timer"), nil, y)
+    y = Check(content, "hearthReminder", L("Say when the Hearthstone is ready on steps that use it"), nil, y)
+
+    y = y - 8
     y = Section(content, L("Extras"), y)
     y = Check(content, "tooltips", L("Quest lines on item, mob and NPC tooltips"), nil, y)
     y = Check(content, "nameplates", L("Quest item icons on enemy nameplates"), nil, y)

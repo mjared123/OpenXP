@@ -48,6 +48,17 @@ def lua_list(t):
     return [t[i] for i in range(1, len(t) + 1)]
 
 
+CLASSES = {"warrior", "paladin", "hunter", "rogue", "priest", "shaman", "mage", "warlock", "druid"}
+INSERTED = [0]
+
+
+def class_only(only):
+    """Every choice of the filter names a class (so no other class sees it)."""
+    if not only:
+        return False
+    return all(any(w.lower() in CLASSES for w in choice.split()) for choice in only.split("/"))
+
+
 def back_to_text(lua_guides):
     """2.0 tables -> 1.x lines, using only what the Lua side holds."""
     out = []
@@ -69,6 +80,13 @@ def back_to_text(lua_guides):
         if g["next"]:
             out.append("#next " + g["next"])
         for st in lua_list(g["steps"]):
+            if st["source"]:
+                # a class quest step added by tools/import_polestar.py: not in
+                # the 1.x source, and it must be for one class only
+                if not class_only(st["only"]):
+                    raise ValueError("added step from %s is not class-only: %r" % (st["source"], st["only"]))
+                INSERTED[0] += 1
+                continue
             out.append("step" + (" << " + st["only"] if st["only"] else ""))
             if st["class"]:
                 out.append("--oxp-class")
@@ -182,6 +200,8 @@ def main(argv):
                 print("    " + e)
         else:
             print("ok   %s: %d guides, %d steps unchanged in 2.0 data" % (name, n, steps))
+    if INSERTED[0]:
+        print("ok   %d class quest steps added, all class-only" % INSERTED[0])
     xml = os.path.join(C.GUIDES_DIR, "Guides.xml")
     if not os.path.exists(xml) or open(xml, encoding="utf-8").read() != C.guide_list_xml():
         failures += 1

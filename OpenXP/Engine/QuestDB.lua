@@ -40,7 +40,7 @@ end
 DB.Questie = Questie
 
 function DB.Available()
-    return Questie() ~= nil or DB.data.prereqs ~= nil
+    return OXP.ForeverDB.Available() or Questie() ~= nil or DB.data.prereqs ~= nil
 end
 
 -- Questie builds a new table on every lookup and the card, map and tooltips
@@ -48,8 +48,11 @@ end
 local cache, cached = {}, 0
 local CACHE_MAX = 3000
 
---- Questie's row for kind ("Quest", "NPC", "Object", "Item") and id, or nil.
+--- A row for kind ("Quest", "NPC", "Object", "Item") and id, or nil: OpenXP's
+--- own data (Engine/ForeverDB.lua) first, then Questie's when it's installed.
 function DB.Get(kind, id)
+    local own = OXP.ForeverDB.Get(kind, id)
+    if own then return own end
     local db = Questie()
     if not (db and id) then return nil end
     local key = kind .. ":" .. tostring(id)
@@ -81,8 +84,10 @@ local function SpotOf(obj, preferArea)
     local spawns = obj and obj.spawns
     if type(spawns) ~= "table" then return nil end
     local bestArea, bestPts, bestScore
+    -- our own data keys spawns by map, Questie's by area
+    local mapOf = obj.spawnsByMap and function(m) return m end or UiMap
     for area, pts in pairs(spawns) do
-        if type(pts) == "table" and #pts > 0 and UiMap(area) then
+        if type(pts) == "table" and #pts > 0 and mapOf(area) then
             local score = #pts + (area == preferArea and 10000 or 0)
             if not bestScore or score > bestScore then bestArea, bestPts, bestScore = area, pts, score end
         end
@@ -101,7 +106,7 @@ local function SpotOf(obj, preferArea)
             if not bestD or d < bestD then best, bestD = p, d end
         end
     end
-    return { obj.name or "?", UiMap(bestArea), best[1], best[2] }
+    return { obj.name or "?", mapOf(bestArea), best[1], best[2] }
 end
 
 local function Ender(ref, zone)
@@ -122,6 +127,14 @@ end
 
 local raceBit
 local function ForPlayer(q)
+    if q and q.requiredRaceIds then
+        local id = UnitRace and select(3, UnitRace("player"))
+        if not id then return true end
+        for _, r in ipairs(q.requiredRaceIds) do
+            if r == id then return true end
+        end
+        return false
+    end
     local races = q and (q.requiredRaces or 0) or 0
     if races == 0 then return true end
     if not raceBit then
@@ -332,17 +345,31 @@ function DB.MissingQuest(step)
     end
 end
 
---- Spawn points (0-100 on the area's map) of whatever counts for a quest
---- objective in a zone (Questie area id): {} when none, nil while Questie
---- isn't ready.
+--- Spawn points (0-100 on `map`) of whatever counts for a quest objective
+--- in a zone (`map` its map id, `area` its Questie area id): {} when none,
+--- nil while no quest data is ready.
 local spawnCache = {}
-function DB.ObjectiveSpawns(questId, objIndex, area)
-    local key = questId .. ":" .. objIndex .. ":" .. area
+function DB.ObjectiveSpawns(questId, objIndex, map, area)
+    local key = questId .. ":" .. objIndex .. ":" .. tostring(map) .. ":" .. tostring(area)
     if spawnCache[key] ~= nil then return spawnCache[key] end
     local q = DB.Get("Quest", questId)
     if not q then return nil end
     local o = type(q.objectives) == "table" and q.objectives or {}
     local sources, i = {}, 0
+    local entry = q.objectiveList and q.objectiveList[objIndex]
+    if entry then
+        -- our own data: the objective by its number
+        if entry.kind == "kill" or entry.kind == "talk" then
+            sources[1] = { "NPC", entry.target }
+        elseif entry.kind == "object" then
+            sources[1] = { "Object", entry.target }
+        elseif entry.kind == "item" then
+            local item = DB.Get("Item", entry.target)
+            for _, id in ipairs(item and item.npcDrops or {}) do sources[#sources + 1] = { "NPC", id } end
+            for _, id in ipairs(item and item.objectDrops or {}) do sources[#sources + 1] = { "Object", id } end
+        end
+        o = {}
+    end
     for _, e in ipairs(o[1] or {}) do
         i = i + 1
         if i == objIndex then sources[#sources + 1] = { "NPC", e[1] } end
@@ -362,7 +389,7 @@ function DB.ObjectiveSpawns(questId, objIndex, area)
     local pts = {}
     for _, src in ipairs(sources) do
         local obj = DB.Get(src[1], src[2])
-        local spots = obj and type(obj.spawns) == "table" and obj.spawns[area]
+        local spots = obj and type(obj.spawns) == "table" and obj.spawns[obj.spawnsByMap and map or area]
         for _, p in ipairs(spots or {}) do
             if p[1] and p[1] >= 0 then pts[#pts + 1] = { p[1], p[2] } end
         end

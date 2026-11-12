@@ -16,7 +16,7 @@ it has been tested in game; 1.3.x fixes keep going to `main`.
 | 1 | Core engine: guide data loader, step engine, quest state, guide list | done |
 | 2 | Card UI, arrow, smart start, terrain, travel and map pins on the new engine | done (test build) |
 | 3 | 1-20 guides for every race and Skyborne | done (test build) |
-| 4 | Settings, automation, item and target buttons, timers, data from forever-db | |
+| 4 | Settings, automation, item and target buttons, timers, data from forever-db | done (test build) |
 | 5 | 1.3.x save importer, private test build | |
 | 6 | CurseForge beta, then release | |
 
@@ -103,9 +103,8 @@ the repository's `OpenXP/` folder, not the root.
   (`tools/build_flights.py`, Classic Era tables from wago.tools; WoW Forever
   isn't listed there). Forever-only flight masters are recorded in game from
   the flight map and added at run time.
-- Not in 2.0 yet: item and target buttons, timers,
-  talents, inventory and vendor helpers (phase 4); importing 1.x progress and
-  learned paths (phase 5).
+- Not in 2.0 yet: talents and inventory and vendor helpers; importing 1.x
+  progress and learned paths (phase 5).
 - `Data/PathHints.lua`'s first entries are cave and ramp spots taken from the
   RestedXP 1-20 guides; they get replaced when phase 3 brings our own 1-20
   routes.
@@ -150,6 +149,34 @@ condition holds: `turnedin`, `onquest`, `complete`, `money`, `skill`,
 `zone`, `group`, `level`, `has`, each with `neg = true` to invert) and
 `along = true, ["until"] = n` ("as you go": shown beside the current step
 until done or until step n, never holding the guide up).
+## Phase 4
+
+- `UI/ActionButtons.lua`: the quest item button (the step's item, or the item
+  a quest in the step gives you) and the target button (the step's mob while
+  you still have kills to do, else who to talk to). Secure buttons, bindable
+  under Key Bindings > AddOns > OpenXP (`OpenXP/Bindings.xml`); changes asked
+  for in combat wait until it ends. Shift-drag moves them.
+- `UI/Automation.lua`: accept and turn in the guide's quests, take the reward
+  when there's no real choice (optionally the best-selling one), and in
+  gossip pick the guide's quest or the only option (never the innkeeper's
+  bind). Each is a setting; holding Shift pauses all of it.
+- `UI/Timers.lua`: a flight timer (your own last time for that route, else the
+  game's flight times, else distance) and, on steps that say to use your
+  Hearthstone, when it's ready.
+- Quest data: `Data/QuestDB.lua` from forever-db (`tools/build_questdb.py`):
+  quest names, levels, givers and enders with their spots, objectives,
+  prerequisites and breadcrumbs, quest-item drops and spawn points. The chain
+  checks, smart start, tooltips, kill areas and spawn marks use it first and
+  ask Questie only for what it doesn't hold. The built-in arrow path hints
+  that came from RestedXP's guides are gone (the 1-20 guides lead you to cave
+  entrances with their own steps; caves you walk into are still learned).
+- Class quests from level 20 to 54 (Call of Water, Succubus, poisons, the
+  warrior armour quests, Verigan's Fist, Cloak of the Divine Storm, Cat Form,
+  Call of Air, the Whirlwind weapon, the level 50 class quests and more) are
+  added to the 21-60 guides as class-only steps: `tools/import_polestar.py`
+  writes `tools/class_inserts.json` and `tools/convert_guides.py` adds them.
+  `tests/convert_roundtrip.py` checks that every shared step is unchanged and
+  that every added step is class-only.
 ## Testing a build in game
 
 `python3 tools/package_2.py` writes `dist/OpenXP-<version>.zip`. 2.0 and 1.x

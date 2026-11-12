@@ -99,9 +99,9 @@ do
     -- an area from Questie's spawns when the step names none
     _G.QuestieLoader = { ImportModule = function(_, name)
         if name == "QuestieDB" then
-            return { GetQuest = function(id) if id == 102 then return { objectives = { { { 48 } } } } end end,
+            return { GetQuest = function(id) if id == 990102 then return { objectives = { { { 990048 } } } } end end,
                      GetNPC = function(id)
-                         if id == 48 then
+                         if id == 990048 then
                              local s = {}
                              for i = 1, 8 do s[i] = { 30 + i * 0.5, 40 + (i % 3) } end
                              return { spawns = { [10] = s } }
@@ -110,7 +110,7 @@ do
         end
         return { GetUiMapIdByAreaId = function() return 1431 end }
     end }
-    local spawns = OXP.QuestDB.ObjectiveSpawns(102, 1, 10)
+    local spawns = OXP.QuestDB.ObjectiveSpawns(990102, 1, 1431, 10)
     t.eq(#spawns, 8, "spawn points read from Questie")
     local poly = OXP.Areas.KillArea(spawns, 32, 41)
     t.ok(poly and #poly >= 3 and #poly <= 8, "kill area from spawns")
@@ -122,6 +122,15 @@ print("-- path hints: caves, ridges, learning entrances, /oxp path")
 do
     local game, OXP = newGame({ level = 10 })
     local PH = OXP.PathHints
+    -- sample areas: a mine with a two-stone entrance, and a jump-down camp
+    OXP.pathHintData = {
+        { name = "Jasperlode Mine", inst = 0, indoor = true, circles = { { -590, -9100, 60 } },
+          entrances = { { { -610.25, -9186.47 }, { -604.49, -9180.39 } } } },
+        { name = "Frostmane Hold", inst = 0, indoor = true, circles = { { 690, -5590, 85 } },
+          entrances = { { { 572.06, -5534.28 }, { 586.49, -5546.20 }, oneWay = true } } },
+        passes = {},
+    }
+    PH.Changed()
     local player = { x = 0, y = 0, inst = 0, indoors = false, subzone = "" }
     local function at(x, y, indoors, subzone)
         player.x, player.y, player.indoors, player.subzone = x, y, indoors or false, subzone or ""

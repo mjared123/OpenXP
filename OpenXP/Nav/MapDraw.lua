@@ -340,14 +340,14 @@ function Draw.WorldMap()
     -- spawn marks for the mobs you need (off by default), on their own low canvas
     wmp = wmp or NewCanvas(canvas, (canvas:GetFrameLevel() or 1) + 1)
     Clear(wmp)
-    local d = OXP.settings.mobPins and Terrain.Data(map)
-    if d and d.area then
+    local d = Terrain.Data(map)
+    if OXP.settings.mobPins then
         local seen = {}
         for _, pos in ipairs(Engine.GetActive()) do
             local step = Engine.GetSteps()[pos]
             for _, g in ipairs(step.goals) do
                 if g[1] == "complete" and OXP.Goals.State(g, step.marks) == "todo" then
-                    for _, pt in ipairs(OXP.QuestDB.ObjectiveSpawns(g.quest, g.obj, d.area) or {}) do
+                    for _, pt in ipairs(OXP.QuestDB.ObjectiveSpawns(g.quest, g.obj, map, d and d.area) or {}) do
                         local key = floor(pt[1] * 10) .. "," .. floor(pt[2] * 10)
                         if not seen[key] then
                             seen[key] = true

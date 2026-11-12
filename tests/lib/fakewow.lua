@@ -134,6 +134,8 @@ function Game:InstallGlobals()
         GetChecked = function(self) return self.checked end,
         SetChecked = function(self, v) self.checked = v end,
         GetObjectType = function(self) return self.kind end,
+        SetAttribute = function(self, k, v) self.attrs = self.attrs or {}; self.attrs[k] = v end,
+        GetAttribute = function(self, k) return self.attrs and self.attrs[k] end,
     }
     local function Creator(kind)
         return function(self, name)

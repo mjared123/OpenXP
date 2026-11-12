@@ -30,6 +30,17 @@ local ACCOUNT_DEFAULTS = {
         mobPins = false,           -- a mark on every spawn of the mobs you need
         routeColor = { 0.72, 0.42, 1.0 },
         travel = true,             -- plan trips to other zones
+        -- automation (hold Shift to pause it)
+        autoAccept = true,         -- accept the quests the guide picks up
+        autoTurnIn = true,         -- turn in the guide's quests once complete
+        autoReward = true,         -- take the reward when there is no real choice
+        autoBestReward = false,    -- with a choice, take the one that sells for most
+        skipGossip = true,         -- pick the guide's quest, or the only option, in gossip
+        -- buttons and timers
+        itemButton = true,
+        targetButton = true,
+        flightTimer = true,
+        hearthReminder = true,
         -- extras
         tooltips = true,
         nameplates = true,

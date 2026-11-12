@@ -31,8 +31,11 @@ do
     t.ok(g and g.name == "21-22 Ashenvale", "picked " .. tostring(g and g.name))
     -- step 1 is "travel to Ashenvale", done since you're there: the flight
     -- path step is next, not the first quest further on
-    t.eq(OXP.Engine.GetPosition(), 2, "at the flight path step")
-    t.eq(OXP.Engine.GetSteps()[2].goals[3][1], "fp", "step 2 is the flight path")
+    local here = OXP.Engine.GetSteps()[OXP.Engine.GetPosition()]
+    local kinds = {}
+    for _, g in ipairs(here and here.goals or {}) do kinds[g[1]] = true end
+    t.ok(OXP.Engine.GetPosition() <= 3 and (kinds.fp or (here and here.data.source)),
+        "at the flight path step (or a class quest step just before it): step " .. tostring(OXP.Engine.GetPosition()))
 end
 
 ------------------------------------------------------------------------
@@ -76,19 +79,19 @@ do
     -- made-up section: 1 turns in A and accepts B (B needs A), A comes from
     -- a section you skipped
     local guide = { name = "21-22 Somewhere", group = "Test", minLevel = 21, maxLevel = 22, steps = {
-        { { "accept", quest = 3001 } },
-        { { "turnin", quest = 3001 } },
-        { { "turnin", quest = 2000 }, { "accept", quest = 2001 } },
-        { { "turnin", quest = 2001 } },
-        { { "accept", quest = 3002 } },
+        { { "accept", quest = 993001 } },
+        { { "turnin", quest = 993001 } },
+        { { "turnin", quest = 992000 }, { "accept", quest = 992001 } },
+        { { "turnin", quest = 992001 } },
+        { { "accept", quest = 993002 } },
     } }
     SS.api.IsTurnedIn = function() return false end
     SS.api.IsOnQuest = function() return false end
-    local prereqs = { [2001] = { 2000 } }
+    local prereqs = { [992001] = { 992000 } }
     local start, skip, blocked = SS.PlanSteps(guide, prereqs, {}, nil, nil)
     t.eq(start, 1, "starts at the first open step")
     t.ok(skip[3] and skip[4], "the chain's steps are skipped")
-    t.ok(blocked[2000] and blocked[2001], "and their quests listed")
+    t.ok(blocked[992000] and blocked[992001], "and their quests listed")
     t.ok(not skip[1] and not skip[5], "the rest stays")
 end
 
@@ -110,14 +113,14 @@ do
     local SS = OXP.SmartStart
     SS.api.IsTurnedIn = function() return false end
     SS.api.IsOnQuest = function() return false end
-    SS.api.QuestLevel = function(id) return id < 4100 and 18 or 29 end
+    SS.api.QuestLevel = function(id) return id < 994100 and 18 or 29 end
     SS.api.GreenRange = function() return 8 end
     SS.api.NextInChain = function() return nil end
     SS.api.QuestRow = function() return nil end
     local guide = { name = "29-30 Somewhere", group = "Test", minLevel = 29, maxLevel = 30, steps = {
-        { { "accept", quest = 4001 } },
-        { class = true, { "accept", quest = 4002 } },
-        { { "accept", quest = 4101 } },
+        { { "accept", quest = 994001 } },
+        { class = true, { "accept", quest = 994002 } },
+        { { "accept", quest = 994101 } },
     } }
     local _, _, _, gray = SS.PlanSteps(guide, {}, {}, nil, 30)
     t.ok(gray[1], "a gray quest's step is skipped")

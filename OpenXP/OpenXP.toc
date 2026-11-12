@@ -31,6 +31,7 @@ Engine\Filters.lua
 Engine\QuestState.lua
 Engine\World.lua
 Engine\Places.lua
+Engine\ForeverDB.lua
 Engine\QuestDB.lua
 Engine\Goals.lua
 Engine\Registry.lua
@@ -41,6 +42,7 @@ Engine\SmartStart.lua
 Data\Terrain.lua
 Data\Travel.lua
 Data\Flights.lua
+Data\QuestDB.lua
 Data\PathHints.lua
 
 # Nav: the arrow and everything it draws on
@@ -56,6 +58,9 @@ Nav\Pins.lua
 # UI
 UI\Style.lua
 UI\Card.lua
+UI\ActionButtons.lua
+UI\Automation.lua
+UI\Timers.lua
 UI\GuidePicker.lua
 UI\Settings.lua
 UI\MinimapButton.lua

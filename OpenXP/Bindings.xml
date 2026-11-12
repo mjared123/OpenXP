@@ -1,0 +1,4 @@
+<Bindings>
+    <Binding name="CLICK OpenXPItemButton:LeftButton" header="OPENXP"/>
+    <Binding name="CLICK OpenXPTargetButton:LeftButton"/>
+</Bindings>
