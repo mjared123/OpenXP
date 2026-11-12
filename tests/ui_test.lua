@@ -244,7 +244,7 @@ do
     local g = addGuide(OXP, {
         { { "goto", zone = "Stormwind City", x = 10, y = 10 }, { "accept", quest = 901 } },
         { { "goto", zone = "Stormwind City", x = 50, y = 51 }, { "turnin", quest = 902 }, { "accept", quest = 99903, text = "Accept 903" } },
-        { { "goto", zone = "Stormwind City", x = 50, y = 51 }, { "turnin", quest = 904 } },
+        { { "goto", zone = "Stormwind City", x = 50, y = 51 }, { "turnin", quest = 904 }, { "accept", quest = 99905, text = "Accept Not Offered" } },
     })
     game:Accept(902, 0)
     OXP.Engine.Load(g.key)
@@ -280,6 +280,45 @@ do
     game:Accept(904, 0)
     t.ok(C.CheckHere() and C.here, "another ready turn-in")
     t.ok(C.CheckHere(OXP.Places.ToWorld(1453, 10, 12)) and C.here == nil, "walked away: gone")
+
+    -- in game (Karl Boran): turned in, but they don't offer the pickup yet
+    t.ok(C.CheckHere() and C.here and C.here.pos == 3, "back by the turn-in")
+    game:TurnIn(904)
+    C.CheckHere()
+    t.ok(C.here and C.here.handed, "handed in")
+    real = OXP.Target.Real()
+    t.ok(real and real.pos == 1, "the arrow goes straight back to your step")
+    game:Fire("GOSSIP_CLOSED")
+    C.CheckHere()
+    t.ok(C.here == nil, "done talking to them: the block closes (what they didn't offer waits for its step)")
+end
+
+print("-- while you're here: pickups only offered when you can take them, and it times out")
+do
+    local game, OXP = newGame({ level = 21, map = 1453, x = 50, y = 50 })
+    local g = addGuide(OXP, {
+        { { "goto", zone = "Stormwind City", x = 10, y = 10 }, { "accept", quest = 901 } },
+        { { "goto", zone = "Stormwind City", x = 50, y = 51 }, { "turnin", quest = 902 },
+          { "accept", quest = 99906, text = "Accept Too High" }, { "accept", quest = 99907, text = "Accept Fine" } },
+    })
+    OXP.QuestDB.data = { prereqs = {}, info = { [99906] = { n = "Too High", r = 40 }, [99907] = { n = "Fine", r = 10 } } }
+    game:Accept(902, 0)
+    OXP.Engine.Load(g.key)
+    local C = OXP.Card
+    t.ok(C.CheckHere(), "a ready turn-in right here")
+    local hs = C.HereStep()
+    local names = {}
+    for _, goal in ipairs(hs.goals) do if goal.quest then names[#names + 1] = goal[1] .. goal.quest end end
+    names = table.concat(names, ",")
+    t.ok(not names:find("99906", 1, true) and names:find("accept99907", 1, true), "not a pickup above your level: " .. names)
+    game:TurnIn(902)
+    C.CheckHere()
+    t.ok(C.here ~= nil, "pickup still to take")
+    game.now = game.now + 31
+    C.CheckHere()
+    t.ok(C.here == nil, "but not forever")
+    OXP.QuestDB.data = {}
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
 ------------------------------------------------------------------------

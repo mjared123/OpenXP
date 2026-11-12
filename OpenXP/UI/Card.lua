@@ -1317,6 +1317,7 @@ local HERE_RADIUS = 40  -- yards: that close to a later turn-in
 local HERE_FAR = 120    -- yards: and the step you're on is at least this far
 local HERE_AWAY = 90    -- yards: walked off from it, back to the guide
 local HERE_AHEAD = 40   -- steps ahead to look
+local HERE_GRACE = 30   -- seconds: after the turn-ins, how long pickups are still offered
 
 --- A step that only turns in finished quests (and picks up what the same
 --- person hands out next).
@@ -1339,9 +1340,21 @@ function Card.ReadyHere(step)
     return ready
 end
 
-local function HereDone(step)
+local function HereTurnedIn(step)
     for _, g in ipairs(step.goals) do
         if g[1] == "turnin" and not TurnedIn(g.quest) then return false end
+    end
+    return true
+end
+
+-- Done once the turn-ins are in and either every pickup is taken, or you've
+-- talked to them since (what they didn't offer isn't ready yet: it waits for
+-- its step), or a little while has passed.
+local function HereDone(step, h)
+    if not HereTurnedIn(step) then return false end
+    local now = GetTime and GetTime() or 0
+    if h and (h.talked or (h.turnedAt and now - h.turnedAt > HERE_GRACE)) then return true end
+    for _, g in ipairs(step.goals) do
         if g[1] == "accept" and not g.optional and OXP.Goals.State(g, step.marks) == "todo"
             and not QuestDB.Blocked(g.quest) and (Quests.FreeSlots() or 1) > 0 then return false end
     end
@@ -1365,7 +1378,10 @@ function Card.CheckHere(px, py, inst)
     if h then
         local spot = steps[h.pos] and OXP.Areas.StepSpot(steps[h.pos])
         local away = spot and px and (inst ~= spot.instance or Dist(px, py, spot.wx, spot.wy) > HERE_AWAY)
-        if h.guide ~= Engine.GetGuide() or cur ~= h.from or not steps[h.pos] or HereDone(steps[h.pos]) or away then
+        if steps[h.pos] and not h.handed and HereTurnedIn(steps[h.pos]) then
+            h.handed, h.turnedAt = true, GetTime and GetTime() or 0
+        end
+        if h.guide ~= Engine.GetGuide() or cur ~= h.from or not steps[h.pos] or HereDone(steps[h.pos], h) or away then
             Card.here = nil
             Card.Refresh(true)
             return true
@@ -1403,7 +1419,8 @@ function Card.HereStep()
             goals[#goals + 1] = g
         elseif g[1] == "turnin" and not TurnedIn(g.quest) and Quests.IsOnQuest(g.quest) and Quests.IsComplete(g.quest) then
             goals[#goals + 1] = g
-        elseif g[1] == "accept" and OXP.Goals.State(g, step.marks) == "todo" then
+        elseif g[1] == "accept" and OXP.Goals.State(g, step.marks) == "todo" and not QuestDB.Blocked(g.quest)
+            and (OXP.Player.level or 1) >= ((QuestDB.Info(g.quest) or {}).r or 0) then
             -- only what fits in your quest log; the rest waits for that step
             if not free or free > 0 then
                 goals[#goals + 1] = g
@@ -1466,6 +1483,14 @@ for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "QUESTS_CH
     end)
 end
 OXP.On("PLAYER_XP_UPDATE", function() Card.ticks = Card.ticks + 1 end)
+
+-- talking to the "while you're here" person ends once their window closes
+local function TalkedHere()
+    local h = Card.here
+    if h and h.handed then h.talked = true end
+end
+OXP.On("GOSSIP_CLOSED", TalkedHere)
+OXP.On("QUEST_FINISHED", TalkedHere)
 
 ---------------------------------------------------------------------------
 -- Step list: every step of the guide, click one to jump there

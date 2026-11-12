@@ -48,7 +48,8 @@ function Target.Real()
     local order = Engine.GetActive()
     -- a later step's turn-in you're standing by comes first (UI/Card.lua)
     local here = OXP.Card and OXP.Card.here
-    if here and Engine.GetSteps()[here.pos] then
+    -- (only until the turn-ins are in: then back to your step)
+    if here and not here.handed and Engine.GetSteps()[here.pos] then
         local o = { here.pos }
         for _, pos in ipairs(order) do o[#o + 1] = pos end
         order = o
