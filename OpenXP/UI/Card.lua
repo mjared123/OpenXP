@@ -1113,7 +1113,12 @@ function Card.Refresh(force)
     -- every text again a moment later and lay the card out again.
     if sig ~= Card.lastSig and not Card.retexting and C_Timer and C_Timer.After then
         Card.retexting = true
+        -- twice: a slow disk can take longer than the first moment
         C_Timer.After(0.1, function()
+            OXP.Fonts.Reapply()
+            Card.Refresh(true)
+        end)
+        C_Timer.After(0.7, function()
             Card.retexting = false
             OXP.Fonts.Reapply()
             Card.Refresh(true)

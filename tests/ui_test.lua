@@ -58,6 +58,7 @@ do
     t.ok(line and line.text.text == "Wolf slain: 2/5", "live kill count: " .. tostring(line and line.text.text))
     t.ok(line and line.count.shown and line.count.text == "2 / 5", "with a bar and count")
 
+
     -- collapse, history, step list, back and resume
     C.SetCollapsed(true)
     t.ok(not C.blocks[1].shown or true, "collapsed")
@@ -76,6 +77,38 @@ do
     t.ok(not C.lastError, "no card errors: " .. tostring(C.lastError))
 end
 
+------------------------------------------------------------------------
+print("-- new text on the card is set again a moment later (in game: blank title until a resize)")
+do
+    local game, OXP = newGame({ level = 21 })
+    local g = addGuide(OXP, {
+        { { "text", text = "Kill wolves" }, { "complete", quest = 600, obj = 1 } },
+        { { "turnin", quest = 600, text = "Turn in Bob's Task" } },
+    })
+    OXP.Engine.Load(g.key)
+    game:Accept(600, 1)
+    local C = OXP.Card
+    C.Refresh(true)
+    local function runDelayed()
+        local queued = game.delayed
+        game.delayed = {}
+        for _, fn in ipairs(queued) do fn() end
+        return #queued
+    end
+    runDelayed()
+    local reapplied = 0
+    local oldReapply = OXP.Fonts.Reapply
+    OXP.Fonts.Reapply = function() reapplied = reapplied + 1 end
+    C.Refresh(true)
+    t.eq(#game.delayed, 0, "nothing new on screen: no re-text")
+    game:FinishObjective(600, 1)
+    C.Refresh(true)
+    t.ok(#game.delayed >= 2, "a new step on the card: the text is set again, twice")
+    runDelayed()
+    t.ok(reapplied >= 2 and #game.delayed == 0, "and that doesn't queue more")
+    OXP.Fonts.Reapply = oldReapply
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
 ------------------------------------------------------------------------
 print("-- a quest chain you missed: go back to its first quest, then return")
 do
