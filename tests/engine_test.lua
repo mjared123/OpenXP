@@ -380,4 +380,30 @@ do
     t.eq(seen.STEP_CHANGED, 1, "STEP_CHANGED")
 end
 
+------------------------------------------------------------------------
+print("-- every as-you-go step in the shipped guides ends (1.x: a Darkshore tip never did)")
+do
+    local _, OXP = newGame({ level = 20 })
+    local n, bad = 0, {}
+    for _, g in ipairs(OXP.Registry.All()) do
+        for i, st in ipairs(g.steps) do
+            if st.along then
+                n = n + 1
+                local u = st["until"]
+                local finishes = false
+                for _, goal in ipairs(st) do
+                    if OXP.Goals.Blocks(goal[1]) then finishes = true end
+                end
+                if u and (u <= i or u > #g.steps) then
+                    bad[#bad + 1] = g.name .. " step " .. i .. ": until " .. u .. " isn't a later step"
+                elseif not u and not finishes then
+                    bad[#bad + 1] = g.name .. " step " .. i .. ": no until and nothing finishes it"
+                end
+            end
+        end
+    end
+    t.ok(n > 0, "the guides have as-you-go steps: " .. n)
+    t.eq(#bad, 0, "each one ends: " .. table.concat(bad, " | "))
+end
+
 return t.fails

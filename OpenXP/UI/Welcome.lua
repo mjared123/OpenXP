@@ -18,7 +18,7 @@ Welcome.CHANGELOG = {
             "Guides from level 1 to 60 and the dungeons for both factions. Levels 1-20 are adapted from PoleStar's guides (GPL-3.0), with every class quest up to level 20 for every race.",
             "The guide card, arrow, smart start, route line, kill areas, travel planner, tooltips and settings all run on the new engine.",
             "Flight paths come from the game's own data; flight masters only WoW Forever has are learned when you open their flight map.",
-            "Quest item and target buttons you can bind to keys; auto accept, auto turn-in and gossip skipping for the guide's quests (hold Shift to pause).",
+            "Quest item and target buttons you can bind to keys; auto accept and gossip skipping for the guide's quests, and auto turn-in for any completed quest (hold Shift to pause).",
             "A flight timer, and the card tells you when your Hearthstone is ready on steps that use it.",
             "Class quests from level 20 to 54 are in the 21-60 guides, for your class only.",
             "OpenXP now has its own quest data (from the open forever-db), so chain checks, quest names and kill areas work without Questie.",
@@ -78,12 +78,21 @@ local function Build()
     f.questie:SetPoint("RIGHT", f, "RIGHT", -16, 0)
     f.questie:SetJustifyH("LEFT")
 
+    -- With no guide loaded (a new install or character) this picks one for
+    -- you. With a guide already loaded it only closes the window and shows
+    -- the card: an update never moves you off the step you were on (Find my
+    -- place / /oxp where still re-place you on purpose).
     local start = Style.DialogButton(f, L("Start leveling"), true)
     start:SetPoint("BOTTOMRIGHT", f, "BOTTOM", -6, 14)
     start:SetScript("OnClick", function()
         f:Hide()
-        OXP.SmartStart.Run(false)
+        if OXP.Engine.GetGuide() then
+            if not OXP.settings.cardShown then OXP.Card.Toggle() end
+        else
+            OXP.SmartStart.Run(false)
+        end
     end)
+    f.start = start
     local later = Style.DialogButton(f, L("Close"), false)
     later:SetPoint("BOTTOMLEFT", f, "BOTTOM", 6, 14)
     later:SetScript("OnClick", function() f:Hide() end)
@@ -94,10 +103,11 @@ function Welcome.Show(mode, lastSeen)
     if not f then Build() end
     f.body:SetText(Body(mode or "welcome", lastSeen))
     f.content:SetHeight(f.body:GetStringHeight() + 10)
+    f.start.label:SetText(OXP.Engine.GetGuide() and L("Continue leveling") or L("Start leveling"))
     if _G.QuestieLoader then
-        f.questie:SetText(BLUE .. L("Questie is installed.") .. "|r " .. L("OpenXP uses it for kill areas, quest chains and levels."))
+        f.questie:SetText(BLUE .. L("Questie is installed.") .. "|r " .. L("OpenXP adds its spawn marks for the mobs you need."))
     else
-        f.questie:SetText(BLUE .. L("Recommended: the free Questie addon.") .. "|r " .. L("OpenXP uses it for kill areas, quest chains and levels."))
+        f.questie:SetText(BLUE .. L("Questie is optional.") .. "|r " .. L("OpenXP has its own quest data; with Questie it can also mark every spawn of the mobs you need."))
     end
     f:Show()
 end

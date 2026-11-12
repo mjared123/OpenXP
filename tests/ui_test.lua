@@ -262,6 +262,16 @@ do
     OXP.MinimapButton.Refresh()
     t.ok(OXP.MinimapButton.button.shown, "minimap button shown")
     OXP.Welcome.Show("welcome")
+    -- What's New after an update must not move you (1.x 1.3.58)
+    local W = OXP.Welcome
+    t.eq(W.frame and W.frame.start.label.text or (_G.OpenXPWelcome and _G.OpenXPWelcome.start.label.text),
+        "Continue leveling", "with a guide loaded the button says Continue leveling")
+    local ran, pos = false, OXP.Engine.GetPosition()
+    local oldRun = OXP.SmartStart.Run
+    OXP.SmartStart.Run = function() ran = true end
+    _G.OpenXPWelcome.start.scripts.OnClick()
+    OXP.SmartStart.Run = oldRun
+    t.ok(not ran and OXP.Engine.GetPosition() == pos, "and keeps you on your step")
     local printed = {}
     local oldPrint = print
     print = function(s) printed[#printed + 1] = tostring(s) end
