@@ -14,6 +14,14 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.60",
+        date = "November 2026",
+        changes = {
+            "New optional guide: Night Watchman's Torch (OpenXP Extras > Collectibles). It takes you to Duskwood and checks every spot where the dead Night Watch Guard can lie, so you can get the Forever torch that lights up the area around you",
+            "The torch quest can only be done after 8 PM game time. Before then the guard isn't there, and the guide says so",
+        },
+    },
+    {
         version = "1.3.59",
         date = "November 2026",
         changes = {
