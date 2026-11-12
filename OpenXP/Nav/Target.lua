@@ -16,8 +16,21 @@ local Places, Engine = OXP.Places, OXP.Engine
 
 local REACHED = 12 -- yards: a waypoint of a step with several is passed
 
--- Title for a step's spot: its first text goal, else its first goal with text.
+-- Title for a step's spot: while one of several objectives is left, what
+-- to do for it ("Kill Gobbler for Gobbler's Head"); else the step's first
+-- text goal, else its first goal with text.
 local function StepTitle(step)
+    local objectives, left = 0, nil
+    for _, g in ipairs(step.goals) do
+        if g[1] == "complete" and g.quest and g.obj then
+            objectives = objectives + 1
+            if not left and OXP.Goals.State(g, step.marks) == "todo" then left = g end
+        end
+    end
+    if left and objectives > 1 then
+        local action = OXP.QuestDB.ObjectiveAction(left.quest, left.obj)
+        if action then return action end
+    end
     for _, g in ipairs(step.goals) do
         if g[1] == "text" and g.text then return OXP.Text.Strip(g.text) end
     end

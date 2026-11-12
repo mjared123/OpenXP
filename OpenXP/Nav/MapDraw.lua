@@ -15,7 +15,6 @@ local floor, sqrt, min, max = math.floor, math.sqrt, math.min, math.max
 
 local AREA_FILL = { 0.20, 0.55, 1.0, 0.30 }
 local AREA_EDGE = { 0.35, 0.70, 1.0, 0.95 }
-local PIN_TEXTURE = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8"
 local WHITE = "Interface\\Buttons\\WHITE8X8"
 local ROUND = "Interface\\CHARACTERFRAME\\TempPortraitAlphaMask"
 local STEPS_AHEAD = 4
@@ -354,28 +353,7 @@ function Draw.WorldMap()
         end
     end
 
-    -- spawn marks for the mobs you need (off by default), on their own low canvas
-    wmp = wmp or NewCanvas(canvas, (canvas:GetFrameLevel() or 1) + 1)
-    Clear(wmp)
-    local d = Terrain.Data(map)
-    if OXP.settings.mobPins then
-        local seen = {}
-        for _, pos in ipairs(Engine.GetActive()) do
-            local step = Engine.GetSteps()[pos]
-            for _, g in ipairs(step.goals) do
-                if g[1] == "complete" and OXP.Goals.State(g, step.marks) == "todo" then
-                    for _, pt in ipairs(OXP.QuestDB.ObjectiveSpawns(g.quest, g.obj, map, d and d.area) or {}) do
-                        local key = floor(pt[1] * 10) .. "," .. floor(pt[2] * 10)
-                        if not seen[key] then
-                            seen[key] = true
-                            local x, y = P(pt[1], pt[2])
-                            Tex(wmp, PIN_TEXTURE, { 1, 1, 1, 0.6 }, 9 / scale, x, y)
-                        end
-                    end
-                end
-            end
-        end
-    end
+    -- mob spawn marks are pins now (Nav/Pins.lua)
 
     if not RouteOn() then return end
     local px, py, pmap = Places.PlayerZone()

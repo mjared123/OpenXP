@@ -177,7 +177,22 @@ function Card.GoalText(g)
     local kind = g[1]
     if kind == "complete" then
         local o = Quests.GetObjective(g.quest, g.obj)
-        if o and o.text and o.text ~= "" then return o.text end
+        if o and o.text and o.text ~= "" then
+            -- an item one or two named mobs drop: say who ("0/1 Gobbler's Head - from Gobbler")
+            if not o.done then
+                local list, okind = QuestDB.ObjectiveSources(g.quest, g.obj)
+                if okind == "item" and list and #list > 0 and #list <= 2 then
+                    local names = {}
+                    for _, s in ipairs(list) do
+                        if s.kind == "NPC" and s.name then names[#names + 1] = s.name end
+                    end
+                    if #names == #list then
+                        return o.text .. " |cFF9EA3B3- " .. fmt(L("from %s"), table.concat(names, " " .. L("or") .. " ")) .. "|r"
+                    end
+                end
+            end
+            return o.text
+        end
         return g.text or fmt(L("Objective %d of %s"), g.obj, QuestDB.QuestName(g.quest))
     elseif kind == "accept" then
         return g.text or fmt(L("Accept %s"), QuestDB.QuestName(g.quest))
@@ -1092,6 +1107,18 @@ function Card.Refresh(force)
     local now = GetTime and GetTime() or 0
     local sig = Card.Signature()
     if not force and sig == Card.lastSig and now - (Card.lastFull or 0) < 3 then return end
+    -- New text in a font (or size) the game hasn't drawn yet loads in the
+    -- background and stays blank until it's set again (in game: the step's
+    -- title missing until the card was resized). Once the step changes, set
+    -- every text again a moment later and lay the card out again.
+    if sig ~= Card.lastSig and not Card.retexting and C_Timer and C_Timer.After then
+        Card.retexting = true
+        C_Timer.After(0.1, function()
+            Card.retexting = false
+            OXP.Fonts.Reapply()
+            Card.Refresh(true)
+        end)
+    end
     Card.lastSig, Card.lastFull = sig, now
     if Card.FillStepList then pcall(Card.FillStepList) end
     pcall(UpdateXP)

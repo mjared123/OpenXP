@@ -27,7 +27,7 @@ local ACCOUNT_DEFAULTS = {
         mapRoute = true,           -- the route line on the world map and minimap
         mapAreas = true,           -- kill/loot areas
         mapPins = true,            -- pins for the step's waypoints
-        mobPins = false,           -- a mark on every spawn of the mobs you need
+        mapMobs = true,            -- a mark on every spawn of the mobs you need
         routeColor = { 0.72, 0.42, 1.0 },
         travel = true,             -- plan trips to other zones
         -- automation (hold Shift to pause it)

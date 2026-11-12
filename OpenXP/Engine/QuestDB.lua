@@ -345,6 +345,82 @@ function DB.MissingQuest(step)
     end
 end
 
+--- What counts for a quest objective: a list of { kind = "NPC" | "Object",
+--- id, name, item = item name when it drops or is looted }, the objective's
+--- own kind ("kill", "item", "object", ...), or nil while no data is ready.
+local sourceCache = {}
+function DB.ObjectiveSources(questId, objIndex)
+    local key = questId .. ":" .. objIndex
+    if sourceCache[key] then return sourceCache[key].list, sourceCache[key].kind end
+    local q = DB.Get("Quest", questId)
+    if not q then return nil end
+    local list, kind = {}, nil
+    local function add(k, id, item)
+        local obj = DB.Get(k, id)
+        list[#list + 1] = { kind = k, id = id, name = obj and obj.name, item = item, obj = obj }
+    end
+    local function fromItem(itemId)
+        local item = DB.Get("Item", itemId)
+        local name = item and item.name
+        for _, id in ipairs(item and item.npcDrops or {}) do add("NPC", id, name) end
+        for _, id in ipairs(item and item.objectDrops or {}) do add("Object", id, name) end
+    end
+    local entry = q.objectiveList and q.objectiveList[objIndex]
+    if entry then
+        -- our own data: the objective by its number
+        kind = entry.kind
+        if entry.kind == "kill" or entry.kind == "talk" then add("NPC", entry.target)
+        elseif entry.kind == "object" then add("Object", entry.target)
+        elseif entry.kind == "item" then fromItem(entry.target) end
+    else
+        local o = type(q.objectives) == "table" and q.objectives or {}
+        local i = 0
+        for _, e in ipairs(o[1] or {}) do
+            i = i + 1
+            if i == objIndex then kind = "kill" add("NPC", e[1]) end
+        end
+        for _, e in ipairs(o[2] or {}) do
+            i = i + 1
+            if i == objIndex then kind = "object" add("Object", e[1]) end
+        end
+        for _, e in ipairs(o[3] or {}) do
+            i = i + 1
+            if i == objIndex then kind = "item" fromItem(e[1]) end
+        end
+    end
+    sourceCache[key] = { list = list, kind = kind }
+    return list, kind
+end
+
+--- What to do for an objective, in words: "Kill Gobbler for Gobbler's Head",
+--- "Kill Bluegill Murloc", "Loot Gobbler's Head from ...", or nil.
+function DB.ObjectiveAction(questId, objIndex)
+    local list, kind = DB.ObjectiveSources(questId, objIndex)
+    if not list or #list == 0 then return nil end
+    local npcs, objects = {}, {}
+    for _, s in ipairs(list) do
+        if s.name then
+            if s.kind == "NPC" then npcs[#npcs + 1] = s.name else objects[#objects + 1] = s.name end
+        end
+    end
+    local L = OXP.L
+    local function names(t)
+        if #t > 2 then return t[1] .. ", " .. t[2] .. " " .. L("and others") end
+        return table.concat(t, " " .. L("or") .. " ")
+    end
+    local item = list[1].item
+    if kind == "item" and item then
+        if #npcs > 0 then return (L("Kill %s for %s")):format(names(npcs), item) end
+        if #objects > 0 then return (L("Loot %s from %s")):format(item, names(objects)) end
+    elseif kind == "kill" and #npcs > 0 then
+        return (L("Kill %s")):format(names(npcs))
+    elseif kind == "talk" and #npcs > 0 then
+        return (L("Talk to %s")):format(names(npcs))
+    elseif kind == "object" and #objects > 0 then
+        return (L("Use %s")):format(names(objects))
+    end
+end
+
 --- Spawn points (0-100 on `map`) of whatever counts for a quest objective
 --- in a zone (`map` its map id, `area` its Questie area id): {} when none,
 --- nil while no quest data is ready.
@@ -352,48 +428,36 @@ local spawnCache = {}
 function DB.ObjectiveSpawns(questId, objIndex, map, area)
     local key = questId .. ":" .. objIndex .. ":" .. tostring(map) .. ":" .. tostring(area)
     if spawnCache[key] ~= nil then return spawnCache[key] end
-    local q = DB.Get("Quest", questId)
-    if not q then return nil end
-    local o = type(q.objectives) == "table" and q.objectives or {}
-    local sources, i = {}, 0
-    local entry = q.objectiveList and q.objectiveList[objIndex]
-    if entry then
-        -- our own data: the objective by its number
-        if entry.kind == "kill" or entry.kind == "talk" then
-            sources[1] = { "NPC", entry.target }
-        elseif entry.kind == "object" then
-            sources[1] = { "Object", entry.target }
-        elseif entry.kind == "item" then
-            local item = DB.Get("Item", entry.target)
-            for _, id in ipairs(item and item.npcDrops or {}) do sources[#sources + 1] = { "NPC", id } end
-            for _, id in ipairs(item and item.objectDrops or {}) do sources[#sources + 1] = { "Object", id } end
-        end
-        o = {}
-    end
-    for _, e in ipairs(o[1] or {}) do
-        i = i + 1
-        if i == objIndex then sources[#sources + 1] = { "NPC", e[1] } end
-    end
-    for _, e in ipairs(o[2] or {}) do
-        i = i + 1
-        if i == objIndex then sources[#sources + 1] = { "Object", e[1] } end
-    end
-    for _, e in ipairs(o[3] or {}) do
-        i = i + 1
-        if i == objIndex then
-            local item = DB.Get("Item", e[1])
-            for _, id in ipairs(item and item.npcDrops or {}) do sources[#sources + 1] = { "NPC", id } end
-            for _, id in ipairs(item and item.objectDrops or {}) do sources[#sources + 1] = { "Object", id } end
-        end
-    end
+    local list = DB.ObjectiveSources(questId, objIndex)
+    if not list then return nil end
     local pts = {}
-    for _, src in ipairs(sources) do
-        local obj = DB.Get(src[1], src[2])
+    for _, src in ipairs(list) do
+        local obj = src.obj
         local spots = obj and type(obj.spawns) == "table" and obj.spawns[obj.spawnsByMap and map or area]
         for _, p in ipairs(spots or {}) do
-            if p[1] and p[1] >= 0 then pts[#pts + 1] = { p[1], p[2] } end
+            if p[1] and p[1] >= 0 then pts[#pts + 1] = { p[1], p[2], src = src } end
         end
     end
     spawnCache[key] = pts
     return pts
+end
+
+--- Every spawn of an objective's mobs/objects on every map:
+--- { { map, x, y, src }, ... } (only our own data and Questie's keyed by area).
+function DB.ObjectiveSpawnsAll(questId, objIndex)
+    local list = DB.ObjectiveSources(questId, objIndex)
+    if not list then return nil end
+    local out = {}
+    for _, src in ipairs(list) do
+        local obj = src.obj
+        for k, pts in pairs(obj and type(obj.spawns) == "table" and obj.spawns or {}) do
+            local map = obj.spawnsByMap and k or DB.UiMap(k)
+            if map and type(pts) == "table" then
+                for _, p in ipairs(pts) do
+                    if p[1] and p[1] >= 0 then out[#out + 1] = { map, p[1], p[2], src } end
+                end
+            end
+        end
+    end
+    return out
 end

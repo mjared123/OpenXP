@@ -124,8 +124,8 @@ local function Build()
     y = Section(content, L("Maps"), y)
     y = Check(content, "mapRoute", L("Route line on the world map and minimap"), nil, y)
     y = Check(content, "mapAreas", L("Kill and loot areas"), L("Needs Questie for steps that don't name their own area."), y)
-    y = Check(content, "mapPins", L("Pins for the step's waypoints"), nil, y)
-    y = Check(content, "mobPins", L("A mark on every spawn of the mobs you need"), L("Needs Questie."), y)
+    y = Check(content, "mapPins", L("Numbered pins for the next steps, and area labels"), L("! where you pick a quest up, ? where you hand one in. Hover a pin to see the step."), y)
+    y = Check(content, "mapMobs", L("Mob icons where the mobs you need spawn"), L("Skull: kill it. Bag: it drops what you need. A big skull and a name: a mob with only a spawn or two."), y)
 
     y = y - 8
     y = Section(content, L("Automation (hold Shift to pause)"), y)

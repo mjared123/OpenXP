@@ -47,7 +47,7 @@ local SETTINGS = {
     hideGuideWindow = function(v, s) s.cardShown = v ~= true end,
     openxpMapRoute = function(v, s) s.mapRoute = v ~= false end,
     openxpMapAreas = function(v, s) s.mapAreas = v ~= false end,
-    openxpMobPins = function(v, s) s.mobPins = v == true end,
+    openxpMobPins = function(v, s) s.mapMobs = v ~= false end,
     openxpRouteColor = function(v, s)
         if Table(v) and type(v[1]) == "number" then s.routeColor = { v[1], v[2], v[3] } end
     end,

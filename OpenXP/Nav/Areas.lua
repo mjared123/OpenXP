@@ -124,8 +124,31 @@ local function AutoArea(step)
     if not ready then return nil end -- no quest data yet: ask again later
     local poly = Areas.KillArea(pts, spot.x, spot.y)
     local a = poly and { poly = poly, map = spot.map, auto = true } or false
-    auto[step] = { key = key, area = a, at = now }
+    -- too few spawns for an area (a named mob like Gobbler): the arrow goes
+    -- to them one by one instead
+    local few
+    if not poly then
+        few = {}
+        for _, p in ipairs(pts) do
+            local dx, dy = p[1] - spot.x, p[2] - spot.y
+            if dx * dx + dy * dy <= (REACH * 2) ^ 2 then few[#few + 1] = p end
+        end
+        if #few == 0 then few = nil end
+    end
+    auto[step] = { key = key, area = a, at = now, few = few, map = spot.map }
     return a or nil
+end
+
+--- The few spawn points of what a step still needs when they are too few
+--- for an area: { {x, y}, ... }, map; or nil.
+function Areas.Spawns(step)
+    if not (step and Areas.On()) then return nil end
+    for _, g in ipairs(step.goals) do
+        if g[1] == "area" then return nil end
+    end
+    if AutoArea(step) then return nil end
+    local c = auto[step]
+    if c and c.few then return c.few, c.map end
 end
 
 --- The area of an Engine step: { poly = {{x, y}...}, map } or nil.
@@ -144,9 +167,36 @@ local here, edge = { inside = true }, {}
 --- The arrow's target for a step with an area: a stand-in at your feet while
 --- you're inside ("Here"), or just inside the nearest edge while outside.
 --- nil when the step has no area or you're in another zone.
+local spawnT = {}
+local AWAY = 25 -- yards: a spawn this close has been checked, try the next
+
+-- The arrow for a step whose objective has only a few spawns: the nearest
+-- one you aren't standing at (named mobs walk between them, or are dead).
+local function SpawnTarget(step, title)
+    local pts, map = Areas.Spawns(step)
+    if not pts then return nil end
+    local px, py, pmap = Places.PlayerZone()
+    if not px or pmap ~= map then return nil end
+    local wpx, wpy = Places.Player()
+    local best, bestD, near, nearD
+    for _, p in ipairs(pts) do
+        local wx, wy, inst = Places.ToWorld(map, p[1], p[2])
+        if wx then
+            local d = Places.Distance(wpx or 0, wpy or 0, wx, wy)
+            if not nearD or d < nearD then near, nearD = { wx, wy, inst }, d end
+            if d > AWAY and (not bestD or d < bestD) then best, bestD = { wx, wy, inst }, d end
+        end
+    end
+    local pick = (#pts > 1 and best) or near
+    if not pick then return nil end
+    spawnT.wx, spawnT.wy, spawnT.instance, spawnT.map = pick[1], pick[2], pick[3], map
+    spawnT.title, spawnT.spawn = title, true
+    return spawnT
+end
+
 function Areas.Target(step, title)
     local a = Areas.ForStep(step)
-    if not a then return nil end
+    if not a then return SpawnTarget(step, title) end
     local px, py, map = Places.PlayerZone()
     if not px or map ~= a.map then return nil end
     local t, wx, wy, inst
