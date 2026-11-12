@@ -14,6 +14,7 @@ RXPGuides.RegisterGuide([[
 #group OpenXP Extras
 #subgroup Collectibles
 #name Night Watchman's Torch
+#displayname Night Watchman's Torch (after 8 PM game time)
 
 step << Alliance
     .zone Duskwood >>Get to Darkshire in Duskwood: Fly to Darkshire (or ride south from Goldshire)
@@ -21,7 +22,7 @@ step << Horde
     .zone Duskwood >>Get to Duskwood: Take the zeppelin from Orgrimmar to Grom'gol, then ride north through Stranglethorn Vale into Duskwood. Stay off the roads near Darkshire, its guards attack Horde
 step
     #completewith next
-    +The |cRXP_FRIENDLY_Night Watch Guard|r only appears at night (after about 8 PM game time). If it's daytime, come back later.
+    +|cRXP_WARN_Night only:|r this quest can only be done after 8 PM game time. Before then the |cRXP_FRIENDLY_Night Watch Guard|r isn't there, so don't worry if you can't find him. Hover the clock by your minimap to see the realm (game) time.
 step << Alliance
     .goto 1431,66.1,34.0,30,0
     .goto 1431,68.8,69.4,30,0
@@ -31,6 +32,7 @@ step << Alliance
     .goto 1431,17.0,54.9,30,0
     .goto 1431,23.6,33.4,30,0
     .goto 1431,66.1,34.0
+    >>|cRXP_WARN_After 8 PM game time only.|r
     >>Find the dead |cRXP_FRIENDLY_Night Watch Guard::271866|r. He lies at one of these spots, so check each one until you see the yellow "!" over his body. Typing /tar Night Watch Guard helps
     >>Accept and complete |cRXP_FRIENDLY_An Unfortunate End|r to get the [Night Watchman's Torch]
     .collect 280612,1
@@ -44,6 +46,7 @@ step << Horde
     .goto 1431,68.8,69.4,30,0
     .goto 1431,66.1,34.0,30,0
     .goto 1431,45.5,79.2
+    >>|cRXP_WARN_After 8 PM game time only.|r
     >>Find the dead |cRXP_FRIENDLY_Night Watch Guard::271866|r. He lies at one of these spots, so check each one until you see the yellow "!" over his body. Typing /tar Night Watch Guard helps
     >>Accept and complete |cRXP_FRIENDLY_An Unfortunate End|r to get the [Night Watchman's Torch]
     .collect 280612,1
