@@ -19,7 +19,7 @@ drawn by hand from the zone map; mob packs are summarised from spawn data
               and the map's route line keep to them rather than cut corners
     packs     (x, y, radius, level, name): groups of hostile mobs
 
-`python tools/terrain.py --lua` writes DB/terrain.lua for the addon.
+`python tools/terrain.py --lua` writes OpenXP/Data/Terrain.lua for the addon.
 """
 import heapq
 import math
@@ -457,7 +457,7 @@ def to_lua():
 def main():
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("--lua", action="store_true", help="write DB/terrain.lua")
+    ap.add_argument("--lua", action="store_true", help="write OpenXP/Data/Terrain.lua")
     ap.add_argument("--packs", help="QuestieDB path: print pack circles for each zone")
     args = ap.parse_args()
     if args.packs:
@@ -478,7 +478,7 @@ def main():
             f.write("\n".join(lines) + "\n")
         print("wrote tools/terrain_packs.py")
     if args.lua:
-        path = os.path.join(ROOT, "DB", "terrain.lua")
+        path = os.path.join(ROOT, "OpenXP", "Data", "Terrain.lua")
         with open(path, "w", newline="\r\n") as f:
             f.write(to_lua())
         print("wrote", path)

@@ -16,8 +16,8 @@ end
 
 Player.Refresh()
 
+OXP.OnLoaded(Player.Refresh) -- before any OnReady code asks
 OXP.On("PLAYER_LOGIN", Player.Refresh)
-OXP.On("NEUTRAL_FACTION_SELECT_RESULT", Player.Refresh)
 OXP.On("PLAYER_LEVEL_UP", function(_, level)
     -- UnitLevel can still return the old level during this event.
     Player.level = tonumber(level) or UnitLevel("player")

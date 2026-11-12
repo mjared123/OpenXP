@@ -37,7 +37,9 @@ function OXP.On(event, fn)
     if not list then
         list = {}
         eventHandlers[event] = list
-        eventFrame:RegisterEvent(event)
+        -- an event this client doesn't have is an error in WoW; skip it
+        local ok = pcall(eventFrame.RegisterEvent, eventFrame, event)
+        if not ok then OXP.missingEvents = (OXP.missingEvents or 0) + 1 end
     end
     list[#list + 1] = fn
 end

@@ -45,7 +45,12 @@ function FakeWoW.New(root, opts, saved)
         taxi = {},         -- nodes shown on the open taxi map: { {name=, type=} }
         frames = {},
         timers = {},
+        delayed = {},
+        tickers = {},
+        now = 0,
         errors = {},
+        -- where the player stands: a fake world (see FakeHBD below)
+        pos = { map = opts.map or 1429, x = opts.x or 50, y = opts.y or 50 },
         noObjectiveAPI = opts.noObjectiveAPI,
         collapsed = {},    -- [questID] = true: hidden under a collapsed header
     }, Game)
@@ -63,6 +68,8 @@ end
 function Game:InstallGlobals()
     local game = self
     unpack = unpack or table.unpack
+    tinsert, tremove = table.insert, table.remove
+    LibStub = nil -- a fresh LibStub per game, so the fake libraries can register again
     wipe = function(t) for k in pairs(t) do t[k] = nil end return t end
 
     geterrorhandler = function()
@@ -71,19 +78,135 @@ function Game:InstallGlobals()
         end
     end
 
-    CreateFrame = function()
-        local frame = { events = {}, scripts = {} }
-        function frame:RegisterEvent(e) self.events[e] = true end
-        function frame:UnregisterEvent(e) self.events[e] = nil end
-        function frame:SetScript(name, fn) self.scripts[name] = fn end
+    -- Every frame, texture and font string is a widget that remembers what
+    -- it was told (text, size, shown, scripts) and answers the rest with a
+    -- do-nothing function, so UI code runs without drawing anything.
+    local widgetMT
+    local function Widget(kind, name)
+        local w = setmetatable({ kind = kind, events = {}, scripts = {}, shown = kind ~= "Frame" and kind ~= "Button",
+                                 w = 100, h = 20, points = {} }, widgetMT)
+        if name then _G[name] = w end
+        return w
+    end
+    game.Widget = Widget
+    local methods = {
+        RegisterEvent = function(self, e) self.events[e] = true end,
+        UnregisterEvent = function(self, e) self.events[e] = nil end,
+        UnregisterAllEvents = function(self) self.events = {} end,
+        SetScript = function(self, name, fn) self.scripts[name] = fn end,
+        GetScript = function(self, name) return self.scripts[name] end,
+        HookScript = function(self, name, fn)
+            local old = self.scripts[name]
+            self.scripts[name] = function(...) if old then old(...) end return fn(...) end
+        end,
+        Show = function(self) self.shown = true end,
+        Hide = function(self) self.shown = false end,
+        SetShown = function(self, v) self.shown = v and true or false end,
+        IsShown = function(self) return self.shown end,
+        IsVisible = function(self) return self.shown end,
+        SetText = function(self, t) self.text = t end,
+        GetText = function(self) return self.text end,
+        SetFormattedText = function(self, f, ...) self.text = f:format(...) end,
+        SetSize = function(self, w, h) self.w, self.h = w, h end,
+        SetWidth = function(self, w) self.w = w end,
+        SetHeight = function(self, h) self.h = h end,
+        GetWidth = function(self) return self.w end,
+        GetHeight = function(self) return self.h end,
+        GetSize = function(self) return self.w, self.h end,
+        GetStringWidth = function(self) return #(self.text or "") * 6 end,
+        GetStringHeight = function() return 14 end,
+        SetPoint = function(self, ...) self.points[#self.points + 1] = { ... } end,
+        ClearAllPoints = function(self) self.points = {} end,
+        GetPoint = function(self) local p = self.points[1] if p then return p[1], p[2], p[3], p[4], p[5] end end,
+        GetCenter = function() return 500, 400 end,
+        GetLeft = function() return 400 end,
+        GetScale = function(self) return self.scale or 1 end,
+        SetScale = function(self, s) self.scale = s end,
+        GetEffectiveScale = function() return 1 end,
+        GetFrameLevel = function() return 1 end,
+        GetID = function(self) return self.id or 0 end,
+        GetName = function(self) return self.name end,
+        GetParent = function(self) return self.parent end,
+        SetParent = function(self, p) self.parent = p end,
+        GetFont = function() return "Fonts\\ARIALN.TTF", 12, "" end,
+        SetFont = function() return true end,
+        IsMouseOver = function() return false end,
+        GetChecked = function(self) return self.checked end,
+        SetChecked = function(self, v) self.checked = v end,
+        GetObjectType = function(self) return self.kind end,
+    }
+    local function Creator(kind)
+        return function(self, name)
+            local w = Widget(kind, name)
+            w.parent = self
+            return w
+        end
+    end
+    methods.CreateTexture = Creator("Texture")
+    methods.CreateFontString = Creator("FontString")
+    methods.CreateLine = Creator("Line")
+    methods.CreateAnimationGroup = Creator("AnimationGroup")
+    methods.CreateAnimation = Creator("Animation")
+    widgetMT = {
+        __index = function(_, k)
+            if methods[k] then return methods[k] end
+            if type(k) == "string" and k:match("^%u") then return function() end end
+            return nil
+        end,
+    }
+
+    CreateFrame = function(kind, name, parent)
+        local frame = Widget(kind or "Frame", name)
+        frame.name, frame.parent = name, parent
         game.frames[#game.frames + 1] = frame
         return frame
     end
+    UIParent = Widget("Frame")
+    Minimap = Widget("Frame")
+    Minimap.shown = true
+    GameTooltip = Widget("Frame")
+    UISpecialFrames = {}
+    SlashCmdList = {}
+    hooksecurefunc = function() end
+    strsplit = function(sep, s)
+        local out = {}
+        for piece in (s .. sep):gmatch("(.-)" .. sep:gsub("%p", "%%%0")) do out[#out + 1] = piece end
+        return unpack(out)
+    end
+    GetLocale = function() return "enUS" end
+    GetCVar = function() return "0" end
+    SetCVar = function() end
+    GetPlayerFacing = function() return 0 end
+    UnitXP = function() return 0 end
+    UnitXPMax = function() return 1000 end
+    GetXPExhaustion = function() return 0 end
+    UnitExists = function() return false end
+    UnitOnTaxi = function() return false end
+    IsIndoors = function() return false end
+    IsResting = function() return false end
+    IsInInstance = function() return false end
+    UnitIsDeadOrGhost = function() return false end
+    IsShiftKeyDown = function() return false end
+    GetCursorPosition = function() return 0, 0 end
+    debugprofilestop = function() return 0 end
 
     C_Timer = {
-        After = function(_, fn) game.timers[#game.timers + 1] = fn end,
+        After = function(delay, fn)
+            -- only "next frame" timers run in Flush; delayed ones (tips,
+            -- font reloads) are kept apart and run by RunDelayed
+            if (delay or 0) <= 0 then
+                game.timers[#game.timers + 1] = fn
+            else
+                game.delayed[#game.delayed + 1] = fn
+            end
+        end,
+        NewTicker = function(_, fn)
+            local t = { Cancel = function(self) self.cancelled = true end }
+            game.tickers[#game.tickers + 1] = { fn = fn, t = t }
+            return t
+        end,
     }
-    GetTime = function() return 0 end
+    GetTime = function() return game.now end
     C_AddOns = { GetAddOnMetadata = function(_, field) return field == "Version" and "test" or nil end }
 
     UnitName = function() return game.player.name end
@@ -189,7 +312,77 @@ function Game:LoadXml(path)
     end
 end
 
---- Load OpenXP/OpenXP.toc's files in order, the way the client does.
+------------------------------------------------------------------------
+-- A fake HereBeDragons: every map is a 1000 x 1000 yard square in its own
+-- spot of the world, on Kalimdor (instance 1) or the Eastern Kingdoms (0).
+------------------------------------------------------------------------
+
+local KALIMDOR = { [1411] = true, [1412] = true, [1413] = true, [1414] = true, [1454] = true, [1456] = true, [1457] = true }
+for m = 1438, 1452 do KALIMDOR[m] = true end
+local SIZE = 1000
+
+local function MapRect(map)
+    return (map % 1000) * 3 * SIZE, 0, KALIMDOR[map] and 1 or 0
+end
+
+function FakeWoW.InstallHBD(game)
+    local hbd = LibStub:NewLibrary("HereBeDragons-2.0", 999)
+    function hbd:GetWorldCoordinatesFromZone(x, y, map)
+        if not (map and x and y) then return nil end
+        local ox, oy, inst = MapRect(map)
+        return ox + x * SIZE, oy + y * SIZE, inst
+    end
+    function hbd:GetZoneCoordinatesFromWorld(wx, wy, map, allowOutside)
+        local ox, oy = MapRect(map)
+        local x, y = (wx - ox) / SIZE, (wy - oy) / SIZE
+        if not allowOutside and (x < 0 or x > 1 or y < 0 or y > 1) then return nil end
+        return x, y
+    end
+    function hbd:GetPlayerWorldPosition()
+        local p = game.pos
+        return self:GetWorldCoordinatesFromZone(p.x / 100, p.y / 100, p.map)
+    end
+    function hbd:GetPlayerZonePosition()
+        local p = game.pos
+        return p.x / 100, p.y / 100, p.map
+    end
+    function hbd:GetPlayerZone() return game.pos.map end
+    function hbd:GetWorldVector(_, ax, ay, bx, by)
+        local dx, dy = bx - ax, by - ay
+        return math.atan2(-dx, dy), math.sqrt(dx * dx + dy * dy)
+    end
+    function hbd:GetWorldDistance(_, ax, ay, bx, by)
+        local dx, dy = bx - ax, by - ay
+        return math.sqrt(dx * dx + dy * dy)
+    end
+    local pins = LibStub:NewLibrary("HereBeDragons-Pins-2.0", 999)
+    game.pins = { world = 0, minimap = 0 }
+    function pins:AddWorldMapIconWorld() game.pins.world = game.pins.world + 1 end
+    function pins:AddMinimapIconWorld() game.pins.minimap = game.pins.minimap + 1 end
+    function pins:RemoveAllWorldMapIcons() game.pins.world = 0 end
+    function pins:RemoveAllMinimapIcons() game.pins.minimap = 0 end
+end
+
+--- Put the player on a map at x, y (0-100).
+function Game:MoveTo(map, x, y)
+    self.pos = { map = map, x = x, y = y }
+end
+
+--- Let `secs` of game time pass: OnUpdate scripts and tickers run once.
+function Game:Advance(secs)
+    self.now = self.now + (secs or 1)
+    for _, frame in ipairs(self.frames) do
+        local fn = frame.scripts.OnUpdate
+        if fn then fn(frame, secs or 1) end
+    end
+    for _, tk in ipairs(self.tickers) do
+        if not tk.t.cancelled then tk.fn(tk.t) end
+    end
+    self:Flush()
+end
+
+--- Load OpenXP/OpenXP.toc's files in order, the way the client does. The
+--- HereBeDragons files are swapped for the fake above.
 function Game:LoadAddon()
     local dir = self.root .. "/OpenXP"
     local toc = readFile(dir .. "/OpenXP.toc")
@@ -198,7 +391,12 @@ function Game:LoadAddon()
         line = line:gsub("^%s+", ""):gsub("%s+$", "")
         if line ~= "" and not line:match("^#") then
             local file = dir .. "/" .. line:gsub("\\", "/")
-            if file:lower():match("%.xml$") then
+            if file:find("HereBeDragons", 1, true) then
+                if not self.hbdInstalled then
+                    self.hbdInstalled = true
+                    FakeWoW.InstallHBD(self)
+                end
+            elseif file:lower():match("%.xml$") then
                 self:LoadXml(file)
             else
                 self:LoadFile(file)

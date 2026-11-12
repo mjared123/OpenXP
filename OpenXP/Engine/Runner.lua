@@ -55,6 +55,7 @@ local function saveFor(guide)
         all[guide.key] = save
     end
     save.skipped = save.skipped or {}
+    save.status = save.status or {}
     return save
 end
 
@@ -113,6 +114,7 @@ end
 local function savePosition()
     local step = run.steps[run.pos]
     run.save.step = step and step.index or (#run.guide.steps + 1)
+    if run.pos > (run.furthest or 0) then run.furthest = run.pos end
 end
 
 local function finish()
@@ -175,7 +177,7 @@ function Engine.Load(guideOrKey, stepIndex)
             break
         end
     end
-    run = { guide = guide, steps = steps, pos = pos, save = save }
+    run = { guide = guide, steps = steps, pos = pos, save = save, furthest = pos }
     lastSignature = nil
     OXP.char.currentGuide = guide.key
     OXP.Send("GUIDE_LOADED", guide)
@@ -193,12 +195,14 @@ end
 
 --- Show step `pos` (a position in Engine.GetSteps()) and stay there until
 --- the player moves on, even if it is already done. Un-skips it.
-function Engine.GoTo(pos)
+--- With noHold, the guide moves on by itself as usual once it is done.
+function Engine.GoTo(pos, noHold)
     if not run or not run.steps[pos] then return false end
     run.pos = pos
-    run.held = pos
+    run.held = not noHold and pos or nil
     run.finished = nil
     run.save.skipped[run.steps[pos].index] = nil
+    run.save.status[run.steps[pos].index] = nil
     savePosition()
     OXP.Send("STEP_CHANGED", pos)
     lastSignature = nil
@@ -224,6 +228,58 @@ end
 function Engine.Back()
     if not run or run.pos <= 1 then return false end
     return Engine.GoTo(run.pos - 1)
+end
+
+--- Back to the furthest step reached before looking back. Returns the
+--- position, or nil when you're already there.
+function Engine.Resume()
+    if not run or not run.furthest or run.furthest <= run.pos then return nil end
+    local target = math.min(run.furthest, #run.steps)
+    run.held = nil
+    Engine.GoTo(target, true)
+    return target
+end
+
+--- The furthest step reached in the loaded guide (a position).
+function Engine.GetFurthest()
+    return run and run.furthest
+end
+
+--- Is the current step held (picked by hand)?
+function Engine.IsHeld()
+    return run ~= nil and run.held == run.pos
+end
+
+--- Put this character at step `index` (a guide data index) of a guide, with
+--- steps in `skipped` (data index -> true) marked skipped and `status` (data
+--- index -> "chain" or "skipped") recorded for the card. Used by smart start.
+function Engine.Place(guideOrKey, index, skipped, status)
+    local guide = type(guideOrKey) == "table" and guideOrKey or Registry.Get(guideOrKey)
+    if not guide then return false end
+    local save = saveFor(guide)
+    save.step = index or 1
+    save.skipped = {}
+    save.status = {}
+    for i in pairs(skipped or {}) do save.skipped[i] = true end
+    for i, s in pairs(status or {}) do save.status[i] = s end
+    return Engine.Load(guide)
+end
+
+--- Mark a step (a guide data index) skipped, with an optional status
+--- ("chain": its quest chain was missed).
+function Engine.MarkSkipped(index, status)
+    if not run then return end
+    run.save.skipped[index] = true
+    run.save.status[index] = status
+    refreshSoon()
+end
+
+--- Position in GetSteps() of a guide data index (or the next shown step after it).
+function Engine.PositionOf(index)
+    if not run then return nil end
+    for pos, step in ipairs(run.steps) do
+        if step.index >= index then return pos end
+    end
 end
 
 ------------------------------------------------------------------------
@@ -255,14 +311,18 @@ function Engine.GoalState(pos, goal)
     return Goals.State(goal, step and step.marks)
 end
 
---- "done", "skipped", "current" or "todo" for the step at `pos`.
+--- "done", "skipped", "chain" (skipped: its quest chain was missed),
+--- "current" or "todo" for the step at `pos`.
 function Engine.StepState(pos)
     if not run or not run.steps[pos] then return nil end
+    local index = run.steps[pos].index
+    if pos == run.pos then return "current" end
+    if run.save.status[index] == "chain" then return "chain" end
     if pos < run.pos then
-        return run.save.skipped[run.steps[pos].index] and "skipped" or "done"
-    elseif pos == run.pos then
-        return "current"
+        if ownGoalsDone(run.steps[pos]) then return "done" end
+        return run.save.skipped[index] and "skipped" or "done"
     end
+    if run.save.skipped[index] then return "skipped" end
     return stepDone(pos) and "done" or "todo"
 end
 
