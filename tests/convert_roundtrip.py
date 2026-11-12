@@ -83,6 +83,15 @@ def back_to_text(lua_guides):
             if st["source"]:
                 # a class quest step added by tools/import_polestar.py: not in
                 # the 1.x source, and it must be for one class only
+                if st["source"].startswith("carry:"):
+                    # a turn-in for a quest the 1-20 guides picked up: only
+                    # optional turn-ins, so nobody without the quest sees it
+                    kinds = [g[1] for g in lua_list(st) if g[1] not in ("goto", "target", "text")]
+                    if not kinds or any(k != "turnin" for k in kinds) or not all(
+                            g["optional"] for g in lua_list(st) if g[1] == "turnin"):
+                        raise ValueError("carried turn-in step %s isn't only optional turn-ins" % st["source"])
+                    INSERTED[0] += 1
+                    continue
                 if not class_only(st["only"]):
                     raise ValueError("added step from %s is not class-only: %r" % (st["source"], st["only"]))
                 INSERTED[0] += 1

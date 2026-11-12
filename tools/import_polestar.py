@@ -677,6 +677,66 @@ def class_inserts(conv, guides, faction):
     return out
 
 
+def quest_enders():
+    """quest id -> name of the NPC who takes it (OpenXP's quest data)."""
+    path = os.path.join(ROOT, "OpenXP", "Data", "QuestDB.lua")
+    text = open(path, encoding="utf-8").read()
+    npc = {int(m.group(1)): m.group(2) for m in re.finditer(r'^N\[(\d+)\] = \{"((?:[^"\\]|\\.)*)"', text, re.M)}
+    out = {}
+    for m in re.finditer(r'^Q\[(\d+)\] = \{.*?f = \{\{"n",(\d+)\}', text, re.M):
+        name = npc.get(int(m.group(2)))
+        if name:
+            out[int(m.group(1))] = name.replace('\\"', '"')
+    return out
+
+
+def carried_turnins(conv, faction, built):
+    """Quests the 1-20 guides pick up but don't turn in (PoleStar turns them
+    in later in its own route): an optional turn-in step right after the
+    first 21-60 step that talks to whoever takes the quest. Optional, so
+    players who don't have the quest never see it."""
+    accepted, turned = {}, set()
+    for g in built:
+        for st in g["steps"]:
+            for goal in st["goals"]:
+                if goal[1] == "accept" and goal.get("quest"):
+                    accepted.setdefault(goal["quest"], goal.get("text", "").replace("Accept ", "", 1))
+                elif goal[1] == "turnin" and goal.get("quest"):
+                    turned.add(goal["quest"])
+    enders = quest_enders()
+    route = our_route(faction)
+    out, missing = [], []
+    for q, title in sorted(accepted.items()):
+        if q in turned:
+            continue
+        who = enders.get(q)
+        placed = False
+        for g in route if who else []:
+            for i, st in enumerate(g["steps"], 1):
+                if any(goal.get("kind") == "target" and goal.get("name") == who for goal in st["goals"]):
+                    if any(goal.get("kind") == "turnin" and goal.get("quest") == q for goal in st["goals"]):
+                        placed = True  # the 21-60 guide turns it in already
+                        break
+                    spot = next((goal for goal in st["goals"] if goal.get("kind") == "goto"), None)
+                    goals = []
+                    if spot:
+                        goals.append(["goto", {"zone": spot["zone"], "x": spot["x"], "y": spot["y"]}])
+                    goals.append(["turnin", {"quest": q, "optional": True,
+                                             "text": "Turn in %s (picked up earlier)" % title.split(" (")[0]}])
+                    goals.append(["target", {"name": who}])
+                    out.append({"guide": g["name"], "at": i, "source": "carry:%d" % q, "carry": True,
+                                "steps": [{"only": faction, "goals": goals}]})
+                    placed = True
+                    break
+            if placed:
+                break
+        if not placed:
+            missing.append(q)
+    conv.carry_missing = getattr(conv, "carry_missing", []) + [(faction, q) for q in missing]
+    conv.carry_added = getattr(conv, "carry_added", 0) + len(out)
+    return out
+
+
 def json_step(st):
     out = {k: v for k, v in st.items() if k != "goals"}
     if "when" in out:
@@ -795,8 +855,10 @@ def main(argv):
     guides = read_guides(src)
     conv = Converter(guides, read_flights())
     import convert_guides
+    built = {}
     for faction in ("Alliance", "Horde"):
         out = build_faction(conv, guides, faction)
+        built[faction] = out
         dest = os.path.join(OUT_DIR, faction, "01-20.lua")
         with open(dest, "w", encoding="utf-8", newline="\n") as f:
             f.write(render(faction, out, commit))
@@ -808,7 +870,7 @@ def main(argv):
     import json
     inserts = {"commit": commit}
     for faction in ("Alliance", "Horde"):
-        inserts[faction] = class_inserts(conv, guides, faction)
+        inserts[faction] = class_inserts(conv, guides, faction) + carried_turnins(conv, faction, built[faction])
     with open(convert_guides.INSERTS, "w", encoding="utf-8", newline="\n") as f:
         json.dump(inserts, f, indent=1, sort_keys=True)
         f.write("\n")
@@ -816,6 +878,8 @@ def main(argv):
     with open(os.path.join(convert_guides.GUIDES_DIR, "Guides.xml"), "w", encoding="utf-8", newline="\n") as f:
         f.write(convert_guides.guide_list_xml())
     print("class quest guides merged: %d; already in the route: %d" % (len(conv.class_merged), len(conv.class_covered)))
+    print("quests carried over from 1-20, turn-ins added in 21-60: %d; no NPC found in 21-60: %s" % (
+        conv.carry_added, ", ".join("%s %d" % m for m in conv.carry_missing) or "none"))
     for faction, cid, where in conv.class_merged:
         print("   %s %-55s -> %s" % (faction, cid, where))
     print("steps dropped: %d" % len(conv.dropped))

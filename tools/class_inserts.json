@@ -15423,6 +15423,251 @@
      "only": "Warrior"
     }
    ]
+  },
+  {
+   "at": 26,
+   "carry": true,
+   "guide": "25-26 Redridge Mountains",
+   "source": "carry:20",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 28.41,
+        "y": 48.97,
+        "zone": "Redridge Mountains"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 20,
+        "text": "Turn in Blackrock Menace (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Marshal Marris"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
+  },
+  {
+   "at": 11,
+   "carry": true,
+   "guide": "26-27 Ashenvale",
+   "source": "carry:967",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 26.2,
+        "y": 38.7,
+        "zone": "Ashenvale"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 967,
+        "text": "Turn in The Tower of Althalaxx (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Delgren the Purifier"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
+  },
+  {
+   "at": 5,
+   "carry": true,
+   "guide": "40-41 Ironforge",
+   "source": "carry:968",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 50.83,
+        "y": 5.62,
+        "zone": "Ironforge"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 968,
+        "text": "Turn in The Powers Below (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Gerrig Bonegrip"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
+  },
+  {
+   "at": 7,
+   "carry": true,
+   "guide": "21-22 Ashenvale",
+   "source": "carry:990",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 36.62,
+        "y": 49.58,
+        "zone": "Ashenvale"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 990,
+        "text": "Turn in Trek to Ashenvale (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Raene Wolfrunner"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
+  },
+  {
+   "at": 17,
+   "carry": true,
+   "guide": "25-26 Redridge Mountains",
+   "source": "carry:98386",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 27.05,
+        "y": 48.64,
+        "zone": "Redridge Mountains"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 98386,
+        "text": "Turn in Alther's Mill (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Foreman Oslow"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
+  },
+  {
+   "at": 26,
+   "carry": true,
+   "guide": "25-26 Redridge Mountains",
+   "source": "carry:98387",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 28.41,
+        "y": 48.97,
+        "zone": "Redridge Mountains"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 98387,
+        "text": "Turn in Blackrock Blockade (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Marshal Marris"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
+  },
+  {
+   "at": 9,
+   "carry": true,
+   "guide": "22-23 Wetlands",
+   "source": "carry:98461",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 11.5,
+        "y": 52.17,
+        "zone": "Wetlands"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 98461,
+        "text": "Turn in Unrequited Love (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Tarrel Rockweaver"
+       }
+      ]
+     ],
+     "only": "Alliance"
+    }
+   ]
   }
  ],
  "Horde": [
@@ -31278,6 +31523,146 @@
       ]
      ],
      "only": "Warrior"
+    }
+   ]
+  },
+  {
+   "at": 4,
+   "carry": true,
+   "guide": "22-23 Hillsbrad/Alterac",
+   "source": "carry:493",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 61.44,
+        "y": 19.06,
+        "zone": "Hillsbrad Foothills"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 493,
+        "text": "Turn in Journey to Hillsbrad Foothills (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Apothecary Lydon"
+       }
+      ]
+     ],
+     "only": "Horde"
+    }
+   ]
+  },
+  {
+   "at": 5,
+   "carry": true,
+   "guide": "22-23 Hillsbrad/Alterac",
+   "source": "carry:494",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 62.33,
+        "y": 20.45,
+        "zone": "Hillsbrad Foothills"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 494,
+        "text": "Turn in Time To Strike (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "High Executor Darthalia"
+       }
+      ]
+     ],
+     "only": "Horde"
+    }
+   ]
+  },
+  {
+   "at": 13,
+   "carry": true,
+   "guide": "26-27 The Barrens",
+   "source": "carry:1536",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 43.42,
+        "y": 77.41,
+        "zone": "The Barrens"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 1536,
+        "text": "Turn in Call of Water (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Brine"
+       }
+      ]
+     ],
+     "only": "Horde"
+    }
+   ]
+  },
+  {
+   "at": 3,
+   "carry": true,
+   "guide": "25-26 Stonetalon Mountains",
+   "source": "carry:6401",
+   "steps": [
+    {
+     "goals": [
+      [
+       "goto",
+       {
+        "x": 47.46,
+        "y": 58.38,
+        "zone": "Stonetalon Mountains"
+       }
+      ],
+      [
+       "turnin",
+       {
+        "optional": true,
+        "quest": 6401,
+        "text": "Turn in Kaya's Alive (picked up earlier)"
+       }
+      ],
+      [
+       "target",
+       {
+        "name": "Tammra Windfield"
+       }
+      ]
+     ],
+     "only": "Horde"
     }
    ]
   }

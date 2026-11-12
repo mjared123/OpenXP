@@ -92,6 +92,19 @@ do
     t.eq(w.event("GOSSIP_SHOW"), "", "never the innkeeper's bind")
     w.gossip.options = { { gossipOptionID = 1 }, { gossipOptionID = 2 } }
     t.eq(w.event("GOSSIP_SHOW"), "", "two options: you choose")
+    -- the old quest-list window (no gossip), with the game's own title case
+    -- (in game: Tarrel Rockweaver, "In Search of The Excavation Team")
+    local avail, active = { "Unrequited Love", "In Search Of The Excavation Team!" }, {}
+    GetNumAvailableQuests = function() return #avail end
+    GetAvailableTitle = function(i) return avail[i] end
+    GetNumActiveQuests = function() return #active end
+    GetActiveTitle = function(i) return active[i] end
+    SelectAvailableQuest = function(i) w.calls[#w.calls + 1] = "select " .. avail[i] end
+    SelectActiveQuest = function(i) w.calls[#w.calls + 1] = "select active " .. active[i] end
+    local g305 = { name = "22-23 Greeting test", group = "Test", steps = { { { "accept", quest = 305 } }, { { "turnin", quest = 305 } } } }
+    OXP.AddGuides({ file = "test", g305 })
+    OXP.Engine.Load(g305.key)
+    t.eq(w.event("QUEST_GREETING"), "select In Search Of The Excavation Team!", "the quest-list window: finds the guide's quest despite case")
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 

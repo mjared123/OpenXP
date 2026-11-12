@@ -138,9 +138,16 @@ end)
 OXP.On("QUEST_GREETING", function()
     if not On("skipGossip") then return end
     local turnins, accepts = GuideQuests("turnin"), GuideQuests("accept")
+    -- the window only gives titles; the game's and our data's can differ in
+    -- case and punctuation ("The Excavation Team" / "the Excavation Team")
+    local function key(s) return s and s:lower():gsub("[%p%s]+", " "):gsub("^ ", ""):gsub(" $", "") end
+    local function same(id, title)
+        local k = key(title)
+        return k ~= nil and (key(OXP.QuestDB.QuestName(id)) == k or key(OXP.Quests.GetTitle(id)) == k)
+    end
     local function idOf(title)
-        for id in pairs(turnins) do if OXP.QuestDB.QuestName(id) == title then return id end end
-        for id in pairs(accepts) do if OXP.QuestDB.QuestName(id) == title then return id end end
+        for id in pairs(turnins) do if same(id, title) then return id end end
+        for id in pairs(accepts) do if same(id, title) then return id end end
     end
     for i = 1, (GetNumActiveQuests and GetNumActiveQuests() or 0) do
         local id = idOf(GetActiveTitle(i))
