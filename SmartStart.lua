@@ -675,6 +675,7 @@ local function ShowGuide()
         addon.settings.ToggleActive()
     end
 end
+SS.ShowGuide = ShowGuide
 
 local RETRIES, RETRY_DELAY = 6, 2
 function SS.OnLogin(attempt)

@@ -14,6 +14,13 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.58",
+        date = "November 2026",
+        changes = {
+            "The What's New window no longer moves you off your current step. If you already have a guide, its button now says \"Continue leveling\" and just closes the window. New players still get a guide picked for them. Type /oxp where if you ever want smart start to place you again",
+        },
+    },
+    {
         version = "1.3.57",
         date = "November 2026",
         changes = {
@@ -1022,19 +1029,26 @@ local function CreateWelcomeFrame()
     f.route, f.ShowColor = route, ShowColor
 
     -- Buttons
+    -- With no guide loaded (a new install or a new character) this picks
+    -- one for you. With a guide already loaded it only closes the window and
+    -- shows the guide, so an update never moves you off the step you were on.
+    -- Smart start already placed new players on login; /oxp where re-runs it.
     local start = MakeButton(f, "Start leveling", true)
     start:SetPoint("BOTTOMRIGHT", f, "BOTTOM", -6, 16)
     start:SetScript("OnClick", function()
         f:Hide()
-        local level = UnitLevel("player") or 1
-        if addon.smartStart and addon.smartStart.HasGuide and not addon.smartStart.HasGuide() then
-            addon.smartStart.EnsureGuide()
-        elseif addon.smartStart and level > 1 then
-            addon.smartStart.Run()
+        local ss = addon.smartStart
+        if ss and ss.HasGuide then
+            if ss.HasGuide() then
+                if ss.ShowGuide then ss.ShowGuide() end
+            else
+                ss.EnsureGuide()
+            end
         elseif addon.SelectDefaultGuide then
             addon.SelectDefaultGuide()
         end
     end)
+    f.start = start
 
     local later = MakeButton(f, "Close", false)
     later:SetPoint("BOTTOMLEFT", f, "BOTTOM", 6, 16)
@@ -1065,6 +1079,9 @@ welcome.changelog = CHANGELOG
 function welcome.Show(mode, lastSeen)
     frame = frame or CreateWelcomeFrame()
     frame.body:SetText(BuildBody(mode or "welcome", lastSeen))
+    local ss = addon.smartStart
+    local hasGuide = ss and ss.HasGuide and ss.HasGuide()
+    frame.start.label:SetText(hasGuide and "Continue leveling" or "Start leveling")
     frame.content:SetHeight(frame.body:GetStringHeight() + 10)
     local p = addon.settings and addon.settings.profile
     frame.route:SetChecked(not (p and p.openxpMapRoute == false))
