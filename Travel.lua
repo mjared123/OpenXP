@@ -381,11 +381,22 @@ function tv.ArrowTarget(real)
     if leg.kind == "walk" then
         -- the next border or stop along the walk
         n = leg.pts[2] or leg.to
-        local px, py = HBD:GetPlayerWorldPosition()
+        local px, py, pinst = HBD:GetPlayerWorldPosition()
+        local you = {wx = px or 0, wy = py or 0, inst = pinst}
         for i = 2, #leg.pts do
             local p = leg.pts[i]
-            local dx, dy = (p.wx - (px or 0)), (p.wy - (py or 0))
-            if dx * dx + dy * dy > 30 * 30 then n = p break end
+            local nxt = leg.pts[i + 1]
+            -- already in the tunnel or pass between a gate and its other
+            -- end: head for the far end, not back out to the near one
+            -- (the way is worked out again from where you stand every few
+            -- seconds, and it always starts with the near end)
+            local inPass = false
+            if p.kind == "gate" and nxt and p.pair == nxt then
+                local span = Dist(p, nxt)
+                local da, db = Dist(you, p), Dist(you, nxt)
+                inPass = span and da and db and db < span and da + db < span * 1.3
+            end
+            if not inPass and Dist(you, p) and Dist(you, p) > 30 then n = p break end
         end
     else
         n = leg.from or leg.to -- stand at the flight master / dock
