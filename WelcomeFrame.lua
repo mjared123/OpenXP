@@ -20,6 +20,7 @@ local CHANGELOG = {
             "New setting: Arrow points straight at the target (Settings, next to the route line options). Same as /oxp path off, which now really does point straight: no way around mountains, no flight master or road into the next zone first, no nearest edge of a kill area",
             "Ashenvale: the arrow no longer wanders around Astranaar when you're standing in town (the town was drawn as part of the lake)",
             "Talondeep Path: standing at the tunnel mouth in Ashenvale, the arrow no longer sends you 400 yards north to the Horde camp first, and it no longer flips back to the entrance once you're inside the tunnel",
+            "Horde Thousand Needles (30-31): each end of the zone in one trip. All the harpies and the Highperch egg first, then all three Shimmering Flats quests together, instead of crossing the canyon three times",
         },
     },
     {
