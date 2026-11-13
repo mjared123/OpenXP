@@ -319,6 +319,13 @@ if origDraw then
         if not self then return origDraw(self, ...) end
         local real = self.element
         local go = ph.go
+        -- paths off (/oxp path off, or Settings): straight at the step's
+        -- own spot. No way around mountains, no flight master or road into
+        -- the next zone, no nearest edge of a kill area.
+        if not go and not ph.IsOn() then
+            self.oxpVia = nil
+            return origDraw(self, ...)
+        end
         -- the step is in another zone: the next leg of the way there
         -- (flight master, dock, the road into the next zone; Travel.lua)
         local trav = not go and real and addon.travel and addon.travel.ArrowTarget(real)
@@ -678,7 +685,7 @@ function ph.Command(args)
     elseif cmd == "off" or cmd == "on" then
         if saved then saved.off = cmd == "off" end
         ph.Reset()
-        Print(cmd == "off" and L("Arrow paths are off: the arrow points straight at the target.")
+        Print(cmd == "off" and L("Arrow paths are off: the arrow points straight at the step's target, with no way around and no flight master or road first.")
               or L("Arrow paths are on."))
     else
         local learned, recorded = 0, 0

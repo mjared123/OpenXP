@@ -109,12 +109,15 @@ addon.pathHintData = {
     passes = {
         -- Ashenvale <-> Stonetalon Mountains through the Talondeep Path
         -- tunnel. The only way in from Ashenvale: the border is mountains.
-        -- Points from the Horde 12-22 guide's Talondeep steps: the camp just
-        -- outside the Ashenvale end (Ashenvale 40.4, 61.4), the tunnel, and
-        -- the Stonetalon end (Stonetalon 78.3, 42.5).
+        -- Points: the tunnel mouth on the Ashenvale side (Ashenvale 40.5,
+        -- 71.5, at the foot of the hills west of Mystral Lake), the tunnel
+        -- from the Horde 12-22 guide's Talondeep steps, and the Stonetalon
+        -- end (Stonetalon 78.3, 42.5). This used to start at the Horde camp
+        -- (Ashenvale 40.4, 61.4), which sent players standing at the mouth
+        -- 400 yards back north first.
         {
             name = "the Talondeep Path", inst = 1, from = 1440, to = 1442,
-            pts = {{-632.70, 2311.50, 40}, {-606.63, 1573.79, 25}, {-577.33, 1532.43, 25}},
+            pts = {{-635.50, 1924.61, 25}, {-606.63, 1573.79, 25}, {-577.33, 1532.43, 25}},
         },
     },
 }

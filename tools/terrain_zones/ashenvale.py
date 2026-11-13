@@ -13,10 +13,17 @@ OPEN = [
 ]
 WALLS = []
 WATER = [
-    # Astranaar's lake
-    [(34, 46), (37, 45), (39, 47), (39, 51), (37, 53), (34, 52), (33, 49)],
+    # (Astranaar used to be drawn here as a lake: the town itself is on
+    # dry land, and swimming costs made the arrow wander off the bridges
+    # while you stood in town.)
     # Mystral Lake
     [(46.5, 67), (50, 66), (53, 68), (53, 71.5), (49, 72.5), (46, 70.5)],
+]
+
+LAND = [
+    # Astranaar: the town (inn, bank, every quest giver at 34-38, 48-52)
+    # is dry land, though the map's colours read part of it as lake
+    [(33, 46), (38.5, 46), (38.5, 53), (33, 53)],
 ]
 
 ROADS = [

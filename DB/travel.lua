@@ -106,7 +106,7 @@ addon.travelData = {
         {a = {1439, 44.0, 92.0}, zones = {1439, 1440}, name = "the road into Ashenvale"},
         {a = {1448, 52.0, 92.0}, zones = {1448, 1440}, name = "the road into Felwood"},
         {a = {1447, 8.0, 77.0}, zones = {1447, 1440}, name = "the road into Azshara"},
-        {a = {1440, 40.4, 61.4}, b = {1442, 78.3, 42.5}, zones = {1440, 1442}, name = "the Talondeep Path"},
+        {a = {1440, 40.5, 71.5}, b = {1442, 78.3, 42.5}, zones = {1440, 1442}, name = "the Talondeep Path"},
         {a = {1448, 62.0, 12.0}, b = {1452, 32.0, 41.0}, zones = {1448, 1452}, name = "Timbermaw Hold"},
         {a = {1443, 53.0, 4.0}, zones = {1443, 1442}, name = "the road into Desolace"},
         {a = {1444, 46.0, 4.0}, zones = {1444, 1443}, name = "the road into Feralas"},

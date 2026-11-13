@@ -132,6 +132,26 @@ try("arrow hook swaps in the stone, then puts the real target back", function()
     ph.Command("on")
 end)
 
+try("paths off also skips the way into another zone and kill-area edges", function()
+    local af = addon.arrowFrame
+    af.element = yip
+    local leg = {wx = 1, wy = 2, instance = 0, title = "Go to the flight master"}
+    local edge = {wx = 3, wy = 4, instance = 0, title = "edge"}
+    addon.travel = {ArrowTarget = function() return leg end}
+    addon.terrain = {AreaTarget = function() return nil end, Reset = function() end, Route = function() end}
+    addon.DrawArrow(af)
+    assert(drawn ~= yip, "on: the travel leg (or a stone toward it)")
+    ph.Command("off")
+    addon.DrawArrow(af)
+    assert(drawn == yip and af.oxpVia == nil, "off: straight past the travel leg")
+    addon.travel = nil
+    addon.terrain = {AreaTarget = function() return edge end, Reset = function() end, Route = function() end}
+    addon.DrawArrow(af)
+    assert(drawn == yip, "off: straight, not the area edge")
+    ph.Command("on")
+    addon.travel, addon.terrain = nil, nil
+end)
+
 local function walk(points, indoors, subzone)
     for _, p in ipairs(points) do
         at(p[1], p[2], indoors, subzone)
@@ -249,9 +269,9 @@ try("Ashenvale to Stonetalon goes through the Talondeep Path", function()
     player.inst, player.zone = 1, 1440
     at(1700 - 0.366 * 5766.67, 4672.92 - 0.497 * 3843.75) -- Astranaar
     local pt, label = route(peak)
-    assert(near(pt, -632.70, 2311.50), "Ashenvale end of the tunnel first")
+    assert(near(pt, -635.50, 1924.61), "Ashenvale end of the tunnel first")
     assert(label == "Go through the Talondeep Path", label)
-    at(-630, 2300)
+    at(-634, 1920)
     assert(near(route(peak), -606.63, 1573.79), "through the tunnel")
     player.zone = 1442 -- out in Stonetalon
     at(-570, 1520)
@@ -268,7 +288,7 @@ try("/oxp path to Stonetalon leads the arrow there, through the tunnel", functio
     ph.Command("to stonetalon")
     assert(ph.go and ph.go.untilZone == 1442, "zone found by its start")
     addon.DrawArrow(af)
-    assert(near({drawn.wx, drawn.wy}, -632.70, 2311.50), "tunnel first")
+    assert(near({drawn.wx, drawn.wy}, -635.50, 1924.61), "tunnel first")
     assert(af.element == yip and af.wrongContinent == true, "guide target kept")
     player.zone = 1442
     at(-570, 1520)

@@ -3332,6 +3332,21 @@ function addon.settings:CreateAceOptionsPanel()
                         width = optionsWidth,
                         order = 5.5127,
                     },
+                    openxpStraightArrow = {
+                        name = L("Arrow points straight at the target"),
+                        desc = L("The arrow ignores the way around mountains, caves and high-level packs, the flight master or road into the next zone, and the edge of kill areas, and points straight at the step's spot. Same as /oxp path off. Applies to all your characters"),
+                        type = "toggle",
+                        width = optionsWidth,
+                        order = 5.5128,
+                        get = function()
+                            local ph = addon.pathHints
+                            return ph and not ph.IsOn() or false
+                        end,
+                        set = function(_, value)
+                            local ph = addon.pathHints
+                            if ph then ph.Command(value and "off" or "on") end
+                        end,
+                    },
                     openxpRouteColor = {
                         name = L("Route line colour"),
                         desc = L("Colour of the route line on the maps (purple by default)"),
