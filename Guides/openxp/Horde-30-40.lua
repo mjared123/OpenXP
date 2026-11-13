@@ -39,6 +39,25 @@ step
     .mob Screeching Roguefeather
     .mob Screeching Harpy
 step
+    .goto Thousand Needles,26.31,53.67
+    >>Kill |cRXP_ENEMY_Screeching Windcaller|r
+    .complete 98070,3 --Stop the Screeching
+    .mob Screeching Windcaller
+step
+    .goto Thousand Needles,18.02,41.68
+    >>Loot the |cRXP_PICK_Highperch Wyvern Egg|r
+    .complete 4767,1 --Wind Rider
+step
+    .goto Thousand Needles,46.21,51.51
+    >>Talk to |cRXP_FRIENDLY_Jandia|r
+    .turnin 98070 >>Turn in Stop the Screeching
+    .target Jandia
+step
+    .goto Thousand Needles,44.93,48.92
+    >>Talk to |cRXP_FRIENDLY_Elu|r
+    .turnin 4767 >>Turn in Wind Rider
+    .target Elu
+step
     .goto Thousand Needles,77.79,77.27
     >>Talk to |cRXP_FRIENDLY_Kravel Koalbeard|r
     .accept 5762 >>Accept Hemet Nesingwary
@@ -48,26 +67,6 @@ step
     >>Talk to |cRXP_FRIENDLY_Pozzik|r
     .accept 1176 >>Accept Load Lightening
     .target Pozzik
-step
-    .goto Thousand Needles,87.95,65.32
-    >>Kill |cRXP_ENEMY_Salt Flats Scavenger|r. Loot them for |cRXP_LOOT_Hollow Vulture Bone|r (about 80% drop)
-    .complete 1176,1 --Load Lightening
-    .mob Salt Flats Scavenger
-step
-    .goto Thousand Needles,80.18,75.88
-    >>Talk to |cRXP_FRIENDLY_Pozzik|r
-    .turnin 1176 >>Turn in Load Lightening
-    .target Pozzik
-step
-    .goto Thousand Needles,26.31,53.67
-    >>Kill |cRXP_ENEMY_Screeching Windcaller|r
-    .complete 98070,3 --Stop the Screeching
-    .mob Screeching Windcaller
-step
-    .goto Thousand Needles,46.21,51.51
-    >>Talk to |cRXP_FRIENDLY_Jandia|r
-    .turnin 98070 >>Turn in Stop the Screeching
-    .target Jandia
 step
     .goto Thousand Needles,81.63,77.95
     >>Talk to |cRXP_FRIENDLY_Trackmaster Zherin|r
@@ -82,19 +81,20 @@ step
     .mob Saltstone Crystalhide
     .mob Saltstone Gazer
 step
-    .goto Thousand Needles,18.02,41.68
-    >>Loot the |cRXP_PICK_Highperch Wyvern Egg|r
-    .complete 4767,1 --Wind Rider
-step
-    .goto Thousand Needles,44.93,48.92
-    >>Talk to |cRXP_FRIENDLY_Elu|r
-    .turnin 4767 >>Turn in Wind Rider
-    .target Elu
+    .goto Thousand Needles,87.95,65.32
+    >>Kill |cRXP_ENEMY_Salt Flats Scavenger|r. Loot them for |cRXP_LOOT_Hollow Vulture Bone|r (about 80% drop)
+    .complete 1176,1 --Load Lightening
+    .mob Salt Flats Scavenger
 step
     .goto Thousand Needles,70.61,66.50
     >>Kill |cRXP_ENEMY_Saltstone Basilisk|r
     .complete 1175,1 --A Bump in the Road
     .mob Saltstone Basilisk
+step
+    .goto Thousand Needles,80.18,75.88
+    >>Talk to |cRXP_FRIENDLY_Pozzik|r
+    .turnin 1176 >>Turn in Load Lightening
+    .target Pozzik
 step
     .goto Thousand Needles,81.63,77.95
     >>Talk to |cRXP_FRIENDLY_Trackmaster Zherin|r
