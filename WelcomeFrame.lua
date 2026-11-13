@@ -14,6 +14,15 @@ addon.openxpVersion = OPENXP_VERSION
 -- Newest first. Each entry: version, date, list of changes.
 local CHANGELOG = {
     {
+        version = "1.3.62",
+        date = "November 2026",
+        changes = {
+            "New setting: Arrow points straight at the target (Settings, next to the route line options). Same as /oxp path off, which now really does point straight: no way around mountains, no flight master or road into the next zone first, no nearest edge of a kill area",
+            "Ashenvale: the arrow no longer wanders around Astranaar when you're standing in town (the town was drawn as part of the lake)",
+            "Talondeep Path: standing at the tunnel mouth in Ashenvale, the arrow no longer sends you 400 yards north to the Horde camp first",
+        },
+    },
+    {
         version = "1.3.61",
         date = "November 2026",
         changes = {
