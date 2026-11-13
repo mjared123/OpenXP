@@ -1,0 +1,19 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="Maps.lua"/>
+	<Script file="WorldMap.lua"/>
+	<Script file="ZoneLevels.lua"/>
+	<Script file="Reveal.lua"/>
+	<Script file="Coords.lua"/>
+	<Script file="MinimapButton.lua"/>
+	<Script file="Dungeons.lua"/>
+	<Script file="TravelPins.lua"/>
+	<Script file="ServiceData.lua"/>
+	<Script file="ServiceClusters.lua"/>
+	<Script file="Services.lua"/>
+	<Script file="FlightPaths.lua"/>
+	<Script file="RouteStrokes.lua"/>
+	<Script file="RouteSparkle.lua"/>
+	<Script file="RouteLines.lua"/>
+	<Script file="FlightTimer.lua"/>
+	<Script file="Instances.lua"/>
+</Ui>

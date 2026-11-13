@@ -1,0 +1,42 @@
+<Bindings>
+	<Binding name="OPENXP_TOGGLE" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.Toggle()
+	</Binding>
+	<Binding name="OPENXP_HIDE" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.Hide()
+	</Binding>
+	<Binding name="OPENXP_NEXT" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.Next()
+	</Binding>
+	<Binding name="OPENXP_PREV" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.Prev()
+	</Binding>
+	<Binding name="OPENXP_FOCUS" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.Focus()
+	</Binding>
+	<Binding name="OPENXP_MENU" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.Menu()
+	</Binding>
+	<Binding name="OPENXP_OPTIONS" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.Options()
+	</Binding>
+	<Binding name="OPENXP_REPORT" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.Report()
+	</Binding>
+	<Binding name="OPENXP_NEXT_WAYPOINT" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.NextWaypoint()
+	</Binding>
+	<Binding name="OPENXP_PREV_WAYPOINT" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.PrevWaypoint()
+	</Binding>
+	<Binding name="OPENXP_REOPEN_TAB" category="OpenXP" searchTags="BINDING_TAG_OPENXP">
+		OpenXP.Bindings.ReopenTab()
+	</Binding>
+	<Binding name="CLICK OpenXPQuestItemButton:LeftButton" category="OpenXP" searchTags="BINDING_TAG_OPENXP"/>
+	<Binding name="CLICK OpenXPTargetButton:LeftButton" category="OpenXP" searchTags="BINDING_TAG_OPENXP"/>
+	<Binding name="CLICK OpenXPRareButton:LeftButton" category="OpenXP" searchTags="BINDING_TAG_OPENXP"/>
+	<Binding name="CLICK OpenXPHearthButton:LeftButton" category="OpenXP" searchTags="BINDING_TAG_OPENXP"/>
+	<Binding name="CLICK OpenXPStepButton:LeftButton" category="OpenXP" searchTags="BINDING_TAG_OPENXP"/>
+	<Binding name="CLICK OpenXPTravelButton:LeftButton" category="OpenXP" searchTags="BINDING_TAG_OPENXP"/>
+	<Binding name="CLICK OpenXPBagButton:LeftButton" category="OpenXP" searchTags="BINDING_TAG_OPENXP"/>
+</Bindings>

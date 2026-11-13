@@ -1,0 +1,232 @@
+-- A OpenXP button on the edge of the minimap (setting maps.minimapButton,
+-- on by default): click hides or shows everything OpenXP shows
+-- (OpenXP.ToggleHidden; docs/ARCHITECTURE.md, "Hiding OpenXP"), and
+-- while OpenXP is hidden the button stays, its logo greyed and dimmed, as
+-- the way back; right-click opens OpenXP's menu (the guide window, the
+-- arrow, hiding, the guides, Lookup, the settings, a report), drag moves it
+-- around the edge. Where it sits is
+-- maps.minimapButtonAngle, in degrees (0 = east, counter-clockwise); on a
+-- square minimap (GetMinimapShape, set by minimap addons) it rides the
+-- square's edge instead of the circle.
+--
+-- Minimap button collectors (a flyout or a row of buttons gathered from
+-- the minimap's named children) take it as they take any addon's button:
+-- it is a Button named OpenXPMinimapButton, a child of Minimap, with its
+-- icon at button.Icon. Once one has moved it (into its own panel, or onto
+-- its own row), the button is theirs to place: a drag or a resized
+-- minimap no longer pulls it back to the edge, and click and right-click
+-- work as before.
+--
+-- The game's addon compartment (the minimap's addon list, on clients that
+-- have one: AddonCompartmentFrame) does the same through the globals the
+-- .toc names: OpenXP_OnAddonCompartmentClick / OnEnter / OnLeave.
+--
+-- Cost: nothing for a player who turned it off (no frame exists until the
+-- setting is first on).
+
+local ADDON, ns = ...
+local Maps = ns.Maps
+local L = ns.L
+
+local abs, floor, max = math.abs, math.floor, math.max
+local cos, sin, atan2, rad, deg = math.cos, math.sin, math.atan2, math.rad, math.deg
+
+local SIZE = 32
+local EDGE = 5 -- pixels past the minimap's edge, so the button sits on its border
+
+local button
+-- Where place() last put the button: "CENTER" of Minimap at these offsets.
+local placedX, placedY
+
+-- Whether the button still sits where place() put it (or nowhere yet). A
+-- collector that reparented it or anchored it elsewhere owns its place.
+local function ours()
+	if button:GetParent() ~= Minimap then return false end
+	if placedX == nil then return true end
+	local point, rel, relPoint, x, y = button:GetPoint(1)
+	if point == nil then return true end
+	return point == "CENTER" and rel == Minimap and relPoint == "CENTER"
+		and abs((x or 0) - placedX) < 0.5 and abs((y or 0) - placedY) < 0.5
+end
+
+local function angle()
+	local a = tonumber(ns.Get("maps.minimapButtonAngle"))
+	return a and a % 360 or 225
+end
+
+local function place(a)
+	if not ours() then return end
+	local x, y = cos(rad(a)), sin(rad(a))
+	if GetMinimapShape and GetMinimapShape() == "SQUARE" then
+		local m = max(abs(x), abs(y))
+		x, y = x / m, y / m
+	end
+	placedX, placedY = x * (Minimap:GetWidth() / 2 + EDGE), y * (Minimap:GetHeight() / 2 + EDGE)
+	button:ClearAllPoints()
+	button:SetPoint("CENTER", Minimap, "CENTER", placedX, placedY)
+end
+
+-- The cursor's angle around the minimap's centre, in whole degrees.
+local function cursorAngle()
+	local mx, my = Minimap:GetCenter()
+	local scale = Minimap:GetEffectiveScale()
+	local cx, cy = GetCursorPosition()
+	return floor(deg(atan2(cy / scale - my, cx / scale - mx)) + 0.5) % 360
+end
+
+-- The tooltip of the minimap button, the floating button (UI/Launcher.lua)
+-- and the compartment's row: what a click does now, the menu, then `drag`.
+function Maps.ButtonTip(owner, drag)
+	local T = ns.Theme
+	ns.Widgets.Tooltip(owner, "ANCHOR_LEFT", "OpenXP", {
+		ns.Hidden() and { L["OpenXP is hidden: click to show"], T.Accent() } or L["Click: hide OpenXP"],
+		L["Right-click: menu"],
+		drag,
+	})
+end
+
+local function showTip(self)
+	Maps.ButtonTip(self, self == button and L["Drag: move it around the minimap"] or nil)
+end
+
+-- The look of a way back (this button, the floating one) while OpenXP is
+-- hidden: its logo greyed and dimmed.
+function Maps.PaintHidden(b)
+	local icon = b and b.Icon
+	if not icon then return end
+	local hidden = ns.Hidden()
+	icon:SetDesaturated(hidden)
+	icon:SetAlpha(hidden and 0.4 or 1)
+end
+
+-- OpenXP's menu from the minimap button, the floating button or the
+-- compartment, opening beside `anchor`: the guide window, the arrow
+-- (nav.arrow), hiding OpenXP and whether that keeps the arrow, then the
+-- windows, which bring a hidden OpenXP back first.
+function Maps.ShowMenu(anchor)
+	local W = ns.Widgets
+	if not (W and W.ShowMenu and anchor) then return end
+	if W.MenuShown(anchor) then return W.HideMenu() end
+	local function open(msg)
+		return function()
+			ns.SetHidden(false)
+			ns.Fire(msg)
+		end
+	end
+	local items = { { text = L["Guide window"], icon = "window", checked = ns.GuideShown(), onClick = function() ns.Fire("TOGGLE_FRAME") end } }
+	local Nav = ns.Nav
+	if Nav and Nav.ToggleArrow then
+		items[#items + 1] = { text = ns.Get("nav.arrow") and L["Hide arrow"] or L["Show arrow"], icon = "dart", onClick = Nav.ToggleArrow }
+	end
+	items[#items + 1] = { text = ns.Hidden() and L["Show OpenXP"] or L["Hide OpenXP"], icon = "emblem", onClick = ns.ToggleHidden }
+	items[#items + 1] = { text = L["Keep the arrow when hidden"], checked = ns.HideKeepsArrow(),
+		onClick = function() ns.SetHideKeepsArrow(not ns.HideKeepsArrow()) end }
+	items[#items + 1] = { separator = true }
+	items[#items + 1] = { text = L["Guides"], icon = "guides", onClick = open("SHOW_PICKER") }
+	items[#items + 1] = { text = L["Lookup"], icon = "search", onClick = open("SHOW_LOOKUP") }
+	items[#items + 1] = { text = L["Options"], icon = "sliders", onClick = open("SHOW_OPTIONS") }
+	items[#items + 1] = { separator = true }
+	items[#items + 1] = { text = L["Report a problem"], icon = "bug", onClick = open("SHOW_REPORT") }
+	W.ShowMenu(anchor, items, { point = "TOPRIGHT", relPoint = "BOTTOMLEFT", x = 4, y = 4 })
+end
+
+-- The addon compartment's entry (OpenXP.toc). The client passes the
+-- addon's name, the mouse button and the compartment's row.
+function OpenXP_OnAddonCompartmentClick(_, which, row)
+	if which == "RightButton" then
+		Maps.ShowMenu(row or UIParent)
+	else
+		ns.ToggleHidden()
+	end
+end
+
+function OpenXP_OnAddonCompartmentEnter(_, row)
+	if row then showTip(row) end
+end
+
+function OpenXP_OnAddonCompartmentLeave(_, row)
+	if ns.Widgets then ns.Widgets.HideTooltip(row) end
+end
+
+local function build()
+	if button then return button end
+	local W = ns.Widgets
+	if not (W and W.Tex and Minimap) then return nil end
+	button = ns.CreateFrameUnder("Button", "OpenXPMinimapButton", Minimap)
+	button:SetSize(SIZE, SIZE)
+	button:SetFrameStrata("MEDIUM")
+	button:SetFrameLevel((Minimap:GetFrameLevel() or 1) + 8)
+	button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	button:RegisterForDrag("LeftButton")
+	local back = W.Tex(button, "BACKGROUND", "circle", "panel")
+	back:SetAllPoints(button)
+	-- Named OpenXPMinimapButtonIcon: minimap tidiers that stand a proxy in
+	-- for the button (Leatrix Plus's Enhance minimap) take its icon from
+	-- _G[name .. "Icon"]; without it they took the last small region, the
+	-- hover's plain circle, and showed that as OpenXP's icon.
+	local logo = button:CreateTexture("OpenXPMinimapButtonIcon", "ARTWORK")
+	logo:SetTexture(ns.Theme.Media("logo"))
+	logo:SetSize(SIZE - 10, SIZE - 10)
+	logo:SetPoint("CENTER", button, "CENTER", 0, 0)
+	button.Icon = logo
+	-- The hover: the accent at 25 %, the strength in its colour (W.Color's
+	-- alpha, kept through theme repaints) and put back after any SetAlpha
+	-- (W.HoldColorAlpha): in the client a texture's SetAlpha sets that same
+	-- alpha, so a button bar showing our regions again at full alpha turned
+	-- it into an opaque disc over the logo.
+	local hover = W.HoldColorAlpha(W.Color(W.Tex(button, "HIGHLIGHT", "circle"), "accent", 0.25))
+	hover:SetAllPoints(button)
+	button.Hover = hover
+	button:SetScript("OnClick", function(self, which)
+		if which == "RightButton" then
+			W.HideTooltip(self)
+			Maps.ShowMenu(self)
+		else
+			ns.ToggleHidden()
+			-- The tooltip under the cursor says what the next click does.
+			if GameTooltip and GameTooltip:GetOwner() == self then showTip(self) end
+		end
+	end)
+	button:SetScript("OnEnter", showTip)
+	button:SetScript("OnLeave", function(self) W.HideTooltip(self) end)
+	button:SetScript("OnDragStart", function(self)
+		W.HideTooltip(self)
+		if not ours() then return end
+		self:SetScript("OnUpdate", ns.Safe(function() place(cursorAngle()) end))
+	end)
+	button:SetScript("OnDragStop", function(self)
+		if not self:GetScript("OnUpdate") then return end
+		self:SetScript("OnUpdate", nil)
+		ns.Set("maps.minimapButtonAngle", cursorAngle())
+	end)
+	-- A resized minimap (Edit Mode, minimap addons) moves its edge.
+	Minimap:HookScript("OnSizeChanged", function()
+		if button:IsShown() then place(angle()) end
+	end)
+	button:Hide()
+	return button
+end
+
+function Maps.RefreshMinimapButton()
+	if ns.Get("maps.minimapButton") then
+		if not build() then return end
+		place(angle())
+		Maps.PaintHidden(button)
+		button:Show()
+	elseif button then
+		button:Hide()
+	end
+end
+
+ns.On("OPENXP_HIDDEN", function()
+	if button then Maps.PaintHidden(button) end
+end)
+
+ns.On("SETTING_CHANGED", function(path)
+	if not ns.IsLoggedIn() then return end
+	if path == "maps.minimapButton" or path == "maps.minimapButtonAngle" or path == "maps" or path == "" then
+		Maps.RefreshMinimapButton()
+	end
+end)
+
+ns.OnLogin(Maps.RefreshMinimapButton)

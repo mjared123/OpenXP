@@ -1,0 +1,617 @@
+-- OpenXP.Dungeons: a journal page per dungeon and raid:
+-- every quest with where it starts and ends,
+-- its objective, chain and rewards, the bosses in kill order with the quests
+-- tied to them, and the entrance. No loot tables. Scope: docs/SUITE.md,
+-- "Modules"; data and runtime: docs/ARCHITECTURE.md, "Reference data"
+-- (`dungeons.json` and the journal pages).
+--
+-- The data rides in the load-on-demand Codex pack (Dungeons1.lua, written by
+-- `codex build` through tools/lib/codex/journal.js): per dungeon a summary
+-- table and its page as Lua source, compiled only when that page is asked
+-- for. One page is kept decoded at a time.
+--
+--   Dungeons.Load() -> ok, reason   -- "off" (dungeons.enabled false), Data.Pack's reasons
+--                                     ("missing", "disabled", "combat", ...), "nodata" (pack built without Dungeons)
+--   Dungeons.IsEnabled() ; Dungeons.Meta()
+--   Dungeons.List() -> { { key, name, kind, forever, minLevel, maxLevel, players, map, zone, zoneName,
+--       entrance = { map, x, y, f } | nil, quests = { A = n, H = n }, bosses = n,
+--       attune = { A = n, H = n } } }   -- level order, no page decoded
+--       (name and zoneName in the client's language when it has them; map: the instance's Map id)
+--   Dungeons.Get(key) -> { key, name, kind, forever, minLevel, maxLevel, players, map, zone, zoneName, entrance } | nil
+--   Dungeons.ForMap(mapID) -> key | nil   -- the dungeon or raid whose instance map that is (Compat.GetInstanceMapID)
+--   Dungeons.Entrance(key) -> map, x, y, f | nil
+--   Dungeons.BestAt(key) -> level | nil   -- the level it suits best, inside its range: one under the
+--       median level of its encounter bosses, else of all its bosses, else of its quests, else the
+--       range's midpoint (the first that falls inside the range); nil without a level range
+--   Dungeons.EnemyEntrance(key[, side]) -> text | nil   -- side "A" | "H" (nil: this character's): the
+--       way in lies in the other faction's land (Ruins of Lordaeron outside the Undercity, The Hall of
+--       Thanes in Ironforge, Ragefire Chasm, the Stockade): "Entrance in Horde territory (...)"
+--   Dungeons.EnemyCapital(key, side) -> true | nil   -- side "A" | "H": the way in lies inside the
+--       other faction's capital (The Hall of Thanes, Ragefire Chasm, the Stockade), so the hub's
+--       "For your level" leaves it out under that side's filter
+--   Dungeons.Quests(key, faction) -> { quest, ... }   -- faction "A" | "H" | nil (all); level order
+--   Dungeons.Quest(key, id) -> quest | nil           -- page and chain quests
+--       quest = { id, title, level, minLevel, faction, classes, inside, shareable,
+--         objectives = { { k = "kill"|"item"|"object"|"event", id, n (count over one), name (English) } },
+--         start, finish (= { kind, id, name, map, x, y, f, inside }), startItem = { id, name },
+--         chain = { ids }, closedBy = { ids } | nil (taken or done, these close it for good:
+--         the quest a breadcrumb leads to, its exclusive group),
+--         rewards = { items = { { id, name, quality, choice } }, xp, money, rep = { { faction, name, value } } },
+--         bosses = { names } }
+--   Dungeons.QuestFor(quest) -> who, why | nil   -- who a page, chain or attunement quest is for
+--       (#1730: The Orb of Soran'ruk is the Warlocks'): who = { classes, races } (Lookup.QuestFor
+--       on the Codex quest's masks; the page's `classes` when the Codex has no record), nil when
+--       anyone of its side may take it; why = "class" | "race" when this character may not
+--       (Lookup.QuestBlock, the rule the pick-up guide leaves such a quest out by)
+--   Dungeons.ObjectiveText(quest) -> text | nil   -- its objectives in the client's language, one a line
+--   Dungeons.Bosses(key) -> { { order, name, npc, level, object, role, encounter, quests = { { id, how, item, itemName } } } }
+--       object: a chest boss's object id (npc nil); role: "rare" | "event" | "optional" for the
+--       bosses after the encounters, nil for an encounter (and on pages built before roles);
+--       encounter: its DungeonEncounter id (its name in every language: Names.Encounter)
+--       how: "kill" (an objective), "item" (drops an objective item), "starts" (drops the item
+--       that starts it), "involved" (DungeonJournal names it for the quest)
+--   Dungeons.Open(key|nil)   -- fires SHOW_DUNGEON(key); the hub section listens
+--   Dungeons.GuideTo(key) -> ok ; Dungeons.GuideToPoint(point, label[, stop[, warning[, what]]]) -> ok   (a trip, Nav.StartTrip)
+--   Dungeons.ShowOnMap(key) -> ok   -- the world map on the entrance's zone
+--   Dungeons.Find(text) -> key | nil   -- by name (the client's language or English) or key
+--   Dungeons.Register(group, a, b)  -- pack files only
+--   Dungeons.Attunements(key, faction) -> { attunement, ... }   -- faction "A" | "H" | nil (all)
+--       attunement = { id, name, kind = "attunement"|"key"|"item", need = "each"|"one", faction,
+--         item = { id, name, quality }, note, level, any, goal = { questIds }, steps = { step, ... },
+--         inside = { { kind = "npc"|"object", id, instance }, ... } | nil }   -- spawnless NPCs and objects it meets, placed
+--       step: { kind = "quest", id, title, level, minLevel, faction, classes, start, finish,
+--         startItem, after = { ids }, afterAny = { ids }, goal, rep = { faction, name, standing } }
+--         | { kind = "drop", item, npc = point, chance, instance } | { kind = "object", item, object = point, chance }
+--         | { kind = "rep", faction, name, standing } | { kind = "gift", item, npc = point }
+--       (tools/lib/codex/attunements.js; their state and guide: Dungeons/Attune.lua)
+--   Picking up a page's quests (PickupPlan, PickupGuide, PickUp, GiverTarget,
+--   PlanStops, OrderStops): Dungeons/Pickup.lua. Handing them in after the
+--   run (HandinPlan, HandinFollowUps, HandinGuide, HandIn, HandinText):
+--   Dungeons/Handin.lua. Attunements and keys (AttunementState, AttuneGuide,
+--   Attune): Dungeons/Attune.lua. What the quests are worth in levels
+--   (QuestXP): Dungeons/XP.lua. The dungeon's own picture (Art, its loading
+--   screen cropped square): Dungeons/Art.lua.
+-- Settings: dungeons.enabled, dungeons.headsUp (the heads-up when a
+-- dungeon opens up, UI/DungeonToast.lua); per character, the dungeons run in leveling
+-- guides (Dungeons.ROUTE, Engine.ChooseDungeon). Command: /openxp dungeons [name].
+
+local ADDON, ns = ...
+local L = ns.L
+
+local Dungeons = {}
+ns.Dungeons = Dungeons
+
+local type, pairs, ipairs, pcall, tostring = type, pairs, ipairs, pcall, tostring
+local find, lower, format, gsub = string.find, string.lower, string.format, string.gsub
+local sort, floor = table.sort, math.floor
+
+ns.RegisterDefaults("dungeons", { enabled = true, headsUp = true }) -- headsUp: UI/DungeonToast.lua
+
+local function enabled() return ns.Get("dungeons.enabled") and true or false end
+Dungeons.IsEnabled = enabled
+
+local meta
+local summaries = {} -- key -> summary table
+local sources = {} -- key -> page source (string)
+local openKey, openPage -- the one decoded page
+local bestAt = {} -- key -> level | false (Dungeons.BestAt)
+
+---------------------------------------------------------------------------
+-- Registration and loading
+---------------------------------------------------------------------------
+
+function Dungeons.Register(group, a, b)
+	if group == "meta" then
+		if type(a) == "table" then meta = a end
+	elseif group == "dungeon" then
+		if type(a) == "table" then for k, v in pairs(a) do summaries[k] = v end end
+		if type(b) == "table" then for k, v in pairs(b) do sources[k] = v end end
+		openKey, openPage, bestAt = nil, nil, {}
+	end
+end
+
+function Dungeons.Meta() return meta end
+
+function Dungeons.Load()
+	if not enabled() then return false, "off" end
+	if meta then return true end
+	local C = ns.Codex
+	if not (C and C.Load) then return false, "missing" end
+	local loaded, reason = C.Load()
+	if not loaded then return false, reason end
+	if not meta then return false, "nodata" end
+	return true
+end
+
+local function ready()
+	if meta then return enabled() end
+	return (Dungeons.Load())
+end
+
+-- A page's quest, NPC, object and item names in the client's language
+-- (OpenXP.Names), in place: quest titles, start and finish points, items
+-- (rewards, starting items, keys), boss names and the quests' boss lists.
+-- English stays where the language has no name.
+local ITEM_KEYS = { item = true, startItem = true, items = true }
+local NAMED = { npc = true, object = true, item = true }
+
+local function localise(N, t, key)
+	local itemWas = type(t.item) == "table" and t.item.name
+	for k, v in pairs(t) do
+		if type(v) == "table" then localise(N, v, type(k) == "number" and key or k) end
+	end
+	local id = t.id
+	if type(id) == "number" then
+		if t.title then
+			t.title = N.Quest(id) or t.title
+		elseif t.name then
+			local kind = NAMED[t.kind] and t.kind or (ITEM_KEYS[key] and "item")
+			if kind then t.name = N.Get(kind, id) or t.name end
+		end
+	elseif itemWas and t.name == itemWas then
+		t.name = t.item.name -- a key named after its item
+	end
+	if type(t.item) == "number" and t.itemName then t.itemName = N.Item(t.item) or t.itemName end
+end
+
+local function localisePage(p)
+	local N = ns.Names
+	if not (N and N.Localised()) then return end
+	local bossName = {}
+	for _, b in ipairs(p.bosses) do
+		local was = b.name
+		b.name = N.Encounter(b.encounter) or N.Npc(b.npc) or N.Object(b.object) or was
+		if was then bossName[was] = b.name end
+		for _, q in ipairs(b.quests or {}) do
+			if type(q.item) == "number" and q.itemName then q.itemName = N.Item(q.item) or q.itemName end
+		end
+	end
+	-- An attunement named after its goal quest takes that quest's title; one
+	-- named otherwise (The Dread Citadel, its quests "The Dread Citadel -
+	-- Naxxramas") takes its first goal quest's name in the client's language.
+	local goalStep = {}
+	for _, a in ipairs(p.attunement) do
+		local g = type(a.goal) == "table" and a.goal[1]
+		for _, s in ipairs(a.steps or {}) do
+			if g and s.kind == "quest" and s.id == g and s.title == a.name then goalStep[a] = s end
+		end
+	end
+	for _, group in ipairs({ p.quests, p.chain, p.attunement }) do
+		localise(N, group)
+		for _, q in pairs(group) do
+			if type(q) == "table" and type(q.bosses) == "table" then
+				for i, name in ipairs(q.bosses) do q.bosses[i] = bossName[name] or name end
+			end
+		end
+	end
+	for _, a in ipairs(p.attunement) do
+		local g = a.kind == "attunement" and type(a.goal) == "table" and a.goal[1]
+		if goalStep[a] then a.name = goalStep[a].title
+		elseif type(g) == "number" then a.name = N.Quest(g) or a.name end
+	end
+end
+
+-- key -> page | nil, compiled from its source in an empty environment.
+local function page(key)
+	if key == nil or not ready() then return nil end
+	if key == openKey then return openPage end
+	local src = sources[key]
+	if type(src) ~= "string" then return nil end
+	local fn = loadstring(src, "=Dungeons:" .. tostring(key))
+	if not fn then return nil end
+	setfenv(fn, {})
+	local ok, p = pcall(fn)
+	if not ok or type(p) ~= "table" then return nil end
+	p.quests = p.quests or {}
+	p.chain = p.chain or {}
+	p.bosses = p.bosses or {}
+	p.attunement = p.attunement or {}
+	localisePage(p)
+	openKey, openPage = key, p
+	return p
+end
+
+-- The open page holds translated names: decode it again after the names
+-- pack arrives late, or when a name it carries is learned anew.
+ns.On("NAMES_LOADED", function() openKey, openPage = nil, nil end)
+ns.On("NAME_LEARNED", function(_, id)
+	local src = openKey and sources[openKey]
+	if type(src) ~= "string" then return end
+	for _, field in ipairs({ "id=", "npc=", "object=" }) do
+		if find(src, field .. id .. ",", 1, true) or find(src, field .. id .. "}", 1, true) then
+			openKey, openPage = nil, nil
+			return
+		end
+	end
+end)
+
+---------------------------------------------------------------------------
+-- Reading
+---------------------------------------------------------------------------
+
+-- The instance's name and its zone's in the client's language (Names: the
+-- names pack's Map.csv name, the client's map name), else the data's English.
+-- The entrance for this character: the Alliance's own way in (`A`, the
+-- City of Dalaran) for an Alliance character, else the one way in.
+local function entranceOf(s)
+	local e = s.entrance
+	if e and e.A and ns.Compat.GetPlayerFaction() == "Alliance" then return e.A end
+	return e
+end
+
+-- Instances whose way in lies in one faction's land (Fitz, 2026-11-07): the
+-- other faction can do them, but has to get through that land. side: whose
+-- land it is; text: what the other faction is told; capital: the way in is
+-- inside that faction's capital, not merely its land (Fitz, 2026-11-08: The
+-- Hall of Thanes is no Horde dungeon "for your level"; the Ruins of
+-- Lordaeron, outside the Undercity, can be reached).
+local TERRITORY = {
+	["ruins-of-lordaeron"] = { side = "H", text = L["Entrance in Horde territory (outside the Undercity)"] },
+	["the-hall-of-thanes"] = { side = "A", capital = true, text = L["Entrance in Alliance territory (in Ironforge)"] },
+	["ragefire-chasm"] = { side = "H", capital = true, text = L["Entrance in Horde territory (in Orgrimmar)"] },
+	["stormwind-stockade"] = { side = "A", capital = true, text = L["Entrance in Alliance territory (in Stormwind)"] },
+}
+
+-- The warning for side `side` ("A" | "H"; nil: this character's) when the
+-- instance's way in lies in the other faction's land, else nil.
+function Dungeons.EnemyEntrance(key, side)
+	local t = key and TERRITORY[key]
+	if not t then return nil end
+	if side == nil then
+		local f = ns.Compat.GetPlayerFaction()
+		side = f == "Alliance" and "A" or f == "Horde" and "H" or nil
+	end
+	if side == nil or side == t.side then return nil end
+	return t.text
+end
+
+function Dungeons.EnemyCapital(key, side)
+	local t = key and TERRITORY[key]
+	if t and t.capital and (side == "A" or side == "H") and side ~= t.side then return true end
+	return nil
+end
+
+local function summary(key, s)
+	local N = ns.Names
+	local localised = N and N.Localised and N.Localised()
+	local zoneName = s.zoneName
+	if localised and s.zone then zoneName = ns.Compat.MapName(s.zone) or zoneName end
+	return {
+		key = key, name = (localised and s.map and N.Instance(s.map)) or s.name or key, kind = s.kind or "dungeon", forever = s.forever and true or false,
+		minLevel = s.minLevel, maxLevel = s.maxLevel, players = s.players, map = s.map, zone = s.zone, zoneName = zoneName,
+		entrance = entranceOf(s),
+		quests = { A = s.quests and s.quests.A or 0, H = s.quests and s.quests.H or 0 }, bosses = s.bosses or 0,
+		attune = { A = s.attune and s.attune.A or 0, H = s.attune and s.attune.H or 0 },
+	}
+end
+
+function Dungeons.List()
+	if not ready() then return {} end
+	local out = {}
+	for key, s in pairs(summaries) do out[#out + 1] = summary(key, s) end
+	sort(out, function(a, b)
+		local la, lb = a.minLevel or 99, b.minLevel or 99
+		if la ~= lb then return la < lb end
+		if a.name ~= b.name then return a.name < b.name end
+		return a.key < b.key
+	end)
+	return out
+end
+
+function Dungeons.Get(key)
+	local s = key ~= nil and ready() and summaries[key]
+	if not s then return nil end
+	return summary(key, s)
+end
+
+function Dungeons.ForMap(mapID)
+	if type(mapID) ~= "number" or not ready() then return nil end
+	for key, s in pairs(summaries) do
+		if s.map == mapID then return key end
+	end
+	return nil
+end
+
+-- The level a dungeon suits best (a player asked why Uldaman, 35-47, was "for
+-- your level" at 35, where most of it suits ~42). The players' side of the
+-- bosses: one level under their median, which lands where a run fits
+-- (Deadmines 19, Uldaman 43, Zul'Farrak 45, Blackrock Depths 54). A source
+-- counts only when it falls inside the range: the City of Dalaran (28-60)
+-- has one level 63 boss and reads its quests instead. Worked out from the
+-- page source once per dungeon, without decoding names.
+local function median(t)
+	local n = #t
+	if n == 0 then return nil end
+	sort(t)
+	if n % 2 == 1 then return t[(n + 1) / 2] end
+	return (t[n / 2] + t[n / 2 + 1]) / 2
+end
+
+local function pageFacts(key)
+	if key == openKey then return openPage end
+	local src = sources[key]
+	if type(src) ~= "string" then return nil end
+	local fn = loadstring(src, "=Dungeons:" .. tostring(key))
+	if not fn then return nil end
+	setfenv(fn, {})
+	local ok, p = pcall(fn)
+	return ok and type(p) == "table" and p or nil
+end
+
+local function deriveBestAt(key, s)
+	local lo, hi = s.minLevel, s.maxLevel or s.minLevel
+	if type(lo) ~= "number" then return nil end
+	if hi <= lo then return lo end
+	local p = pageFacts(key)
+	local encounters, bosses, quests = {}, {}, {}
+	for _, b in ipairs(p and p.bosses or {}) do
+		if type(b.level) == "number" then
+			bosses[#bosses + 1] = b.level
+			if not b.role then encounters[#encounters + 1] = b.level end
+		end
+	end
+	for _, q in ipairs(p and p.quests or {}) do
+		if type(q.level) == "number" and q.level > 0 then quests[#quests + 1] = q.level end
+	end
+	local function inside(m, under)
+		if not m then return nil end
+		local v = floor(m + 0.5) - under
+		return v >= lo and v <= hi and v or nil
+	end
+	return inside(median(encounters), 1) or inside(median(bosses), 1) or inside(median(quests), 0) or floor((lo + hi) / 2)
+end
+
+function Dungeons.BestAt(key)
+	local s = key ~= nil and ready() and summaries[key]
+	if not s then return nil end
+	local v = bestAt[key]
+	if v == nil then
+		v = deriveBestAt(key, s) or false
+		bestAt[key] = v
+	end
+	return v or nil
+end
+
+function Dungeons.Entrance(key)
+	local s = key ~= nil and ready() and summaries[key]
+	local e = s and entranceOf(s)
+	if not e then return nil end
+	return e.map, e.x, e.y, e.f
+end
+
+function Dungeons.Quests(key, faction)
+	local p = page(key)
+	if not p then return {} end
+	local out = {}
+	for _, q in ipairs(p.quests) do
+		if faction == nil or q.faction == nil or q.faction == faction then out[#out + 1] = q end
+	end
+	return out
+end
+
+function Dungeons.Quest(key, id)
+	local p = page(key)
+	if not (p and id) then return nil end
+	for _, q in ipairs(p.quests) do if q.id == id then return q end end
+	return p.chain[id]
+end
+
+local WHO_WHY = { class = true, race = true }
+function Dungeons.QuestFor(q)
+	if type(q) ~= "table" or not q.id then return nil end
+	local Lk, C = ns.Lookup, ns.Codex
+	local rec = C and C.Quest and C.Quest(q.id)
+	local who = rec and Lk and Lk.QuestFor and Lk.QuestFor(rec)
+	if not who and not rec and type(q.classes) == "table" and #q.classes > 0 then who = { classes = q.classes } end
+	if not who then return nil end
+	local p = Lk and Lk.PlayerInfo and Lk.PlayerInfo()
+	local why
+	if rec and p then
+		why = Lk.QuestBlock(rec, p)
+		if not WHO_WHY[why] then why = nil end
+	elseif p and who.classes then
+		why = "class"
+		for _, c in ipairs(who.classes) do if c == p.class then why = nil end end
+	end
+	return who, why
+end
+
+function Dungeons.Bosses(key)
+	local p = page(key)
+	return p and p.bosses or {}
+end
+
+-- A quest's objective line in the client's language, one objective a line,
+-- composed from the page's objective facts (quest.objectives = { { k, id, n,
+-- name } }): "Kill 15 <npc>", "Collect 8 <item>", "Use <object>" with the
+-- names from OpenXP.Names, else the data's English. Objectives without an
+-- id (escorts, events) read the quest's objective summary from the names
+-- pack ("objective") once, else each its English text. A page built before
+-- the objective facts (an older Codex pack) keeps its English line
+-- (quest.objective). nil: none.
+local OBJECTIVE = {
+	kill = { L["Kill %s"], L["Kill %d %s"], "npc" },
+	item = { L["Collect %s"], L["Collect %d %s"], "item" },
+	object = { L["Use %s"], nil, "object" },
+	talk = { L["Speak with %s"], nil, "npc" },
+}
+
+-- The quest text tokens a summary keeps: $B a line break (a space here),
+-- $N name, $C class, $R race, $G male:female;
+local function fill(s)
+	local name = UnitName and UnitName("player") or ""
+	local class = UnitClass and UnitClass("player") or ""
+	local race = UnitRace and UnitRace("player") or ""
+	local female = UnitSex and UnitSex("player") == 3
+	s = gsub(gsub(s, "%s*%$[Bb]%s*", " "), "  +", " ")
+	s = gsub(s, "%$[Gg]%s*([^:;]*):([^;]*);", function(m, f) return female and f or m end)
+	s = gsub(s, "%$([NnCcRr])", function(t)
+		t = lower(t)
+		return t == "n" and name or t == "c" and class or race
+	end)
+	return s
+end
+
+function Dungeons.ObjectiveText(q)
+	local list = type(q) == "table" and q.objectives
+	if type(list) ~= "table" or #list == 0 then
+		return type(q) == "table" and type(q.objective) == "string" and q.objective ~= "" and q.objective or nil
+	end
+	local N = ns.Names
+	local lines, summaryDone = {}, false
+	for _, o in ipairs(list) do
+		local f = OBJECTIVE[o.k]
+		if f then
+			local name = (N and N.Get(f[3], o.id)) or o.name or ""
+			lines[#lines + 1] = (o.n and f[2]) and format(f[2], o.n, name) or format(f[1], name)
+		elseif not summaryDone then
+			local text = N and N.Get("objective", q.id)
+			if text then
+				summaryDone = true
+				lines[#lines + 1] = fill(text)
+			elseif o.name then
+				lines[#lines + 1] = o.name
+			end
+		end
+	end
+	if #lines == 0 then return nil end
+	return table.concat(lines, "\n")
+end
+
+function Dungeons.Attunements(key, faction)
+	local p = page(key)
+	if not p then return {} end
+	local out = {}
+	for _, a in ipairs(p.attunement) do
+		if not faction or not a.faction or a.faction == faction then out[#out + 1] = a end
+	end
+	return out
+end
+
+-- By name in the client's language or in English, or by key.
+function Dungeons.Find(text)
+	if type(text) ~= "string" or text == "" then return nil end
+	local want, hit = lower(text), nil
+	for _, d in ipairs(Dungeons.List()) do
+		local n, en = lower(d.name), lower(summaries[d.key].name or d.key)
+		if n == want or en == want or d.key == want then return d.key end
+		if not hit and (find(n, want, 1, true) or find(en, want, 1, true)) then hit = d.key end
+	end
+	return hit
+end
+
+---------------------------------------------------------------------------
+-- Acting
+---------------------------------------------------------------------------
+
+function Dungeons.Open(key)
+	if not enabled() then
+		ns.Print(L["Dungeons are turned off (Options > Discovery > Dungeons)."])
+		return false
+	end
+	ns.Fire("SHOW_DUNGEON", key)
+	return true
+end
+
+-- The arrow to `point`. `stop`: Nav.SetTarget's stop kind; "dungeon" (an
+-- entrance) makes it a trip (Nav.StartTrip, "Back to the guide" on the way)
+-- that ends through the instance's portal (#1686), labelled `what`
+-- ("Dungeon", "Raid"). `warning`: the line the arrow shows under the label
+-- (Dungeons.EnemyEntrance). Any other point (a giver, a turn-in) stays the
+-- arrow's until the step changes, as a point set on the map does.
+function Dungeons.GuideToPoint(point, label, stop, warning, what)
+	local Nav = ns.Nav
+	if not (type(point) == "table" and point.map and point.x and point.y and Nav and Nav.SetTarget) then return false end
+	local t = Nav.SetTarget(point.map, point.x, point.y, label or point.name, point.f, stop, nil, warning)
+	if not t then return false end
+	if stop == "dungeon" then Nav.StartTrip(t, label or point.name, what or L["Dungeon"], "instance") end
+	return true
+end
+
+function Dungeons.GuideTo(key)
+	local d = Dungeons.Get(key)
+	if not (d and d.entrance) then return false end
+	return Dungeons.GuideToPoint(d.entrance, d.name, "dungeon", Dungeons.EnemyEntrance(key), d.kind == "raid" and L["Raid"] or L["Dungeon"])
+end
+
+-- Through Compat.OpenWorldMap: the client's C_Map opener, never in combat
+-- (the global OpenWorldMap taints the map: NAV_QA C3).
+function Dungeons.ShowOnMap(key)
+	local map = Dungeons.Entrance(key)
+	if not map then return false end
+	return ns.Compat.OpenWorldMap(map)
+end
+
+ns.RegisterCommand("dungeons", function(rest)
+	Dungeons.Open(rest ~= "" and Dungeons.Find(rest) or nil)
+end, L["Dungeon quests, bosses and entrances"])
+
+if ns.RegisterOptions then
+	local ok, err = ns.RegisterOptions({
+		page = L["Discovery"], tab = L["Dungeons"], section = ENCOUNTER_JOURNAL,
+		controls = {
+			{ kind = "toggle", key = "dungeons.enabled", label = L["Dungeons"],
+				help = L["A page per dungeon and raid: every quest with where to get it, its chain and rewards, the bosses and the entrance."] },
+			{ kind = "toggle", key = "dungeons.headsUp", label = L["Tell me when a dungeon opens up"], child = true, disabled = function() return not ns.Get("dungeons.enabled") end,
+				help = L["When a level-up opens a dungeon's quests to this character, a card on the guide window says so, once per dungeon, with a button that picks up its quests in a new tab."] },
+		},
+	})
+	if not ok and geterrorhandler then geterrorhandler()(err) end
+
+	-- The dungeons a leveling guide's `when dungeon` steps can be for, one
+	-- toggle each, all off: the solo route is the default. The Classic
+	-- dungeons of the Codex's instances (data/codex/entrances.json), by
+	-- level, as Map id and English name; the name shows in the client's
+	-- language when it has one (Names.Instance). The choice is per character
+	-- (Engine.ChooseDungeon). Only the ones this character's guides have
+	-- steps for are offered (Engine.GuideDungeons, read at login once the
+	-- guides are registered; none: no section); a choice saved for one not
+	-- offered is kept.
+	local ROUTE = {
+		{ 389, "Ragefire Chasm" }, { 43, "Wailing Caverns" }, { 36, "The Deadmines" }, { 33, "Shadowfang Keep" },
+		{ 48, "Blackfathom Deeps" }, { 34, "The Stockade" }, { 90, "Gnomeregan" }, { 47, "Razorfen Kraul" },
+		{ 189, "Scarlet Monastery" }, { 129, "Razorfen Downs" }, { 70, "Uldaman" }, { 209, "Zul'Farrak" },
+		{ 349, "Maraudon" }, { 109, "Sunken Temple" }, { 230, "Blackrock Depths" }, { 229, "Blackrock Spire" },
+		{ 429, "Dire Maul" }, { 289, "Scholomance" }, { 329, "Stratholme" },
+	}
+	Dungeons.ROUTE = ROUTE
+	ns.OnLogin(function()
+		local E = ns.Engine
+		local have = E and E.GuideDungeons and E.GuideDungeons() or {}
+		local controls = {}
+		for _, d in ipairs(ROUTE) do
+			local map, name = d[1], d[2]
+			if have[map] then
+				controls[#controls + 1] = { kind = "toggle",
+					label = function() return ns.Names and ns.Names.Instance and ns.Names.Instance(map) or name end,
+					help = L["Leveling guides take you through this dungeon where they have steps for it. Off: they keep to the solo route. More dungeons join this list as they are added to the guides' route."],
+					get = function() return E.DungeonChosen(map) end,
+					set = function(on) E.ChooseDungeon(map, on) end }
+			end
+		end
+		if #controls == 0 then return end
+		local done, why = ns.RegisterOptions({ page = L["Discovery"], tab = L["Dungeons"], section = L["Dungeons in leveling guides"], controls = controls })
+		if not done and geterrorhandler then geterrorhandler()(why) end
+	end)
+
+	-- The group quests of this character's guides (`when group`), one toggle
+	-- each: on, do it with a group; off, skip it (or not answered yet: the
+	-- guide asks when it gets there). Per character (Engine.AnswerGroup). Read
+	-- at login, once the guides are registered; none: no tab.
+	ns.OnLogin(function()
+		local E = ns.Engine
+		local list = E and E.GroupQuests and E.GroupQuests() or {}
+		if #list == 0 then return end
+		local quests = {}
+		for _, gq in ipairs(list) do
+			local q = gq.quest
+			quests[#quests + 1] = { kind = "toggle",
+				label = function() return ns.Names and ns.Names.Quest and ns.Names.Quest(q) or gq.title or ("#" .. q) end,
+				help = L["Off: the guide skips this group quest and keeps to the solo route. Until you choose, it asks when it gets there."],
+				get = function() return E.GroupAnswer(q) == "do" end,
+				set = function(on) E.AnswerGroup(q, on and "do" or "skip") end }
+		end
+		local done, why = ns.RegisterOptions({ page = L["Discovery"], tab = L["Group quests"], section = L["Group quests in leveling guides"], controls = quests })
+		if not done and geterrorhandler then geterrorhandler()(why) end
+	end)
+end

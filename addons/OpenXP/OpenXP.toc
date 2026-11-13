@@ -1,0 +1,48 @@
+## Interface: 16001
+## Title: OpenXP
+## Notes: Leveling guides for World of Warcraft: Forever.
+## Title-deDE: OpenXP
+## Notes-deDE: Leveling-Guides für World of Warcraft: Forever.
+## Title-esES: OpenXP
+## Notes-esES: Guías para subir de nivel en World of Warcraft: Forever.
+## Title-esMX: OpenXP
+## Notes-esMX: Guías para subir de nivel en World of Warcraft: Forever.
+## Title-frFR: OpenXP
+## Notes-frFR: Guides de montée en niveau pour World of Warcraft: Forever.
+## Title-koKR: OpenXP
+## Notes-koKR: World of Warcraft: Forever 레벨업 가이드.
+## Title-ptBR: OpenXP
+## Notes-ptBR: Guias de evolução para World of Warcraft: Forever.
+## Title-ruRU: OpenXP
+## Notes-ruRU: Гайды по прокачке для World of Warcraft: Forever.
+## Title-zhCN: OpenXP
+## Notes-zhCN: 魔兽世界：Forever 练级指南。
+## Title-zhTW: OpenXP
+## Notes-zhTW: World of Warcraft: Forever 的升級指南。
+## Author: OpenXP
+## X-License: GPL-3.0-only
+## X-Website: https://github.com/mjared123/OpenXP
+## Version: 2.0.0-dev
+## Category: OpenXP
+## IconTexture: Interface\AddOns\OpenXP\Media\UI\logo
+## AddonCompartmentFunc: OpenXP_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: OpenXP_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: OpenXP_OnAddonCompartmentLeave
+## OptionalDeps: EllesmereUI, TomTom, OpenMap
+## SavedVariables: OpenXPDB, OXPData, OXPDB, OXPSettings, OXPString, OXPQuestieDump
+## SavedVariablesPerCharacter: OpenXPCharDB, OXPCData, OXPCTrackingData, OXPCComms, OXPCSettings
+
+ClientInfo.lua
+Core\Core.xml
+Theme\Theme.xml
+Nav\Nav.xml
+Quests\Quests.xml
+Gear\Gear.xml
+Maps\Maps.xml
+QoL\QoL.xml
+Lookup\Lookup.xml
+Dungeons\Dungeons.xml
+UI\UI.xml
+Rares\Rares.xml
+Talents\Talents.xml
+Alts\Alts.xml

@@ -1,0 +1,8 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="Rares.lua"/>
+	<Script file="Detect.lua"/>
+	<Script file="Pins.lua"/>
+	<Script file="Toast.lua"/>
+	<Script file="Options.lua"/>
+	<Script file="View.lua"/>
+</Ui>

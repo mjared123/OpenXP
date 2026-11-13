@@ -1,0 +1,359 @@
+-- Death helper: as a ghost, compare running back to the corpse with
+-- resurrecting at the nearest Spirit Healer (spawns from Data.lua), point
+-- the arrow at the faster choice and say why in one line. The arrow is held
+-- there (Nav.Hold) until you are alive: a step change, the guide's next
+-- waypoint, a point picked by hand or another addon's never takes it away
+-- (#1382). A point picked before dying (a map click, /way, another addon's)
+-- comes back once alive, if the guide is still on the same step. The arrow's
+-- route to either is planned like any target (Nav/Travel.lua walks a ghost
+-- there on foot), and it shows even while the guide window is hidden with the
+-- arrow (Nav.HiddenWithGuide).
+--
+-- Cost of each choice in seconds: the run (ghost run speed) and, for the
+-- Spirit Healer, resurrection sickness. That is the length the game last gave
+-- this character at its level (read from the debuff once it is on them),
+-- else Forever's current rule: none through level 10, then ten minutes
+-- (#390; Classic's one minute per level above 10 is not what Forever gives).
+-- A choice only flips when the other one is clearly better, so the arrow
+-- does not flicker.
+--
+--   OpenXP.QoL.GetDeathAdvice() -> { choice = "corpse"|"healer", corpseYards, healerYards,
+--                                      corpseSeconds, healerSeconds, sickness, note } | nil
+--
+-- Died in a dungeon or raid and released outside it, the corpse is on no map
+-- the client answers for: the instance's entrance (the Codex) stands for it.
+--
+-- Client: UnitIsGhost, C_DeathInfo.GetCorpseMapPosition, GetUnitSpeed,
+-- C_UnitAuras.GetPlayerAuraBySpellID (AuraData.duration), IsInInstance,
+-- GetInstanceInfo (through Compat) (Forever API docs).
+
+local ADDON, ns = ...
+local L = ns.L
+local QoL = ns.QoL
+local readable = ns.Compat.Readable
+
+local type, sqrt, floor, format = type, math.sqrt, math.floor, string.format
+
+local Death = {}
+QoL.Death = Death
+
+local RUN_SPEED = 7
+local HYSTERESIS = 5      -- seconds the other choice must win by to flip
+local INTERVAL = 1
+local LAYER = "qol.death"
+
+local SICKNESS_SPELL = 15007 -- Resurrection Sickness
+local SICKNESS = 600         -- Forever, from level 11 on
+
+-- Resurrection sickness in seconds at a level. `seen` is the debuff the game
+-- last gave ({ level, seconds }); it wins at that level.
+function Death.Sickness(level, seen)
+	level = level or 1
+	if type(seen) == "table" and seen.level == level and type(seen.seconds) == "number" then return seen.seconds end
+	if level <= 10 then return 0 end
+	return SICKNESS
+end
+
+-- The debuff's full length while it is on the player, kept per character
+-- with the level it came at.
+local function readSickness()
+	local A = C_UnitAuras
+	if not (A and A.GetPlayerAuraBySpellID) then return end
+	local ok, aura = pcall(A.GetPlayerAuraBySpellID, SICKNESS_SPELL)
+	local seconds = ok and type(aura) == "table" and readable(aura.duration)
+	if type(seconds) ~= "number" or seconds <= 0 then return end
+	local info = ns.Compat.GetPlayerInfo and ns.Compat.GetPlayerInfo()
+	local level = info and info.level
+	if not level then return end
+	QoL.State().resSickness = { level = level, seconds = floor(seconds + 0.5) }
+end
+Death.ReadSickness = readSickness
+
+-- Nearest Spirit Healer on continent c: c, wx, wy, map, x, y, yards.
+local liveCache = {}
+function Death.NearestHealer(c, px, py)
+	local best, bestD
+	local list = QoL.data.spiritHealers
+	local C = ns.Compat
+	for i = 1, #list do
+		local h = list[i]
+		local hc, hx, hy = h[1], h[2], h[3]
+		if not hc then
+			-- Live-frame point: placed through the client once.
+			local w = liveCache[h]
+			if w == nil then
+				local cc, wx, wy = C.MapToWorld(h[4], h[5], h[6])
+				w = cc and { cc, wx, wy } or false
+				liveCache[h] = w
+			end
+			if w then hc, hx, hy = w[1], w[2], w[3] end
+		end
+		if hc == c then
+			local dx, dy = hx - px, hy - py
+			local d = dx * dx + dy * dy
+			if not bestD or d < bestD then best, bestD = h, d end
+		end
+	end
+	if not best then return nil end
+	local hc, hx, hy = best[1], best[2], best[3]
+	if not hc then
+		local w = liveCache[best]
+		hc, hx, hy = w[1], w[2], w[3]
+	end
+	return hc, hx, hy, best[4], best[5], best[6], sqrt(bestD)
+end
+
+local function isGhost()
+	return readable(UnitIsGhost and UnitIsGhost("player")) and true or false
+end
+
+local function runSpeed()
+	if GetUnitSpeed then
+		local _, run = GetUnitSpeed("player")
+		run = readable(run)
+		if run and run > 0 then return run end
+	end
+	return RUN_SPEED
+end
+
+-- Corpse in world yards: c, wx, wy, map, x, y (live percent on the zone that
+-- holds it). The client answers on the player's map, off its edge when the
+-- ghost is in the next zone (#270), so the point is moved onto the zone under
+-- it on the continent map; the player's map when that finds none.
+local function corpse()
+	local C = ns.Compat
+	local map = C.GetPlayerMapPosition and C.GetPlayerMapPosition()
+	if not (map and C_DeathInfo and C_DeathInfo.GetCorpseMapPosition) then return nil end
+	local pos = C_DeathInfo.GetCorpseMapPosition(map)
+	if not pos then return nil end
+	local x, y
+	if pos.GetXY then x, y = pos:GetXY() else x, y = pos.x, pos.y end
+	x, y = readable(x), readable(y)
+	if not (x and y) or (x == 0 and y == 0) then return nil end
+	local c, wx, wy = C.MapToWorld(map, x * 100, y * 100)
+	if not c then return nil end
+	local J = ns.Nav and ns.Nav.journey
+	local cont = J and C.GetContinentMap(map)
+	if cont then
+		local kx, ky = C.WorldToMap(c, wx, wy, cont)
+		local zm, zx, zy
+		if kx then zm, zx, zy = J.ZonePoint(cont, kx, ky) end
+		if zm then return c, wx, wy, zm, zx, zy end
+	end
+	return c, wx, wy, map, x * 100, y * 100
+end
+
+-- The entrance of the dungeon or raid with instance map `map` (the Codex's
+-- instance record, Lookup's pack: read only while it is loaded or Lookup is
+-- on): map, x, y, name; nil when unknown. Found once per instance.
+local entrances = {}
+function Death.EntranceOf(map)
+	if not map then return nil end
+	local hit = entrances[map]
+	if hit == nil then
+		local X = ns.Codex
+		if not (X and X.Each and X.Instance) then return nil end
+		if not (X.IsLoaded and X.IsLoaded()) and not (ns.Get("lookup.enabled") and X.Load and X.Load()) then return nil end
+		hit = false
+		X.Each("instance", function(key)
+			local rec = not hit and X.Instance(key)
+			if rec and rec.map == map and type(rec.entrance) == "table" then hit = rec end
+		end)
+		entrances[map] = hit
+	end
+	if not hit then return nil end
+	local e = hit.entrance
+	return e.map, e.x, e.y, hit.name
+end
+
+-- Where the character died, when in a dungeon or raid (QoL.State().diedIn =
+-- { map }), kept until alive: once released outside, the corpse is on no map
+-- the client answers for, so the run back is to the instance's entrance.
+local function noteDeathPlace()
+	local C = ns.Compat
+	local inside, kind = C.IsInInstance()
+	local map = inside and (kind == "party" or kind == "raid") and C.GetInstanceMapID and C.GetInstanceMapID() or nil
+	QoL.State().diedIn = map and { map = map } or nil
+end
+
+---------------------------------------------------------------------------
+-- Advice
+---------------------------------------------------------------------------
+
+local advice = {}
+local current          -- "corpse" | "healer" | nil
+local mine             -- the Nav target we hold
+local ticker
+local noted = false
+
+-- Pure decision, for tests and the tick: choice, corpseSeconds, healerSeconds, sickness.
+-- `seen` as for Death.Sickness.
+function Death.Decide(corpseYards, healerYards, speed, level, previous, seen)
+	speed = speed and speed > 0 and speed or RUN_SPEED
+	local sickness = Death.Sickness(level, seen)
+	local cs = corpseYards and corpseYards / speed or nil
+	local hs = healerYards and (healerYards / speed + sickness) or nil
+	if not cs and not hs then return nil end
+	if not hs then return "corpse", cs, hs, sickness end
+	if not cs then return "healer", cs, hs, sickness end
+	local choice = cs <= hs and "corpse" or "healer"
+	if previous and previous ~= choice and math.abs(cs - hs) < HYSTERESIS then choice = previous end
+	return choice, cs, hs, sickness
+end
+
+local function noteFor(a)
+	local D = ns.FormatDistance
+	if a.choice == "corpse" then
+		-- Died in a dungeon: the run is to its entrance, the corpse inside.
+		if a.via then
+			return format(L["Run back to %s, your corpse is inside: %s (~%s)."], a.via, D(a.corpseYards), QoL.Duration(a.corpseSeconds))
+		end
+		if a.healerYards and a.sickness > 0 then
+			return format(L["Run back to your corpse: %s (~%s). The Spirit Healer costs %s of resurrection sickness."],
+				D(a.corpseYards), QoL.Duration(a.corpseSeconds), QoL.Duration(a.sickness))
+		end
+		return format(L["Run back to your corpse: %s (~%s)."], D(a.corpseYards), QoL.Duration(a.corpseSeconds))
+	end
+	if a.sickness == 0 then
+		return format(L["Resurrect at the Spirit Healer (%s): no resurrection sickness at your level."], D(a.healerYards))
+	end
+	if a.corpseYards then
+		return format(L["Resurrect at the Spirit Healer (%s): your corpse is %s away, longer than %s of sickness."],
+			D(a.healerYards), D(a.corpseYards), QoL.Duration(a.sickness))
+	end
+	return format(L["Resurrect at the Spirit Healer (%s)."], D(a.healerYards))
+end
+
+local function point(a)
+	local Nav = ns.Nav
+	if not (Nav and Nav.Hold) then return end
+	if mine and a.choice == current then return end
+	local C = ns.Compat
+	if a.choice == "corpse" then
+		mine = Nav.Hold(a.corpseMap, a.corpseX, a.corpseY, a.via and format(L["%s (your corpse is inside)"], a.via) or L["Your corpse"])
+	else
+		-- Live percent on the healer's own map; Era frame if the client cannot convert.
+		local x, y = C.WorldToMap(a.healerC, a.healerWX, a.healerWY, a.healerMap)
+		if x then
+			mine = Nav.Hold(a.healerMap, x, y, L["Spirit Healer"])
+		else
+			mine = Nav.Hold(a.healerMap, a.healerEX, a.healerEY, L["Spirit Healer"], "e")
+		end
+	end
+	current = a.choice
+end
+
+local function tint(name)
+	local T = ns.Theme
+	if T and T.Color then
+		local r, g, b = T.Color(name)
+		return { r, g, b, 1 }
+	end
+end
+
+local pinned = {}
+local function pins(a)
+	local P = ns.Pins
+	if not (P and P.SetLayer) then return end
+	if pinned.choice == a.choice and pinned.hx == a.healerWX and pinned.cx == a.corpseWX then return end
+	pinned.choice, pinned.hx, pinned.cx = a.choice, a.healerWX, a.corpseWX
+	local list = {}
+	if a.healerC then
+		list[#list + 1] = { c = a.healerC, wx = a.healerWX, wy = a.healerWY, icon = "map:ankh", size = 18, color = tint("npc"),
+			tooltip = L["Spirit Healer"], priority = a.choice == "healer" and 2 or 1 }
+	end
+	if a.corpseC then
+		list[#list + 1] = { c = a.corpseC, wx = a.corpseWX, wy = a.corpseWY, icon = "map:corpse", size = 18, color = tint("object"),
+			tooltip = a.via and format(L["%s (your corpse is inside)"], a.via) or L["Your corpse"], priority = a.choice == "corpse" and 2 or 1 }
+	end
+	P.SetLayer(LAYER, list, { world = true, minimap = true, edge = true })
+end
+
+function Death.Update()
+	if not (QoL.On("deathHelper") and isGhost()) then return nil end
+	local C = ns.Compat
+	local pc, px, py = C.GetPlayerWorldPosition()
+	if not pc then return nil end
+	local cc, cwx, cwy, cmap, cx, cy = corpse()
+	-- Released outside the dungeon or raid the character died in: its
+	-- entrance stands for the corpse.
+	local died, via = QoL.State().diedIn, nil
+	if not cc and type(died) == "table" and not C.IsInInstance() then
+		local em, ex, ey, name = Death.EntranceOf(died.map)
+		local ec, ewx, ewy
+		if em then ec, ewx, ewy = C.MapToWorld(em, ex, ey) end
+		if ec then cc, cwx, cwy, cmap, cx, cy, via = ec, ewx, ewy, em, ex, ey, name or L["the dungeon"] end
+	end
+	local corpseYards
+	if cc == pc then corpseYards = sqrt((cwx - px) ^ 2 + (cwy - py) ^ 2) end
+	local hc, hwx, hwy, hmap, hx, hy, healerYards = Death.NearestHealer(pc, px, py)
+	local info = C.GetPlayerInfo and C.GetPlayerInfo()
+	local choice, cs, hs, sickness = Death.Decide(corpseYards, healerYards, runSpeed(), info and info.level, current,
+		QoL.State().resSickness)
+	if not choice then return nil end
+	advice.choice, advice.sickness = choice, sickness
+	advice.corpseYards, advice.corpseSeconds = corpseYards, cs
+	advice.healerYards, advice.healerSeconds = healerYards, hs
+	advice.corpseC, advice.corpseWX, advice.corpseWY = corpseYards and cc, cwx, cwy
+	advice.corpseMap, advice.corpseX, advice.corpseY, advice.via = cmap, cx, cy, via
+	advice.healerC, advice.healerWX, advice.healerWY = hc, hwx, hwy
+	advice.healerMap, advice.healerEX, advice.healerEY = hmap, hx, hy
+	advice.note = noteFor(advice)
+	local changed = choice ~= current
+	point(advice)
+	pins(advice)
+	if not noted or changed then
+		noted = true
+		ns.Print(advice.note)
+	end
+	return advice
+end
+
+function QoL.GetDeathAdvice()
+	if not (QoL.On("deathHelper") and isGhost() and current) then return nil end
+	return advice
+end
+
+local function release()
+	if ticker then
+		ticker:Cancel()
+		ticker = nil
+	end
+	local Nav = ns.Nav
+	-- What the arrow guided to underneath (the guide's step, or a point picked
+	-- before dying on the same step) shows again.
+	if mine and Nav and Nav.Unhold then Nav.Unhold() end
+	mine, current, noted = nil, nil, false
+	if ns.Pins and ns.Pins.ClearLayer then ns.Pins.ClearLayer(LAYER) end
+	pinned.choice, pinned.hx, pinned.cx = nil, nil, nil
+end
+
+local function check()
+	if QoL.On("deathHelper") and isGhost() then
+		if not ticker and C_Timer and C_Timer.NewTicker then ticker = ns.NewTicker(INTERVAL, Death.Update) end
+		Death.Update()
+	elseif ticker or mine then
+		release()
+	end
+end
+Death.Check = check
+
+-- Back from the Spirit Healer (or a /reload while sick): note the debuff's
+-- length, again a second later in case it lands after the event.
+local function alive()
+	check()
+	if not isGhost() and not readable(UnitIsDeadOrGhost and UnitIsDeadOrGhost("player")) then QoL.State().diedIn = nil end
+	if not QoL.On("deathHelper") or isGhost() then return end
+	readSickness()
+	if C_Timer and C_Timer.After then ns.After(1, readSickness) end
+end
+
+ns.RegisterEvent("PLAYER_DEAD", noteDeathPlace)
+
+ns.RegisterEvent("PLAYER_DEAD", check)
+ns.RegisterEvent("PLAYER_ALIVE", check)
+ns.RegisterEvent("PLAYER_UNGHOST", alive)
+ns.RegisterEvent("PLAYER_ENTERING_WORLD", alive)
+ns.On("SETTING_CHANGED", function(path)
+	if path == "qol.deathHelper" or path == "qol" or path == "" then check() end
+end)

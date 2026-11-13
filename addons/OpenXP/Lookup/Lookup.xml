@@ -1,0 +1,7 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="Codex.lua"/>
+	<Script file="Sources.lua"/>
+	<Script file="Guide.lua"/>
+	<Script file="Spotter.lua"/>
+	<Script file="Options.lua"/>
+</Ui>

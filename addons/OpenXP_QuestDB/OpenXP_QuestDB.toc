@@ -1,0 +1,33 @@
+## Interface: 16001
+## Title: OpenXP Quest Database
+## Notes: Quest, NPC, object and item data for OpenXP's quest markers and tooltips. Loaded on demand.
+## Title-deDE: OpenXP Quest-Datenbank
+## Notes-deDE: Quest-, NPC-, Objekt- und Gegenstandsdaten für OpenXPs Questmarkierungen und Tooltips. Wird bei Bedarf geladen.
+## Title-esES: OpenXP: base de datos de misiones
+## Notes-esES: Datos de misiones, PNJ y objetos para los marcadores de misión y las descripciones emergentes de OpenXP. Se carga bajo demanda.
+## Title-esMX: OpenXP: base de datos de misiones
+## Notes-esMX: Datos de misiones, PNJ y objetos para los marcadores de misión y las descripciones emergentes de OpenXP. Se carga bajo demanda.
+## Title-frFR: OpenXP : base de données des quêtes
+## Notes-frFR: Données des quêtes, PNJ et objets pour les marqueurs de quête et les infobulles de OpenXP. Chargé à la demande.
+## Title-koKR: OpenXP 퀘스트 데이터베이스
+## Notes-koKR: OpenXP 퀘스트 표시와 툴팁에 쓰는 퀘스트, NPC, 물체, 아이템 데이터. 필요할 때 불러옵니다.
+## Title-ptBR: OpenXP: banco de dados de missões
+## Notes-ptBR: Dados de missões, PNJs, objetos e itens para os marcadores de missão e as dicas do OpenXP. Carregado sob demanda.
+## Title-ruRU: OpenXP: база заданий
+## Notes-ruRU: Данные заданий, NPC, объектов и предметов для меток заданий и подсказок OpenXP. Загружается по требованию.
+## Title-zhCN: OpenXP 任务数据库
+## Notes-zhCN: OpenXP 任务标记和鼠标提示所用的任务、NPC、物体和物品数据。按需加载。
+## Title-zhTW: OpenXP 任務資料庫
+## Notes-zhTW: OpenXP 任務標記與滑鼠提示所用的任務、NPC、物件與物品資料。按需載入。
+## Author: OpenXP
+## Version: 2.0.0-dev
+## Category: OpenXP
+## Group: OpenXP
+## LoadOnDemand: 1
+## Dependencies: OpenXP
+
+MapFrames.lua
+Quests.lua
+Npcs.lua
+Objects.lua
+Items.lua
