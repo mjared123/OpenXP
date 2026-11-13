@@ -218,6 +218,22 @@ local CONDITIONS = {
     group = function(c) return (IsInGroup and IsInGroup()) or Quests.IsOnQuest(c.quest) or Quests.IsTurnedIn(c.quest) end,
     level = function(c) return (OXP.Player.level or 1) >= (c.n or 0) end,
     has = function(c) return World.ItemCount(c.item) >= (c.n or 1) end,
+    -- a spell the character has learned (IsPlayerSpell too: weapon skills)
+    knows = function(c)
+        return (IsSpellKnown and IsSpellKnown(c.spell)) or (IsPlayerSpell and IsPlayerSpell(c.spell)) or false
+    end,
+    -- the Hearthstone is set to this inn
+    bound = function(c) return (GetBindLocation and GetBindLocation()) == c.name end,
+    -- a quest the character can take now: not taken or done, level reached,
+    -- and none of the quests that close it (closedBy) taken or done
+    available = function(c)
+        if Quests.IsOnQuest(c.quest) or Quests.IsTurnedIn(c.quest) then return false end
+        if c.n and (OXP.Player.level or 1) < c.n then return false end
+        for _, q in ipairs(c.closedBy or {}) do
+            if Quests.IsOnQuest(q) or Quests.IsTurnedIn(q) then return false end
+        end
+        return true
+    end,
 }
 Goals.CONDITIONS = CONDITIONS
 

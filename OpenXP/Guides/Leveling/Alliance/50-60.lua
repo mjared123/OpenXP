@@ -9,7 +9,7 @@ OXP.AddGuides({
   faction = "Alliance",
   {
     name = "50-51 Ironforge",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "50-51 Felwood",
@@ -853,7 +853,7 @@ OXP.AddGuides({
   },
   {
     name = "50-51 Felwood",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "50-51 Un'Goro Crater",
@@ -990,7 +990,7 @@ OXP.AddGuides({
   },
   {
     name = "50-51 Un'Goro Crater",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "51-52 Azshara",
@@ -1244,7 +1244,7 @@ OXP.AddGuides({
   },
   {
     name = "51-52 Azshara",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "51-52 Burning Steppes",
@@ -1442,7 +1442,7 @@ OXP.AddGuides({
   },
   {
     name = "51-52 Burning Steppes",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "52-53 Ironforge",
@@ -1562,7 +1562,7 @@ OXP.AddGuides({
   },
   {
     name = "52-53 Ironforge",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "52-53 Western Plaguelands",
@@ -1609,7 +1609,7 @@ OXP.AddGuides({
   },
   {
     name = "52-53 Western Plaguelands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "52-53 Felwood",
@@ -1721,7 +1721,7 @@ OXP.AddGuides({
   },
   {
     name = "52-53 Felwood",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "53-54 Western Plaguelands",
@@ -1902,7 +1902,7 @@ OXP.AddGuides({
   },
   {
     name = "53-54 Western Plaguelands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "53-54 Eastern Plaguelands",
@@ -1995,7 +1995,7 @@ OXP.AddGuides({
   },
   {
     name = "53-54 Eastern Plaguelands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "53-54 Un'Goro Crater",
@@ -2079,7 +2079,7 @@ OXP.AddGuides({
   },
   {
     name = "53-54 Un'Goro Crater",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "54-55 Winterspring",
@@ -2216,7 +2216,7 @@ OXP.AddGuides({
   },
   {
     name = "54-55 Winterspring",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "54-55 Western Plaguelands",
@@ -2363,7 +2363,7 @@ OXP.AddGuides({
   },
   {
     name = "54-55 Western Plaguelands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "54-55 Eastern Plaguelands",
@@ -2499,7 +2499,7 @@ OXP.AddGuides({
   },
   {
     name = "54-55 Eastern Plaguelands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "55-56 Darnassus",
@@ -2575,7 +2575,7 @@ OXP.AddGuides({
   },
   {
     name = "55-56 Darnassus",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "55-56 Silithus",
@@ -2617,7 +2617,7 @@ OXP.AddGuides({
   },
   {
     name = "55-56 Silithus",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "56-57 Western Plaguelands",
@@ -2720,7 +2720,7 @@ OXP.AddGuides({
   },
   {
     name = "56-57 Western Plaguelands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "56-57 Winterspring",
@@ -2831,7 +2831,7 @@ OXP.AddGuides({
   },
   {
     name = "56-57 Winterspring",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "58-59 Silithus",
@@ -2939,7 +2939,7 @@ OXP.AddGuides({
   },
   {
     name = "58-59 Silithus",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "58-59 Burning Steppes",
@@ -3084,7 +3084,7 @@ OXP.AddGuides({
   },
   {
     name = "58-59 Burning Steppes",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "58-59 Eastern Plaguelands",
@@ -3148,7 +3148,7 @@ OXP.AddGuides({
   },
   {
     name = "58-59 Eastern Plaguelands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "59-60 Ironforge",
@@ -3233,7 +3233,7 @@ OXP.AddGuides({
   },
   {
     name = "59-60 Ironforge",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "59-60 Stormwind City",
@@ -3272,7 +3272,7 @@ OXP.AddGuides({
   },
   {
     name = "59-60 Stormwind City",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     version = 1,

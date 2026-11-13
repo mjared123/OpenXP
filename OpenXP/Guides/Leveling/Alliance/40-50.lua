@@ -9,7 +9,7 @@ OXP.AddGuides({
   faction = "Alliance",
   {
     name = "40-41 Shen'dralas",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "40-41 Ironforge",
@@ -42,7 +42,7 @@ OXP.AddGuides({
   },
   {
     name = "40-41 Ironforge",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "40-41 Hillsbrad/Alterac",
@@ -131,7 +131,7 @@ OXP.AddGuides({
   },
   {
     name = "40-41 Hillsbrad/Alterac",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "41-42 Feralas",
@@ -183,7 +183,7 @@ OXP.AddGuides({
   },
   {
     name = "41-42 Feralas",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "41-42 Stranglethorn Vale",
@@ -334,7 +334,7 @@ OXP.AddGuides({
   },
   {
     name = "41-42 Stranglethorn Vale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "42-43 Feralas",
@@ -432,7 +432,7 @@ OXP.AddGuides({
   },
   {
     name = "42-43 Feralas",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "42-43 Tanaris",
@@ -516,7 +516,7 @@ OXP.AddGuides({
   },
   {
     name = "42-43 Tanaris",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "43-44 Stranglethorn Vale",
@@ -669,7 +669,7 @@ OXP.AddGuides({
   },
   {
     name = "43-44 Stranglethorn Vale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "44-45 Feralas",
@@ -785,7 +785,7 @@ OXP.AddGuides({
   },
   {
     name = "44-45 Feralas",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "45-46 Tanaris",
@@ -878,7 +878,7 @@ OXP.AddGuides({
   },
   {
     name = "45-46 Tanaris",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "46-47 Feralas",
@@ -951,7 +951,7 @@ OXP.AddGuides({
   },
   {
     name = "46-47 Feralas",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "46-47 The Hinterlands",
@@ -1062,7 +1062,7 @@ OXP.AddGuides({
   },
   {
     name = "46-47 The Hinterlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "46-47 Tanaris",
@@ -1148,7 +1148,7 @@ OXP.AddGuides({
   },
   {
     name = "46-47 Tanaris",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "47-48 Darnassus",
@@ -1247,7 +1247,7 @@ OXP.AddGuides({
   },
   {
     name = "47-48 Darnassus",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "47-48 Searing Gorge",
@@ -1281,7 +1281,7 @@ OXP.AddGuides({
   },
   {
     name = "47-48 Searing Gorge",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "48-49 Blasted Lands",
@@ -1397,7 +1397,7 @@ OXP.AddGuides({
   },
   {
     name = "48-49 Blasted Lands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "50-51 Ironforge",

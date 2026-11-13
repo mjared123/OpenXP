@@ -9,7 +9,7 @@ OXP.AddGuides({
   faction = "Alliance",
   {
     name = "30-31 Ashenvale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "31-32 Ironforge",
@@ -585,7 +585,7 @@ OXP.AddGuides({
   },
   {
     name = "31-32 Ironforge",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "31-32 Stranglethorn Vale",
@@ -818,7 +818,7 @@ OXP.AddGuides({
   },
   {
     name = "31-32 Stranglethorn Vale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "32-33 Desolace",
@@ -1006,7 +1006,7 @@ OXP.AddGuides({
   },
   {
     name = "32-33 Desolace",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "32-33 Wetlands",
@@ -1193,7 +1193,7 @@ OXP.AddGuides({
   },
   {
     name = "32-33 Wetlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "33-34 Hillsbrad/Alterac",
@@ -1324,7 +1324,7 @@ OXP.AddGuides({
   },
   {
     name = "33-34 Hillsbrad/Alterac",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "33-34 Arathi Highlands",
@@ -1505,7 +1505,7 @@ OXP.AddGuides({
   },
   {
     name = "33-34 Arathi Highlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "34-35 Duskwood",
@@ -1622,7 +1622,7 @@ OXP.AddGuides({
   },
   {
     name = "34-35 Duskwood",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "34-35 Stranglethorn Vale",
@@ -1674,7 +1674,7 @@ OXP.AddGuides({
   },
   {
     name = "34-35 Stranglethorn Vale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "35-36 Stormwind City",
@@ -1900,7 +1900,7 @@ OXP.AddGuides({
   },
   {
     name = "35-36 Stormwind City",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "35-36 Badlands",
@@ -2291,7 +2291,7 @@ OXP.AddGuides({
   },
   {
     name = "35-36 Badlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "35-36 Desolace",
@@ -2362,7 +2362,7 @@ OXP.AddGuides({
   },
   {
     name = "35-36 Desolace",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "36-37 Dustwallow Marsh",
@@ -2526,7 +2526,7 @@ OXP.AddGuides({
   },
   {
     name = "36-37 Dustwallow Marsh",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "37-38 Arathi Highlands",
@@ -2692,7 +2692,7 @@ OXP.AddGuides({
   },
   {
     name = "37-38 Arathi Highlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "37-38 Swamp of Sorrows",
@@ -2817,7 +2817,7 @@ OXP.AddGuides({
   },
   {
     name = "37-38 Swamp of Sorrows",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "37-38 Stranglethorn Vale",
@@ -2914,7 +2914,7 @@ OXP.AddGuides({
   },
   {
     name = "37-38 Stranglethorn Vale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "38-39 Dustwallow Marsh",
@@ -3037,7 +3037,7 @@ OXP.AddGuides({
   },
   {
     name = "38-39 Dustwallow Marsh",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "38-39 Badlands",
@@ -3103,7 +3103,7 @@ OXP.AddGuides({
   },
   {
     name = "38-39 Badlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "38-39 Arathi Highlands",
@@ -3205,7 +3205,7 @@ OXP.AddGuides({
   },
   {
     name = "38-39 Arathi Highlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "39-40 Stranglethorn Vale",
@@ -3304,7 +3304,7 @@ OXP.AddGuides({
   },
   {
     name = "39-40 Stranglethorn Vale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "39-40 Desolace",
@@ -3433,7 +3433,7 @@ OXP.AddGuides({
   },
   {
     name = "39-40 Desolace",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "40-41 Shen'dralas",

@@ -9,7 +9,7 @@ OXP.AddGuides({
   faction = "Horde",
   {
     name = "22-23 Hillsbrad/Alterac",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "23-25 Ashenvale",
@@ -1148,7 +1148,7 @@ OXP.AddGuides({
   },
   {
     name = "23-25 Ashenvale",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "25-26 Stonetalon Mountains",
@@ -1483,7 +1483,7 @@ OXP.AddGuides({
   },
   {
     name = "25-26 Stonetalon Mountains",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "26-27 The Barrens",
@@ -1687,7 +1687,7 @@ OXP.AddGuides({
   },
   {
     name = "26-27 The Barrens",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "27-28 Hillsbrad/Alterac",
@@ -2035,7 +2035,7 @@ OXP.AddGuides({
   },
   {
     name = "27-28 Hillsbrad/Alterac",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "27-28 Thousand Needles",
@@ -2172,7 +2172,7 @@ OXP.AddGuides({
   },
   {
     name = "27-28 Thousand Needles",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "29-30 Stranglethorn Vale",
@@ -2391,7 +2391,7 @@ OXP.AddGuides({
   },
   {
     name = "29-30 Stranglethorn Vale",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "30-31 Thousand Needles",

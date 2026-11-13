@@ -14,7 +14,7 @@ loads the output and checks it says exactly what the source said, step by step.
 2.0 guide data (one table per guide):
 
     {
-      name = "21-22 Ashenvale", group = "OpenXP Leveling (Alliance)",
+      name = "21-22 Ashenvale", group = "OpenXP Legacy (Alliance)",
       oldGroup = "RestedXP Forever Guide (A)",   -- 1.x group, for the save importer
       subgroup = "OpenXP 21-60", next = "...", version = 1,
       only = "Alliance", tags = { "forever", "disabledungeons" },
@@ -39,8 +39,8 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 GROUP_RENAME = {
-    "RestedXP Forever Guide (A)": "OpenXP Leveling (Alliance)",
-    "RestedXP Forever Guide (H)": "OpenXP Leveling (Horde)",
+    "RestedXP Forever Guide (A)": "OpenXP Legacy (Alliance)",
+    "RestedXP Forever Guide (H)": "OpenXP Legacy (Horde)",
 }
 
 GUIDE_RE = re.compile(r"RXPGuides\.RegisterGuide\(\[\[(.*?)\]\]\)", re.S)

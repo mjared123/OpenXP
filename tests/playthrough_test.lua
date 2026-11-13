@@ -115,12 +115,14 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
     for _, race in ipairs(RACES[faction]) do
         for _, class in ipairs(CLASSES) do
             local who = faction .. " " .. race .. " " .. class
-            -- Leveling chain.
+            -- Leveling chains: the default (PoleStar's 1-60), then our legacy 21-60.
+            for _, groupName in ipairs({ "OpenXP Leveling (" .. faction .. ")", "OpenXP Legacy (" .. faction .. ")" }) do
+            local who = who .. " [" .. groupName .. "]"
             local game = FakeWoW.New(ROOT, { faction = faction, race = race, class = class, level = 1 })
             local OXP = game:LoadAddon()
             game:Login()
             local objectives = objectiveCounts(OXP)
-            local leveling = OXP.Registry.ForPlayer(nil, "OpenXP Leveling (" .. faction .. ")")
+            local leveling = OXP.Registry.ForPlayer(nil, groupName)
             local isNext = {}
             for _, g in ipairs(leveling) do
                 if g.next then isNext[g.next] = true end
@@ -148,8 +150,13 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
                 stepsPlayed = stepsPlayed + total
             end
             t.eq(#game.errors, 0, who .. ": Lua errors: " .. table.concat(game.errors, " | "))
+            end
 
             -- Dungeons, each on its own.
+            local game = FakeWoW.New(ROOT, { faction = faction, race = race, class = class, level = 1 })
+            local OXP = game:LoadAddon()
+            game:Login()
+            local objectives = objectiveCounts(OXP)
             for _, d in ipairs(OXP.Registry.ForPlayer(nil, "OpenXP Dungeons")) do
                 OXP.Engine.Load(d, 1)
                 playToEnd(game, OXP, objectives, who .. " " .. d.name)

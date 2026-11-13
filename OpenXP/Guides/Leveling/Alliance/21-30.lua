@@ -9,7 +9,7 @@ OXP.AddGuides({
   faction = "Alliance",
   {
     name = "21-22 Ashenvale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "21-22 Stonetalon Mountains",
@@ -841,7 +841,7 @@ OXP.AddGuides({
   },
   {
     name = "21-22 Stonetalon Mountains",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "22-23 Wetlands",
@@ -965,7 +965,7 @@ OXP.AddGuides({
   },
   {
     name = "22-23 Wetlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "23-25 Duskwood",
@@ -1373,7 +1373,7 @@ OXP.AddGuides({
   },
   {
     name = "23-25 Duskwood",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "25-26 Redridge Mountains",
@@ -1846,7 +1846,7 @@ OXP.AddGuides({
   },
   {
     name = "25-26 Redridge Mountains",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "26-27 Stormwind City",
@@ -2125,7 +2125,7 @@ OXP.AddGuides({
   },
   {
     name = "26-27 Stormwind City",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "26-27 Ashenvale",
@@ -2365,7 +2365,7 @@ OXP.AddGuides({
   },
   {
     name = "26-27 Ashenvale",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "27-28 Wetlands",
@@ -2559,7 +2559,7 @@ OXP.AddGuides({
   },
   {
     name = "27-28 Wetlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "28-29 Duskwood",
@@ -2771,7 +2771,7 @@ OXP.AddGuides({
   },
   {
     name = "28-29 Duskwood",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "29-30 Stormwind City",
@@ -2944,7 +2944,7 @@ OXP.AddGuides({
   },
   {
     name = "29-30 Stormwind City",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "29-30 Wetlands",
@@ -3032,7 +3032,7 @@ OXP.AddGuides({
   },
   {
     name = "29-30 Wetlands",
-    group = "OpenXP Leveling (Alliance)",
+    group = "OpenXP Legacy (Alliance)",
     oldGroup = "RestedXP Forever Guide (A)",
     subgroup = "OpenXP 21-60",
     next = "30-31 Ashenvale",

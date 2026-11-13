@@ -23,27 +23,22 @@ local function questsOf(OXP, guide, kind)
 end
 
 ------------------------------------------------------------------------
-print("-- a fresh level 21 character gets the first 21-60 section at step 1")
+print("-- a fresh level 21 character in Ashenvale gets PoleStar's Ashenvale section near its start")
 do
     local game, OXP = newGame({ faction = "Alliance", race = "Human", class = "WARRIOR", level = 21, zone = "Ashenvale" })
     game:Login() -- no guide yet: NO_GUIDE -> smart start
     local g = OXP.Engine.GetGuide()
-    t.ok(g and g.name == "21-22 Ashenvale", "picked " .. tostring(g and g.name))
-    -- step 1 is "travel to Ashenvale", done since you're there: the flight
-    -- path step is next, not the first quest further on
-    local here = OXP.Engine.GetSteps()[OXP.Engine.GetPosition()]
-    local kinds = {}
-    for _, g in ipairs(here and here.goals or {}) do kinds[g[1]] = true end
-    t.ok(OXP.Engine.GetPosition() <= 3 and (kinds.fp or (here and here.data.source)),
-        "at the flight path step (or a class quest step just before it): step " .. tostring(OXP.Engine.GetPosition()))
+    t.ok(g and g.group == "OpenXP Leveling (Alliance)" and g.name:find("Ashenvale", 1, true),
+        "picked " .. tostring(g and g.name))
+    t.ok(OXP.Engine.GetPosition() <= 3, "near the start of the section: step " .. tostring(OXP.Engine.GetPosition()))
 end
 
 ------------------------------------------------------------------------
 print("-- in the middle of a section: resume it past the done part")
 do
-    local game, OXP = newGame({ faction = "Horde", race = "Orc", class = "SHAMAN", level = 24 })
-    local guide = OXP.Registry.Find("23-25 Ashenvale", "OpenXP Leveling (Horde)")
-    t.ok(guide, "Horde 23-25 Ashenvale exists")
+    local game, OXP = newGame({ faction = "Horde", race = "Orc", class = "SHAMAN", level = 25 })
+    local guide = OXP.Registry.Find("24-26 The Barrens & Stonetalon Mountains", "OpenXP Leveling (Horde)")
+    t.ok(guide, "Horde 24-26 The Barrens & Stonetalon Mountains exists")
     if guide then
         -- the first half of its quests done, one in the log
         local all = questsOf(OXP, guide)

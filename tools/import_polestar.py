@@ -371,6 +371,17 @@ class Converter:
                 cond = {1: "group", "quest": c.get("q")}
             elif k == "has":
                 cond = {1: "has", "item": c.get("item"), "n": c.get("n") or 1}
+            elif k == "knows":
+                cond = {1: "knows", "spell": c.get("spell")}
+            elif k == "bound":
+                cond = {1: "bound", "name": c.get("name")}
+            elif k == "available":
+                cond = {1: "available", "quest": c.get("q"), "n": c.get("minLevel"),
+                        "closedBy": lst(c.get("closedBy")) or None}
+            elif k == "dungeon":
+                # "if you chose to run this dungeon": OpenXP has no dungeon
+                # choice yet, so these steps are left out
+                return False
             elif k == "level":
                 op, n = c.get("op"), c.get("n")
                 if op in (None, ">="):
@@ -387,7 +398,7 @@ class Converter:
                 raise ImportError_("unknown step condition %r" % k)
             if c.get("neg"):
                 cond["neg"] = True
-            out.append(cond)
+            out.append({key: v for key, v in cond.items() if v is not None})
         return out or None
 
     def convert_step(self, st, names, gid, class_word=None):
@@ -429,6 +440,9 @@ class Converter:
         if f:
             step["only"] = f
         when = self.convert_when(st.get("when"))
+        if when is False:
+            self.dropped.append((gid, title, "only for a dungeon run"))
+            return None
         if when:
             step["when"] = when
         if st.get("along"):
@@ -880,6 +894,8 @@ def main(argv):
         elif argv[i] == "--any-commit":
             any_commit = True
             i += 1
+        elif argv[i] == "--write-1-20":
+            i += 1
         else:
             raise SystemExit("unknown argument " + argv[i])
     commit = subprocess.run(["git", "-C", src, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
@@ -893,8 +909,12 @@ def main(argv):
         out = build_faction(conv, guides, faction)
         built[faction] = out
         dest = os.path.join(OUT_DIR, faction, "01-20.lua")
-        with open(dest, "w", encoding="utf-8", newline="\n") as f:
-            f.write(render(faction, out, commit))
+        # Since 2026-11-13 the 1-60 route comes from tools/import_polestar_route.py;
+        # this 1-20 build only feeds the class quests and carried turn-ins of the
+        # legacy 21-60 guides. --write-1-20 writes the old file anyway.
+        if "--write-1-20" in argv:
+            with open(dest, "w", encoding="utf-8", newline="\n") as f:
+                f.write(render(faction, out, commit))
         print("%s: %d guides, %d steps -> %s" % (faction, len(out), sum(len(g["steps"]) for g in out),
                                                 os.path.relpath(dest, ROOT)))
         for g in out:

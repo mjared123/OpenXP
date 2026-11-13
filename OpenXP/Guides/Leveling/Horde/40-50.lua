@@ -6,7 +6,7 @@ OXP.AddGuides({
   faction = "Horde",
   {
     name = "40-41 Thunder Bluff",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "40-41 Stranglethorn Vale",
@@ -46,7 +46,7 @@ OXP.AddGuides({
   },
   {
     name = "40-41 Stranglethorn Vale",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "41-42 Badlands",
@@ -170,7 +170,7 @@ OXP.AddGuides({
   },
   {
     name = "41-42 Badlands",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "41-42 Feralas",
@@ -244,7 +244,7 @@ OXP.AddGuides({
   },
   {
     name = "41-42 Feralas",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "41-42 Dustwallow Marsh",
@@ -352,7 +352,7 @@ OXP.AddGuides({
   },
   {
     name = "41-42 Dustwallow Marsh",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "42-43 Feralas",
@@ -526,7 +526,7 @@ OXP.AddGuides({
   },
   {
     name = "42-43 Feralas",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "43-44 Orgrimmar",
@@ -632,7 +632,7 @@ OXP.AddGuides({
   },
   {
     name = "43-44 Orgrimmar",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "43-44 Undercity",
@@ -674,7 +674,7 @@ OXP.AddGuides({
   },
   {
     name = "43-44 Undercity",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "43-44 Stranglethorn Vale",
@@ -720,7 +720,7 @@ OXP.AddGuides({
   },
   {
     name = "43-44 Stranglethorn Vale",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "43-44 Swamp of Sorrows",
@@ -856,7 +856,7 @@ OXP.AddGuides({
   },
   {
     name = "43-44 Swamp of Sorrows",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "44-45 Tanaris",
@@ -991,7 +991,7 @@ OXP.AddGuides({
   },
   {
     name = "44-45 Tanaris",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "45-46 Stranglethorn Vale",
@@ -1192,7 +1192,7 @@ OXP.AddGuides({
   },
   {
     name = "45-46 Stranglethorn Vale",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "45-46 Feralas",
@@ -1267,7 +1267,7 @@ OXP.AddGuides({
   },
   {
     name = "45-46 Feralas",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "46-47 The Hinterlands",
@@ -1383,7 +1383,7 @@ OXP.AddGuides({
   },
   {
     name = "46-47 The Hinterlands",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "47-48 Searing Gorge",
@@ -1572,7 +1572,7 @@ OXP.AddGuides({
   },
   {
     name = "47-48 Searing Gorge",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "47-48 Tanaris",
@@ -1671,7 +1671,7 @@ OXP.AddGuides({
   },
   {
     name = "47-48 Tanaris",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "47-48 Orgrimmar",
@@ -1770,7 +1770,7 @@ OXP.AddGuides({
   },
   {
     name = "47-48 Orgrimmar",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "47-48 The Hinterlands",
@@ -1805,7 +1805,7 @@ OXP.AddGuides({
   },
   {
     name = "47-48 The Hinterlands",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "48-49 Swamp of Sorrows",
@@ -1913,7 +1913,7 @@ OXP.AddGuides({
   },
   {
     name = "48-49 Swamp of Sorrows",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "48-49 Blasted Lands",
@@ -1966,7 +1966,7 @@ OXP.AddGuides({
   },
   {
     name = "48-49 Blasted Lands",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "49-50 Felwood",
@@ -2055,7 +2055,7 @@ OXP.AddGuides({
   },
   {
     name = "49-50 Felwood",
-    group = "OpenXP Leveling (Horde)",
+    group = "OpenXP Legacy (Horde)",
     oldGroup = "RestedXP Forever Guide (H)",
     subgroup = "OpenXP 21-60",
     next = "50-51 Azshara",
