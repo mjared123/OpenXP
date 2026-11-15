@@ -516,10 +516,13 @@ function card.MissingQuest(step)
 end
 
 ---------------------------------------------------------------------------
--- Quest data: read from Questie while the game runs, when it's installed.
--- OpenXP ships no quest database of its own, so nothing goes out of date
--- and nothing of Questie's is copied into OpenXP.
--- card.Prereqs(id) -> {any=, all=, excl=}; card.QuestInfoOf(id) -> {n, l, r, s, f, o}
+-- Quest data: read from other addons while the game runs, when they're
+-- installed (Questie, the OpenXP_ForeverData addon, or one that registers
+-- itself with RXPGuides.RegisterQuestProvider). OpenXP ships no quest
+-- database of its own, so nothing goes out of date and nothing of theirs
+-- is copied into OpenXP.
+-- card.Prereqs(id) -> {any=, all=, excl=, source=}; card.MinLevel(id) -> level, source;
+-- card.QuestInfoOf(id) -> {n, l, r, s, f, o}
 -- A spot is {name, uiMapId, x, y}. Tests can fill card.data instead.
 ---------------------------------------------------------------------------
 
@@ -539,8 +542,13 @@ local function Questie()
     end
     return questie or nil
 end
+local providers = {}
 function card.HasQuestData()
-    return Questie() ~= nil or card.data.prereqs ~= nil
+    if Questie() ~= nil or card.data.prereqs ~= nil then return true end
+    local data = _G.OpenXP_ForeverData
+    if type(data) == "table" and type(data.quests) == "table" then return true end
+    -- Questie and the data addon are always in the list; anything more was registered
+    return #providers > 2
 end
 
 -- Questie builds a fresh table on every lookup, and the card, the map and
@@ -632,10 +640,53 @@ local function ForPlayer(q)
     return bit.band(races, playerRaceBit) ~= 0
 end
 
+-- Where quest rules come from. A provider is a table with any of
+--   Prereqs(id)  -> {any = {ids}, all = {ids}, excl = {ids}, source = "..."},
+--                   false when it knows the quest and it needs nothing,
+--                   nil when it doesn't know the quest
+--   MinLevel(id) -> level, source (nil when it doesn't know)
+--   QuestInfo(id) -> {l = level, r = level it's offered from, s = who gives
+--                   it, f = who takes it, o = {objective spots}, sSrc =, fSrc =}
+--                   with spots as {name, uiMapId, x, y} (nil when it doesn't know)
+-- They're asked in the order they were added and the first answer counts.
+-- source says where a rule comes from and is shown with it:
+--   "questie", "foreverdb_verified" (seen in WoW Forever) or
+--   "cmangos_classic" (Classic data, not confirmed in WoW Forever).
+function card.RegisterQuestProvider(name, provider)
+    if type(name) ~= "string" or name == "" then return false end
+    if provider ~= nil then
+        if type(provider) ~= "table" then return false end
+        local hasPrereqs, hasLevel = type(provider.Prereqs) == "function", type(provider.MinLevel) == "function"
+        local hasInfo = type(provider.QuestInfo) == "function"
+        if not (hasPrereqs or hasLevel or hasInfo) then return false end
+        if (provider.Prereqs ~= nil and not hasPrereqs) or (provider.MinLevel ~= nil and not hasLevel) or
+            (provider.QuestInfo ~= nil and not hasInfo) then return false end
+    end
+    for i, p in ipairs(providers) do
+        if p.name == name then
+            if provider then p.provider = provider else table.remove(providers, i) end
+            return true
+        end
+    end
+    if provider then tinsert(providers, {name = name, provider = provider}) end
+    return true
+end
+if addon.RXPGuides then addon.RXPGuides.RegisterQuestProvider = card.RegisterQuestProvider end
+
+local SOURCE_LABELS = {
+    questie = "Questie",
+    foreverdb_verified = "ForeverDB.net, seen in WoW Forever",
+    cmangos_classic = "ForeverDB.net, Classic data (not confirmed in WoW Forever)",
+}
+function card.SourceLabel(source)
+    if not source then return end
+    local label = SOURCE_LABELS[source]
+    return label and L(label) or tostring(source)
+end
+
 local prereqCache, infoCache = {}, {}
-function card.Prereqs(id)
-    if card.data.prereqs then return card.data.prereqs[id] end
-    if prereqCache[id] ~= nil then return prereqCache[id] or nil end
+local function QuestiePrereqs(id)
+    if prereqCache[id] ~= nil then return prereqCache[id] end
     local q = QGet("Quest", id)
     if not q then return end -- unknown, or Questie not ready yet: ask again later
     local pre = false
@@ -646,18 +697,116 @@ function card.Prereqs(id)
             for i, v in ipairs(list) do out[i] = math.abs(v) end
             return out
         end
-        pre = {any = abs(q.preQuestSingle), all = abs(q.preQuestGroup), excl = abs(q.exclusiveTo)}
+        pre = {any = abs(q.preQuestSingle), all = abs(q.preQuestGroup), excl = abs(q.exclusiveTo),
+               source = "questie"}
         if not (pre.any or pre.all or pre.excl) then pre = false end
     end
     prereqCache[id] = pre
-    return pre or nil
+    return pre
+end
+card.RegisterQuestProvider("Questie", {
+    Prereqs = QuestiePrereqs,
+    MinLevel = function(id)
+        local q = QGet("Quest", id)
+        local level = q and tonumber(q.requiredLevel)
+        if level and level > 0 then return level, "questie" end
+    end,
+})
+
+-- The OpenXP_ForeverData addon (its own download, GPL-3.0, built from
+-- ForeverDB.net's data by tools/compile_foreverdb.py): one global table,
+--   quests[id] = {level =, min =, minSrc =, all = {ids}, any = {ids}, excl = {ids}, preSrc =,
+--                 start = {name, uiMapId, x, y}, startSrc =, finish = {...}, finishSrc =,
+--                 objs = {{uiMapId, x, y}, ...}}
+local foreverQuests, foreverPre, foreverInfo
+local function ForeverQuest(id)
+    local data = _G.OpenXP_ForeverData
+    local quests = type(data) == "table" and data.quests
+    if type(quests) ~= "table" then return end
+    if quests ~= foreverQuests then foreverQuests, foreverPre, foreverInfo = quests, {}, {} end
+    local q = quests[id]
+    if type(q) == "table" then return q end
+end
+card.RegisterQuestProvider("OpenXP_ForeverData", {
+    Prereqs = function(id)
+        local q = ForeverQuest(id)
+        if not q then return end
+        local pre = foreverPre[id]
+        if pre == nil then
+            pre = (q.all or q.any or q.excl) and
+                      {all = q.all, any = q.any, excl = q.excl, source = q.preSrc} or false
+            foreverPre[id] = pre
+        end
+        return pre
+    end,
+    MinLevel = function(id)
+        local q = ForeverQuest(id)
+        local level = q and tonumber(q.min)
+        if level and level > 0 then return level, q.minSrc end
+    end,
+    QuestInfo = function(id)
+        local q = ForeverQuest(id)
+        if not q then return end
+        local info = foreverInfo[id]
+        if info and info.from == q then return info end
+        local objs = {}
+        if type(q.objs) == "table" then
+            for i, at in ipairs(q.objs) do objs[i] = {"", at[1], at[2], at[3]} end
+        end
+        info = {l = tonumber(q.level) or 0, r = tonumber(q.min) or 0,
+                s = type(q.start) == "table" and q.start or nil, sSrc = q.startSrc,
+                f = type(q.finish) == "table" and q.finish or nil, fSrc = q.finishSrc,
+                o = objs, from = q}
+        foreverInfo[id] = info
+        return info
+    end,
+})
+
+function card.Prereqs(id)
+    if card.data.prereqs then return card.data.prereqs[id] end
+    for i = 1, #providers do
+        local fn = providers[i].provider.Prereqs
+        if fn then
+            local ok, pre = pcall(fn, id)
+            if ok and type(pre) == "table" then return pre end
+            if ok and pre == false then return end
+        end
+    end
+end
+
+-- The level the quest is offered from, and where that comes from
+function card.MinLevel(id)
+    if card.data.info then
+        local info = card.data.info[id]
+        local level = info and info.r
+        if level and level > 0 then return level end
+        return
+    end
+    for i = 1, #providers do
+        local fn = providers[i].provider.MinLevel
+        if fn then
+            local ok, level, source = pcall(fn, id)
+            level = ok and tonumber(level)
+            if level and level > 0 then return level, source end
+        end
+    end
 end
 
 function card.QuestInfoOf(id)
     if card.data.info then return card.data.info[id] end
     if infoCache[id] ~= nil then return infoCache[id] or nil end
     local q = QGet("Quest", id)
-    if not q then return end
+    if not q then
+        -- not in Questie (or no Questie): ask the other providers
+        for i = 1, #providers do
+            local fn = providers[i].provider.QuestInfo
+            if fn then
+                local ok, info = pcall(fn, id)
+                if ok and type(info) == "table" then return info end
+            end
+        end
+        return
+    end
     local info = false
     if q then
         local zone = q.zoneOrSort
@@ -712,7 +861,7 @@ end
 
 -- Pickup steps for quests you can't get yet (a pre-quest you skipped, or
 -- one you did that locks this one out) send you to a giver who has nothing
--- for you. DB/forever/QuestPrereqs.lua lists what each guide quest needs.
+-- for you. card.Prereqs says what each quest needs.
 local function TurnedIn(id)
     return addon.IsQuestTurnedIn and addon.IsQuestTurnedIn(math.abs(id))
 end
@@ -736,7 +885,8 @@ function card.BreadcrumbClosed(id)
     if to and ((addon.IsOnQuest and addon.IsOnQuest(to)) or TurnedIn(to)) then return to end
 end
 
--- Returns the quest that has to be done first, or nil when it can be picked up
+-- Returns the quest that has to be done first and where that rule comes
+-- from, or nil when it can be picked up
 function card.QuestBlocked(id)
     local pre = card.Prereqs(id)
     if not pre then return end
@@ -746,17 +896,17 @@ function card.QuestBlocked(id)
         for _, q in ipairs(pre.any) do
             if TurnedIn(q) then ok = true; break end
         end
-        if not ok then return pre.any[1] end
+        if not ok then return pre.any[1], pre.source end
     end
     if pre.all then
         for _, q in ipairs(pre.all) do
-            if not TurnedIn(q) then return q end
+            if not TurnedIn(q) then return q, pre.source end
         end
     end
     if pre.excl then
         for _, q in ipairs(pre.excl) do
             q = math.abs(q)
-            if TurnedIn(q) or (addon.IsOnQuest and addon.IsOnQuest(q)) then return q end
+            if TurnedIn(q) or (addon.IsOnQuest and addon.IsOnQuest(q)) then return q, pre.source end
         end
     end
 end
@@ -872,7 +1022,13 @@ function card.ChainMissed(step, id, blocker, chain, needAccept)
     local here = {}
     for _, e in ipairs(step and step.elements or {}) do
         local q = QuestIdOf(e)
-        if q and (e.tag == "turnin" or e.tag == "accept" or e.tag == "complete") then here[q] = true end
+        if q and (e.tag == "turnin" or e.tag == "accept" or e.tag == "complete") then
+            -- an optional turn in (".turnin -id") for a quest you don't
+            -- have does nothing, so it doesn't take care of that quest
+            local idle = e.tag == "turnin" and e.skipIfMissing and
+                             not (addon.IsOnQuest and addon.IsOnQuest(q))
+            if not idle then here[q] = true end
+        end
     end
     local function missed(q)
         if not q or q == id or here[q] or TurnedIn(q) then return false end
@@ -888,8 +1044,10 @@ end
 
 -- What's wrong with a step, if anything:
 --   {kind = "missing", quest}  turn in / kill step for a quest not in the log
---   {kind = "chain", quest, chain, needAccept}  quests before this one aren't done
---   {kind = "locked", quest, by}  a quest you did locks this one out
+--   {kind = "chain", quest, chain, needAccept, source}  quests before this one aren't done
+--   {kind = "locked", quest, by, source}  a quest you did locks this one out
+--   {kind = "level", quest, level, source}  pickup of a quest above your level
+-- source is where the rule comes from (card.SourceLabel), when it's known.
 function card.StepProblem(step)
     if not (step and step.elements) then return end
     for _, e in ipairs(step.elements) do
@@ -909,7 +1067,7 @@ function card.StepProblem(step)
                 needAccept = true
             end
             if needAccept ~= nil then
-                local blocker = card.QuestBlocked(id)
+                local blocker, source = card.QuestBlocked(id)
                 if blocker then
                     local pre = card.Prereqs(id)
                     local isExcl = false
@@ -917,15 +1075,21 @@ function card.StepProblem(step)
                         if math.abs(q) == blocker then isExcl = true end
                     end
                     if isExcl then
-                        return {kind = "locked", quest = id, by = blocker}
+                        return {kind = "locked", quest = id, by = blocker, source = source}
                     end
                     local chain = card.MissingChain(id)
                     if card.ChainMissed(step, id, blocker, chain, needAccept) then
                         return {kind = "chain", quest = id, chain = chain,
-                                needAccept = needAccept}
+                                needAccept = needAccept, source = source}
                     end
                 elseif needAccept then
                     return {kind = "missing", quest = id}
+                elseif e.tag == "accept" and UnitLevel and
+                    not (addon.IsOnQuest and addon.IsOnQuest(id)) and not TurnedIn(id) then
+                    local level, levelSource = card.MinLevel(id)
+                    if level and (UnitLevel("player") or level) < level then
+                        return {kind = "level", quest = id, level = level, source = levelSource}
+                    end
                 end
             end
         end
@@ -943,9 +1107,33 @@ function card.StartDetour(target, ids, mode)
     card.Refresh(true)
 end
 
+-- Who to talk to for the walk's quest right now, as names for the quest
+-- targets (Targeting.lua); nil when no walk is on, so the guide's count
+function card.DetourTargets()
+    local d = card.detour
+    if d then return d.targets or {} end
+end
+local function WalkTargets(d, name)
+    local key = name or ""
+    d.targets = name and {name} or {}
+    if d.targetsKey == key then return end
+    d.targetsKey = key
+    local targeting = addon.targeting
+    if targeting and targeting.UpdateUnitList and addon.ScheduleTask then
+        addon:ScheduleTask(targeting.UpdateUnitList)
+    end
+end
+
 function card.StopDetour()
+    local was = card.detour
     card.detour = nil
     card.detourTarget = nil
+    if was then
+        local targeting = addon.targeting
+        if targeting and targeting.UpdateUnitList and addon.ScheduleTask then
+            addon:ScheduleTask(targeting.UpdateUnitList)
+        end
+    end
     local p = Profile()
     if p then p.openxpDetour = nil end
     if addon.UpdateGotoSteps then pcall(addon.UpdateGotoSteps) end
@@ -968,7 +1156,8 @@ local function SpotElement(spot, title)
     if not (spot and HBD and spot[2] and spot[2] > 0) then return end
     local wx, wy, instance = HBD:GetWorldCoordinatesFromZone(spot[3] / 100, spot[4] / 100, spot[2])
     if not wx then return end
-    return {wx = wx, wy = wy, instance = instance, title = title or spot[1], arrow = true}
+    -- zone: the way there from another zone is planned from it (Travel.lua)
+    return {wx = wx, wy = wy, instance = instance, zone = spot[2], title = title or spot[1], arrow = true}
 end
 
 local function ObjectivesOf(id)
@@ -992,7 +1181,7 @@ function card.DetourStep()
     local info = QuestInfo(id) or {}
     local name = QuestName(id)
     local level = info.l and info.l > 0 and fmt(" |cFF9EA3B3(lvl %d)|r", info.l) or ""
-    local elements, target
+    local elements, target, talkTo
     if not (addon.IsOnQuest and addon.IsOnQuest(id)) then
         local who = info.s and info.s[1] or "?"
         local where = info.s and info.s[2] == 0 and L("Loot or use %s to start it") or L("Get it from %s")
@@ -1004,6 +1193,8 @@ function card.DetourStep()
             tinsert(elements, {textOnly = true, text = fmt(L("|cFFF2C35CYou need level %d for this quest|r"), info.r)})
         end
         target = SpotElement(info.s)
+        -- an item that starts a quest is nobody to target
+        talkTo = info.s and info.s[2] ~= 0 and info.s[1] or nil
     else
         local objs = ObjectivesOf(id)
         local open = false
@@ -1022,8 +1213,10 @@ function card.DetourStep()
                 {tag = "turnin", text = fmt(L("Talk to %s"), who)},
             }
             target = SpotElement(info.f)
+            talkTo = info.f and info.f[2] ~= 0 and info.f[1] or nil
         end
     end
+    WalkTargets(d, talkTo ~= "?" and talkTo ~= "" and talkTo or nil)
     return {index = nil, detour = true, elements = elements}, index, target
 end
 
@@ -1115,6 +1308,20 @@ function card.ReportError(err)
     print("|cFFFF7043OpenXP card error|r (please send this to the OpenXP author): " .. err)
 end
 
+-- The legs of the way to this step when it's in another zone (Travel.lua),
+-- or nil. A chain walk's step is built anew each time, so its plan is known
+-- by where it leads.
+function card.TravelLines(step)
+    local tv = addon.travel
+    local plan = tv and tv.Current and tv.Current()
+    local to = plan and plan.target
+    if not to then return end
+    local walk = step.detour and card.detourTarget
+    if to.step == step or (walk and to.wx == walk.wx and to.wy == walk.wy and to.zone == walk.zone) then
+        return tv.Lines()
+    end
+end
+
 local function LayoutBlock(b, step, first)
     local textWidth = Width() - PAD * 2 - 34 - 12
     b.sep:SetShown(not first)
@@ -1145,10 +1352,10 @@ local function LayoutBlock(b, step, first)
         if here and step.index == here.index then
             tinsert(lines, 1, {text = "|cFFF2C35C" .. fmt(L("You're right here, so do this first. Then back to step %d."), here.from) .. "|r", plain = true})
         end
+    end
+    if role == "now" then
         -- the step is in another zone: how to get there
-        local tv = addon.travel
-        local plan = tv and tv.Current and tv.Current()
-        local travel = plan and plan.target and plan.target.step == step and tv.Lines()
+        local travel = card.TravelLines(step)
         if travel and #travel > 0 then
             tinsert(lines, {text = "|cFFB36BFF" .. L("Getting there:") .. "|r", plain = true})
             for _, t in ipairs(travel) do
@@ -1262,6 +1469,9 @@ local function LayoutBlock(b, step, first)
         elseif problem.kind == "locked" then
             text = fmt(L("You can't get %s: doing %s locked it out"), QuestName(id), QuestName(problem.by))
             buttons = {w.skip}
+        elseif problem.kind == "level" then
+            text = fmt(L("You need level %d to pick up %s"), problem.level, QuestName(id))
+            buttons = {w.skip}
         else
             local chain = problem.chain or {}
             if #chain == 0 then
@@ -1293,6 +1503,8 @@ local function LayoutBlock(b, step, first)
                 end
             end
         end
+        local from = card.SourceLabel(problem.source)
+        if from then text = text .. "\n|cFF9EA3B3" .. fmt(L("Source: %s"), from) .. "|r" end
         b.missing = m
         SetFont(w.text, 0)
         w.text:SetWidth(textWidth)

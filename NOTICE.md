@@ -24,6 +24,7 @@ RestedXP name were written by RestedXP and are kept here with credit.
 - Added a welcome / what's new window (`WelcomeFrame.lua`, `/oxp news`).
 - New guides written for OpenXP (`Guides/openxp/`, `Guides/openxp-classic/`): Alliance 21-60 and Horde 22-60 for WoW Forever and Classic Era, and dungeon quest guides for both factions. Routes were generated with `tools/build_route.py` and `tools/build_dungeons.py` from public quest facts (quest ids, levels, coordinates). No RestedXP paid guide content is used.
 - Optional Questie support: when the separate Questie addon is installed, OpenXP reads its quest data in game for quest chains and levels. Questie's data is not bundled.
+- Other addons can supply quest chains and levels the same way (`RXPGuides.RegisterQuestProvider`). OpenXP also reads the separate OpenXP Forever Data addon when it's installed; `tools/compile_foreverdb.py` builds that addon from ForeverDB.net's data (GPL-3.0). Its data is not bundled, and the guide card says where each rule comes from.
 - Added quest tooltips for mobs and NPCs (`OpenXPTooltips.lua`), quest icons on map pins, auto loot and max camera distance options, and turned Sell Junk on by default.
 - Gave OpenXP its own addon message channel so it doesn't exchange version checks with RestedXP.
 - The release zip (`tools/package.py`) only includes the files that load on WoW Forever and Classic Era.

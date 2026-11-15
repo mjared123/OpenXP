@@ -28,6 +28,7 @@ See [NOTICE.md](NOTICE.md) for attribution and the list of changes from RestedXP
 - Step list (click the step counter on the card) to jump to any step.
 - Sell junk at vendors, plus optional nameplate range, auto loot and max camera distance.
 - Levels 1-60 for WoW Forever and Classic Era. Questie is optional; with it, OpenXP also shows quest chains and levels.
+  Without Questie, the separate OpenXP Forever Data addon (see below) tells OpenXP which quests need another one first.
 
 ## Work on the code locally (Windows)
 
@@ -80,6 +81,23 @@ OpenXP reads the installed Questie while you play.
 3. `python tools/audit_guides.py --questiedb PATH\QuestieDB --questie "PATH\AddOns\Questie" --dump PATH\OpenXP.lua`
    lists, zone by zone, the quests each faction can do that no guide picks up.
 4. `python tools/build_route.py --questiedb PATH\QuestieDB --dump PATH\OpenXP.lua tools/routes/alliance.py` (or `horde.py`) builds the 21-60 route; the builder picks the zone order by XP per minute.
+
+## OpenXP Forever Data (ForeverDB.net data)
+
+Players without Questie can install OpenXP Forever Data, a separate addon with the quest chains, quest levels and
+quest givers for the quests the guides use. It is built from the [ForeverDB](https://foreverdb.net) addon's data, which is GPLv3 with an
+attribution term, so it is its own addon under that licence and is never copied into OpenXP. OpenXP reads it while you
+play and shows where each rule comes from: seen in WoW Forever, or Classic data that isn't confirmed in WoW Forever.
+
+Download it from https://github.com/VikingOwl91/OpenXP_ForeverData/releases, or build it yourself:
+
+1. Get the ForeverDB addon (`https://foreverdb.net/downloads/addon-manifest.json` lists the current zip and its
+   SHA-256) and unzip it outside this repo.
+2. `python3 tools/compile_foreverdb.py --foreverdb PATH/ForeverDB --out PATH/dist` writes `dist/OpenXP_ForeverData/`
+   with ForeverDB's licence files and a `NOTICE.txt`. Don't commit the output here.
+
+Other addons can supply the same data with `RXPGuides.RegisterQuestProvider(name, provider)`; see the comment above
+`card.RegisterQuestProvider` in `OpenXPCard.lua`.
 
 ## Tests
 

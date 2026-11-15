@@ -9,7 +9,9 @@
 -- the player to a quest giver that won't offer the quest.
 --
 -- Prerequisite data comes from two places:
---   1. Questie's quest database, when Questie is installed.
+--   1. Questie's quest database, when Questie is installed, or another
+--      quest data addon the card knows (OpenXP_ForeverData, a registered
+--      provider; OpenXPCard.lua).
 --   2. Chains inferred from OpenXP's own guides: when a step turns in quest A
 --      and then accepts quest B at the same quest giver, and every guide that
 --      accepts B does it right after turning in A, B is treated as needing A.
@@ -38,6 +40,9 @@ SS.api = {
         local q = db and db.GetQuest and db:GetQuest(id)
         local l = q and (q.questLevel or q.level)
         if type(l) == "number" and l > 0 then return l end
+        local card = addon.card
+        local info = not q and card and card.QuestInfoOf and card.QuestInfoOf(id)
+        if info and type(info.l) == "number" and info.l > 0 then return info.l end
     end,
     -- how many levels below you a quest can be before it turns gray
     GreenRange = function()
@@ -49,6 +54,13 @@ SS.api = {
         local q = db and db.GetQuest and db:GetQuest(id)
         local n = q and q.nextQuestInChain
         if type(n) == "number" and n > 0 then return n end
+    end,
+    -- what a quest needs first, from the card's quest providers (the data
+    -- addon when there's no Questie): {all = {ids}, any = {ids}} or nil
+    Prereqs = function(id)
+        local card = addon.card
+        local pre = card and card.Prereqs and card.Prereqs(id)
+        if type(pre) == "table" then return pre end
     end,
     QuestieDB = function()
         if _G.QuestieLoader then
@@ -170,6 +182,18 @@ function SS.MissingPrerequisites(id, prereqs, visited)
                 if api.IsTurnedIn(q) or api.IsOnQuest(q) then anyDone = true end
             end
             if not anyDone then need(quest.preQuestSingle[1]) end
+        end
+    else
+        local pre = api.Prereqs and api.Prereqs(id)
+        if pre then
+            for _, q in ipairs(pre.all or {}) do need(q) end
+            if pre.any and #pre.any > 0 then
+                local anyDone = false
+                for _, q in ipairs(pre.any) do
+                    if api.IsTurnedIn(q) or api.IsOnQuest(q) then anyDone = true end
+                end
+                if not anyDone then need(pre.any[1]) end
+            end
         end
     end
     for _, q in ipairs(prereqs and prereqs[id] or {}) do need(q) end
@@ -298,6 +322,12 @@ function SS.GrayQuests(guide, steps, prereqs, level)
         if quest then
             for _, p in pairs(quest.preQuestGroup or {}) do link(p, id) end
             for _, p in pairs(quest.preQuestSingle or {}) do link(p, id) end
+        else
+            local pre = api.Prereqs and api.Prereqs(id)
+            if pre then
+                for _, p in ipairs(pre.all or {}) do link(p, id) end
+                for _, p in ipairs(pre.any or {}) do link(p, id) end
+            end
         end
     end
     local memo = {}
@@ -602,7 +632,9 @@ function SS.SkippedChains(guide)
                     local id = tonumber(e.questId)
                     if id and id > 0 and not seen[id] and
                         (e.tag == "accept" or e.tag == "turnin" or e.tag == "complete") and
-                        not SS.api.IsTurnedIn(id) then
+                        not SS.api.IsTurnedIn(id) and
+                        -- a pickup that's in your log wasn't skipped
+                        not (e.tag == "accept" and SS.api.IsOnQuest(id)) then
                         seen[id] = true
                         local missing = {}
                         if card.MissingChain and card.HasQuestData and card.HasQuestData() then

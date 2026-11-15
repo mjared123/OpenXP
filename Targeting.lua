@@ -641,8 +641,15 @@ function addon.targeting:UpdateUnitList()
         end
     end
 
-    for _, step in pairs(addon.RXPFrame.activeSteps) do
-        for _, element in pairs(step.elements or {}) do AddUnits(element, stepUnitscan, stepMobs, stepTargets) end
+    -- on a quest chain walk the card shows that walk's quest, not the
+    -- guide's step: list who to talk to for it (OpenXPCard.lua)
+    local walk = addon.card and addon.card.DetourTargets and addon.card.DetourTargets()
+    if walk then
+        for _, name in ipairs(walk) do tinsert(stepTargets, addon.GetCreatureName(name)) end
+    else
+        for _, step in pairs(addon.RXPFrame.activeSteps) do
+            for _, element in pairs(step.elements or {}) do AddUnits(element, stepUnitscan, stepMobs, stepTargets) end
+        end
     end
 
     local unitscanGenerated = {}

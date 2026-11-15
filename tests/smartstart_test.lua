@@ -525,5 +525,48 @@ do
     reset()
 end
 
+-- Without Questie, quest rules come from the card's providers (the data addon)
+do
+    reset()
+    local oldPrereqs, oldLevel = SS.api.Prereqs, SS.api.QuestLevel
+    SS.api.Prereqs = function(id)
+        if id == 1066 then return {all = {1065}} end
+        if id == 990 then return {any = {994, 995}} end
+    end
+    local missing = SS.MissingPrerequisites(1066, {})
+    check(#missing == 1 and missing[1] == 1065, "providers: a quest that needs another one first")
+    state.onQuest[1065] = true
+    check(#SS.MissingPrerequisites(1066, {}) == 0, "providers: nothing missing while the earlier quest is in the log")
+    missing = SS.MissingPrerequisites(990, {})
+    check(#missing == 1 and missing[1] == 994, "providers: one of several counts as one missing quest")
+    state.turnedIn[995] = true
+    check(#SS.MissingPrerequisites(990, {}) == 0, "providers: one of several is done")
+    SS.api.Prereqs, SS.api.QuestLevel = oldPrereqs, oldLevel
+    reset()
+end
+
+-- /oxp catchup: a pickup you already have in your log wasn't skipped
+do
+    reset()
+    local guide = {steps = {
+        {elements = {{tag = "accept", questId = 496}, {tag = "turnin", questId = 1065}, {tag = "accept", questId = 1066}}},
+        {elements = {{tag = "complete", questId = 496}}},
+        {elements = {{tag = "accept", questId = 9}}},
+    }}
+    addon.card = {
+        StepStatus = function(_, i) return i == 1 and "chain" or nil end,
+        HasQuestData = function() return true end,
+        MissingChain = function(id) return id == 1066 and {1065} or {} end,
+    }
+    addon.GetGuideProgress = function() return 3 end
+    state.onQuest[496] = true
+    local out = SS.SkippedChains(guide)
+    local got = {}
+    for _, row in ipairs(out) do got[#got + 1] = row.quest end
+    check(table.concat(got, ",") == "1065,1066", "catchup: lists what was missed, not a quest in your log: " .. table.concat(got, ","))
+    addon.card, addon.GetGuideProgress = nil, nil
+    reset()
+end
+
 print(string.format("%d passed, %d failed", passes, failures))
 return failures
