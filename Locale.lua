@@ -108,7 +108,7 @@ fonts.Loads = Loads
 function fonts.Choices()
     local values, order, seen = {}, {}, {}
     for _, f in ipairs(BUILTIN) do
-        values[f.key] = f.name
+        values[f.key] = (addon.locale.Get and addon.locale.Get(f.name)) or f.name
         order[#order + 1] = f.key
         seen[NormPath(f.path)] = true
     end

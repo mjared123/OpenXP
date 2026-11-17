@@ -1838,8 +1838,8 @@ local function SplitGuideName(guide)
     local name = (guide and (guide.displayname or guide.name)) or ""
     name = StripCodes(name):gsub("\\n", " "):gsub("\n", " ")
     local range, zone = name:match("^(%d+%s*%-%s*%d+)%s+(.+)$")
-    if range then return zone, (range:gsub("%-", "–")) end
-    return name, ""
+    if range then return L(zone) or zone, (range:gsub("%-", "–")) end
+    return L(name) or name, ""
 end
 
 local function NextStepTexts(guide, afterIndex, count)

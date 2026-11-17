@@ -615,7 +615,7 @@ function addon.settings:CreateAceOptionsPanel()
         local features = fmt('%s\n\n%s:', first , _G.FEATURES_LABEL)
 
         for feature, desc in pairs(addon.settings.enabledBetaFeatures) do
-            features = fmt('%s\n%s\n - %s', features, feature, desc)
+            features = fmt('%s\n%s\n - %s', features, L(feature), L(desc))
         end
 
         return features

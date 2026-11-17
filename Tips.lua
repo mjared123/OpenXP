@@ -464,19 +464,19 @@ function addon.tips:LoadDangerousMobs(reloadData)
 
                                     if addon.gameVersion < 20000 then
                                         prefix = _G.VOICEMACRO_1_Sc_0
-                                        step.mapTooltip = fmt("%s %s (%d)", prefix, name, mobData.MaxLevel) -- Tooltip title
+                                        step.mapTooltip = fmt("%s %s (%d)", prefix, addon.GetCreatureName and addon.GetCreatureName(name) or name, mobData.MaxLevel) -- Tooltip title
                                     else
-                                        step.mapTooltip = name -- Tooltip title
+                                        step.mapTooltip = addon.GetCreatureName and addon.GetCreatureName(name) or name -- Tooltip title
                                     end
 
                                     -- Tooltip description:
                                     if mobData.Movement then
                                         element.mapTooltip =
-                                            fmt("%s - %s\n%s", mobData.Classification or "", mobData.Movement or "",
-                                                mobData.Notes or "")
+                                            fmt("%s - %s\n%s", L(mobData.Classification or ""), L(mobData.Movement or ""),
+                                                L(mobData.Notes or ""))
                                     else
                                         element.mapTooltip =
-                                            fmt("%s\n%s", mobData.Classification or "", mobData.Notes or "")
+                                            fmt("%s\n%s", L(mobData.Classification or ""), L(mobData.Notes or ""))
                                     end
                                 elseif element.targets or element.unitscan or element.mobs then
                                     if addon.settings.profile.showDangerousUnitscan then

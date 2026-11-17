@@ -675,7 +675,7 @@ function addon.v2:BuildGuideStepsSnapshot(includeRows)
     if not profile then return {title = "", subtitle = "", rows = rows} end
 
     if not guide or guide.empty then
-        return {title = "Welcome to OpenXP", subtitle = L("Select a guide:"), rows = rows, empty = true}
+        return {title = L("Welcome to OpenXP"), subtitle = L("Select a guide:"), rows = rows, empty = true}
     end
 
     local activeStepIndex, step, hidden, complete, text, rawtext
@@ -2458,7 +2458,7 @@ function addon.ui.v2:RegisterRXPV2ActivePartyStepsFrame()
         footertext:SetPoint("CENTER", footer, 0, 0)
         footertext:SetTextColor(0.65, 0.65, 0.7)
         footertext:SetFont(theme.font, addon.settings.profile.guideFontSize - 1, "")
-        footertext:SetText("OpenXP: Active Party Steps")
+        footertext:SetText(L("OpenXP: Active Party Steps"))
 
         local sizer = CreateFrame("Button", nil, frame)
 
