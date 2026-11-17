@@ -39,7 +39,8 @@ def skeleton(text):
 
 
 def guide_texts(paths):
-    """Yields every ">>" text in the guide files that GuideText translates."""
+    """Yields every ">>" text and "+" objective text in the guide files that
+    GuideText translates."""
     for path in paths:
         with open(path, encoding="utf-8") as f:
             for line in f:
@@ -49,6 +50,9 @@ def guide_texts(paths):
                 line = re.sub(r'\s*<<\s*(.+)', '', line)
                 m = re.search(r'>>\s*(.*)$', line)
                 if not m or not m.group(1).strip():
+                    # "+text" objective line (GuideLoader: line:sub(2, -1))
+                    if line.strip().startswith("+") and line.strip()[1:].strip():
+                        yield line.strip()[1:]
                     continue
                 tag = re.match(r'\s*\.(\S+)', line)
                 if tag and tag.group(1) in ("accept", "turnin"):

@@ -49,6 +49,15 @@ def main():
     for key in sorted(used):
         out.append("[%s] = %s," % (lua_str(key), lua_str(phrases[key])))
     out.append("}")
+    # Optional names.json: English name -> this language's name, for names in
+    # guide text that NPCnames.lua lacks (loot, objects, [item] links, plurals).
+    names_path = os.path.join(os.path.dirname(__file__), lang, "names.json")
+    if os.path.exists(names_path):
+        names = json.load(open(names_path, encoding="utf-8"))
+        out += ["", "addon.guideNames = {"]
+        for name in sorted(names):
+            out.append("[%s] = %s," % (lua_str(name), lua_str(names[name])))
+        out.append("}")
     path = os.path.join(ROOT, "locale", "%s_guide.lua" % locales[0])
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(out) + "\n")

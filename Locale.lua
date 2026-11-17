@@ -240,17 +240,34 @@ end
 -- "skeleton" where names, icons, [item] links and numbers are {A}, {B}, ...
 -- so one sentence covers every step that only differs in those. Friendly
 -- and enemy names are swapped for the client's own names (NPCnames.lua).
+-- A language can also set addon.guideNames (English name -> its name) for
+-- names NPCnames.lua lacks: loot, objects, [item] links, plural mob names.
 -- Text with no translation stays English. tools/locale/guide_skeleton.py
 -- builds the same keys: change both together.
 
 local guideTextCache = {}
 local NAME_KINDS = {FRIENDLY = true, ENEMY = true, LOOT = true, PICK = true}
 
+local function GuideName(name)
+    local names = addon.guideNames
+    return names and names[name]
+end
+
 local function LocalName(raw)
+    -- [item] link: the name inside, which can itself be a colored name
+    local inner = raw:match("^%[(.*)%]$")
+    if inner then
+        if inner:find("^|cRXP_") then return "[" .. LocalName(inner) .. "]" end
+        return "[" .. (GuideName(inner) or inner) .. "]"
+    end
     return (raw:gsub("^|cRXP_(%u+)_(.-)|r$", function(kind, name)
+        local tr
         if (kind == "FRIENDLY" or kind == "ENEMY") and addon.GetCreatureName then
-            return "|cRXP_" .. kind .. "_" .. addon.GetCreatureName(name) .. "|r"
+            tr = addon.GetCreatureName(name)
+            if tr == name then tr = nil end
         end
+        tr = tr or GuideName(name)
+        if tr then return "|cRXP_" .. kind .. "_" .. tr .. "|r" end
     end))
 end
 
@@ -281,7 +298,12 @@ function addon.locale.GuideText(text)
     if tr then
         result = tr:gsub("{(%u)}", function(c)
             local s = slots[c:byte() - 64]
-            if s then return LocalName(s) end
+            if s then
+                -- an [item] link around a colored name was cut as "[{A}]":
+                -- put the name back in before translating it
+                s = s:gsub("{(%u)}", function(c2) return slots[c2:byte() - 64] end)
+                return LocalName(s)
+            end
         end) .. suffix
     end
     guideTextCache[text] = result

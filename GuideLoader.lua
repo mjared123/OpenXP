@@ -1077,6 +1077,13 @@ local function parseLine(linetext,step,parsingLogic)
         element = {text = text, textOnly = true, step = step}
     elseif line:sub(1, 1) == "+" then
         element = {text = line:sub(2, -1), step = step}
+        -- objective text in the player's language too (Locale.lua GuideText)
+        if addon.guidePhrases then
+            local translated = addon.locale.GuideText(element.text)
+            if translated ~= element.text then
+                element.textEn, element.text = element.text, translated
+            end
+        end
         addon.lastObjective = element
     elseif line:sub(1, 1) == "*" then
         element = {
