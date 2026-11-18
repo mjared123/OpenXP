@@ -85,7 +85,7 @@ local function Paths(area, e)
         pts[i] = e[i]
         if i > 1 then len = len + Dist(e[i - 1][1], e[i - 1][2], e[i][1], e[i][2]) end
     end
-    local name = area.name
+    local name = L(area.name) or area.name
     local enterLabel = area.indoor and fmt(L("Enter %s"), name) or fmt(L("Path to %s"), name)
     local enter = {pts = pts, len = len, area = area, label = enterLabel, enter = true}
     local exit
@@ -109,7 +109,7 @@ local function PassPaths(pass)
             len = len + Dist(pts[i - 1][1], pts[i - 1][2], pts[i][1], pts[i][2])
         end
     end
-    local label = fmt(L("Go through %s"), pass.name or L("the pass"))
+    local label = fmt(L("Go through %s"), pass.name and L(pass.name) or L("the pass"))
     local fwd = {pts = pts, len = len, label = label}
     local back = pass.twoWay ~= false and {pts = rev, len = len, label = label} or nil
     built[pass] = {fwd, back}
@@ -153,7 +153,7 @@ end
 local function PlayerInside(area, x, y, ctx)
     local r = Inside(area, x, y)
     if not r then return end
-    if area.indoor and not ctx.indoors and not (area.name and ctx.subzone == area.name) then
+    if area.indoor and not ctx.indoors and not (area.name and (ctx.subzone == area.name or ctx.subzone == L(area.name))) then
         return
     end
     return r

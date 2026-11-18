@@ -689,7 +689,7 @@ function SS.SkippedChains(guide)
 end
 
 local function QName(id)
-    return (addon.GetQuestName and addon.GetQuestName(id)) or ("Quest " .. id)
+    return (addon.GetQuestName and addon.GetQuestName(id)) or (L("Quest ") .. id)
 end
 
 -- Lists skipped chains and where OpenXP picks up the missing quest.
@@ -713,7 +713,7 @@ function SS.ShowCatchUp()
         local why = entry.status == "chain" and L("chain missed") or L("skipped")
         if #parts > 0 then
             Print(string.format(L("Step %d, %s (%s). Needs first: %s"), entry.step, QName(entry.quest), why,
-                table.concat(parts, ", ")))
+                table.concat(parts, L(", "))))
         else
             Print(string.format(L("Step %d, %s (%s). Click the step counter on the guide card to go back to it."),
                 entry.step, QName(entry.quest), why))

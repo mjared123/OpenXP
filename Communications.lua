@@ -600,7 +600,7 @@ Arrow data
     f:SetLayout("Fill")
     f:EnableResize(true)
     f.statustext:GetParent():Hide()
-    f:SetTitle("OpenXP Feedback Form")
+    f:SetTitle(L("OpenXP Feedback Form"))
 
     f.scrollContainer = AceGUI:Create("ScrollFrame")
     f.scrollContainer:SetLayout("Fill")
@@ -611,7 +611,7 @@ Arrow data
     f.frame:SetBackdropColor(unpack(addon.colors.background))
 
     local editbox = AceGUI:Create("MultiLineEditBox")
-    editbox:SetLabel("Copy all of this (Ctrl+A, Ctrl+C) and paste it into your bug report. /oxp feedback has the link")
+    editbox:SetLabel(L("Copy all of this (Ctrl+A, Ctrl+C) and paste it into your bug report. /oxp feedback has the link"))
     editbox:SetFullWidth(true)
     editbox:SetFullHeight(true)
     editbox:SetText(content)

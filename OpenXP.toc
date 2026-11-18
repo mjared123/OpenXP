@@ -1,6 +1,8 @@
 ## Interface: 11509, 16001
 ## Interface-Classic: 11509
 ## Title: OpenXP
+## Title-zhTW: OpenXP
+## Notes-zhTW: 免費的社群升級指南(基於 RestedXP Guides,CC BY-NC-SA 4.0)
 ## Title-zhCN: OpenXP
 ## IconTexture: Interface\AddOns\OpenXP\Textures\openxp_logo-64
 ## Notes: Free, community-made leveling guides (based on RestedXP Guides, CC BY-NC-SA 4.0)

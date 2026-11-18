@@ -158,26 +158,26 @@ end
 local SECTIONS = {
     {
         key = "bug",
-        title = "Report a bug",
-        text = "Something broken or wrong in a guide? This link opens a GitHub bug report with your OpenXP version, guide and step already filled in.",
-        button = "Full bug details",
-        tip = "Opens a form with everything about your character, step and arrow. Paste it into the bug report.",
+        title = L("Report a bug"),
+        text = L("Something broken or wrong in a guide? This link opens a GitHub bug report with your OpenXP version, guide and step already filled in."),
+        button = L("Full bug details"),
+        tip = L("Opens a form with everything about your character, step and arrow. Paste it into the bug report."),
         onClick = function() if addon.comms and addon.comms.OpenBugReport then addon.comms.OpenBugReport() end end,
     },
     {
         key = "suggestion",
-        title = "Suggest something",
-        text = "An idea for a feature, a better route or a quest the guide should add.",
+        title = L("Suggest something"),
+        text = L("An idea for a feature, a better route or a quest the guide should add."),
     },
     {
         key = "comment",
-        title = "Leave a comment",
-        text = "Say hi, ask a question or tell other players how OpenXP worked for you, on CurseForge.",
+        title = L("Leave a comment"),
+        text = L("Say hi, ask a question or tell other players how OpenXP worked for you, on CurseForge."),
     },
     {
         key = "rate",
-        title = "Rate OpenXP",
-        text = "Enjoying OpenXP? A rating on CurseForge helps other players find it.",
+        title = L("Rate OpenXP"),
+        text = L("Enjoying OpenXP? A rating on CurseForge helps other players find it."),
     },
 }
 

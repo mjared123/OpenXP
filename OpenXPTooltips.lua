@@ -338,7 +338,7 @@ function tips.GuideStep(unitName, npcId)
                     if npcs and InList(npcs, nil, npcId) then role = e.tag end
                 end
                 if role then
-                    local what = ROLE[role]
+                    local what = L(ROLE[role])
                     if (role == "accept" or role == "turnin") and e.title then
                         what = what .. ": " .. Strip(e.title)
                     end

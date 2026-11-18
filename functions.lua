@@ -5214,7 +5214,7 @@ function addon.functions.blastedLands(self)
         local lung = GetItemInfo(8392)
         local jowl = GetItemInfo(8391)
         element.text =
-            format("Collect the following items:\n14 %s\n11 %s\n6 %s\n6 %s\n5 %s",
+            format(L("Collect the following items:") .. "\n14 %s\n11 %s\n6 %s\n6 %s\n5 %s",
                               gizzard or L"Vulture Gizzard",
                               brain or L"Basilisk Brain",
                               pincer or L"Scorpok Pincer",
@@ -5809,7 +5809,7 @@ function addon.functions.buy(self, ...)
                         total = math.min(total, GetMoney() / cost)
                     end
 
-                    addon.comms.PrettyPrint("Buying " .. name .. " x" .. total) -- ok
+                    addon.comms.PrettyPrint(L("Buying ") .. name .. " x" .. total) -- ok
                     local stack = select(8, GetItemInfo(id))
                     if quantity then
                         while total > 0 do
