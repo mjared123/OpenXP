@@ -430,17 +430,35 @@ logWatcher:RegisterEvent("QUEST_LOG_UPDATE")
 logWatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
 logWatcher:SetScript("OnEvent", function() questLogDirty = true end)
 
+
 function addon.QuestLogIDs()
     if not questLogDirty then return questLogCache end
     questLogDirty = false
     questLogCache = nil
-    if not (GetQuestLogTitle and GetNumQuests) then return end
+
     local ids = {}
-    for i = 1, GetNumQuests() do
-        local title, _, _, isHeader, isCollapsed, _, _, questID = GetQuestLogTitle(i)
-        if isHeader and isCollapsed then return end
-        if not isHeader and questID and questID > 0 then ids[questID] = title or true end
+    if C_QuestLog and C_QuestLog.GetInfo and C_QuestLog.GetNumQuestLogEntries then
+        for i = 1, C_QuestLog.GetNumQuestLogEntries() do
+            local questInfo = C_QuestLog.GetInfo(i)
+            if questInfo then
+                if questInfo.isHeader and questInfo.isCollapsed then return end
+                if not questInfo.isHeader and questInfo.questID and questInfo.questID > 0 then
+                    ids[questInfo.questID] = questInfo.title or true
+                end
+            end
+        end
+    elseif GetQuestLogTitle and GetNumQuests then
+        for i = 1, GetNumQuests() do
+            local title, _, _, isHeader, isCollapsed, _, _, questID = GetQuestLogTitle(i)
+            if isHeader and isCollapsed then return end
+            if not isHeader and questID and questID > 0 then
+                ids[questID] = title or true
+            end
+        end
+    else
+        return
     end
+
     questLogCache = ids
     return ids
 end
