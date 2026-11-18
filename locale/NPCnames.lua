@@ -2,7 +2,8 @@ local _, addon = ...
 local locale = GetLocale()
 
 function addon.GetCreatureName(name)
-	return addon.npcNames and addon.npcNames[name] or name
+	-- addon.guideNames (locale\<loc>_guide.lua) has names this table lacks
+	return addon.npcNames and addon.npcNames[name] or addon.guideNames and addon.guideNames[name] or name
 end
 
 if locale == "enUS" or locale == "enGB" then
