@@ -694,6 +694,11 @@ function addon.GetQuestName(id)
     if type(id) ~= "number" then return end
     id = GetQuestId(id)
     local name
+    if addon.guideQuestNames then
+        local getTitle = C_QuestLog.GetTitleForQuestID or C_QuestLog.GetQuestInfo
+        name = getTitle and getTitle(id)
+        if type(name) == "string" and name ~= "" then return name end
+    end
     if db and type(db.QueryQuest) == "function" and type(db.GetQuest) ==
         "function" then
         local quest = db:GetQuest(id)
@@ -979,16 +984,9 @@ function addon.ReplaceNpcIds(textLine,element)
     if inactive then
         return textLine:gsub("::%d+","")
     end
-    for name,npcId in string.gmatch(textLine, "|c%x%x%x%x%x%x%x%x([^|:]+)::(%d+)|r") do
-        --local newName
-        --if addon.player.lang ~= "en" then
-            local newName = addon.GetNpcName(tonumber(npcId))
-        --end
-        newName = newName or name
-        textLine = textLine:gsub(name.."::%d+",newName)
-    end
-
-    return textLine
+    return (textLine:gsub("(|c%x%x%x%x%x%x%x%x)([^|:]+)::(%d+)|r", function(color, name, npcId)
+        return color .. (addon.GetNpcName(tonumber(npcId)) or name) .. "|r"
+    end))
 end
 
 function addon.GetItemName(id)
@@ -1230,7 +1228,7 @@ function addon.functions.accept(self, ...)
         if not id then
             return addon.error(
                 L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                ": Invalid quest ID\n" .. self)
+                L(": Invalid quest ID\n") .. self)
         end
         local element = {title = "", flags = flags}
         element.questId = GetQuestId(id)
@@ -1400,7 +1398,7 @@ function addon.functions.daily(self, text, ...)
         if err then
             return addon.error(
                        L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid quest ID\n" .. self)
+                           L(": Invalid quest ID\n") .. self)
         end
         element.multiple = #ids > 1
         element.flags = 0
@@ -1453,7 +1451,7 @@ function addon.functions.turnin(self, ...)
         if not id then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid quest ID\n" .. self)
+                           L(": Invalid quest ID\n") .. self)
         end
         reward = tonumber(reward) or 0
         local element = {title = "", questId = GetQuestId(id)}
@@ -1628,7 +1626,7 @@ function addon.functions.dailyturnin(self, text, ...)
         if err then
             return addon.error(
                         L("Error parsing guide") .. " "   .. addon.currentGuideName ..
-                           ": Invalid quest ID\n" .. self)
+                           L(": Invalid quest ID\n") .. self)
         end
         element.multiple = #ids > 1
         element.title = ""
@@ -1885,7 +1883,7 @@ function addon.functions.complete(self, ...)
         obj = tonumber(obj)
         if not (id and obj) then
             addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                            ": Invalid objective or quest ID\n" .. self)
+                            L(": Invalid objective or quest ID\n") .. self)
             return
         end
         objMax = tonumber(objMax)
@@ -2006,7 +2004,7 @@ addon.functions["goto"] = function(self, ...)
 
             if not (x and y) then
                 return addon.comms.PrettyDebug("Error parsing guide " .. (addon.currentGuideName or _G.NONE) ..
-                           ": Invalid coordinates or map name\n" .. self, zone)
+                           L(": Invalid coordinates or map name\n") .. self, zone)
             end
             local zx,zy = HBD:GetZoneCoordinatesFromWorld(x, y, zone)
             if zx and zy then
@@ -2023,7 +2021,7 @@ addon.functions["goto"] = function(self, ...)
         if not (element.x and element.y and element.zone) then
             return addon.comms.PrettyDebug(
                         L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid coordinates or map name\n" .. self, element.zone or zone)
+                           L(": Invalid coordinates or map name\n") .. self, element.zone or zone)
         end
 
         element.radius = tonumber(radius)
@@ -2044,7 +2042,7 @@ addon.functions["goto"] = function(self, ...)
                 if not (zx and zy) then
                     return addon.error(
                         L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid coordinates or map name\n" .. self, element.zone or zone)
+                           L(": Invalid coordinates or map name\n") .. self, element.zone or zone)
                 end
                 element.x = zx * 100
                 element.y = zy * 100
@@ -2215,7 +2213,7 @@ function addon.functions.waypoint(self, text, zone, x, y, radius, lowPrio, ...)
         if not (element.x and element.y and element.zone) then
             return addon.error(
                         L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid coordinates or map name\n" .. self, element.zone or zone)
+                           L(": Invalid coordinates or map name\n") .. self, element.zone or zone)
         end
 
         radius = tonumber(radius)
@@ -2255,7 +2253,7 @@ function addon.functions.waypoint(self, text, zone, x, y, radius, lowPrio, ...)
                 else
                     return addon.error(
                         '2-'..L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid coordinates or map name\n" .. self, element.zone or zone)
+                           L(": Invalid coordinates or map name\n") .. self, element.zone or zone)
                 end
             end
         end
@@ -2302,7 +2300,7 @@ function addon.functions.wpradius(self,_,zone,x,y,radius)
         else
             return addon.error(
                         L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid coordinates or map name\n" .. self, element.zone or zone)
+                           L(": Invalid coordinates or map name\n") .. self, element.zone or zone)
         end
     end
 end
@@ -2342,7 +2340,7 @@ function addon.functions.pin(self, ...)
         if not (element.x and element.y and element.zone) then
             return addon.error(
                         L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid coordinates or map name\n" .. self, element.zone or zone)
+                           L(": Invalid coordinates or map name\n") .. self, element.zone or zone)
         end
         if not subzone then
         element.wx, element.wy, element.instance =
@@ -2408,7 +2406,7 @@ function addon.functions.ingamewaypoint(self, ...)
         if not (element.zx and element.zy and element.zone) then
             return addon.error(
                         L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid coordinates or map name\n" .. self, element.zone or zone)
+                           L(": Invalid coordinates or map name\n") .. self, element.zone or zone)
         end
         if not subzone then
         element.wx, element.wy, element.instance =
@@ -2566,7 +2564,7 @@ function addon.functions.line(self, text, zone, ...)
                 local xc,yc = HBD:GetZoneCoordinatesFromWorld(wx, wy, tonumber(zone))
                 if not (xc and yc) then
                     addon.comms.PrettyDebug("Error parsing guide " .. (addon.currentGuideName or "") ..
-                           ": Invalid coordinates or map name\n" .. self, zone)
+                           L(": Invalid coordinates or map name\n") .. self, zone)
                     return
                 end
                 segments[x] = xc*100
@@ -2584,7 +2582,7 @@ function addon.functions.line(self, text, zone, ...)
         if not (segments and #segments > 0 and zone and mapID) then
             return addon.comms.PrettyDebug(
                         L("Error parsing guide") .. " " .. (addon.currentGuideName or _G.NONE) ..
-                           ": Invalid coordinates or map name\n" .. self, zone)
+                           L(": Invalid coordinates or map name\n") .. self, zone)
         end
         element.zone = mapID
         -- element.hidePin = true
@@ -2611,7 +2609,7 @@ function addon.functions.area(self, text, zone, ...)
         end
         if not mapID or #pts < 3 then
             return addon.error(L("Error parsing guide") .. " " .. (addon.currentGuideName or _G.NONE) ..
-                                   ": Invalid area\n" .. self, zone)
+                                   L(": Invalid area\n") .. self, zone)
         end
         return {area = pts, areaZone = mapID, textOnly = true, text = text}
     end
@@ -2651,7 +2649,7 @@ function addon.functions.loop(self, text, range, zone, ...)
         if not (segments and #segments > 0 and zone and mapID) then
             return addon.error(
                         L("Error parsing guide") .. " "  .. (addon.currentGuideName or _G.NONE) ..
-                           ": Invalid coordinates or map name\n" .. self, zone)
+                           L(": Invalid coordinates or map name\n") .. self, zone)
         end
         element.zone = mapID
         -- element.hidePin = true
@@ -2725,7 +2723,7 @@ function addon.functions.hs(self, ...)
         if not text then
             return addon.error(
                         L("Error parsing guide") .. " "  .. (addon.currentGuideName or _G.NONE) ..
-                           ": Invalid syntax\n" .. self)
+                           L(": Invalid syntax\n") .. self)
         end
 
         return {text = text, hearthDest = addon.HearthDestination(text)}
@@ -2992,7 +2990,7 @@ function addon.functions.fly(self, ...)
         elseif not location then
             return addon.error(
                         L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid text/location\n" .. self)
+                           L(": Invalid text/location\n") .. self)
         else
             element.text = L("Fly to") .. " " .. location
         end
@@ -3600,7 +3598,7 @@ function addon.functions.skill(self, text, skillName, str, skipstep, useMaxValue
         level = tonumber(level)
         if not (level and skillName) then
             addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                            ": Invalid skill name or point threshold\n" .. self)
+                            L(": Invalid skill name or point threshold\n") .. self)
             return
         end
         element.level = level
@@ -3683,7 +3681,7 @@ function addon.functions.mountcount(self, ...)
         element.total = tonumber(total)
         if not (element.total and minskill and maxskill) then
             return addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                            ": Invalid skill/count\n" .. self)
+                            L(": Invalid skill/count\n") .. self)
         end
         if operator == "<" then
             element.operator = -1
@@ -3769,7 +3767,7 @@ function addon.functions.reputation(self, ...)
 
         if not (faction and standing) then
             addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                            ": Invalid faction/standing\n" .. self)
+                            L(": Invalid faction/standing\n") .. self)
             return
         end
 
@@ -3976,7 +3974,7 @@ function addon.functions.money(self, ...)
         else
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid arguments\n" .. self)
+                           L(": Invalid arguments\n") .. self)
         end
         element.money = tonumber(money:match("(%d+%.?%d*)"))
         if element.money then
@@ -3984,7 +3982,7 @@ function addon.functions.money(self, ...)
         else
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid arguments\n" .. self)
+                           L(": Invalid arguments\n") .. self)
         end
         element.useNetWorth = useNetWorth == "1"
         element.textOnly = true
@@ -4132,7 +4130,7 @@ function addon.functions.train(self, ...)
         if type(spellId) ~= "number" then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid spell name/id\n" .. self)
+                           L(": Invalid spell name/id\n") .. self)
         end
         element.flags = tonumber(flags) or 0
         if bit.band(element.flags,0x1) == 0x1 then
@@ -4243,7 +4241,7 @@ function addon.functions.abandon(self, text, ...)
         if not element.ids[1] then
             return addon.error(
                         L("Error parsing guide") .. " "  .. addon.currentGuideName ..
-                           ": Invalid quest ID\n" .. self)
+                           L(": Invalid quest ID\n") .. self)
         end
         element.title = ""
         --element.questId = id
@@ -4329,7 +4327,7 @@ function addon.functions.petfamily(self, text, ...)
         if not next(ids) then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid icon ID\n" .. self)
+                           L(": Invalid icon ID\n") .. self)
         end
         element.ids = ids
         if text and text ~= "" then element.text = text end
@@ -4366,7 +4364,7 @@ function addon.functions.areapoiexists(self, text, zone, ...)
         if not (ids[1] and element.zone) then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid PoI ID or map ID\n" .. self)
+                           L(": Invalid PoI ID or map ID\n") .. self)
         end
         element.ids = ids
         if text and text ~= "" then element.text = text end
@@ -4401,7 +4399,7 @@ function addon.functions.areapoiguide(self, text, zone, id, guide)
         if not (idNum and element.zone) then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid PoI ID or map ID\n" .. self)
+                           L(": Invalid PoI ID or map ID\n") .. self)
         end
         element.ids = { idNum }
         if text and text ~= "" then element.text = text end
@@ -4444,7 +4442,7 @@ function addon.functions.questcount(self, text, count, ...)
         if not (n) then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid argument\n" .. self)
+                           L(": Invalid argument\n") .. self)
         end
         element.ids = ids
         if text and text ~= "" then element.text = text end
@@ -4489,7 +4487,7 @@ function addon.functions.isQuestComplete(self, ...)
         if not id then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid quest ID\n" .. self)
+                           L(": Invalid quest ID\n") .. self)
         end
         if reverse then
             element.reverse = true
@@ -4538,7 +4536,7 @@ function addon.functions.isOnQuest(self, text, ...)
         if not ids[1] then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid quest ID\n" .. self)
+                           L(": Invalid quest ID\n") .. self)
         end
         element.questIds = ids
         if text and text ~= "" then element.text = text end
@@ -4596,7 +4594,7 @@ function addon.functions.isQuestTurnedIn(self, text, ...)
         if not ids[1] then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid quest ID\n" .. self)
+                           L(": Invalid quest ID\n") .. self)
         end
         if arg == "account" then element.account = true end
         element.questIds = ids
@@ -4730,7 +4728,7 @@ function addon.GetSubZoneId(zone,x,y,ignoreOutput)
         if not (mapID and text) then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid zone ID\n" .. self)
+                           L(": Invalid zone ID\n") .. self)
         end
         element.map = mapID
         element.icon = addon.icons["goto"]
@@ -4771,7 +4769,7 @@ function addon.functions.subzoneskip(self, text, subZone, flags)
         if not mapID then
             return addon.error(
                 L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                ": Invalid zone ID\n" .. self)
+                L(": Invalid zone ID\n") .. self)
         end
         flags = tonumber(flags) or 0
         if bit.band(flags,0x1) == 0x1 then
@@ -4812,7 +4810,7 @@ function addon.functions.zone(self, ...)
         if not (mapID and text) then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid text/map name\n" .. self, zone)
+                           L(": Invalid text/map name\n") .. self, zone)
         end
         element.map = mapID
         element.icon = addon.icons["goto"]
@@ -4848,7 +4846,7 @@ function addon.functions.explore(self, ...)
         if not (mapID and text and subZone) then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid text/zone ID\n" .. self)
+                           L(": Invalid text/zone ID\n") .. self)
         end
         element.text = text .. "1"
         element.mapid = mapID
@@ -4920,7 +4918,7 @@ function addon.functions.clicknext(self, ...)
         if not (nextGuide and text) then
             return addon.error(
                     L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid syntax\n" .. self)
+                           L(": Invalid syntax\n") .. self)
         end
         element.textOnly = true
         element.next = nextGuide
@@ -4956,7 +4954,7 @@ function addon.functions.link(self, ...)
         if not (url and text) then
             return addon.error(
                     L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid text/url\n" .. self)
+                           L(": Invalid text/url\n") .. self)
         end
         element.textOnly = true
         element.url = url:gsub("\\?\\%-","-")
@@ -5214,7 +5212,7 @@ function addon.functions.blastedLands(self)
         local lung = GetItemInfo(8392)
         local jowl = GetItemInfo(8391)
         element.text =
-            format("Collect the following items:\n14 %s\n11 %s\n6 %s\n6 %s\n5 %s",
+            format(L("Collect the following items:") .. "\n14 %s\n11 %s\n6 %s\n6 %s\n5 %s",
                               gizzard or L"Vulture Gizzard",
                               brain or L"Basilisk Brain",
                               pincer or L"Scorpok Pincer",
@@ -5809,7 +5807,7 @@ function addon.functions.buy(self, ...)
                         total = math.min(total, GetMoney() / cost)
                     end
 
-                    addon.comms.PrettyPrint("Buying " .. name .. " x" .. total) -- ok
+                    addon.comms.PrettyPrint(L("Buying %s x%d"), name, total)
                     local stack = select(8, GetItemInfo(id))
                     if quantity then
                         while total > 0 do
@@ -6061,7 +6059,7 @@ function addon.functions.gossipoption(self, ...)
         if not gossipId then
             return addon.error(L("Error parsing guide") .. " " ..
                                     addon.currentGuideName ..
-                                    ": Invalid gossipoption ID\n" .. self)
+                                    L(": Invalid gossipoption ID\n") .. self)
         end
 
         if text and text ~= "" then
@@ -6124,7 +6122,7 @@ function addon.functions.maxlevel(self, ...)
         if not level then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid syntax\n" .. self)
+                           L(": Invalid syntax\n") .. self)
         end
 
         element.xp = tonumber(xp)
@@ -6193,7 +6191,7 @@ function addon.functions.use(self, text, ...)
             else
                 return addon.error(L("Error parsing guide") .. " " ..
                                        addon.currentGuideName ..
-                                       ": Invalid item ID\n" .. self)
+                                       L(": Invalid item ID\n") .. self)
             end
         end
         element.textOnly = true
@@ -6221,12 +6219,18 @@ function addon.functions.macro(self, body, name, icon)
         if not (name and body) then
             return addon.error(L("Error parsing guide") .. " " ..
                         addon.currentGuideName ..
-                        ": Invalid macro - usage: .macro name,icon >> macrotext\n" .. self)
+                        L(": Invalid macro - usage: .macro name,icon >> macrotext\n") .. self)
         end
         body:gsub("spell:(%d+)",function(id)
             C_Spell.RequestLoadSpellData(tonumber(id))
          end)
-        return {name = name, icon = icon, body = body, textOnly = true, text = text}
+        if addon.guideNamesFr and addon.locale.GuideTerm then
+            name = addon.locale.GuideTerm(name)
+            body = body:gsub("(/targetexact )([^\n\\]+)", function(command, target)
+                return command .. (addon.GetForeverCreatureName(target) or addon.locale.GuideTerm(target))
+            end)
+        end
+        return {name = name, icon = icon, body = body, textOnly = true}
     end
     local element = self.element
     local step = element.step
@@ -6338,7 +6342,7 @@ function addon.functions.itemcount(self, ...)
         element.total = tonumber(total)
         if not (element.total and next(element.ids)) then
             return addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                            ": Invalid item ID/count\n" .. self)
+                            L(": Invalid item ID/count\n") .. self)
         end
         if operator == "<" then
             element.operator = -1
@@ -6487,7 +6491,7 @@ function addon.functions.cooldown(self, text, cooldownType, id, remaining,
         cd = tonumber(cd) or 0
         if not (cd and id) then
             addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                            ": Invalid arguments\n" .. self)
+                            L(": Invalid arguments\n") .. self)
         end
         if operator == "<" then
             element.operator = -1
@@ -6670,7 +6674,7 @@ if addon.gameVersion >= 110000 then
             criteriaIndex = tonumber(criteriaIndex)
             if not (stage and criteriaIndex) then
                 addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                                ": Invalid arguments\n" .. self)
+                                L(": Invalid arguments\n") .. self)
                 return
             end
 
@@ -6762,7 +6766,7 @@ else
             criteriaIndex = tonumber(criteriaIndex)
             if not (stage and criteriaIndex) then
                 addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                                ": Invalid arguments\n" .. self)
+                                L(": Invalid arguments\n") .. self)
                 return
             end
 
@@ -8466,7 +8470,7 @@ function addon.functions.skipOnQuest(self, text, id, label)
         if not (id and label) then
             return addon.error(
                         L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                           ": Invalid quest ID\n" .. self)
+                           L(": Invalid quest ID\n") .. self)
         end
 
         return {textOnly = true, id = id, label = label}
@@ -8689,7 +8693,7 @@ function addon.functions.totalbagslots(self,text,arg1)
         end
         if not maxslots then
             addon.error(L("Error parsing guide") .. " " .. addon.currentGuideName ..
-                            ": Invalid argument\n" .. self)
+                            L(": Invalid argument\n") .. self)
             return
         end
         local element = {maxslots = maxslots, text = text}

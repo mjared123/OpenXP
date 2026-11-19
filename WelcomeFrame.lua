@@ -947,9 +947,10 @@ local function BuildBody(mode, lastSeen)
         for _, entry in ipairs(CHANGELOG) do
             if lastSeen and entry.version == lastSeen then break end
             table.insert(lines, "")
-            table.insert(lines, string.format(L("%sVersion %s|r  |cFF9EA0B2%s|r"), BLUE_HEX, entry.version, entry.date))
+            local date = addon.guideNamesFr and L(entry.date) or entry.date
+            table.insert(lines, string.format(L("%sVersion %s|r  |cFF9EA0B2%s|r"), BLUE_HEX, entry.version, date))
             for _, change in ipairs(entry.changes) do
-                table.insert(lines, BLUE_HEX .. "•|r  " .. change)
+                table.insert(lines, BLUE_HEX .. "•|r  " .. (addon.guideNamesFr and L(change) or change))
             end
         end
     end

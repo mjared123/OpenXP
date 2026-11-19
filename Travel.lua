@@ -289,6 +289,9 @@ local function Legs(path, target)
     local out = {}
     for k, leg in ipairs(legs) do
         local n = leg.to
+        local name = n.name or "?"
+        local localize = addon.locale and addon.locale.GuideLabel
+        if localize then name = localize(name) end
         local nextLeg = legs[k + 1]
         if leg.kind == "walk" then
             local len = 0
@@ -299,34 +302,34 @@ local function Legs(path, target)
                     if leg.pts[i].kind == "gate" then through = leg.pts[i].name end
                 end
                 if nextLeg and nextLeg.kind == "fly" then
-                    leg.text = fmt(L("Go to the %s flight master"), n.name or "?")
+                    leg.text = fmt(L("Go to the %s flight master"), name)
                 elseif nextLeg and (nextLeg.kind == "boat" or nextLeg.kind == "zeppelin") then
-                    leg.text = fmt(L("Go to the %s at %s"), L(nextLeg.kind), n.name or "?")
+                    leg.text = fmt(L("Go to the %s at %s"), L(nextLeg.kind), name)
                 elseif nextLeg and nextLeg.kind == "tram" then
                     leg.text = L("Go to the Deeprun Tram")
                 elseif n == target then
                     local zone = ZoneName(target.map)
                     leg.text = zone and fmt(L("Head into %s"), zone) or L("Walk the rest of the way")
                 else
-                    leg.text = fmt(L("Walk to %s"), n.name or "?")
+                    leg.text = fmt(L("Walk to %s"), name)
                 end
                 if through and n ~= target or (through and n == target) then
-                    leg.text = leg.text .. fmt(L(" (through %s)"), through)
+                    leg.text = leg.text .. fmt(L(" (through %s)"), localize and localize(through) or through)
                 end
                 leg.len = len
                 out[#out + 1] = leg
             end
         elseif leg.kind == "fly" then
-            leg.text = fmt(L("Fly to %s"), n.name or "?")
+            leg.text = fmt(L("Fly to %s"), name)
             out[#out + 1] = leg
         elseif leg.kind == "hearth" then
-            leg.text = fmt(L("Use your Hearthstone (to %s)"), n.name or "?")
+            leg.text = fmt(L("Use your Hearthstone (to %s)"), name)
             out[#out + 1] = leg
         elseif leg.kind == "tram" then
-            leg.text = fmt(L("Take the Deeprun Tram to %s"), n.name or "?")
+            leg.text = fmt(L("Take the Deeprun Tram to %s"), name)
             out[#out + 1] = leg
         else
-            leg.text = fmt(L("Take the %s to %s"), L(leg.kind), n.name or "?")
+            leg.text = fmt(L("Take the %s to %s"), L(leg.kind), name)
             out[#out + 1] = leg
         end
     end

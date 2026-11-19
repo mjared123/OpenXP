@@ -805,7 +805,7 @@ local function CreateCleanupButton()
         GameTooltip:SetText("|T" .. ICON_PATH .. ":16|t " .. CLEANUP_LABEL, 1, 1, 1)
         GameTooltip:AddLine(CLEANUP_DESC, nil, nil, nil, true)
         if InCombatLockdown and InCombatLockdown() then
-            GameTooltip:AddLine("\nUnavailable in combat.", 1, 0.2, 0.2, true)
+            GameTooltip:AddLine("\n" .. L("Unavailable in combat."), 1, 0.2, 0.2, true)
         end
         GameTooltip:Show()
     end)

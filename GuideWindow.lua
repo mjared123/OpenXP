@@ -1615,13 +1615,8 @@ function addon.GetGuideName(guide)
     --[[if addon.settings.profile.season == 2 and UnitLevel("player") < 25 then
         som = true
     end]]
-    if som and guide.somname then
-        return guide.somname
-    elseif not som and guide.eraname then
-        return guide.eraname
-    else
-        return guide.displayname
-    end
+    local name = (som and guide.somname) or (not som and guide.eraname) or guide.displayname
+    return (addon.locale.GuideLabel and addon.locale.GuideLabel(name)) or name
 end
 
 RXPFrame.bottomMenu = {
@@ -2013,18 +2008,18 @@ function addon:LoadGuide(guide, OnLoad)
             local guideName = addon.GetGuideName(guide) or ""
             local title = guide.title or guide.subgroup or guideName
 
-            guideWindow.title:SetText(title)
+            guideWindow.title:SetText(addon.locale.GuideLabel and addon.locale.GuideLabel(title) or title)
             guideWindow.subtitle:SetText(not guide.title and guide.subgroup and guideName or "")
             guideWindow:UpdateResizeBounds(guideWindow.guideSteps.frame:IsShown(), false)
         end
     end
 
     if not useV2GuideWindow then
-        local guidename = guide.title or addon.GetGuideName(guide)
+        local guidename = (guide.title and L(guide.title)) or addon.GetGuideName(guide)
 
         if guide.subgroup and not guide.title then
             local subgroup = addon.GuideNames and addon.GuideNames[guide.subgroup] or guide.subgroup
-            GuideName.text:SetText(guidename .. "\n|cFFB8BCCC" .. subgroup .. "|r")
+            GuideName.text:SetText(guidename .. "\n|cFFB8BCCC" .. L(subgroup) .. "|r")
         else
             GuideName.text:SetText(guidename:gsub("\\n","\n"))
         end
@@ -2669,7 +2664,7 @@ local function SwapNames(name)
     if addon.GuideNames and addon.GuideNames[name] then
         name = addon.GuideNames[name]
     end
-    return L(name) or name
+    return (addon.guideTitles and addon.locale.GuideLabel(name)) or L(name) or name
 end
 addon.IsGuideActive = IsGuideActive
 

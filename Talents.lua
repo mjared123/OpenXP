@@ -16,6 +16,7 @@ local PanelTemplates_GetSelectedTab, PlayerTalentFrame = _G.PanelTemplates_GetSe
 local BackdropTemplate = BackdropTemplateMixin and "BackdropTemplate"
 
 local L = addon.locale.Get
+local GuideLabel = addon.locale.GuideLabel or L
 
 addon.talents = addon:NewModule("Talents", "AceEvent-3.0")
 addon.talents.functions = {}
@@ -92,7 +93,7 @@ local function buildTalentGuidesMenu()
 
             if guide.pet == GetPetTalentTree() then
                 tinsert(menu, {
-                    text = guide.name,
+                    text = GuideLabel(guide.name),
                     tooltipTitle = fmt("%s: %s", _G.LEVEL_RANGE, guide.levelRange),
                     notCheckable = 1,
                     disabled = disabled,
@@ -124,7 +125,7 @@ local function buildTalentGuidesMenu()
             end
 
             menuData = {
-                text = guide.name,
+                text = GuideLabel(guide.name),
                 tooltipTitle = fmt("%s: %s", _G.LEVEL_RANGE, guide.levelRange),
                 notCheckable = 1,
                 disabled = disabled,
@@ -295,7 +296,7 @@ function addon.talents:UpdateTalentsButton()
 
             local guide = addon.talents:GetCurrentGuide()
             if guide then
-                GameTooltip:AddLine(guide.name)
+                GameTooltip:AddLine(GuideLabel(guide.name))
                 GameTooltip:AddLine(L("Left click to apply talents"), 0, 1, 0)
                 GameTooltip:AddLine(fmt("%s: %d - %d", _G.LEVEL_RANGE, guide.minLevel, guide.maxLevel), 1, 1, 1)
             else
@@ -451,7 +452,7 @@ function addon.talents:ParseGuide(text)
     guide.minLevel = tonumber(guide.minLevel) or 10
     guide.maxLevel = tonumber(guide.maxLevel) or addon.talents.maxLevel
     guide.levelRange = fmt("%d-%d", guide.minLevel, guide.maxLevel)
-    guide.description = guide.description or fmt("%s - %s (%s)", addon.player.localeClass, guide.name, guide.levelRange)
+    guide.description = guide.description or fmt("%s - %s (%s)", addon.player.localeClass, GuideLabel(guide.name), guide.levelRange)
     guide.displayname = guide.displayname or guide.description
     guide.key = guide.key or fmt("%s - %s", addon.player.class, guide.name)
     guide.nextKey = guide.next and fmt("%s - %s", addon.player.class, guide.next)

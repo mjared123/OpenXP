@@ -78,6 +78,8 @@ local function ItemName(id)
 end
 
 local function QuestName(id)
+    local localName = addon.locale and addon.locale.GuideQuestName and addon.locale.GuideQuestName(id)
+    if localName then return localName end
     if addon.GetQuestName then
         local ok, n = pcall(addon.GetQuestName, id)
         if ok and type(n) == "string" and n ~= "" then return n end
@@ -338,7 +340,7 @@ function tips.GuideStep(unitName, npcId)
                     if npcs and InList(npcs, nil, npcId) then role = e.tag end
                 end
                 if role then
-                    local what = ROLE[role]
+                    local what = L(ROLE[role])
                     if (role == "accept" or role == "turnin") and e.title then
                         what = what .. ": " .. Strip(e.title)
                     end

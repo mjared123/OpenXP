@@ -668,9 +668,8 @@ step
     .target Thunderheart
 step
     .goto 1418,3.74,47.43
-    >>Talk to |cRXP_FRIENDLY_WANTED|r
+    >>Click the |cRXP_PICK_Dark Iron Wanted Poster|r
     .accept 4081 >> Accept KILL ON SIGHT: Dark Iron Dwarves
-    .target WANTED
 step
     .goto 1418,3.94,46.73
     >>Talk to |cRXP_FRIENDLY_KILL ON SIGHT|r

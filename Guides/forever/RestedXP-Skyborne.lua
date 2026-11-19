@@ -135,8 +135,8 @@ step << Skyborne
     *You can also just jump and spam the button on the ground.
     *If it's on cooldown, this step will skip on turnin of Harmony in Balance. You can complete it later.
     .complete 92474,1 --Use Walk on Air
-    .macro Walk on Air, 132845 >>/use Walk on Air
-    -- .macro Cancel Walk on Air,132745 >>/cancelaura Walk on Air
+    .macro Walk on Air, 132845 >>/use spell:1259416
+    -- .macro Cancel Walk on Air,132745 >>/cancelaura spell:1259416
 step << Skyborne
     #requires Harmony in Balance
     .goto 2521,42.06,23.48
@@ -1452,7 +1452,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run local count=C_Item.GetItemCount(6889);if count and count > 0 then C_TradeSkillUI.CraftRecipe(8604,count) end
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run local count=C_Item.GetItemCount(6889);if count and count > 0 then C_TradeSkillUI.CraftRecipe(8604,count) end
 step
     .isOnQuest 92553 -- Restocking the Larders
     .isQuestNotComplete 92553 -- Restocking the Larders
@@ -1468,7 +1468,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run C_TradeSkillUI.CraftRecipe(8604,1)
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run C_TradeSkillUI.CraftRecipe(8604,1)
 step
     .isOnQuest 92553 -- Restocking the Larders
     .isQuestNotComplete 92553 -- Restocking the Larders
@@ -1484,7 +1484,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run local count=C_Item.GetItemCount(6889);if count and count > 3 then C_TradeSkillUI.CraftRecipe(8604, min(5, count - 3)) end
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run local count=C_Item.GetItemCount(6889);if count and count > 3 then C_TradeSkillUI.CraftRecipe(8604, min(5, count - 3)) end
 
 --Class Trainer Backup
 step << Rogue
@@ -1668,7 +1668,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run local count=C_Item.GetItemCount(6889);if count and count > 0 then C_TradeSkillUI.CraftRecipe(8604,count) end
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run local count=C_Item.GetItemCount(6889);if count and count > 0 then C_TradeSkillUI.CraftRecipe(8604,count) end
 step
     .isOnQuest 92553 -- Restocking the Larders
     .isQuestNotComplete 92553 -- Restocking the Larders
@@ -1685,7 +1685,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run C_TradeSkillUI.CraftRecipe(8604,1)
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run C_TradeSkillUI.CraftRecipe(8604,1)
 step
     .isOnQuest 92553 -- Restocking the Larders
     .isQuestNotComplete 92553 -- Restocking the Larders
@@ -1702,7 +1702,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run local count=C_Item.GetItemCount(6889);if count and count > 3 then C_TradeSkillUI.CraftRecipe(8604, min(5, count - 3)) end
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run local count=C_Item.GetItemCount(6889);if count and count > 3 then C_TradeSkillUI.CraftRecipe(8604, min(5, count - 3)) end
 
 --Class Trainer Backup
 step << Rogue
@@ -1877,7 +1877,6 @@ step
     .goto 2521,43.37,45.86
     >>|TInterface/cursor/crosshair/interact.blp:20|tClick on the |cRXP_PICK_Bounty Available: Vulgara the Insatiable!|r
     .accept 93318 >>Accept WANTED: Vulgara the Insatiable
-    .target Bounty Available: Vulgara the Insatiable!
 -- step << Warrior/Rogue
 step
     .goto 2521,43.073,46.306
@@ -2356,7 +2355,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run local count=C_Item.GetItemCount(6889);if count and count > 0 then C_TradeSkillUI.CraftRecipe(8604,count) end
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run local count=C_Item.GetItemCount(6889);if count and count > 0 then C_TradeSkillUI.CraftRecipe(8604,count) end
 step
     .isOnQuest 92553 -- Restocking the Larders
     .isQuestNotComplete 92553 -- Restocking the Larders
@@ -2370,7 +2369,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run C_TradeSkillUI.CraftRecipe(8604,1)
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run C_TradeSkillUI.CraftRecipe(8604,1)
 step
     .isOnQuest 92553 -- Restocking the Larders
     .isQuestComplete 92516 -- Hippogryph Harassment
@@ -2383,7 +2382,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run local count=C_Item.GetItemCount(6889);if count and count > 3 then C_TradeSkillUI.CraftRecipe(8604, min(5, count - 3)) end
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run local count=C_Item.GetItemCount(6889);if count and count > 3 then C_TradeSkillUI.CraftRecipe(8604, min(5, count - 3)) end
 step
     .train 2259,3 -- Alchemy Trained
     .isQuestComplete 97963 -- Camping 101: Alchemy
@@ -3101,7 +3100,7 @@ step
     *|cRXP_BUY_Buy 5-20|r |T134059:0|t[Mild Spices] |cRXP_BUY_from|r |cRXP_FRIENDLY_Zerril Softbreeze|r |cRXP_WARN_if you haven't already|r.
     .skipgossipid 137550 --I would like to buy from you.
     *|cRXP_WARN_You may need to press the macro twice|r.
-    .macro Herb Baked Egg,132834 >>/cast Cooking\n/run local count=C_Item.GetItemCount(6889);if count and count > 0 then C_TradeSkillUI.CraftRecipe(8604,count) end
+    .macro Herb Baked Egg,132834 >>/cast spell:2550\n/run local count=C_Item.GetItemCount(6889);if count and count > 0 then C_TradeSkillUI.CraftRecipe(8604,count) end
 step
     .train 8613,3 -- Skinning Trained
     .isQuestComplete 97971 -- Camping 101: Skinning
@@ -3580,7 +3579,7 @@ step << Alliance
     .cast 1259416 >>Jump off the tree and use |T132845:0|t[Walk on Air] to fly towards the questgiver.
     *|cRXP_WARN_If you time it correctly, you can cancel it midair to land in the building|r
     .usespell 1259416
-    .macro Cancel Walk on Air,132845 >>/cancelaura Walk on Air
+    .macro Cancel Walk on Air,132845 >>/cancelaura spell:1259416
 step << Alliance
     #completewith Unwelcome Visitors
     .aura 1258510
@@ -3625,7 +3624,6 @@ step << Alliance
     *Watch out for the |cRXP_ENEMY_Ornery Galestrider::251707|r.
     .turnin 92727 >>Turn in The Missing Scholar
     .accept 92849 >>Accept The Missing Scholar
-    .target Bloodstained Satchel::581822
     .mob Ornery Galestrider::251707
 step << Alliance
     #label LeavingValanaarA
@@ -3726,7 +3724,7 @@ step << Horde
     .goto 2521,61.491,76.893 << !Hunter
     .cast 1259416 >>Jump off the tower and use |T132845:0|t[Walk on Air] to fly towards the waypoint locations.
     .usespell 1259416
-    .macro Cancel Walk on Air,132845 >>/cancelaura Walk on Air
+    .macro Cancel Walk on Air,132845 >>/cancelaura spell:1259416
 -- step << Horde Hunter
 --     .goto 2521,63.027,77.807
 --     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Antelariaa Cloudgaze::252390|r.

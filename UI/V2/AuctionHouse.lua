@@ -331,7 +331,7 @@ function addon.ui.v2:RegisterRXPV2AuctionHouse()
         title:SetText(_G.MINIMAP_TRACKING_AUCTIONEER)
         frame.Title = title
 
-        local itemName = createAuctionHouseColumnButton(frame, "Item Name", 260)
+        local itemName = createAuctionHouseColumnButton(frame, addon.locale.Get("Item Name"), 260)
         itemName:SetPoint("TOPLEFT", 65, -52)
 
         local level = createAuctionHouseColumnButton(frame, _G.REQ_LEVEL_ABBR, 86)

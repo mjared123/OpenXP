@@ -429,7 +429,7 @@ function Frame:ShowPinTooltip(pin)
         local upperItemBound = addon.player.level + 5
 
         GameTooltip:AddLine(" ")
-        GameTooltip:AddLine("Notable Items:")
+        GameTooltip:AddLine(L("Notable Items:"))
 
         local itemName, itemRarity, itemRarityR, itemRarityG, itemRarityB, itemMinLevel
 
@@ -442,7 +442,7 @@ function Frame:ShowPinTooltip(pin)
                 GameTooltip:AddLine(itemName, itemRarityR, itemRarityG, itemRarityB)
             end
         end
-        GameTooltip:AddLine("(Click to view)", 0.7, 0.7, 0.7)
+        GameTooltip:AddLine(L("(Click to view)"), 0.7, 0.7, 0.7)
     end
 
     GameTooltip:Show()

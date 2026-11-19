@@ -18,7 +18,7 @@ themes['RXP Blue'] = {
     background = {16 / 255, 17 / 255, 21 / 255, 0.88},
     bottomFrameBG = {22 / 255, 24 / 255, 29 / 255, 0.88},
     bottomFrameHighlight = {38 / 255, 62 / 255, 86 / 255, 1},
-    displayName = "OpenXP Minimal",
+    displayName = L("OpenXP Minimal"),
     mapPins = OPENXP_BLUE,
     tooltip = "|cFF5AB8FF", -- AARRGGBB
     texturePath = "Interface/AddOns/" .. addonName .. "/Textures/Minimal/",
@@ -42,7 +42,7 @@ themes['OpenXP Gold'] = {
     background = {11 / 255, 15 / 255, 26 / 255, 1},
     bottomFrameBG = {20 / 255, 24 / 255, 40 / 255, 1},
     bottomFrameHighlight = {122 / 255, 84 / 255, 30 / 255, 1},
-    displayName = "OpenXP Gold",
+    displayName = L("OpenXP Gold"),
     mapPins = OPENXP_BLUE,
     tooltip = "|cFFF2C35C", -- AARRGGBB
     texturePath = "Interface/AddOns/" .. addonName .. "/Textures/OpenXP/",
@@ -65,7 +65,7 @@ themes['RestedXP Classic'] = {
     background = {12 / 255, 12 / 255, 27 / 255, 1},
     bottomFrameBG = {18 / 255, 18 / 255, 40 / 255, 1},
     bottomFrameHighlight = {54 / 255, 62 / 255, 109 / 255, 1},
-    displayName = "RestedXP Classic",
+    displayName = L("RestedXP Classic"),
     mapPins = {206 / 210, 123 / 210, 1, 1},
     tooltip = "|cFFCE7BFF", -- AARRGGBB
     texturePath = "Interface/AddOns/" .. addonName .. "/Textures/",
@@ -328,7 +328,7 @@ function addon:GetThemeOptions()
             if k == 'Custom' then
                 themeOptions[k] = t.displayName
             else
-                themeOptions[k] = fmt("%s by %s", t.displayName, t.author)
+                themeOptions[k] = fmt(L("%s by %s"), t.displayName, t.author)
             end
         end
     end

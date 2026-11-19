@@ -7,6 +7,7 @@
 -- /oxp questdump clear empties it again.
 
 local _, addon = ...
+local function L(text) return addon.locale and addon.locale.Get(text) or text end
 
 local dump = {}
 addon.questDump = dump
@@ -67,13 +68,13 @@ end
 
 function dump.Clear()
     _G.OXPQuestieDump = nil
-    Say("Quest data dump cleared. /reload to save.")
+    Say(L("Quest data dump cleared. /reload to save."))
 end
 
 function dump.Run()
-    if dump.running then return Say("Already dumping, hang on.") end
+    if dump.running then return Say(L("Already dumping, hang on.")) end
     local db = QDB()
-    if not db then return Say("Questie isn't loaded (or still starting up). Try again in a few seconds.") end
+    if not db then return Say(L("Questie isn't loaded (or still starting up). Try again in a few seconds.")) end
 
     local out = {
         time = date and date("%Y-%m-%d %H:%M") or "",
@@ -85,7 +86,7 @@ function dump.Run()
     local jobs = {}
     for id in pairs(db.QuestPointers) do tinsert(jobs, {"Quest", id}) end
     local total = #jobs
-    Say(("Reading %d quests from Questie. Keep playing, this takes a minute."):format(total))
+    Say(L("Reading %d quests from Questie. Keep playing, this takes a minute."):format(total))
     dump.running = true
 
     local stage, i = "quests", 1
@@ -117,17 +118,17 @@ function dump.Run()
             -- items first, since their drop lists add NPCs and objects
             stage, jobs, i = "items", {}, 1
             for id in pairs(want.item) do tinsert(jobs, {"Item", id}) end
-            Say(("Quests done. Reading %d items."):format(#jobs))
+            Say(L("Quests done. Reading %d items."):format(#jobs))
         elseif stage == "items" then
             stage, jobs, i = "places", {}, 1
             for id in pairs(want.npc) do tinsert(jobs, {"NPC", id}) end
             for id in pairs(want.object) do tinsert(jobs, {"Object", id}) end
-            Say(("Items done. Reading %d NPCs and objects."):format(#jobs))
+            Say(L("Items done. Reading %d NPCs and objects."):format(#jobs))
         else
             ticker:Cancel()
             dump.running = false
             _G.OXPQuestieDump = out
-            Say(("Done: %d quests. Type /reload to save it for the guide tools."):format(total))
+            Say(L("Done: %d quests. Type /reload to save it for the guide tools."):format(total))
         end
     end)
 end

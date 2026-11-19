@@ -14,7 +14,9 @@ local function obj(name)
         if k == "GetLeft" then return function() return 100 end end
         if k == "GetFrameLevel" then return function() return 1 end end
         if k == "GetPoint" then return function() return "CENTER", nil, "CENTER", 0, 0 end end
-        if k == "GetWidth" or k == "GetHeight" then return function() return 100 end end
+        if k == "GetWidth" then return function(self) return self.width or 100 end end
+        if k == "SetWidth" then return function(self, width) self.width = width end end
+        if k == "GetHeight" then return function() return 100 end end
         if k == "SetScript" then return function(self, ev, fn) rawset(self, "_" .. ev, fn) end end
         if k == "GetScript" then return function(self, ev) return rawget(self, "_" .. ev) end end
         if k == "SetText" then return function(self, t) rawset(self, "_text", t) end end
@@ -495,6 +497,25 @@ try("step list opens, scrolls and jumps", function()
     card.JumpTo(3)
     assert(calls.setStep == 3, "did not jump")
     card.ToggleStepList()
+end)
+try("step list bounds long titles with or without a status badge", function()
+    local list = card.BuildStepList()
+    local originalStatus, originalText = card.StepStatus, steps[2].elements[1].text
+    local longTitle = "Tuez les embusqués Mâcheroc et récupérez Poudre explosive volée sur eux."
+    steps[2].elements[1].text = longTitle
+    card.StepStatus = function(_, index) if index == 2 then return "done" end end
+    card.ToggleStepList()
+    local row = list.rows[2]
+    local withBadge = row.text:GetWidth()
+    card.StepStatus = function() end
+    card.FillStepList()
+    local withoutBadge = row.text:GetWidth()
+    local summary = row.summary
+    card.ToggleStepList()
+    card.StepStatus, steps[2].elements[1].text = originalStatus, originalText
+    assert(withBadge > 0 and withBadge + row.pill:GetWidth() < withoutBadge)
+    assert(withoutBadge <= list:GetWidth() - 48)
+    assert(summary == longTitle, "the tooltip needs the full title")
 end)
 try("timer bars dock under the card", function()
     addon.RXPFrame.BarContainer = obj("bars")

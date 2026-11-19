@@ -689,7 +689,8 @@ function SS.SkippedChains(guide)
 end
 
 local function QName(id)
-    return (addon.GetQuestName and addon.GetQuestName(id)) or ("Quest " .. id)
+    return (addon.locale and addon.locale.GuideQuestName and addon.locale.GuideQuestName(id)) or
+        (addon.GetQuestName and addon.GetQuestName(id)) or string.format(L("Quest %d"), id)
 end
 
 -- Lists skipped chains and where OpenXP picks up the missing quest.
@@ -706,7 +707,9 @@ function SS.ShowCatchUp()
             local where = ""
             local entries = addon.pickUpList and addon.pickUpList[q]
             if entries and entries[1] then
-                where = string.format(L(" (picked up in %s)"), entries[1].name or "?")
+                local name = entries[1].name or "?"
+                if addon.locale and addon.locale.GuideLabel then name = addon.locale.GuideLabel(name) end
+                where = string.format(L(" (picked up in %s)"), name)
             end
             table.insert(parts, QName(q) .. where)
         end

@@ -461,22 +461,21 @@ function addon.tips:LoadDangerousMobs(reloadData)
                                     step.icon = mobData.Icon or "|TInterface/GossipFrame/BattleMasterGossipIcon:0|t" -- texture used for the icon
                                     step.alternateIcon = mobData.AltIcon
                                     prefix = ""
+                                    local displayName = addon.GetCreatureName and addon.GetCreatureName(name) or name
 
                                     if addon.gameVersion < 20000 then
                                         prefix = _G.VOICEMACRO_1_Sc_0
-                                        step.mapTooltip = fmt("%s %s (%d)", prefix, name, mobData.MaxLevel) -- Tooltip title
+                                        step.mapTooltip = fmt("%s %s (%d)", prefix, displayName, mobData.MaxLevel)
                                     else
-                                        step.mapTooltip = name -- Tooltip title
+                                        step.mapTooltip = displayName
                                     end
 
-                                    -- Tooltip description:
+                                    local classification = mobData.Classification and L(mobData.Classification) or ""
+                                    local notes = mobData.Notes and L(mobData.Notes) or ""
                                     if mobData.Movement then
-                                        element.mapTooltip =
-                                            fmt("%s - %s\n%s", mobData.Classification or "", mobData.Movement or "",
-                                                mobData.Notes or "")
+                                        element.mapTooltip = fmt("%s - %s\n%s", classification, L(mobData.Movement), notes)
                                     else
-                                        element.mapTooltip =
-                                            fmt("%s\n%s", mobData.Classification or "", mobData.Notes or "")
+                                        element.mapTooltip = fmt("%s\n%s", classification, notes)
                                     end
                                 elseif element.targets or element.unitscan or element.mobs then
                                     if addon.settings.profile.showDangerousUnitscan then

@@ -2526,7 +2526,7 @@ step << Warrior
     .goto 1411/1,-4077.50,960.22,40,0--c:Durotar,40.00,24.06
     .goto 1411/1,-4210.22,952.11,40,0--c:Durotar,42.51,24.29
     .goto 1411/1,-4042.60,812.52,40,0--c:Durotar,39.34,28.25
-    >>Kill |cRXP_ENEMY_Lightning Hides|r. Loot them for their |cRXP_ENEMY_Scales|r
+    >>Kill |cRXP_ENEMY_Lightning Hides|r. Loot them for their |cRXP_LOOT_Singed Scales|r
     .complete 1498,1 --Singed Scale (5)
     .mob Lightning Hide
 step << Warrior

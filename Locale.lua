@@ -108,7 +108,7 @@ fonts.Loads = Loads
 function fonts.Choices()
     local values, order, seen = {}, {}, {}
     for _, f in ipairs(BUILTIN) do
-        values[f.key] = f.name
+        values[f.key] = addon.locale.Get(f.name)
         order[#order + 1] = f.key
         seen[NormPath(f.path)] = true
     end
@@ -161,7 +161,9 @@ end
 function fonts.Report()
     local values, order = fonts.Choices()
     local p = addon.settings and addon.settings.profile
-    print("|cFF66BB6AOpenXP fonts|r (chosen: " .. tostring(p and p.guideFont) .. ", using " .. fonts.Path() .. ")")
+    local fmt = string.format
+    local L = addon.locale.Get
+    print(fmt(L("|cFF66BB6AOpenXP fonts|r (chosen: %s, using %s)"), tostring(p and p.guideFont), fonts.Path()))
     for _, key in ipairs(order) do
         local path
         if builtinByKey[key] then
@@ -171,7 +173,7 @@ function fonts.Report()
             path = lsm and lsm:Fetch("font", key:sub(5), true)
         end
         local ok = path and Loads(path)
-        print(string.format("  %s %s: %s", ok and "|cFF3DBB7Aok|r" or "|cFFFF7043FAILED|r",
+        print(fmt("  %s %s: %s", ok and "|cFF3DBB7Aok|r" or "|cFFFF7043" .. L("FAILED") .. "|r",
                             values[key], tostring(path)))
     end
 end
@@ -239,19 +241,87 @@ end
 -- sets addon.guidePhrases: English step text -> translation, keyed by a
 -- "skeleton" where names, icons, [item] links and numbers are {A}, {B}, ...
 -- so one sentence covers every step that only differs in those. Friendly
--- and enemy names are swapped for the client's own names (NPCnames.lua).
+-- and enemy names use the realm's NPC data when available (NPCnames.lua).
 -- Text with no translation stays English. tools/locale/guide_skeleton.py
 -- builds the same keys: change both together.
 
 local guideTextCache = {}
 local NAME_KINDS = {FRIENDLY = true, ENEMY = true, LOOT = true, PICK = true}
 
-local function LocalName(raw)
-    return (raw:gsub("^|cRXP_(%u+)_(.-)|r$", function(kind, name)
-        if (kind == "FRIENDLY" or kind == "ENEMY") and addon.GetCreatureName then
-            return "|cRXP_" .. kind .. "_" .. addon.GetCreatureName(name) .. "|r"
+function addon.locale.GuideLabel(text)
+    if not text then return end
+    if not addon.guideTitles then return text end
+    return addon.guideTitles[text] or addon.locale.Get(text)
+end
+
+-- Prefer the name shown in the journal when the client has loaded it.
+function addon.locale.GuideQuestName(id)
+    if not (addon.guideQuestNames and id) then return end
+    local getTitle = C_QuestLog and (C_QuestLog.GetTitleForQuestID or C_QuestLog.GetQuestInfo)
+    local title = getTitle and getTitle(id)
+    if type(title) == "string" and title ~= "" then return title end
+    local db = addon.game == "FOREVER" and _G.LibQuestieDB
+    local quests = db and db.Quest
+    title = quests and quests.name and quests.name(id)
+    if type(title) == "string" and title ~= "" then return title end
+    return addon.guideQuestNames[id]
+end
+
+local function FrenchGuideName(name, kind)
+    local names = addon.guideNamesFr
+    if not names then return end
+    local base, suffix = name:match("^(.-)(::%d+)$")
+    base = base or name
+    local db = addon.game == "FOREVER" and _G.LibQuestieDB
+    local objects = db and db.Object
+    local translated
+    if kind == "PICK" and addon.game == "FOREVER" then
+        local id = addon.guideObjectIdsFr and addon.guideObjectIdsFr[base]
+        translated = id and objects and objects.name and objects.name(id)
+        if not translated or translated == "" then
+            translated = addon.guideObjectNamesFr and addon.guideObjectNamesFr[base]
         end
-    end))
+    end
+    local creature = kind == "FRIENDLY" or kind == "ENEMY"
+    local ref = not translated and not creature and addon.guideNameIds and addon.guideNameIds[base]
+    if ref and ref[1] == "spell" then
+        local getSpellName = (C_Spell and C_Spell.GetSpellName) or GetSpellInfo
+        translated = getSpellName and getSpellName(ref[2])
+    elseif ref and ref[1] == "item" then
+        local getItemInfo = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+        translated = getItemInfo and getItemInfo(ref[2])
+        if not translated or translated == "" then
+            local items = db and db.Item
+            translated = items and items.name and items.name(ref[2])
+        end
+    elseif ref and ref[1] == "object" then
+        translated = objects and objects.name and objects.name(ref[2])
+    end
+    if not translated or translated == "" then translated = names[base] end
+    if translated then return translated .. (suffix or "") end
+end
+
+function addon.locale.GuideTerm(name)
+    if not name then return end
+    return FrenchGuideName(name) or addon.locale.GuideLabel(name)
+end
+
+local function LocalName(raw)
+    local localized = raw:gsub("|cRXP_(%u+)_([^|]*)|r", function(kind, name)
+        if not NAME_KINDS[kind] then return end
+        local creature = kind == "FRIENDLY" or kind == "ENEMY"
+        local translated = creature and addon.GetForeverCreatureName and addon.GetForeverCreatureName(name)
+        translated = translated or FrenchGuideName(name, kind)
+        if not translated and creature and addon.GetCreatureName then translated = addon.GetCreatureName(name) end
+        if translated then return "|cRXP_" .. kind .. "_" .. translated .. "|r" end
+    end)
+    if addon.guideNamesFr then
+        localized = localized:gsub("%[([^|%[%]]+)%]", function(name)
+            local translated = FrenchGuideName(name)
+            if translated then return "[" .. translated .. "]" end
+        end)
+    end
+    return localized
 end
 
 function addon.locale.GuideText(text)
@@ -263,6 +333,7 @@ function addon.locale.GuideText(text)
     local body, suffix = text:match("^(.-)(%s*<<.*)$")
     if not body then body, suffix = text, "" end
     body = body:gsub("%s+$", "")
+    if addon.guideNamesFr then body = body:gsub("^%s+", "") end
     local slots, n = {}, 0
     local function slot(s)
         n = n + 1
@@ -277,12 +348,22 @@ function addon.locale.GuideText(text)
     key = key:gsub("%[.-%]", slot)
     key = key:gsub("%d+%.%d+", slot)
     key = key:gsub("%d+", slot)
-    local tr = n <= 26 and phrases[key]
+    local tr = n <= 26 and phrases[key] or phrases[body]
     if tr then
-        result = tr:gsub("{(%u)}", function(c)
-            local s = slots[c:byte() - 64]
-            if s then return LocalName(s) end
-        end) .. suffix
+        -- Names inside a coloured warning are literal in its template.
+        if addon.guideNamesFr then tr = LocalName(tr) end
+        local function expand(c)
+            local index = c:byte() - 64
+            local s = slots[index]
+            if s then
+                return LocalName((s:gsub("{(%u)}", function(inner)
+                    if inner < c then return expand(inner) end
+                end)))
+            end
+        end
+        result = tr:gsub("{(%u)}", expand) .. suffix
+    elseif addon.guideNamesFr then
+        result = LocalName(text)
     end
     guideTextCache[text] = result
     return result
@@ -349,16 +430,17 @@ local function Report()
         total = total + s.total
     end
     table.sort(rows, function(a, b) return a.s.total > b.s.total end)
-    Say(string.format("perf: %.0f s, %d frames, %d hitches (frames of 50 ms or more), slowest frame %.0f ms",
+    local L = addon.locale.Get
+    Say(string.format(L("perf: %.0f s, %d frames, %d hitches (frames of 50 ms or more), slowest frame %.0f ms"),
         secs, perf.frames or 0, perf.hitches or 0, perf.worstFrame or 0))
-    Say(string.format("OpenXP total: %.2f ms per second; Lua memory grew %.0f KB per second",
+    Say(string.format(L("OpenXP total: %.2f ms per second; Lua memory grew %.0f KB per second"),
         total / secs, (perf.grew or 0) / secs))
     for i = 1, math.min(#rows, 12) do
         local r, s = rows[i], rows[i].s
-        Say(string.format("  %s: %d runs, avg %.2f ms, slowest %.1f ms, %d of 5 ms or more",
+        Say(string.format(L("  %s: %d runs, avg %.2f ms, slowest %.1f ms, %d of 5 ms or more"),
             r.name, s.n, s.total / math.max(s.n, 1), s.max, s.slow))
     end
-    if #rows == 0 then Say("  nothing of OpenXP's ran") end
+    if #rows == 0 then Say(L("  nothing of OpenXP's ran")) end
 end
 
 function perf.Start()
@@ -379,5 +461,5 @@ function perf.Start()
         lastMem = mem
         if perf.elapsed >= SECONDS then Report() end
     end)
-    Say(string.format("recording for %d seconds: run around like you normally would (/oxp perf again stops early)", SECONDS))
+    Say(string.format(addon.locale.Get("recording for %d seconds: run around like you normally would (/oxp perf again stops early)"), SECONDS))
 end

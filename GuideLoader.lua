@@ -745,7 +745,7 @@ local function LoadGuide(guideData,n)
         end
         if enabled then
             if name and group and addon.guides[group .. "||" .. name] then
-                addon.error("Error trying to load a guide already parsed: " .. group .. "/" .. name)
+                addon.error(fmt(L("Tried to load an already parsed guide (%s/%s)"), group, name))
             end
             addon.AddGuide(guide)
         end
@@ -1012,6 +1012,9 @@ local function parseLine(linetext,step,parsingLogic)
                 if assignment == "=" then
                     step[steptag] = parsingLogic[value]
                 else
+                    if addon.guideNamesFr and steptag == "arrowtext" then
+                        value = addon.locale.GuideText(value)
+                    end
                     step[steptag] = value
                 end
             end
@@ -1028,10 +1031,22 @@ local function parseLine(linetext,step,parsingLogic)
     -- OpenXP: step text in the player's language (Locale.lua GuideText).
     -- Accept and turn in steps get the quest's own name later (OpenXPCard),
     -- and macro text is game commands, so those stay as they are.
-    local textEn
+    local textEn, questFormat
     if text and addon.guidePhrases and text:sub(1, 1) ~= "/" then
         local tag = line:match("^%.(%S+)")
-        if tag ~= "accept" and tag ~= "turnin" and tag ~= "macro" then
+        if addon.guideQuestNames and (tag == "accept" or tag == "turnin") then
+            local verb = tag == "accept" and "Accept" or "Turn in"
+            local name = text:match("^" .. verb .. " (.+)$")
+            local rawId = tonumber(line:match("^%.%S+%s+(-?%d+)"))
+            local id = rawId and math.abs(rawId)
+            textEn = text
+            if id and name and not name:find("|", 1, true) and addon.guideQuestNames[id] then
+                questFormat = L(verb .. " %s")
+                text = fmt(questFormat, addon.locale.GuideQuestName(id) or name)
+            else
+                text = addon.locale.GuideText(text)
+            end
+        elseif tag ~= "accept" and tag ~= "turnin" and tag ~= "macro" then
             local translated = addon.locale.GuideText(text)
             if translated ~= text then
                 textEn, text = text, translated
@@ -1066,21 +1081,24 @@ local function parseLine(linetext,step,parsingLogic)
             else
                 ltext = linetext
             end
-            return addon.error(L("Error parsing guide") .. " " ..
-                                   addon.currentGuideName ..
-                                   ": Invalid function call (." .. tag ..
-                                   ")\n" .. ltext)
+            return addon.error(fmt(L("Invalid command (.%s) in guide %s\n%s"),
+                                   tag, addon.currentGuideName, ltext))
         end
     end)
 
     if text and not element then
         element = {text = text, textOnly = true, step = step}
     elseif line:sub(1, 1) == "+" then
-        element = {text = line:sub(2, -1), step = step}
+        local note = line:sub(2, -1)
+        textEn = note
+        element = {text = addon.guideNamesFr and addon.locale.GuideText(note) or note, step = step}
         addon.lastObjective = element
     elseif line:sub(1, 1) == "*" then
+        local note = line:sub(2, -1)
+        textEn = note
+        if addon.guideNamesFr then note = addon.locale.GuideText(note) end
         element = {
-            text = line:sub(2, -1):gsub("\\n", "\n"),
+            text = note:gsub("\\n", "\n"),
             step = step,
             hideTooltip = true,
             textOnly = true
@@ -1088,7 +1106,14 @@ local function parseLine(linetext,step,parsingLogic)
         -- else
         -- error('Error parsing guide at line '..linenumber..'/ '..guide.name)
     end
-    if element and textEn then element.textEn = textEn end
+    if element and textEn then
+        element.textEn = textEn
+        element.questFormat = questFormat
+        if addon.guideNamesFr and element.tag == "hs" and addon.HearthDestination then
+            local dest = addon.HearthDestination(textEn)
+            element.hearthDest = dest and addon.locale.GuideLabel(dest)
+        end
+    end
     if element and (element.text and not element.textOnly or element.dynamicText) then
         addon.lastObjective = element
     end
