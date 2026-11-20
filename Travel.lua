@@ -1,4 +1,4 @@
--- Getting there from another zone
+-- Travel directions between zones and flights within a zone
 --
 -- When the next step is in another zone (or on the other continent), the
 -- arrow and the purple route line used to give up. This works out the way
@@ -38,6 +38,7 @@ local REPLAN = 2            -- seconds between working the way out again
 -- The network: flight masters, docks and zone borders
 ---------------------------------------------------------------------------
 
+local lastAt, lastKey, lastTarget, lastMap = 0, nil, nil, nil
 local nodes, links  -- nodes[i] = {wx, wy, inst, zones = {[map] = true}, name, kind, fp}
 local function World(p)
     if not (p and HBD.GetWorldCoordinatesFromZone) then return end
@@ -126,6 +127,7 @@ tv.Build = Build
 function tv.Reset()
     nodes, links = nil, nil
     tv.plan = nil
+    lastAt, lastKey, lastTarget, lastMap = 0, nil, nil, nil
 end
 
 local function Dist(a, b)
@@ -305,7 +307,7 @@ local function Legs(path, target)
                 elseif nextLeg and nextLeg.kind == "tram" then
                     leg.text = L("Go to the Deeprun Tram")
                 elseif n == target then
-                    local zone = ZoneName(target.map)
+                    local zone = not path[1].node.zones[target.map] and ZoneName(target.map)
                     leg.text = zone and fmt(L("Head into %s"), zone) or L("Walk the rest of the way")
                 else
                     leg.text = fmt(L("Walk to %s"), n.name or "?")
@@ -334,25 +336,22 @@ local function Legs(path, target)
 end
 
 ---------------------------------------------------------------------------
--- The plan for the arrow's target
+-- The plan for the guide's target
 ---------------------------------------------------------------------------
 
-local lastAt, lastKey = 0, nil
-
--- Works out (at most every REPLAN seconds) how to get to `target` (an arrow
--- element with wx, wy, instance, zone) when it's in another zone. Returns
--- the plan or nil when the arrow can go straight there.
+-- Works out (at most every REPLAN seconds) how to get to `target`.
+-- Flights can also help inside one zone. A direct walk needs no travel plan.
 function tv.PlanFor(target)
     if not (target and target.wx and target.zone) then tv.plan = nil return end
     local px, py, pinst = HBD:GetPlayerWorldPosition()
     local _, _, pmap = HBD:GetPlayerZonePosition()
     if not px then return tv.plan end
     if UnitOnTaxi and UnitOnTaxi("player") then return tv.plan end -- keep the plan while flying
-    if pmap == target.zone then tv.plan = nil return end
     local now = GetTime and GetTime() or 0
     local key = fmt("%s:%d:%d", tostring(target.zone), floor(target.wx), floor(target.wy))
-    if key == lastKey and now - lastAt < REPLAN then return tv.plan end
-    lastKey, lastAt = key, now
+    if key == lastKey and target == lastTarget and pmap == lastMap
+        and now - lastAt < REPLAN then return tv.plan end
+    lastKey, lastAt, lastTarget, lastMap = key, now, target, pmap
 
     local from = {wx = px, wy = py, inst = pinst, zones = {[pmap or 0] = true}, name = L("you"), kind = "you"}
     local to = {wx = target.wx, wy = target.wy, inst = target.instance, zones = {[target.zone] = true},
@@ -416,11 +415,49 @@ end
 
 -- The plan, while the arrow still uses it
 function tv.Current()
+    if not tv.IsOn() then return end
+    -- The card also needs directions when the arrow has not drawn yet.
+    local target = addon.arrowFrame and addon.arrowFrame.element
+    if target and target.step and target.step.active then tv.PlanFor(target) end
     local plan = tv.plan
-    if not plan or not tv.IsOn() then return end
+    if not plan then return end
     local now = GetTime and GetTime() or 0
     if now - (plan.at or 0) > 10 and not (UnitOnTaxi and UnitOnTaxi("player")) then return end
     return plan
+end
+
+-- Called after the open taxi map has been read by Timers.lua.
+function tv.TryAutoFly(flightInfo)
+    local profile = addon.settings and addon.settings.profile
+    if not (profile and profile.enableFPAutomation) or addon.isHidden or IsShiftKeyDown()
+        or UnitOnTaxi("player") then return end
+
+    local hints = addon.pathHints
+    if hints and (hints.go or not hints.IsOn()) then return end
+
+    local plan = tv.Current()
+    local target = addon.arrowFrame and addon.arrowFrame.element
+    if not (plan and plan.target == target and target and target.step and target.step.active) then return end
+
+    local leg = plan.legs[1]
+    if leg and leg.kind == "walk" then leg = plan.legs[2] end
+    if not (leg and leg.kind == "fly" and leg.from.fp == flightInfo.currentFP) then return end
+
+    -- Explicit guide flights have their own TAXIMAP_OPENED handler.
+    for _, step in ipairs(addon.RXPFrame and addon.RXPFrame.activeSteps or {}) do
+        if step.active then
+            for _, element in ipairs(step.elements) do
+                if element.tag == "fly" then return end
+            end
+        end
+    end
+
+    for slot = 1, NumTaxiNodes() do
+        if flightInfo[slot] == leg.to.fp and TaxiNodeGetType(slot) == "REACHABLE" then
+            TakeTaxiNode(slot)
+            return
+        end
+    end
 end
 
 -- Lines for the card: "1. Fly to Menethil Harbor", ...

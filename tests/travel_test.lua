@@ -208,5 +208,44 @@ try("route line: a walk in another zone follows that zone's terrain", function()
     assert(kal and #kal >= 2)
 end)
 
+try("a faster learned flight is offered inside the current zone", function()
+    local extra = Fp(1440, 90, 90)
+    addon.taxiPos[1][99] = extra
+    addon.FPDB.Alliance[99] = {name = "Forest Camp, Ashenvale"}
+    Flight(28, 99, 1)
+    know(28, 99)
+    at(1440, 34.4, 48.0)
+    local plan = tv.PlanFor(target(1440, 90, 90))
+    addon.taxiPos[1][99], addon.FPDB.Alliance[99] = nil, nil
+    addon.FPDB.Alliance[28][99] = nil
+    assert(plan and plan.legs[1].kind == "fly" and plan.legs[1].to.fp == 99)
+end)
+
+try("the card can request directions before the arrow draws", function()
+    know(12, 2, 26, 28)
+    at(1431, 77.0, 44.0)
+    local point = target(1442, 37.1, 8.1)
+    point.step.active = true
+    addon.arrowFrame = {element = point}
+    local plan = tv.Current()
+    addon.arrowFrame = nil
+    assert(plan and plan.target == point)
+    assert(texts(plan):find("Fly to Stormwind", 1, true))
+end)
+
+try("another step at the same coordinates gets its own plan", function()
+    at(1431, 77.0, 44.0)
+    local oldTime = GetTime
+    GetTime = function() return now end
+    local a, b = target(1442, 37.1, 8.1), target(1442, 37.1, 8.1)
+    tv.PlanFor(a)
+    local plan = tv.PlanFor(b)
+    tv.Reset()
+    local rebuilt = tv.PlanFor(b)
+    GetTime = oldTime
+    assert(plan and plan.target == b)
+    assert(rebuilt and rebuilt.target == b)
+end)
+
 if fails > 0 then print(fails .. " failed") end
 return fails
