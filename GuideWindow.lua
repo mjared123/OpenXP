@@ -1620,7 +1620,7 @@ function addon.GetGuideName(guide)
     elseif not som and guide.eraname then
         return guide.eraname
     else
-        return guide.displayname
+        return addon.locale.GuideTitle(guide)
     end
 end
 
@@ -1640,7 +1640,7 @@ RXPFrame.bottomMenu = {
         func = addon.LoadGuide,
         arg1 = addon.currentGuide
     }, {
-        text = "Options...",
+        text = L("Options..."),
         notCheckable = 1,
         func = function()
             addon.settings.OpenSettings()

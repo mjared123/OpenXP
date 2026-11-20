@@ -42,3 +42,10 @@ They are free to bundle, but the fonts themselves are not under CC BY-NC-SA.
 - Roboto: Copyright 2011 The Roboto Project Authors. Static Regular instance, cut down to Latin, Greek and Cyrillic.
 - Noto Sans: Copyright 2022 The Noto Project Authors. Static Regular instance, cut down to Latin, Greek and Cyrillic.
 - Fira Sans: Copyright 2012-2015 The Mozilla Foundation and Telefonica S.A. Cut down to Latin, Greek and Cyrillic.
+
+## German localization
+
+The German starter-guide text incorporates translations from RestedXP Guides
+(`lang/Guides-deDE/` at the upstream commit listed above), by RestedXP and its
+contributors, modified for use with the OpenXP guide data. The localized work
+is shared under CC BY-NC-SA 4.0.
