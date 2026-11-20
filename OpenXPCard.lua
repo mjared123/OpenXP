@@ -469,19 +469,44 @@ end
 -- Accept / turn in steps in the player's language: the guide's English
 -- "Accept Quest Name" becomes the translated verb with the quest's name as
 -- the game (or Questie) gives it, once the step has looked it up.
-local function QuestStepText(e, text)
-    if not addon.guidePhrases or (e.tag ~= "accept" and e.tag ~= "turnin") then return text end
+local function QuestStepText(e, text, guideLocale)
+    if not guideLocale and not addon.guidePhrases then return text end
+    if guideLocale and e.tag == "abandon" and e.ids and C_QuestLog and C_QuestLog.GetTitleForQuestID then
+        local title = C_QuestLog.GetTitleForQuestID(e.ids[1])
+        if title and title ~= "" then return fmt(L("Abandon %s"), title) end
+    end
+    if e.tag ~= "accept" and e.tag ~= "turnin" then return text end
     local verb, name = text:match("^(Accept) (.+)$")
     if not verb then verb, name = text:match("^(Turn in) (.+)$") end
     if not verb then return text end
-    if e.title and e.title ~= "" then name = e.title end
+    local title = e.title
+    if guideLocale and (not title or title == "") and e.questId and C_QuestLog and C_QuestLog.GetTitleForQuestID then
+        title = C_QuestLog.GetTitleForQuestID(e.questId)
+    end
+    if title and title ~= "" then name = title end
     return fmt(L(verb == "Accept" and "Accept %s" or "Turn in %s"), name)
 end
 
 local function ElementText(e)
     local text = e.text
     if not text or text == "" or text == " " then return end
-    text = QuestStepText(e, text)
+    local guideLocale = addon.locale.ForGuide and addon.locale.ForGuide(addon.currentGuide)
+    -- Quest actions resolve their titles by ID below; macros contain game commands.
+    if guideLocale and e.tag ~= "accept" and e.tag ~= "turnin" and e.tag ~= "macro" then
+        -- ReplaceColors already retains the original text (1) and rawtext (2).
+        -- Translate that prefix and keep any live progress appended by the engine.
+        local original = e.textReplaced
+        local source = original and (original[2] or original[1]) or e.rawtext or text
+        if source:sub(1, 1) ~= "/" then
+            local translated = addon.locale.GuideText(source, guideLocale)
+            local prefix = addon.settings.ReplaceColors(source)
+            if translated ~= source and
+                (text == prefix or text:sub(1, #prefix + 1) == prefix .. "\n") then
+                text = addon.settings.ReplaceColors(translated) .. text:sub(#prefix + 1)
+            end
+        end
+    end
+    text = QuestStepText(e, text, guideLocale)
     if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e and e.step and e or nil) end
     return text
 end
@@ -1016,7 +1041,7 @@ function card.DetourStep()
     if not id then return end
     local info = QuestInfo(id) or {}
     local name = QuestName(id)
-    local level = info.l and info.l > 0 and fmt(" |cFF9EA3B3(lvl %d)|r", info.l) or ""
+    local level = info.l and info.l > 0 and " |cFF9EA3B3" .. fmt(L("(lvl %d)"), info.l) .. "|r" or ""
     local elements, target
     if not (addon.IsOnQuest and addon.IsOnQuest(id)) then
         local who = info.s and info.s[1] or "?"
@@ -1305,7 +1330,7 @@ local function LayoutBlock(b, step, first)
                     local info = QuestInfo(q)
                     local onIt = addon.IsOnQuest and addon.IsOnQuest(q)
                     tinsert(rows, fmt("%d. %s%s%s", i, QuestName(q),
-                                      info and info.l and info.l > 0 and fmt(" (lvl %d)", info.l) or "",
+                                      info and info.l and info.l > 0 and " " .. fmt(L("(lvl %d)"), info.l) or "",
                                       onIt and L(" - in your log") or ""))
                 end
                 list = table.concat(rows, "\n")
@@ -1835,7 +1860,7 @@ end
 ---------------------------------------------------------------------------
 
 local function SplitGuideName(guide)
-    local name = (guide and (guide.displayname or guide.name)) or ""
+    local name = addon.locale.GuideTitle(guide) or ""
     name = StripCodes(name):gsub("\\n", " "):gsub("\n", " ")
     local range, zone = name:match("^(%d+%s*%-%s*%d+)%s+(.+)$")
     if range then return zone, (range:gsub("%-", "–")) end
@@ -2188,7 +2213,7 @@ function card.Refresh(force)
         for i = detourIndex + 1, #ids do
             if #texts >= count then break end
             local info = QuestInfo(ids[i])
-            tinsert(texts, QuestName(ids[i]) .. (info and info.l and info.l > 0 and fmt(" (lvl %d)", info.l) or ""))
+            tinsert(texts, QuestName(ids[i]) .. (info and info.l and info.l > 0 and " " .. fmt(L("(lvl %d)"), info.l) or ""))
         end
         if #texts < count then
             tinsert(texts, fmt(L("Back to the guide: %s"), QuestName(card.detour.target)))
@@ -2418,7 +2443,7 @@ local function ArrowUpdate(self, ...)
         af.texture:Show()
         af.arrived:Hide()
         Tint(af.dialRing, C.blue, 0.6)
-        af.oxpDist:SetText(fmt("%d yd", dist))
+        af.oxpDist:SetText(fmt(L("%d yd"), dist))
         af.oxpDist:SetTextColor(0.96, 0.97, 0.98)
     end
     local label = element and (element.title or (element.step and element.step.arrowtext))
@@ -2489,9 +2514,8 @@ local list
 
 local function StepSummary(step)
     for _, e in ipairs(step.elements or {}) do
-        local text = e.text
-        if text and text ~= "" and text ~= " " then
-            if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e and e.step and e or nil) end
+        local text = ElementText(e)
+        if text then
             return (StripCodes(text):gsub("\n.*", ""))
         end
     end
@@ -2580,7 +2604,7 @@ function card.FillStepList()
     local steps = VisibleSteps()
     list.count = #steps
     SetFont(list.title, -1)
-    list.title:SetText((StripCodes((guide and (guide.displayname or guide.name)) or ""):gsub("\n", " ")))
+    list.title:SetText((StripCodes(addon.locale.GuideTitle(guide)):gsub("\n", " ")))
     -- rows grow with the font size so big text doesn't overlap
     local rowH = math.max(18, FontSize(-1) + 6)
     if list.rowH ~= rowH then

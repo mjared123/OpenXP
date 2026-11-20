@@ -49,7 +49,8 @@ for i = 4, 20 do
     steps[i] = {index = i, elements = {el{textOnly = true, text = "Step text " .. i}}}
 end
 local addon = {
-    locale = {Get = function(s) return s end},
+    locale = {Get = function(s) return s end,
+              GuideTitle = function(guide) return guide and (guide.displayname or guide.name) end},
     settings = {profile = {guideFontSize = 12, arrowScale = 1, windowScale = 1},
                 OpenSettings = function() end},
     currentGuide = {name = "28-30 Duskwood", steps = steps},

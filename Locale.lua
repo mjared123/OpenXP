@@ -108,7 +108,7 @@ fonts.Loads = Loads
 function fonts.Choices()
     local values, order, seen = {}, {}, {}
     for _, f in ipairs(BUILTIN) do
-        values[f.key] = f.name
+        values[f.key] = addon.locale.Get(f.name)
         order[#order + 1] = f.key
         seen[NormPath(f.path)] = true
     end
@@ -254,10 +254,43 @@ local function LocalName(raw)
     end))
 end
 
-function addon.locale.GuideText(text)
-    local phrases = addon.guidePhrases
+-- Scope the active language's display catalog to the guides it covers.
+function addon.locale.ForGuide(guide)
+    local locale = addon.deGuideLocale
+    if guide and locale and locale.groups[guide.group] and locale.titles[guide.name] then
+        return locale
+    end
+end
+
+function addon.locale.GuideTitle(guide)
+    if not guide then return end
+    local title = guide.displayname or guide.name
+    local locale = addon.locale.ForGuide(guide)
+    -- The guide's English name and chapter links remain the engine's lookup keys.
+    return locale and locale.titles[title] or title
+end
+
+local function LocalGuideNames(text, names)
+    text = text:gsub("|cRXP_(%u+)_([^|]-)|r", function(kind, name)
+        if not NAME_KINDS[kind] then return end
+        local translated = names[name]
+        if not translated and (kind == "FRIENDLY" or kind == "ENEMY") and addon.GetCreatureName then
+            translated = addon.GetCreatureName(name)
+        end
+        return "|cRXP_" .. kind .. "_" .. (translated or name) .. "|r"
+    end)
+    return (text:gsub("%[([^%]|]+)%]", function(name)
+        if names[name] then return "[" .. names[name] .. "]" end
+    end))
+end
+
+-- An optional catalog supplies exact text, names and a separate translation cache.
+-- Existing phrase-only callers continue to use addon.guidePhrases.
+function addon.locale.GuideText(text, guideLocale)
+    local phrases = guideLocale and guideLocale.phrases or addon.guidePhrases
     if not phrases or type(text) ~= "string" or text == "" then return text end
-    local cached = guideTextCache[text]
+    local cache = guideLocale and guideLocale.cache or guideTextCache
+    local cached = cache[text]
     if cached then return cached end
     local result = text
     local body, suffix = text:match("^(.-)(%s*<<.*)$")
@@ -277,14 +310,21 @@ function addon.locale.GuideText(text)
     key = key:gsub("%[.-%]", slot)
     key = key:gsub("%d+%.%d+", slot)
     key = key:gsub("%d+", slot)
-    local tr = n <= 26 and phrases[key]
+    local tr = guideLocale and guideLocale.literals[body] or (n <= 26 and phrases[key])
     if tr then
-        result = tr:gsub("{(%u)}", function(c)
-            local s = slots[c:byte() - 64]
-            if s then return LocalName(s) end
-        end) .. suffix
+        local function restore(c)
+            local value = slots[c:byte() - 64]
+            if not value then return end
+            if not guideLocale then return LocalName(value) end
+            -- A bracketed item link can contain a name captured in an earlier slot.
+            return (value:gsub("{(%u)}", function(inner)
+                if inner < c then return restore(inner) end
+            end))
+        end
+        result = tr:gsub("{(%u)}", restore) .. suffix
     end
-    guideTextCache[text] = result
+    if guideLocale then result = LocalGuideNames(result, guideLocale.names) end
+    cache[text] = result
     return result
 end
 
