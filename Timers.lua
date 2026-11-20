@@ -186,7 +186,7 @@ local nodeHash = {}
 flightInfo.nodeHash = nodeHash
 local flightUpdate = 0
 
-function addon:TAXIMAP_OPENED()
+function addon:TAXIMAP_OPENED(event)
     -- OpenXP: the flight paths you know are only readable from an open
     -- flight map; the travel directions say so until this has happened once
     if OXPCData then OXPCData.openxpTaxiSeen = true end
@@ -211,6 +211,11 @@ function addon:TAXIMAP_OPENED()
                     flightInfo.currentFP = id
                 end
             end
+        end
+        if event == "TAXIMAP_OPENED" and addon.travel then
+            -- Newly discovered flight paths can change the best route.
+            addon.travel.Reset()
+            addon.travel.TryAutoFly(flightInfo)
         end
     end
     flightInfo.MapID = mapID
