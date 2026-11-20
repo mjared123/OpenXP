@@ -23,6 +23,9 @@ local addon = {
     A32 = function() return 123 end, error = error,
     affix = function(a, b) return a .. "-" .. b end,
     BuildGuideKey = function(g) return g.group .. "|" .. g.name end,
+    guideTextColors = {
+        RXP_LOOT_ = "fff0e0d0", fff0e0d0 = "fff0e0d0", default = {error = "ffff0000"},
+    },
 }
 addon.functions = setmetatable({}, {__index = function(_, tag)
     return function(_, text, id, reward)
@@ -58,8 +61,16 @@ local strlower, strupper = string.lower, string.upper
 local tinsert, unpack, fmt = table.insert, unpack or table.unpack, string.format
 ]]
 local elementText = run(prefix .. localeCode .. parseCode .. cardCode .. "\nreturn ElementText", addon, L, function() return true end)
+local colorsCode = section(read("SettingsPanel.lua"), "function addon.settings.ReplaceColors(element)", "local function buildWorldMapMenu()")
+run(prefix .. colorsCode, addon, L)
 local flyCode = section(read("functions.lua"), "function addon.functions.fly(self, ...)", "\n--")
 run(prefix .. flyCode, addon, L)
+addon.guidePhrases = {["Pause here"] = "Legacy phrase"}
+assert(addon.locale.GuideText("Pause here") == "Legacy phrase")
+local isolated = {phrases = {["Pause here"] = "Scoped phrase"}, literals = {}, names = {}, cache = {}}
+assert(addon.locale.GuideText("Pause here", isolated) == "Scoped phrase")
+assert(addon.locale.GuideText("Pause here") == "Legacy phrase")
+addon.guidePhrases = nil
 
 local raw = [[
 #forever
@@ -71,6 +82,7 @@ step
 .turnin 1013,2 >>Turn in The Book of Ur
 ]]
 local guide = assert(addon.ParseGuide(raw))
+addon.currentGuide = guide
 assert(guide.name == "22-30 Shadowfang Keep")
 assert(guide.next == "22-32 Blackfathom Deeps")
 assert(addon.locale.GuideTitle(guide) == "22-30 Burg Schattenfang")
@@ -85,12 +97,51 @@ assert(elementText(turnin) == string.format(L("Turn in %s"), "Das Buch von Ur"))
 local scope = {
     phrases = {["Store {B}{C}"] = "Lagere {B}{C}"}, literals = {}, cache = {},
     names = addon.deGuideLocale.names,
+    groups = addon.deGuideLocale.groups, titles = addon.deGuideLocale.titles,
 }
+local fullCatalog = addon.deGuideLocale
 local item = "|T133734:20|t[|cRXP_LOOT_Shredder Operating Manual Pages|r]"
 local translated = addon.locale.GuideText("Store " .. item, scope)
 assert(translated == "Lagere |T133734:20|t[|cRXP_LOOT_Seiten der Schredderanleitung|r]")
 assert(not translated:find("{%u}"))
-local element = {text = "Store " .. item .. "\n1/1", localizedTextSource = "Store " .. item,
-    localizedText = translated, step = {guideLocale = scope}}
-assert(elementText(element) == translated .. "\n1/1")
+local element = {text = "Store " .. item, rawtext = "Store " .. item, step = {}}
+addon.settings.ReplaceColors(element)
+element.text = element.rawtext .. "\n1/1"
+addon.deGuideLocale = scope
+assert(elementText(element) == addon.settings.ReplaceColors(translated) .. "\n1/1")
+assert(element.textReplaced[2] == "Store " .. item and not element.localizedText)
+local macro = {tag = "macro", text = "/say Fly to the Undercity", step = {}}
+assert(elementText(macro) == macro.text)
+assert(elementText({tag = "note", text = "/run print('hello')", step = {}}) == "/run print('hello')")
+addon.deGuideLocale = fullCatalog
+
+-- All bundled chapters use the unmodified parser and real color replacement.
+local chapters, rows = 0, 0
+for file in read("Guides/GuideList-forever.xml"):gmatch('<Script%s+file="(Guides/[^\"]+%.lua)"') do
+    for body in read(file):gmatch("%[%[(.-)%]%]") do
+        if body:match("#name%s+") then
+            local parsed = assert(addon.ParseGuide(body))
+            addon.currentGuide = parsed
+            assert(addon.locale.ForGuide(parsed))
+            for _, step in ipairs(parsed.steps) do
+                assert(step.guideLocale == nil)
+                for _, entry in ipairs(step.elements) do
+                    addon.settings.ReplaceColors(entry)
+                    if entry.rawtext then entry.text = entry.rawtext .. "\n1/1" end
+                    local originalText = entry.text
+                    if originalText and originalText ~= "" and originalText ~= " " then
+                        local shown = assert(elementText(entry))
+                        assert(not shown:find("{%u}"), parsed.name .. " unresolved placeholder")
+                        assert(entry.text == originalText and not entry.localizedText)
+                        if entry.rawtext then assert(shown:sub(-3) == "1/1") end
+                        rows = rows + 1
+                    end
+                end
+            end
+            chapters = chapters + 1
+        end
+    end
+end
+assert(chapters == 196, "Update the expected bundled guide coverage")
+print(chapters .. " chapters, " .. rows .. " displayed rows with unchanged engine text")
 print("German localization preserves guide links, flight IDs, reward choices and nested item text")

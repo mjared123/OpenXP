@@ -985,7 +985,7 @@ function addon.SelectDefaultGuide()
     end
 end
 
-local function parseLine(linetext, step, parsingLogic, guideLocale)
+local function parseLine(linetext,step,parsingLogic)
     if not parsingLogic then
         parsingLogic = addon.functions
     end
@@ -1089,16 +1089,6 @@ local function parseLine(linetext, step, parsingLogic, guideLocale)
         -- error('Error parsing guide at line '..linenumber..'/ '..guide.name)
     end
     if element and textEn then element.textEn = textEn end
-    if element and guideLocale and element.tag ~= "accept" and element.tag ~= "turnin" and element.tag ~= "macro" then
-        local source = element.rawtext or element.text
-        if source and source:sub(1, 1) ~= "/" then
-            local translated = addon.locale.GuideText(source, guideLocale)
-            if translated ~= source then
-                element.localizedText = translated
-                element.localizedTextSource = source
-            end
-        end
-    end
     if element and (element.text and not element.textOnly or element.dynamicText) then
         addon.lastObjective = element
     end
@@ -1189,7 +1179,6 @@ function addon.ParseGuide(groupOrContent, text, defaultFor, isEmbedded, group, k
     local linenumber = 0
     local game = strlower(addon.game)
     local hasGameTag, isGameCompatible, hasGuideMetadata
-    local guideLocale
 
     for line in string.gmatch(text, "[^\n\r]+") do
         linenumber = linenumber + 1
@@ -1227,7 +1216,6 @@ function addon.ParseGuide(groupOrContent, text, defaultFor, isEmbedded, group, k
                 guide.key = guide.key or key or addon.BuildGuideKey(guide)
                 guide.guideId = addon.A32(guide.key)
                 addon.RegisterGroup(guide.group)
-                guideLocale = addon.locale.ForGuide(guide)
             end
             local classtag = line:match("<<%s*(.+)")
             if classtag and not applies(classtag) then
@@ -1244,7 +1232,6 @@ function addon.ParseGuide(groupOrContent, text, defaultFor, isEmbedded, group, k
                 step.stepId = linenumber + guide.guideId
                 -- kept so Smart start can tell class quests apart
                 step.tagText = classtag
-                step.guideLocale = guideLocale
                 --step.index = currentStep
                 addon.step = step
                 --addon.lastObjective = nil
@@ -1252,7 +1239,7 @@ function addon.ParseGuide(groupOrContent, text, defaultFor, isEmbedded, group, k
             end
         elseif not skip then
             if currentStep > 0 then
-                parseLine(line,step,parsingLogic,guideLocale)
+                parseLine(line,step,parsingLogic)
             else
                 -- print(line)
                 line = line:gsub("(.-)%s*<<%s*(.+)", function(code, tag)

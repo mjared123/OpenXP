@@ -469,10 +469,9 @@ end
 -- Accept / turn in steps in the player's language: the guide's English
 -- "Accept Quest Name" becomes the translated verb with the quest's name as
 -- the game (or Questie) gives it, once the step has looked it up.
-local function QuestStepText(e, text)
-    local pilot = e.step and e.step.guideLocale
-    if not pilot and not addon.guidePhrases then return text end
-    if pilot and e.tag == "abandon" and e.ids and C_QuestLog and C_QuestLog.GetTitleForQuestID then
+local function QuestStepText(e, text, guideLocale)
+    if not guideLocale and not addon.guidePhrases then return text end
+    if guideLocale and e.tag == "abandon" and e.ids and C_QuestLog and C_QuestLog.GetTitleForQuestID then
         local title = C_QuestLog.GetTitleForQuestID(e.ids[1])
         if title and title ~= "" then return fmt(L("Abandon %s"), title) end
     end
@@ -481,7 +480,7 @@ local function QuestStepText(e, text)
     if not verb then verb, name = text:match("^(Turn in) (.+)$") end
     if not verb then return text end
     local title = e.title
-    if pilot and (not title or title == "") and e.questId and C_QuestLog and C_QuestLog.GetTitleForQuestID then
+    if guideLocale and (not title or title == "") and e.questId and C_QuestLog and C_QuestLog.GetTitleForQuestID then
         title = C_QuestLog.GetTitleForQuestID(e.questId)
     end
     if title and title ~= "" then name = title end
@@ -491,16 +490,23 @@ end
 local function ElementText(e)
     local text = e.text
     if not text or text == "" or text == " " then return end
-    if e.localizedText then
-        local source = e.localizedTextSource
-        if text ~= source and text:sub(1, #source + 1) ~= source .. "\n" then
-            source = addon.settings.ReplaceColors(source)
-        end
-        if text == source or text:sub(1, #source + 1) == source .. "\n" then
-            text = addon.settings.ReplaceColors(e.localizedText) .. text:sub(#source + 1)
+    local guideLocale = addon.locale.ForGuide and addon.locale.ForGuide(addon.currentGuide)
+    -- Quest actions resolve their titles by ID below; macros contain game commands.
+    if guideLocale and e.tag ~= "accept" and e.tag ~= "turnin" and e.tag ~= "macro" then
+        -- ReplaceColors already retains the original text (1) and rawtext (2).
+        -- Translate that prefix and keep any live progress appended by the engine.
+        local original = e.textReplaced
+        local source = original and (original[2] or original[1]) or e.rawtext or text
+        if source:sub(1, 1) ~= "/" then
+            local translated = addon.locale.GuideText(source, guideLocale)
+            local prefix = addon.settings.ReplaceColors(source)
+            if translated ~= source and
+                (text == prefix or text:sub(1, #prefix + 1) == prefix .. "\n") then
+                text = addon.settings.ReplaceColors(translated) .. text:sub(#prefix + 1)
+            end
         end
     end
-    text = QuestStepText(e, text)
+    text = QuestStepText(e, text, guideLocale)
     if addon.ReplaceNpcIds then text = addon.ReplaceNpcIds(L(text), e and e.step and e or nil) end
     return text
 end

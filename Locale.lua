@@ -254,6 +254,7 @@ local function LocalName(raw)
     end))
 end
 
+-- Scope the active language's display catalog to the guides it covers.
 function addon.locale.ForGuide(guide)
     local locale = addon.deGuideLocale
     if guide and locale and locale.groups[guide.group] and locale.titles[guide.name] then
@@ -265,6 +266,7 @@ function addon.locale.GuideTitle(guide)
     if not guide then return end
     local title = guide.displayname or guide.name
     local locale = addon.locale.ForGuide(guide)
+    -- The guide's English name and chapter links remain the engine's lookup keys.
     return locale and locale.titles[title] or title
 end
 
@@ -282,6 +284,8 @@ local function LocalGuideNames(text, names)
     end))
 end
 
+-- An optional catalog supplies exact text, names and a separate translation cache.
+-- Existing phrase-only callers continue to use addon.guidePhrases.
 function addon.locale.GuideText(text, guideLocale)
     local phrases = guideLocale and guideLocale.phrases or addon.guidePhrases
     if not phrases or type(text) ~= "string" or text == "" then return text end

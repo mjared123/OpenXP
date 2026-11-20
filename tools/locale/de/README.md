@@ -12,13 +12,18 @@ whose names, icons, item brackets and numbers are restored from placeholders.
 Check the catalog after upstream guide updates from the repository root.
 
 ```sh
-node tools/locale/check_de_locale.cjs .
+python tools/locale/check_guide_locale.py deDE
 python tests/run_tests.py
 ```
 
 The coverage check reports new or unused text, missing names and mismatched
 placeholders. Update the Lua catalog directly. The generic guide-locale builder
 currently generates the phrase-only catalogs used by other languages.
+
+The same checker accepts other client locales, such as `esES`. It reuses
+`guide_skeleton.py` and checks title/name metadata when a catalog provides it.
+German text is applied by the card when it renders a guide element. The engine's
+parser and command arguments use the original text throughout.
 
 Starter-area translations incorporate the German RestedXP guides at the
 upstream revision identified in `NOTICE.md`. Some names unique to WoW Forever
