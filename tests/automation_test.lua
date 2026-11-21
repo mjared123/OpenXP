@@ -270,6 +270,42 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- a border, dock or tram checkpoint counts once you're in the zone it leads to")
+do
+    local game, OXP = newGame({ level = 33, map = 1441, x = 70, y = 80 })
+    addGuide(OXP, {
+        { { "reach", text = "Into Tanaris", x = 74.2, y = 93.6, zone = "1441" } },
+        { { "goto", zone = "1446", x = 51, y = 28 }, { "accept", quest = 1034 } },
+    })
+    local E = OXP.Engine
+    game:Flush()
+    local reach = E.GetSteps()[1].goals[1]
+    t.eq(reach.past, 1446, "it leads to Tanaris")
+    t.eq(OXP.Goals.State(reach, E.GetSteps()[1].marks), "todo", "still in Thousand Needles: not yet")
+    game.pos = { map = 1446, x = 52, y = 20 } -- crossed somewhere else
+    t.eq(OXP.Goals.State(reach, E.GetSteps()[1].marks), "done", "in Tanaris: passed")
+    E.Refresh()
+    t.eq(E.GetPosition(), 2, "and the guide moves on")
+end
+
+------------------------------------------------------------------------
+print("-- a guide that starts with \"Into <zone>\" counts it once you're out in that zone")
+do
+    local game, OXP = newGame({ level = 55, map = 1448, x = 60, y = 10 })
+    addGuide(OXP, {
+        { { "reach", text = "Into Winterspring", x = 28, y = 34.6, zone = "1452" } },
+        { { "goto", zone = "1452", x = 61, y = 38 }, { "accept", quest = 1034 } },
+    })
+    local E = OXP.Engine
+    game:Flush()
+    local reach = E.GetSteps()[1].goals[1]
+    t.ok(reach.entry, "marked as the way in")
+    game.pos = { map = 1452, x = 40, y = 40 }
+    t.eq(OXP.Goals.State(reach, E.GetSteps()[1].marks), "done", "out in Winterspring: passed")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
 print("-- timers: flights and the hearthstone")
 do
     local game, OXP = newGame({ level = 30 })

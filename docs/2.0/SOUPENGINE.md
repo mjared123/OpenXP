@@ -87,6 +87,10 @@ files and their `Guides.xml` lines are committed on 2.0, as is `OpenXP_Nav/`
 (SoupEngine's export from 2026-11-17 23:56, `Graphs-*.json` included). Until
 SoupEngine has an optimized route they're the same steps as the default.
 
+Since 2026-11-21 (Matt's call) they're dropped from the build again: they were
+exact copies of the default guides and doubled guide memory. Add the
+`Guides.xml` lines back when SoupEngine has a route of its own to test.
+
 ## OpenXP_Nav (walking paths)
 
 `python -m soup navexport --faction X` (also step 7 of `soup build`) writes

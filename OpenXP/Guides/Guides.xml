@@ -5,13 +5,11 @@
   <Script file="Leveling\Alliance\40-50.lua"/>
   <Script file="Leveling\Alliance\50-60.lua"/>
   <Script file="Leveling\Alliance\PoleStar-01-60.lua"/>
-  <Script file="Leveling\Alliance\SoupEngine-Test-PoleStar-01-60.lua"/>
   <Script file="Leveling\Horde\22-30.lua"/>
   <Script file="Leveling\Horde\30-40.lua"/>
   <Script file="Leveling\Horde\40-50.lua"/>
   <Script file="Leveling\Horde\50-60.lua"/>
   <Script file="Leveling\Horde\PoleStar-01-60.lua"/>
-  <Script file="Leveling\Horde\SoupEngine-Test-PoleStar-01-60.lua"/>
   <Script file="Dungeons\Alliance.lua"/>
   <Script file="Dungeons\Horde.lua"/>
 </Ui>

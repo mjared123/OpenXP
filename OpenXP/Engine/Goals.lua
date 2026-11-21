@@ -154,14 +154,19 @@ local function InSubZone(g)
     if not name or name == "" or not GetSubZoneText then return false end
     local key = OXP.Util.PlaceKey(name)
     if not key or key == "" then return false end
-    return OXP.Util.PlaceKey(GetSubZoneText() or "") == key
+    local here = OXP.Util.PlaceKey(GetSubZoneText() or "")
+    if here == "" then return false end
+    -- "At Sen'jin Village", "Crossroads flight master": the place is in the name
+    return here == key or here == key:gsub("^at ", "") or key:find("^" .. here:gsub("%p", "%%%0") .. " ") ~= nil
 end
 
 local function OutInZone(g)
-    if not g.entry then return false end
-    if IsIndoors and IsIndoors() then return false end -- still in the tunnel
+    if not (g.entry or g.past) then return false end
     local _, _, map = OXP.Places.PlayerZone()
-    return map ~= nil and map == OXP.Places.MapID(g.zone)
+    if map == nil then return false end
+    if g.past and map == g.past then return true end -- already where it leads
+    if IsIndoors and IsIndoors() then return false end -- still in the tunnel
+    return g.entry and map == OXP.Places.MapID(g.zone) or false
 end
 
 Goals.Define("reach", {

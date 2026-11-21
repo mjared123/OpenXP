@@ -27,27 +27,57 @@ local lastSignature
 -- Building a run
 ------------------------------------------------------------------------
 
--- Mark each "reach" that leads into another zone (the spot before it in the
--- guide is in a different zone): it also counts once you're out in that
--- zone (Engine/Goals.lua). Done once per guide.
-local function markEntries(guide)
-    if guide.entriesMarked then return end
-    guide.entriesMarked = true
-    local last
-    for _, data in ipairs(guide.steps) do
-        for _, goal in ipairs(data) do
+-- Mark each "reach" checkpoint with how else it counts (Engine/Goals.lua):
+-- `entry` when it leads into another zone (the place before it is in a
+-- different zone, or the guide starts with "Into <that zone>"): done once
+-- you're out in that zone; `past` when the next place is in another zone
+-- (a dock, tram, portal or border): done once you're there. Worked out on
+-- the steps your character gets, so class-only steps don't get in the way.
+local function markEntries(steps)
+    -- every place the guide sends you, in order
+    local spots = {}
+    for si, step in ipairs(steps) do
+        for _, goal in ipairs(step.goals) do
             local k = goal[1]
             if (k == "goto" or k == "reach" or k == "area") and goal.zone then
                 local zone = OXP.Places.MapID(goal.zone)
-                if k == "reach" and last and zone and zone ~= last then goal.entry = true end
-                last = zone or last
+                if zone then spots[#spots + 1] = { goal = goal, zone = zone, step = si } end
             end
+        end
+    end
+    -- the places just before and after a step (class-only goals share one)
+    local function Before(i)
+        local j = i - 1
+        while spots[j] and spots[j].step == spots[i].step do j = j - 1 end
+        return spots[j]
+    end
+    local function After(i)
+        local j = i + 1
+        while spots[j] and spots[j].step == spots[i].step do j = j + 1 end
+        return spots[j]
+    end
+    for i, spot in ipairs(spots) do
+        local goal = spot.goal
+        if goal[1] == "reach" then
+            local before, after = Before(i), After(i)
+            goal.entry, goal.past = nil, nil
+            local text = OXP.Text.Strip(goal.text or ""):lower()
+            -- the way into a new zone (a tunnel, a pass, a road in): done
+            -- once you're out in that zone
+            local into = not before and text:match("^into (.+)")
+            local zoneName = into and OXP.Places.ZoneName(spot.zone)
+            if (before and before.zone ~= spot.zone)
+                or (zoneName and OXP.Util.PlaceKey(into) == OXP.Util.PlaceKey(zoneName)) then
+                goal.entry = true
+            end
+            -- a dock, tram, portal or border on the way to the next zone:
+            -- done once you're in that zone
+            if after and after.zone ~= spot.zone then goal.past = after.zone end
         end
     end
 end
 
 local function buildSteps(guide)
-    markEntries(guide)
     local steps = {}
     for index, data in ipairs(guide.steps) do
         if Filters.Matches(data.only) then
@@ -69,6 +99,7 @@ local function buildSteps(guide)
             }
         end
     end
+    markEntries(steps)
     return steps
 end
 
