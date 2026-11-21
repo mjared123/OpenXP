@@ -50,7 +50,7 @@ f:SetClampedToScreen(true)
 f:SetMovable(true)
 f:EnableMouse(true)
 f:RegisterForDrag("LeftButton")
-Style.Backdrop(f, C.bg, C.border)
+Style.Backdrop(f, C.bg, C.border, { card = true })
 -- nothing inside is ever drawn past the card's edge, also while you drag
 -- the grip (the step list and menus are parented elsewhere for that reason)
 if f.SetClipsChildren then f:SetClipsChildren(true) end
@@ -172,25 +172,44 @@ header:SetHeight(HEADER_H)
 header.bg = header:CreateTexture(nil, "BACKGROUND")
 header.bg:SetAllPoints()
 header.bg:SetColorTexture(1, 1, 1, 0.03)
-header.dot = header:CreateTexture(nil, "ARTWORK")
-header.dot:SetTexture(TEX .. "filledcircle")
-header.dot:SetSize(9, 9)
-header.dot:SetPoint("TOPLEFT", PAD - 1, -10)
-Tint(header.dot, C.blue)
+-- the step list button: every step of the guide, earlier ones with how they
+-- went, click one to go there (UI/StepNavigator.lua)
+header.nav = CreateFrame("Button", nil, header)
+header.nav:SetSize(22, 22)
+header.nav:SetPoint("TOPLEFT", PAD - 6, -5)
+header.nav.bg = header.nav:CreateTexture(nil, "BACKGROUND")
+header.nav.bg:SetAllPoints()
+header.nav.bg:SetTexture(TEX .. "filledcircle")
+Tint(header.nav.bg, C.blue, 0)
+header.nav.icon = header.nav:CreateTexture(nil, "ARTWORK")
+header.nav.icon:SetTexture(TEX .. "history")
+header.nav.icon:SetSize(14, 14)
+header.nav.icon:SetPoint("CENTER")
+Tint(header.nav.icon, C.blue)
+header.nav:SetScript("OnClick", function() Card.ToggleStepList() end)
+header.nav:SetScript("OnEnter", function(self)
+    Tint(self.bg, C.blue, 0.22)
+    Style.Tooltip(self, L("Steps"), L("Every step of this guide: what you've done, skipped and what's coming. Click one to go there."))
+end)
+header.nav:SetScript("OnLeave", function(self)
+    Tint(self.bg, C.blue, (OXP.StepNav and OXP.StepNav.IsShown()) and 0.16 or 0)
+    GameTooltip:Hide()
+end)
+header.dot = header.nav.icon -- older code and tests know it by this name
 header.zone = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-header.zone:SetPoint("LEFT", header.dot, "RIGHT", 7, 0)
+header.zone:SetPoint("LEFT", header.nav, "RIGHT", 4, 0)
 header.zone:SetPoint("RIGHT", header, "RIGHT", -PAD + 1, 0)
-header.zone:SetTextColor(unpack(C.text))
+Style.TextColor(header.zone, C.text)
 header.zone:SetJustifyH("LEFT")
 header.zone:SetWordWrap(false)
 header.range = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-header.range:SetPoint("BOTTOMLEFT", header, "BOTTOMLEFT", PAD + 15, 7)
+header.range:SetPoint("BOTTOMLEFT", header, "BOTTOMLEFT", PAD + 20, 7)
 header.range:SetJustifyH("LEFT")
-header.range:SetTextColor(unpack(C.dim))
+Style.TextColor(header.range, C.dim)
 header.step = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 header.step:SetPoint("BOTTOMRIGHT", header, "BOTTOMRIGHT", -PAD + 1, 7)
 header.step:SetJustifyH("RIGHT")
-header.step:SetTextColor(unpack(C.dim))
+Style.TextColor(header.step, C.dim)
 header.stepBtn = CreateFrame("Button", nil, header)
 header.stepBtn:SetPoint("BOTTOMRIGHT", 0, 0)
 header.stepBtn:SetHeight(22)
@@ -210,7 +229,7 @@ local progress = f:CreateTexture(nil, "OVERLAY")
 progress:SetPoint("TOPLEFT", progressBg, "TOPLEFT")
 progress:SetHeight(2)
 progress:SetWidth(1)
-progress:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 1)
+Style.Fill(progress, C.blue, 1)
 
 ---------------------------------------------------------------------------
 -- What a step says
@@ -611,7 +630,7 @@ local function NewLine(block)
     line.bar:SetHeight(5)
     line.bar:SetPoint("LEFT", line.barBg, "LEFT")
     line.count = line:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    line.count:SetTextColor(unpack(C.dim))
+    Style.TextColor(line.count, C.dim)
     return line
 end
 
@@ -623,19 +642,19 @@ local function GetBlock(i)
     b.sep:SetPoint("TOPLEFT", PAD, 0)
     b.sep:SetPoint("TOPRIGHT", -PAD, 0)
     b.sep:SetHeight(1)
-    b.sep:SetColorTexture(1, 1, 1, Style.skin.line)
+    b.sep:SetColorTexture(1, 1, 1, Card.lineAlpha or Style.skin.line)
     b.badge = Style.Badge(b, 34)
     b.badge:SetPoint("TOPLEFT", PAD, -10)
     b.num = b:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     b.num:SetPoint("TOP", b.badge, "BOTTOM", 0, -4)
     b.num:SetJustifyH("CENTER")
-    b.num:SetTextColor(unpack(C.faint))
+    Style.TextColor(b.num, C.faint)
     b.title = b:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     b.title:SetPoint("TOPLEFT", b.badge, "TOPRIGHT", 12, -1)
     b.title:SetJustifyH("LEFT")
     b.title:SetJustifyV("TOP")
     b.title:SetWordWrap(true)
-    b.title:SetTextColor(unpack(C.text))
+    Style.TextColor(b.title, C.text)
     b.lines = {}
     blocks[i] = b
     return b
@@ -648,11 +667,11 @@ local function GetWarn(b)
     w.text = w:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     w.text:SetPoint("TOPLEFT")
     w.text:SetJustifyH("LEFT")
-    w.text:SetTextColor(unpack(C.gold))
+    Style.TextColor(w.text, C.gold)
     w.list = w:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     w.list:SetPoint("TOPLEFT", w.text, "BOTTOMLEFT", 0, -4)
     w.list:SetJustifyH("LEFT")
-    w.list:SetTextColor(unpack(C.dim))
+    Style.TextColor(w.list, C.dim)
     w.get = Style.TextButton(w, L("Get the quest"),
         L("Go and pick this quest up. Once you have it the guide brings you back here."), function()
             local m = b.missing
@@ -876,7 +895,7 @@ local function LayoutBlock(b, step, pos, first)
                 end
             end
             line.text:SetText(data.text)
-            line.text:SetTextColor(unpack(data.done and C.faint or C.text))
+            Style.TextColor(line.text, data.done and C.faint or C.text)
             line:SetAlpha(data.done and 0.7 or 1)
             local h = line.text:GetStringHeight()
             if have and need and need > 1 and not data.done then
@@ -936,10 +955,10 @@ hist.bg:SetAllPoints()
 hist.bg:SetColorTexture(0, 0, 0, 0.18)
 hist.label = hist:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 hist.label:SetPoint("TOPLEFT", PAD, -8)
-hist.label:SetTextColor(unpack(C.dim))
+Style.TextColor(hist.label, C.dim)
 hist.hint = hist:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 hist.hint:SetPoint("TOPRIGHT", -PAD, -8)
-hist.hint:SetTextColor(unpack(C.faint))
+Style.TextColor(hist.hint, C.faint)
 hist.rows = {}
 hist:Hide()
 Card.histOffset = 0
@@ -1021,9 +1040,9 @@ function Card.LayoutHistory(current)
         SetFont(row.num, -2)
         SetFont(row.text, -1)
         row.num:SetText(pos)
-        row.num:SetTextColor(unpack(C.faint))
+        Style.TextColor(row.num, C.faint)
         row.text:SetText(text)
-        row.text:SetTextColor(unpack((row.status == "done" or row.status == "skipped") and C.dim or C.text))
+        Style.TextColor(row.text, (row.status == "done" or row.status == "skipped") and C.dim or C.text)
         row.pill:SetStatus(row.status)
         row:Show()
         y = y + HIST_ROW_H
@@ -1061,15 +1080,41 @@ upNext.sep:SetPoint("TOPRIGHT", -PAD, 0)
 upNext.sep:SetHeight(1)
 upNext.sep:SetColorTexture(1, 1, 1, 0.07)
 upNext.label = upNext:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-upNext.label:SetPoint("TOPLEFT", PAD, -10)
-upNext.label:SetTextColor(unpack(C.dim))
+upNext.label:SetPoint("TOPLEFT", PAD + 14, -10)
+Style.TextColor(upNext.label, C.dim)
+-- click "UP NEXT" to fold it to one line (Settings > Guide card > Up next)
+upNext.toggle = CreateFrame("Button", nil, upNext)
+upNext.toggle:SetPoint("TOPLEFT", PAD - 2, -4)
+upNext.toggle:SetHeight(20)
+upNext.toggle:SetWidth(90)
+upNext.chev = upNext.toggle:CreateTexture(nil, "ARTWORK")
+upNext.chev:SetSize(10, 10)
+upNext.chev:SetPoint("LEFT", 2, 0)
+Tint(upNext.chev, C.dim)
+upNext.toggle:SetScript("OnClick", function()
+    local s = Settings()
+    s.upNextMode = (s.upNextMode == "folded") and "show" or "folded"
+    OXP.Send("SETTINGS_CHANGED")
+    Card.Refresh(true)
+end)
+upNext.toggle:SetScript("OnEnter", function(self)
+    Tint(upNext.chev, C.text)
+    Style.TextColor(upNext.label, C.text)
+    Style.Tooltip(self, Settings().upNextMode == "folded" and L("Show what's up next") or L("Fold up next"),
+        L("Settings > Guide card can hide it for good."))
+end)
+upNext.toggle:SetScript("OnLeave", function()
+    Tint(upNext.chev, C.dim)
+    Style.TextColor(upNext.label, C.dim)
+    GameTooltip:Hide()
+end)
 upNext.lines = {}
 local function UpNextLine(i)
     local line = upNext.lines[i]
     if not line then
         line = upNext:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         line:SetJustifyH("LEFT")
-        line:SetTextColor(unpack(C.dim))
+        Style.TextColor(line, C.dim)
         line:SetWordWrap(false)
         if i == 1 then line:SetPoint("TOPLEFT", upNext.label, "TOPRIGHT", 8, 1) end
         upNext.lines[i] = line
@@ -1105,7 +1150,7 @@ xp.bg:SetColorTexture(1, 1, 1, 0.06)
 xp.rested = xp:CreateTexture(nil, "ARTWORK", nil, 1)
 xp.rested:SetPoint("BOTTOMLEFT")
 xp.rested:SetHeight(3)
-xp.rested:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 0.35)
+Style.Fill(xp.rested, C.blue, 0.35)
 xp.fill = xp:CreateTexture(nil, "ARTWORK", nil, 2)
 xp.fill:SetPoint("BOTTOMLEFT")
 xp.fill:SetHeight(3)
@@ -1210,7 +1255,7 @@ mini.text = mini:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 mini.text:SetPoint("LEFT", mini.badge, "RIGHT", 10, 0)
 mini.text:SetJustifyH("LEFT")
 mini.text:SetWordWrap(false)
-mini.text:SetTextColor(unpack(C.text))
+Style.TextColor(mini.text, C.text)
 mini.expand = Btn(mini, "down", L("Show the full guide"), function()
     if mini.empty then OXP.GuidePicker.ShowGuides() else Card.SetCollapsed(false) end
 end)
@@ -1218,7 +1263,7 @@ mini:EnableMouse(false)
 mini.expand:SetPoint("RIGHT", -4, 0)
 mini.count = mini:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 mini.count:SetPoint("RIGHT", mini.expand, "LEFT", -4, 0)
-mini.count:SetTextColor(unpack(C.dim))
+Style.TextColor(mini.count, C.dim)
 mini.text:SetPoint("RIGHT", mini.count, "LEFT", -8, 0)
 mini:Hide()
 
@@ -1271,6 +1316,7 @@ function Card.Signature()
         s.cardCollapsed and 1 or 0, s.lockFrames and 1 or 0, Card.detour and 1 or 0,
         Card.sizing and 1 or 0, Card.histOffset or 0, Engine.IsHeld() and 1 or 0,
         Card.here and Card.here.pos or 0, Card.expanded and 1 or 0,
+        s.upNextMode or "show", s.skin or "", s.cardOpacity or 1,
     }
     local travel = OXP.Travel.Lines()
     parts[#parts + 1] = travel and table.concat(travel, "|") or ""
@@ -1437,10 +1483,19 @@ local function UpNextTexts(count, detourStep, detourIndex, lastPos)
 end
 
 -- "Up next" sits on the button bar; returns its height (0 when hidden).
-local function LayoutUpNext(texts)
+local function LayoutUpNext(texts, folded)
     upNext:ClearAllPoints()
     upNext:SetPoint("BOTTOMLEFT", bar, "TOPLEFT", 0, 0)
     upNext:SetPoint("BOTTOMRIGHT", bar, "TOPRIGHT", 0, 0)
+    upNext.chev:SetTexture(TEX .. (folded and "next" or "down"))
+    if folded then
+        SetFont(upNext.label, -2, "")
+        upNext.label:SetText(L("UP NEXT"))
+        for _, line in ipairs(upNext.lines) do line:Hide() end
+        upNext:SetHeight(28)
+        upNext:Show()
+        return 28
+    end
     if #texts == 0 then
         upNext:Hide()
         upNext:SetHeight(1)
@@ -1576,11 +1631,13 @@ function Card.Refresh(force)
     local lineH = Style.FontSize(0) + 6
     local room = (Card.sizing and (f:GetHeight() or Height()) or Height()) - TOP_H - BAR_H
     local count = 0
-    if not Card.expanded then
+    local mode = s.upNextMode or "show"
+    if not Card.expanded and mode == "show" then
         count = math.min(MAX_UPNEXT, 1 + math.max(0, math.floor((room - contentH - 34) / lineH)))
     end
+    local folded = mode == "folded" and not Card.expanded
     local okT, texts = Try(UpNextTexts, count, detourStep, detourIndex, lastPos)
-    local okU, upH = Try(LayoutUpNext, okT and texts or {})
+    local okU, upH = Try(LayoutUpNext, okT and texts or {}, folded)
     upH = okU and upH or 0
 
     local viewH = math.max(1, room - upH)
@@ -1790,133 +1847,54 @@ OXP.On("QUEST_FINISHED", TalkedHere)
 
 ---------------------------------------------------------------------------
 -- Step list: every step of the guide, click one to jump there
+-- (UI/StepNavigator.lua draws it)
 ---------------------------------------------------------------------------
 
-local LIST_ROWS = 18
-local list
-
-function Card.BuildStepList()
-    if list then return list end
-    list = CreateFrame("Frame", nil, UIParent, "BackdropTemplate") -- the card clips its children
-    Style.Backdrop(list, C.bg, C.border)
-    list:SetFrameStrata("DIALOG")
-    list:SetWidth(340)
-    list:EnableMouse(true)
-    list:EnableMouseWheel(true)
-    list.offset = 0
-    list.title = list:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    list.title:SetPoint("TOPLEFT", PAD, -9)
-    list.title:SetTextColor(unpack(C.dim))
-    list.close = Style.IconButton(list, "cross", L("Close"), function() list:Hide() end)
-    list.close:SetPoint("TOPRIGHT", -4, -4)
-    list.rows = {}
-    for r = 1, LIST_ROWS do
-        local row = CreateFrame("Button", nil, list)
-        row:SetHeight(18)
-        row.hl = row:CreateTexture(nil, "BACKGROUND")
-        row.hl:SetAllPoints()
-        row.hl:SetColorTexture(1, 1, 1, 0)
-        row.num = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        row.num:SetPoint("LEFT", 6, 0)
-        row.num:SetWidth(30)
-        row.num:SetJustifyH("RIGHT")
-        row.pill = Style.Pill(row)
-        row.pill:SetPoint("RIGHT", -6, 0)
-        row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        row.text:SetPoint("LEFT", row.num, "RIGHT", 8, 0)
-        row.text:SetPoint("RIGHT", row.pill, "LEFT", -6, 0)
-        row.text:SetJustifyH("LEFT")
-        row.text:SetWordWrap(false)
-        row:SetScript("OnEnter", function(self) self.hl:SetColorTexture(1, 1, 1, 0.08) end)
-        row:SetScript("OnLeave", function(self) self.hl:SetColorTexture(1, 1, 1, self.current and 0.05 or 0) end)
-        row:SetScript("OnClick", function(self) Card.JumpTo(self.pos) end)
-        list.rows[r] = row
-    end
-    list:SetScript("OnMouseWheel", function(self, delta)
-        self.offset = math.max(0, math.min((self.count or 0) - LIST_ROWS, self.offset - delta * 3))
-        Card.FillStepList()
-    end)
-    list:Hide()
-    return list
-end
+Card.StepSummary = StepSummary
 
 function Card.FillStepList()
-    if not (list and list:IsShown()) then return end
-    local steps = Engine.GetSteps()
-    list.count = #steps
-    local guide = Engine.GetGuide()
-    list.title:SetText(guide and Text.Strip(guide.name) or "")
-    SetFont(list.title, -1)
-    local rowH = math.max(18, Style.FontSize(-1) + 6)
-    if list.rowH ~= rowH then
-        list.rowH = rowH
-        for r, row in ipairs(list.rows) do
-            row:SetHeight(rowH)
-            row:ClearAllPoints()
-            row:SetPoint("TOPLEFT", 4, -28 - (r - 1) * rowH)
-            row:SetPoint("TOPRIGHT", -4, -28 - (r - 1) * rowH)
-        end
-        list:SetHeight(28 + LIST_ROWS * rowH + 8)
-    end
-    local cur = Engine.GetPosition()
-    for r, row in ipairs(list.rows) do
-        local pos = list.offset + r
-        local step = steps[pos]
-        if step then
-            row.pos = pos
-            row.current = pos == cur
-            SetFont(row.num, -1)
-            SetFont(row.text, -1)
-            row.num:SetText(pos)
-            row.text:SetText(StepSummary(step))
-            local status = not row.current and Engine.StepState(pos) or nil
-            if status == "todo" then status = nil end
-            row.pill:SetStatus(status)
-            local done = status == "done" or status == "skipped"
-            row.text:SetTextColor(unpack(row.current and C.blue or done and C.faint or C.text))
-            row.num:SetTextColor(unpack(row.current and C.blue or C.dim))
-            row.hl:SetColorTexture(1, 1, 1, row.current and 0.05 or 0)
-            row:Show()
-        else
-            row:Hide()
-        end
-    end
+    if OXP.StepNav and OXP.StepNav.IsShown() then OXP.StepNav.Refresh() end
 end
 
 function Card.ToggleStepList()
-    Card.BuildStepList()
-    if list:IsShown() then list:Hide() return end
-    list:ClearAllPoints()
-    if (f:GetLeft() or 0) > 320 then
-        list:SetPoint("TOPRIGHT", f, "TOPLEFT", -4, 0)
-    else
-        list:SetPoint("TOPLEFT", f, "TOPRIGHT", 4, 0)
-    end
-    list:Show()
-    list.offset = math.max(0, math.min(#Engine.GetSteps() - LIST_ROWS, (Engine.GetPosition() or 1) - 4))
-    Card.FillStepList()
+    if OXP.StepNav then OXP.StepNav.Toggle() end
+    Tint(header.nav.bg, C.blue, (OXP.StepNav and OXP.StepNav.IsShown()) and 0.16 or 0)
 end
 
 ---------------------------------------------------------------------------
 -- Turning on, and the settings window's buttons
 ---------------------------------------------------------------------------
 
---- Paints the card's own pieces in the chosen skin (Settings > Guide card).
+--- Paints the card's own pieces in the chosen skin and background
+--- (Settings > Guide card): the header band, the bar under the buttons and
+--- the thin lines. Minimal, or the background at 0%, draws none of them.
 function Card.ApplySkin()
-    local key = Settings().skin or "midnight"
+    local s = Settings()
+    local key = (s.skin or "midnight") .. ":" .. tostring(s.cardOpacity or 1)
     if Card.skinKey == key then return end
     Card.skinKey = key
-    local skin = Style.ApplySkin(key)
-    header.bg:SetColorTexture(1, 1, 1, skin.header)
-    Tint(header.dot, C.blue)
-    progress:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 1)
-    progressBg:SetColorTexture(1, 1, 1, skin.header > 0 and 0.06 or 0.03)
-    more.back:SetColorTexture(C.bg[1], C.bg[2], C.bg[3], math.min(1, C.bg[4] + 0.5))
-    bar.bg:SetColorTexture(1, 1, 1, skin.header > 0 and 0.04 or 0)
-    bar.line:SetColorTexture(1, 1, 1, skin.line)
-    upNext.sep:SetColorTexture(1, 1, 1, skin.line)
-    for _, b in pairs(blocks) do b.sep:SetColorTexture(1, 1, 1, skin.line) end
+    local skin = Style.skinKey == (s.skin or "midnight") and Style.skin or Style.ApplySkin(s.skin or "midnight")
+    local o = Style.CardOpacity()
+    local bare = Style.Frameless()
+    local line = bare and 0 or skin.line * math.min(1, o * 1.4)
+    Style.PaintBackdrop(f)
+    header.bg:SetColorTexture(1, 1, 1, bare and 0 or skin.header * o)
+    Tint(header.nav.icon, C.blue)
+    Style.Fill(progress, C.blue, 1)
+    progressBg:SetColorTexture(1, 1, 1, bare and 0.10 or (skin.header > 0 and 0.06 or 0.04))
+    more.back:SetColorTexture(C.bg[1], C.bg[2], C.bg[3], bare and 0.55 or math.min(1, C.bg[4] * o + 0.5))
+    bar.bg:SetColorTexture(1, 1, 1, bare and 0 or (skin.header > 0 and 0.04 or 0) * o)
+    bar.line:SetColorTexture(1, 1, 1, line)
+    upNext.sep:SetColorTexture(1, 1, 1, line)
+    for _, b in pairs(blocks) do b.sep:SetColorTexture(1, 1, 1, line) end
+    xp.bg:SetColorTexture(1, 1, 1, bare and 0.10 or 0.06)
+    Style.Fill(xp.rested, C.blue, 0.35)
+    if hist.bg then hist.bg:SetColorTexture(0, 0, 0, bare and 0 or 0.18 * o) end
+    Card.lineAlpha = line
     if OXP.ActionButtons and OXP.ActionButtons.ApplySkin then OXP.ActionButtons.ApplySkin() end
+    if OXP.StepNav and OXP.StepNav.ApplySkin then OXP.StepNav.ApplySkin() end
+    -- card text gets an outline when there's no background behind it
+    Card.ticks = (Card.ticks or 0) + 1
 end
 
 function Card.Enable()

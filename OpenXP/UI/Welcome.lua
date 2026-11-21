@@ -12,6 +12,19 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.0-dev3", date = "2026-11",
+        changes = {
+            "A step list on the card: click the clock button (or \"Step 12 / 80\") to see every step of the guide on a timeline: what you've done, skipped or missed, the step you're on and what's coming. Click any step to go there. Tabs for All, Earlier and Coming up. Also /oxp steps.",
+            "Up next can be folded to one line (click UP NEXT) or hidden (Settings > Guide card > Up next).",
+            "A Background slider under Settings > Guide card: from the skin's own background down to none at all, for the card and the Targets list.",
+            "Skins reworked: each one now colours every OpenXP window, button and line, not just the card. Minimal has no background, border or lines at all: just the text (outlined), icons and buttons.",
+            "A new arrow: pick Chevron, Classic, Needle, Solid triangle or Dot and pointer, and turn the circle, the distance and the step text on or off. Its colour follows your skin, or white, or red when far turning green as you get close. Arrow size and opacity too. It glows when you arrive.",
+            "Map quest icons: a yellow ! where you pick a quest up (grey when it's low level for you), a yellow ? where you hand one in (grey until it's done), and kill, loot and use icons on objectives. Hover for the quest, its level and your progress. With Questie installed ours step aside so you don't see two of each (Settings > Maps > Quest icons).",
+            "Fixed: a quest's ! stayed on the map after you picked the quest up.",
+            "A new install starts with a slightly see-through card, a little bigger, and the new arrow. Your own settings aren't changed.",
+        },
+    },
+    {
         version = "2.0.0-dev2", date = "2026-11",
         changes = {
             "The card starts unlocked and shown, and this What's New window opens after every update.",
@@ -84,7 +97,7 @@ local function Build()
     f.body:SetJustifyH("LEFT")
     f.body:SetJustifyV("TOP")
     f.body:SetSpacing(3)
-    f.body:SetTextColor(unpack(C.text))
+    Style.TextColor(f.body, C.text)
     f.content = content
 
     f.questie = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")

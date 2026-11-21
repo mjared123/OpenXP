@@ -244,5 +244,14 @@ tools/build_flights.py from World of Warcraft Classic Era client data tables
 
 When Questie is installed, OpenXP also asks its quest database, while the
 game runs, about anything Data/QuestDB.lua doesn't hold (Engine/QuestDB.lua).
-Nothing of Questie's own files is copied into OpenXP; forever-db, above,
-credits QuestieDB among its sources.
+None of Questie's own code or data is copied into OpenXP; forever-db, above,
+credits QuestieDB among its sources. The map's "!" and "?" quest icons
+(Media/Map/quest_*.tga) are OpenXP's own drawings (tools/make_ui_icons.py)
+in the familiar quest-addon style.
+
+## pfQuest objective icons
+
+`Media/Map/pfQuest/slay_mono.tga`, `loot_mono.tga` and `object_mono.tga`
+are by Eric Mauser (Shagu), from pfQuest (https://github.com/shagu/pfQuest),
+under the MIT license (`Media/Map/pfQuest/LICENSE.txt`). They were taken
+from Questie's `Icons` folder, which lists them as pfQuest's MIT files.

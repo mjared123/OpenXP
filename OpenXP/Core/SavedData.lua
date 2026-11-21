@@ -21,11 +21,21 @@ local ACCOUNT_DEFAULTS = {
         font = "default",
         fontOutline = "",
         skin = "midnight",         -- Settings > Guide card > Skin (UI/Style.lua)
+        cardOpacity = 1,           -- the card's background: 0 (none) to 1 (the skin's own)
+        upNextMode = "show",       -- "show", "folded" (one line, click to open) or "hide"
         lockFrames = false,
         -- arrow
         arrowShown = true,
         arrowScale = 1,
         arrowText = 12,
+        arrowStyle = "chevron",    -- Nav/ArrowView.lua STYLES
+        arrowShowRing = true,      -- the circle around the pointer
+        arrowShowDistance = true,  -- "123 yd" under it
+        arrowShowLabel = true,     -- what to do there, under that
+        arrowColor = "skin",       -- "skin" (the skin's accent), "distance" (red far, green close), "white"
+        arrowAlpha = 1,
+        mapQuestIcons = "auto",    -- "auto": our ! ? and objective icons off while Questie draws its own; "on"; "off"
+        mapIconScale = 1,
         -- maps
         mapRoute = true,           -- the route line on the world map and minimap
         mapAreas = true,           -- kill/loot areas
@@ -64,12 +74,29 @@ local CHAR_DEFAULTS = {
     trainers = {},        -- [npc name or id] = level when last visited
 }
 
+-- The look a brand-new install starts with (never applied over settings
+-- someone already has).
+local FIRST_LOAD = {
+    skin = "midnight",
+    cardOpacity = 0.9,
+    arrowStyle = "chevron",
+    arrowShowRing = true,
+    cardWidth = 340,
+    cardHeight = 310,
+}
+OXP.FIRST_LOAD = FIRST_LOAD
+
 OXP.OnLoaded(function()
+    local fresh = type(OpenXPDB) ~= "table" or next(OpenXPDB) == nil
     OpenXPDB = OXP.Util.ApplyDefaults(type(OpenXPDB) == "table" and OpenXPDB or {}, ACCOUNT_DEFAULTS)
     OpenXPCharDB = OXP.Util.ApplyDefaults(type(OpenXPCharDB) == "table" and OpenXPCharDB or {}, CHAR_DEFAULTS)
     OXP.db = OpenXPDB
     OXP.char = OpenXPCharDB
     OXP.settings = OpenXPDB.settings
+    if fresh then
+        for k, v in pairs(FIRST_LOAD) do OXP.settings[k] = v end
+        OpenXPDB.firstLook = 1
+    end
     -- Test builds up to 2.0.0-dev could start with the card hidden and
     -- locked (1.x's "lock frames" and "hide the guide window" were copied
     -- over). Once: shown and unlocked; your own choices after that stay.

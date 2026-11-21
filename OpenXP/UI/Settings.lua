@@ -134,7 +134,7 @@ local function Preview(page)
     local card = CreateFrame("Frame", nil, box, "BackdropTemplate")
     card:SetSize(300, 112)
     card:SetPoint("TOP", box, "TOP", 0, -24)
-    Style.Backdrop(card, C.bg, C.border)
+    Style.Backdrop(card, C.bg, C.border, { card = true })
     card.zone = card:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     card.zone:SetPoint("TOPLEFT", 12, -9)
     card.step = card:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -161,22 +161,21 @@ local function Preview(page)
     card.bar:SetSize(85, 5)
     card.bar:SetColorTexture(C.orange[1], C.orange[2], C.orange[3], 1)
     function card:Update()
-        self:SetBackdropColor(unpack(C.bg))
-        self:SetBackdropBorderColor(unpack(C.border))
-        self.line:SetColorTexture(1, 1, 1, Style.skin.line + 0.01)
+        Style.PaintBackdrop(self)
+        self.line:SetColorTexture(1, 1, 1, Style.Frameless() and 0 or Style.skin.line + 0.01)
         Style.SetFont(self.zone, -1)
         Style.SetFont(self.step, -1)
         Style.SetFont(self.title, 3)
         Style.SetFont(self.obj, 1)
         self.zone:SetText(L("ELWYNN FOREST") .. "  |cFF9EA3B31–11|r")
-        self.zone:SetTextColor(unpack(C.text))
+        Style.TextColor(self.zone, C.text)
         self.step:SetText(L("Step 4 / 82"))
-        self.step:SetTextColor(unpack(C.dim))
+        Style.TextColor(self.step, C.dim)
         self.badge:SetKind("kill")
         self.title:SetText(L("Kill Kobold Vermin"))
-        self.title:SetTextColor(unpack(C.text))
+        Style.TextColor(self.title, C.text)
         self.obj:SetText(L("Kobold Vermin slain: 4/8"))
-        self.obj:SetTextColor(unpack(C.text))
+        Style.TextColor(self.obj, C.text)
         self:SetScale(math.min(DB().cardScale or 1, 1.15))
     end
     page.preview = card
@@ -201,8 +200,13 @@ local PAGES = {
     { key = "card", title = L("Guide card"), sub = L("How the step card looks and behaves"), build = function(p)
         Preview(p)
         Heading(p, L("Look"))
-        Dropdown(p, "skin", L("Skin"), L("The card's colours. Minimal is see-through with no borders."),
+        Dropdown(p, "skin", L("Skin"), L("The colours of the card and every OpenXP window. Minimal has no background at all: just the text, outlined."),
             Style.SkinChoices(), "midnight")
+        Slider(p, "cardOpacity", L("Background"), L("How solid the card's and Targets list's background is. 0% shows no background at all."),
+            0, 1, 0.05, Pct)
+        Dropdown(p, "upNextMode", L("Up next"), L("The next steps under the card's step. Folded: one line, click it to open."),
+            { { "show", L("Show") }, { "folded", L("Folded") }, { "hide", L("Hide") } }, "show",
+            function() if OXP.Card then OXP.Card.Refresh(true) end end)
         Slider(p, "fontSize", L("Text size"), L("The size of the step text on the card."), 9, 20, 1,
             function(v) return tostring(v) end)
         Slider(p, "cardScale", L("Card scale"), L("Makes the whole card, buttons and all, bigger or smaller."), 0.7, 1.5, 0.05, Pct)
@@ -239,7 +243,14 @@ local PAGES = {
         sub = OXP.Target.BAKED_ONLY and L("The arrow and how it looks") or L("The arrow and the trips it plans"), build = function(p)
         Heading(p, L("Arrow"))
         Toggle(p, "arrowShown", L("Show the arrow"), L("Points at the step's next spot."))
-        Slider(p, "arrowScale", L("Arrow size"), nil, 0.7, 1.5, 0.05, Pct)
+        Dropdown(p, "arrowStyle", L("Arrow style"), L("The pointer's shape."), OXP.ArrowView.StyleChoices(), "chevron")
+        Dropdown(p, "arrowColor", L("Arrow colour"), L("The skin's colour, white, or red when far turning green as you get close."),
+            { { "skin", L("Skin colour") }, { "distance", L("By distance") }, { "white", L("White") } }, "skin")
+        Toggle(p, "arrowShowRing", L("Circle"), L("The ring and dark disc around the pointer."))
+        Toggle(p, "arrowShowDistance", L("Distance"), L("How far it is, under the arrow."))
+        Toggle(p, "arrowShowLabel", L("Step text"), L("What to do there, under the distance."))
+        Slider(p, "arrowScale", L("Arrow size"), nil, 0.6, 2, 0.05, Pct)
+        Slider(p, "arrowAlpha", L("Arrow opacity"), nil, 0.2, 1, 0.05, Pct)
         Slider(p, "arrowText", L("Arrow text size"), nil, 9, 20, 1, function(v) return tostring(v) end)
         if OXP.Target.BAKED_ONLY then return end
         Heading(p, L("Travel"))
@@ -253,7 +264,10 @@ local PAGES = {
         Toggle(p, "mapRoute", L("Route line"), OXP.Target.BAKED_ONLY and L("SoupEngine's walk to the step's spots.") or L("The way to the step's spots."))
         Toggle(p, "mapAreas", L("Kill and loot areas"), L("Needs Questie for steps that don't name their own area."))
         Toggle(p, "mapPins", L("Step pins and area labels"), L("! where you pick a quest up, ? where you hand one in."))
-        Toggle(p, "mapMobs", L("Mob icons"), L("Skull: kill it. Bag: it drops what you need. Big skull: a rare spawn."))
+        Toggle(p, "mapMobs", L("Mob icons"), L("Sword: kill it. Bag: it drops what you need. Cog: use or talk. Big skull: a rare spawn."))
+        Dropdown(p, "mapQuestIcons", L("Quest icons"), L("Yellow ! to pick up, grey ! for low level, yellow ? to turn in, grey ? not done yet. Auto: off while Questie shows its own."),
+            { { "auto", L("Auto") }, { "on", L("Always") }, { "off", L("Off") } }, "auto")
+        Slider(p, "mapIconScale", L("Map icon size"), nil, 0.6, 1.6, 0.05, Pct)
     end },
     { key = "auto", title = L("Automation"), sub = L("Things done for you (hold Shift to pause)"), build = function(p)
         Heading(p, L("Quests"))
@@ -363,12 +377,12 @@ local function NavButton(def, i)
         self.selected = on
         Style.Fill(self.bg, on and C.raised or { 1, 1, 1, 0 })
         self.bar:SetShown(on)
-        self.text:SetTextColor(unpack(on and { 1, 1, 1 } or C.dim))
+        Style.TextColor(self.text, on and { 1, 1, 1 } or C.dim)
     end
     b:SetScript("OnEnter", function(self)
         if not self.selected then
             Style.Fill(self.bg, { 1, 1, 1 }, 0.05)
-            self.text:SetTextColor(unpack(C.text))
+            Style.TextColor(self.text, C.text)
         end
     end)
     b:SetScript("OnLeave", function(self) self:SetSelected(self.selected) end)

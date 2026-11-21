@@ -162,7 +162,30 @@ function Game:InstallGlobals()
         GetParent = function(self) return self.parent end,
         SetParent = function(self, p) self.parent = p end,
         GetFont = function() return "Fonts\\ARIALN.TTF", 12, "" end,
-        SetFont = function(self) self.fontSet = true return true end,
+        SetFont = function(self, path, size, flags)
+            self.fontSet, self.font = true, { path, size, flags or "" }
+            return true
+        end,
+        -- textures, colours and backdrops keep what they were given, so
+        -- tests can see what a skin or the arrow really painted
+        SetTexture = function(self, t) self.texture = t end,
+        GetTexture = function(self) return self.texture end,
+        SetVertexColor = function(self, r, g, b, a) self.vertex = { r, g, b, a or 1 } end,
+        GetVertexColor = function(self) local c = self.vertex or { 1, 1, 1, 1 } return c[1], c[2], c[3], c[4] end,
+        SetColorTexture = function(self, r, g, b, a) self.texture, self.fill = "color", { r, g, b, a or 1 } end,
+        SetTextColor = function(self, r, g, b, a) self.textColor = { r, g, b, a or 1 } end,
+        GetTextColor = function(self) local c = self.textColor or { 1, 1, 1, 1 } return c[1], c[2], c[3], c[4] end,
+        SetBackdrop = function(self, b) self.backdrop = b end,
+        SetBackdropColor = function(self, r, g, b, a) self.bdColor = { r, g, b, a or 1 } end,
+        GetBackdropColor = function(self) local c = self.bdColor or { 1, 1, 1, 1 } return c[1], c[2], c[3], c[4] end,
+        SetBackdropBorderColor = function(self, r, g, b, a) self.bdBorder = { r, g, b, a or 1 } end,
+        SetRotation = function(self, r) self.rotation = r end,
+        GetRotation = function(self) return self.rotation or 0 end,
+        SetShadowColor = function(self, r, g, b, a) self.shadow = { r, g, b, a or 1 } end,
+        -- animation groups: Play/Stop/IsPlaying like the game's (no time passes)
+        Play = function(self) self.playing = true end,
+        Stop = function(self) self.playing = false end,
+        IsPlaying = function(self) return self.playing or false end,
         IsMouseOver = function() return false end,
         GetChecked = function(self) return self.checked end,
         SetChecked = function(self, v) self.checked = v end,

@@ -15,10 +15,11 @@ Style.WHITE = "Interface\\Buttons\\WHITE8X8"
 local TEX, WHITE = Style.TEX, Style.WHITE
 
 Style.C = {
-    bg = { 14 / 255, 15 / 255, 19 / 255, 0.94 },
-    bgSolid = { 15 / 255, 16 / 255, 20 / 255, 0.98 },
-    panel = { 22 / 255, 24 / 255, 30 / 255, 1 },
-    raised = { 30 / 255, 33 / 255, 41 / 255, 1 },
+    bg = { 13 / 255, 15 / 255, 20 / 255, 0.92 },
+    bgSolid = { 15 / 255, 17 / 255, 22 / 255, 0.98 },
+    panel = { 21 / 255, 24 / 255, 31 / 255, 1 },
+    raised = { 29 / 255, 33 / 255, 42 / 255, 1 },
+    raisedHover = { 40 / 255, 45 / 255, 56 / 255, 1 },
     hover = { 1, 1, 1, 0.06 },
     border = { 1, 1, 1, 0.10 },
     borderStrong = { 1, 1, 1, 0.18 },
@@ -28,6 +29,7 @@ Style.C = {
     faint = { 0.47, 0.50, 0.56 },
     blue = { 90 / 255, 184 / 255, 1 },
     accentDark = { 32 / 255, 78 / 255, 120 / 255 },
+    accentHover = { 42 / 255, 98 / 255, 148 / 255, 1 },
     gold = { 242 / 255, 195 / 255, 92 / 255 },
     orange = { 1, 112 / 255, 67 / 255 },
     red = { 235 / 255, 87 / 255, 87 / 255 },
@@ -37,52 +39,81 @@ Style.C = {
 }
 local C = Style.C
 
--- Skins: the card's look. Each one changes a few of the colours above in
--- place (so everything built from them follows) plus how strong the card's
--- header band, lines and borders are. Pick one under Settings > Guide card.
-local function rgb(r, g, b, a) return { r / 255, g / 255, b / 255, a } end
+-- Skins: the look of the card and every OpenXP window. Each one changes the
+-- colours above in place (so everything built from them follows, see
+-- Style.Paint) plus how strong the card's header band, lines and borders
+-- are. Pick one under Settings > Guide card.
+--   header   alpha of the white wash behind the card's title rows
+--   line     alpha of the card's thin separator lines
+--   frameless (Minimal) no background, border, bands or lines on the card:
+--            just its text, icons and buttons, with outlined text
+local function rgb(r, g, b, a) return { r / 255, g / 255, b / 255, a or 1 } end
 local DEFAULT = {}
 for k, v in pairs(C) do DEFAULT[k] = { v[1], v[2], v[3], v[4] } end
-Style.SKIN_ORDER = { "midnight", "minimal", "glass", "classic", "ember", "forest" }
+Style.SKIN_ORDER = { "midnight", "glass", "minimal", "classic", "ember", "forest" }
 Style.SKINS = {
-    midnight = { name = "Midnight", header = 0.03, line = 0.07 },
-    minimal = { name = "Minimal (transparent)", header = 0, line = 0.05,
-                bg = { 0, 0, 0, 0.32 }, border = { 1, 1, 1, 0 } },
-    glass = { name = "Glass", header = 0.05, line = 0.08,
-              bg = rgb(18, 26, 38, 0.62), border = { 1, 1, 1, 0.16 } },
-    classic = { name = "Classic gold", header = 0.04, line = 0.08,
-                bg = rgb(20, 16, 11, 0.95), border = rgb(196, 160, 86, 0.55),
-                blue = rgb(242, 195, 92), accentDark = rgb(120, 88, 30) },
-    ember = { name = "Ember", header = 0.04, line = 0.07,
-              bg = rgb(22, 13, 12, 0.94), border = rgb(255, 112, 67, 0.25),
-              blue = rgb(255, 128, 76), accentDark = rgb(120, 46, 24) },
-    forest = { name = "Forest", header = 0.04, line = 0.07,
-               bg = rgb(12, 20, 15, 0.94), border = rgb(61, 187, 122, 0.25),
-               blue = rgb(84, 204, 140), accentDark = rgb(28, 92, 58) },
+    midnight = { name = "Midnight", header = 0.035, line = 0.07 },
+    minimal = { name = "Minimal (no background)", header = 0, line = 0, frameless = true, outline = true,
+                bg = { 0, 0, 0, 0 }, border = { 0, 0, 0, 0 } },
+    glass = { name = "Glass", header = 0.05, line = 0.09,
+              bg = rgb(16, 24, 36, 0.66), bgSolid = rgb(18, 26, 38, 0.97), border = rgb(170, 210, 255, 0.20),
+              borderStrong = rgb(170, 210, 255, 0.30), panel = rgb(25, 35, 50), raised = rgb(34, 47, 66),
+              raisedHover = rgb(44, 60, 82), blue = rgb(120, 204, 255), accentDark = rgb(36, 86, 128),
+              accentHover = rgb(48, 108, 158) },
+    classic = { name = "Classic gold", header = 0.045, line = 0.09,
+                bg = rgb(22, 17, 11, 0.95), bgSolid = rgb(24, 19, 12, 0.98), border = rgb(196, 160, 86, 0.55),
+                borderStrong = rgb(214, 178, 100, 0.70), panel = rgb(34, 27, 17), raised = rgb(48, 38, 24),
+                raisedHover = rgb(62, 50, 31),
+                text = rgb(245, 236, 214), dim = rgb(196, 178, 142), faint = rgb(150, 134, 104),
+                blue = rgb(242, 195, 92), accentDark = rgb(120, 88, 30), accentHover = rgb(146, 108, 38) },
+    ember = { name = "Ember", header = 0.04, line = 0.08,
+              bg = rgb(22, 13, 12, 0.94), bgSolid = rgb(24, 14, 13, 0.98), border = rgb(255, 112, 67, 0.28),
+              borderStrong = rgb(255, 128, 86, 0.42), panel = rgb(36, 21, 18), raised = rgb(50, 29, 25),
+              raisedHover = rgb(64, 38, 32), dim = rgb(186, 160, 152), faint = rgb(140, 116, 108),
+              blue = rgb(255, 128, 76), accentDark = rgb(120, 46, 24), accentHover = rgb(148, 58, 30) },
+    forest = { name = "Forest", header = 0.04, line = 0.08,
+               bg = rgb(12, 20, 15, 0.94), bgSolid = rgb(13, 22, 16, 0.98), border = rgb(61, 187, 122, 0.28),
+               borderStrong = rgb(84, 204, 140, 0.42), panel = rgb(19, 31, 23), raised = rgb(27, 42, 32),
+               raisedHover = rgb(36, 54, 42), dim = rgb(154, 180, 162), faint = rgb(110, 134, 118),
+               blue = rgb(84, 204, 140), accentDark = rgb(28, 92, 58), accentHover = rgb(36, 116, 74) },
 }
-local SKINNED = { "bg", "border", "blue", "accentDark" }
+local SKINNED = { "bg", "bgSolid", "panel", "raised", "raisedHover", "border", "borderStrong",
+                  "text", "dim", "faint", "blue", "accentDark", "accentHover" }
 
 --- The skin in use (its table); `Style.skin` after Style.ApplySkin.
 Style.skin = Style.SKINS.midnight
+Style.skinKey = "midnight"
 
 --- Switches the colours to skin `key` (unknown keys: Midnight). The colour
---- tables change in place; windows repaint on SETTINGS_CHANGED.
+--- tables change in place and everything painted with Style.Paint,
+--- Style.Fill, Style.Tint, Style.TextColor or Style.Backdrop is repainted.
 function Style.ApplySkin(key)
-    local skin = Style.SKINS[key] or Style.SKINS.midnight
+    if not Style.SKINS[key] then key = "midnight" end
+    local skin = Style.SKINS[key]
     Style.skin, Style.skinKey = skin, key
     for _, k in ipairs(SKINNED) do
         local from = skin[k] or DEFAULT[k]
+        if skin.frameless and (k == "bgSolid" or k == "panel" or k == "raised" or k == "raisedHover"
+            or k == "borderStrong") then
+            from = DEFAULT[k] -- windows (Settings, Pick a guide) keep a background
+        end
         local to = C[k]
         to[1], to[2], to[3], to[4] = from[1], from[2], from[3], from[4]
     end
-    if Style.RepaintBackdrops then Style.RepaintBackdrops() end
+    if Style.Repaint then Style.Repaint() end
     return skin
 end
 
 -- first in line on a settings change, so every window repaints in the new one
 OXP.Listen("SETTINGS_CHANGED", function()
-    local key = OXP.settings and OXP.settings.skin or "midnight"
-    if Style.skinKey ~= key then Style.ApplySkin(key) end
+    local s = OXP.settings
+    local key = s and s.skin or "midnight"
+    local alpha = s and s.cardOpacity or 1
+    if Style.skinKey ~= key then
+        Style.ApplySkin(key)
+    elseif Style.paintedAlpha ~= alpha and Style.Repaint then
+        Style.Repaint()
+    end
 end)
 
 function Style.SkinChoices()
@@ -92,48 +123,118 @@ function Style.SkinChoices()
     return list
 end
 
+--- How see-through the card's background is (Settings > Guide card >
+--- Background): 0 (none) to 1 (the skin's own).
+function Style.CardOpacity()
+    local v = OXP.settings and OXP.settings.cardOpacity
+    if type(v) ~= "number" then return 1 end
+    return math.max(0, math.min(1, v))
+end
+
+--- True when the card draws no background, border or lines (Minimal skin,
+--- or the background slider at 0).
+function Style.Frameless()
+    return Style.skin.frameless or Style.CardOpacity() <= 0.001
+end
+
 -- spacing: every window uses these, so margins line up everywhere
 Style.S = { xs = 4, sm = 8, md = 12, lg = 16, xl = 24, header = 48, footer = 52, row = 52 }
 local S = Style.S
 
+-- Everything painted from one of the colour tables above is remembered
+-- (weakly) with the table it was painted from, so a skin change can paint
+-- it again: the tables change in place, the textures don't.
+local tinted = setmetatable({}, { __mode = "k" })
+local filled = setmetatable({}, { __mode = "k" })
+local texts = setmetatable({}, { __mode = "k" })
+local backdrops = setmetatable({}, { __mode = "k" })
+
+--- Vertex colour from a colour table (alpha: its own, or the table's).
 function Style.Tint(tex, color, alpha)
+    tinted[tex] = { color, alpha }
     tex:SetVertexColor(color[1], color[2], color[3], alpha or color[4] or 1)
 end
 
+--- A solid colour from a colour table.
 local function Fill(tex, color, alpha)
+    filled[tex] = { color, alpha }
     tex:SetColorTexture(color[1], color[2], color[3], alpha or color[4] or 1)
 end
 Style.Fill = Fill
 
--- every backdrop, with the colour tables it was painted from, so a skin
--- change repaints them (the tables change in place)
-local backdrops = setmetatable({}, { __mode = "k" })
+--- Text colour from a colour table (follows skin changes).
+function Style.TextColor(fs, color, alpha)
+    texts[fs] = { color, alpha }
+    fs:SetTextColor(color[1], color[2], color[3], alpha or 1)
+end
 
---- A 1px-bordered dark backdrop.
-function Style.Backdrop(f, bg, border)
+--- A 1px-bordered backdrop. opts.card: the background follows the card's
+--- Background slider (and vanishes in Minimal).
+function Style.Backdrop(f, bg, border, opts)
     f:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1,
                     insets = { left = 1, right = 1, top = 1, bottom = 1 } })
     bg, border = bg or C.bg, border or C.border
-    backdrops[f] = { bg, border }
-    f:SetBackdropColor(unpack(bg))
-    f:SetBackdropBorderColor(unpack(border))
+    backdrops[f] = { bg, border, opts and opts.card }
+    Style.PaintBackdrop(f)
 end
 
---- Repaints every backdrop in the current skin's colours.
-function Style.RepaintBackdrops()
-    for f, spec in pairs(backdrops) do
-        f:SetBackdropColor(unpack(spec[1]))
-        f:SetBackdropBorderColor(unpack(spec[2]))
+function Style.PaintBackdrop(f)
+    local spec = backdrops[f]
+    if not spec then return end
+    local bg, border = spec[1], spec[2]
+    local a = bg[4] or 1
+    local ba = border[4] or 1
+    if spec[3] then
+        a = a * Style.CardOpacity()
+        -- the border fades out with the background, so 0% really is nothing
+        ba = ba * math.min(1, Style.CardOpacity() * 1.5)
     end
+    f:SetBackdropColor(bg[1], bg[2], bg[3], a)
+    f:SetBackdropBorderColor(border[1], border[2], border[3], ba)
 end
+
+local repaintHooks = {}
+--- fn() runs after every skin or background change (windows with pieces
+--- painted some other way).
+function Style.OnRepaint(fn) repaintHooks[#repaintHooks + 1] = fn end
+
+--- Repaints everything in the current skin's colours.
+function Style.Repaint()
+    Style.paintedAlpha = OXP.settings and OXP.settings.cardOpacity or 1
+    for f in pairs(backdrops) do Style.PaintBackdrop(f) end
+    for tex, spec in pairs(tinted) do
+        local c = spec[1]
+        tex:SetVertexColor(c[1], c[2], c[3], spec[2] or c[4] or 1)
+    end
+    for tex, spec in pairs(filled) do
+        local c = spec[1]
+        tex:SetColorTexture(c[1], c[2], c[3], spec[2] or c[4] or 1)
+    end
+    for fs, spec in pairs(texts) do
+        local c = spec[1]
+        fs:SetTextColor(c[1], c[2], c[3], spec[2] or 1)
+    end
+    for _, fn in ipairs(repaintHooks) do pcall(fn) end
+end
+Style.RepaintBackdrops = Style.Repaint
 
 function Style.FontSize(offset)
     return (OXP.settings and OXP.settings.fontSize or 12) + (offset or 0)
 end
 
 --- Set the chosen font at the card's size (+offset).
+--- Set the chosen font at the card's size (+offset). Card text: in the
+--- Minimal skin (or with no background) it gets an outline so it reads on
+--- any ground, and always a soft shadow.
 function Style.SetFont(fs, offset, flags)
-    OXP.Fonts.Apply(fs, OXP.Fonts.Path(), Style.FontSize(offset), OXP.Fonts.Flags(flags))
+    flags = OXP.Fonts.Flags(flags)
+    local bare = Style.Frameless()
+    if bare and flags == "" then flags = "OUTLINE" end
+    OXP.Fonts.Apply(fs, OXP.Fonts.Path(), Style.FontSize(offset), flags)
+    if fs.SetShadowOffset then
+        fs:SetShadowColor(0, 0, 0, bare and 1 or 0.55)
+        fs:SetShadowOffset(1, -1)
+    end
 end
 
 -- text with a size of its own (window text, button labels): remembered so
@@ -153,7 +254,7 @@ end)
 function Style.Text(parent, size, color, layer)
     local fs = parent:CreateFontString(nil, layer or "OVERLAY", "GameFontHighlight")
     Style.FixedFont(fs, size or 12, "")
-    fs:SetTextColor(unpack(color or C.text))
+    Style.TextColor(fs, color or C.text)
     fs:SetJustifyH("LEFT")
     return fs
 end
@@ -244,28 +345,29 @@ function Style.IconButton(parent, icon, tip, onClick, label)
     btn.icon = btn:CreateTexture(nil, "ARTWORK")
     btn.icon:SetTexture(TEX .. icon)
     btn.icon:SetSize(16, 16)
-    local light = { 159 / 255, 212 / 255, 1 }
-    local idle = label and { C.blue[1], C.blue[2], C.blue[3], 0.16 } or { 1, 1, 1, 0 }
-    btn.bg:SetVertexColor(unpack(idle))
+    local function Idle(b)
+        if label then Style.Tint(b.bg, C.blue, 0.16) else b.bg:SetVertexColor(1, 1, 1, 0) end
+    end
+    Idle(btn)
     if label then
         btn.icon:SetPoint("LEFT", 10, 0)
-        Style.Tint(btn.icon, light)
+        Style.Tint(btn.icon, C.blue)
         btn.label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         Style.FixedFont(btn.label, 13, "")
         btn.label:SetPoint("LEFT", btn.icon, "RIGHT", 6, 0)
         btn.label:SetText(label)
-        btn.label:SetTextColor(light[1], light[2], light[3])
+        Style.TextColor(btn.label, C.text)
     else
         btn.icon:SetPoint("CENTER")
         Style.Tint(btn.icon, { 0.80, 0.82, 0.88 })
     end
     btn:SetScript("OnEnter", function(self)
-        self.bg:SetVertexColor(1, 1, 1, label and 0.14 or 0.08)
+        if label then Style.Tint(self.bg, C.blue, 0.30) else self.bg:SetVertexColor(1, 1, 1, 0.08) end
         if not label then Style.Tint(self.icon, { 1, 1, 1 }) end
         Tooltip(self, tip)
     end)
     btn:SetScript("OnLeave", function(self)
-        self.bg:SetVertexColor(unpack(idle))
+        Idle(self)
         if not label then Style.Tint(self.icon, { 0.80, 0.82, 0.88 }) end
         GameTooltip:Hide()
     end)
@@ -285,7 +387,7 @@ function Style.TextButton(parent, text, tip, onClick)
     btn.label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     btn.label:SetPoint("CENTER")
     Style.FixedFont(btn.label, 12, "")
-    btn.label:SetTextColor(unpack(C.text))
+    Style.TextColor(btn.label, C.text)
     function btn:SetLabel(t)
         self.label:SetText(t)
         self:SetWidth(math.max(70, (self.label:GetStringWidth() or 60) + 18))
@@ -306,8 +408,8 @@ function Style.TextButton(parent, text, tip, onClick)
 end
 
 local BUTTON_KINDS = {
-    primary = { bg = C.accentDark, border = C.blue, hover = { 42 / 255, 98 / 255, 148 / 255, 1 }, text = { 1, 1, 1 } },
-    secondary = { bg = C.raised, border = C.borderStrong, hover = { 40 / 255, 44 / 255, 54 / 255, 1 }, text = C.text },
+    primary = { bg = C.accentDark, border = C.blue, hover = C.accentHover, text = { 1, 1, 1 } },
+    secondary = { bg = C.raised, border = C.borderStrong, hover = C.raisedHover, text = C.text },
     ghost = { bg = { 0, 0, 0, 0 }, border = { 0, 0, 0, 0 }, hover = { 1, 1, 1, 0.06 }, text = C.dim },
     danger = { bg = { 70 / 255, 26 / 255, 26 / 255, 1 }, border = C.red, hover = { 96 / 255, 34 / 255, 34 / 255, 1 }, text = { 1, 0.9, 0.9 } },
 }
@@ -324,7 +426,7 @@ function Style.Button(parent, text, kind, width, onClick, tip)
     Style.FixedFont(b.label, 13, "")
     b.label:SetPoint("CENTER")
     b.label:SetText(text)
-    b.label:SetTextColor(unpack(k.text))
+    Style.TextColor(b.label, k.text)
     b.enabled = true
     function b:SetLabel(t) self.label:SetText(t) end
     function b:SetEnabled(on)
@@ -334,12 +436,12 @@ function Style.Button(parent, text, kind, width, onClick, tip)
     end
     b:SetScript("OnEnter", function(self)
         self:SetBackdropColor(unpack(k.hover))
-        if kind == "ghost" then self.label:SetTextColor(unpack(C.text)) end
+        if kind == "ghost" then Style.TextColor(self.label, C.text) end
         Tooltip(self, tip and text, tip)
     end)
     b:SetScript("OnLeave", function(self)
         self:SetBackdropColor(unpack(k.bg))
-        self.label:SetTextColor(unpack(k.text))
+        Style.TextColor(self.label, k.text)
         GameTooltip:Hide()
     end)
     b:SetScript("OnMouseDown", function(self) self.label:SetPoint("CENTER", 0, -1) end)
@@ -537,7 +639,7 @@ function Style.Dropdown(parent, width, choices, get, set)
             row:SetPoint("TOPRIGHT", -1, -1 - (i - 1) * 24)
             row.value, row.owner = c[1], self
             row.text:SetText(c[2])
-            row.text:SetTextColor(unpack(c[1] == cur and C.blue or C.text))
+            Style.TextColor(row.text, c[1] == cur and C.blue or C.text)
             row.check:SetShown(c[1] == cur)
             row:Show()
         end
@@ -565,7 +667,7 @@ function Style.SearchBox(parent, width, placeholder, onChange)
     box:SetAutoFocus(false)
     box:SetTextInsets(28, 24, 0, 0)
     OXP.Fonts.Apply(box, OXP.Fonts.Path(), 12, "")
-    box:SetTextColor(unpack(C.text))
+    Style.TextColor(box, C.text)
     box.icon = box:CreateTexture(nil, "ARTWORK")
     box.icon:SetTexture("Interface\\Common\\UI-Searchbox-Icon")
     box.icon:SetSize(14, 14)
@@ -780,7 +882,7 @@ function Style.Badge(parent, size)
             self.icon:Hide()
             OXP.Fonts.Apply(self.glyph, OXP.Fonts.Path(), math.floor(size * 0.6), "")
             self.glyph:SetText(k.glyph)
-            self.glyph:SetTextColor(unpack(k.color))
+            Style.TextColor(self.glyph, k.color)
             self.glyph:Show()
         else
             self.glyph:Hide()

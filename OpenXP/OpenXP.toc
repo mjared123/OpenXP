@@ -3,7 +3,7 @@
 ## Notes: Free, community-made leveling guides for WoW Forever
 ## Author: OpenXP contributors
 ## X-License: GPL-3.0 (see LICENSE; 1-20 guides adapted from PoleStar, see NOTICE.md)
-## Version: 2.0.0-dev2
+## Version: 2.0.0-dev3
 ## Category: Quests
 ## IconTexture: Interface\AddOns\OpenXP\Media\openxp_logo-64
 ## OptionalDeps: Questie
@@ -56,6 +56,7 @@ Nav\PathHints.lua
 Nav\WalkGraph.lua
 Nav\WalkPaths.lua
 Nav\Target.lua
+Nav\ArrowView.lua
 Nav\Arrow.lua
 Nav\MapDraw.lua
 Nav\Pins.lua
@@ -63,6 +64,7 @@ Nav\Pins.lua
 # UI
 UI\Style.lua
 UI\Card.lua
+UI\StepNavigator.lua
 UI\ActionButtons.lua
 UI\Automation.lua
 UI\Timers.lua

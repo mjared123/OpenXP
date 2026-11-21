@@ -78,13 +78,13 @@ box:SetMovable(true)
 box:EnableMouse(true)
 box:RegisterForDrag("LeftButton")
 box:SetFrameStrata("MEDIUM")
-Style.Backdrop(box, C.bg, C.border)
+Style.Backdrop(box, C.bg, C.border, { card = true })
 box.title = box:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 box.title:SetPoint("TOPLEFT", 8, -5)
-box.title:SetTextColor(unpack(C.dim))
+Style.TextColor(box.title, C.dim)
 box.key = box:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 box.key:SetPoint("TOPRIGHT", -8, -5)
-box.key:SetTextColor(unpack(C.faint))
+Style.TextColor(box.key, C.faint)
 box:Hide()
 
 local rows = {}
@@ -324,7 +324,7 @@ function Buttons.PaintRows()
             end
             if fontPath then OXP.Fonts.Apply(r.text, fontPath, 12, "") end
             r.text:SetText(r.unitName)
-            r.text:SetTextColor(unpack(r.done and C.faint or C.text))
+            Style.TextColor(r.text, r.done and C.faint or C.text)
         end
     end
     local key = GetBindingKey and GetBindingKey("CLICK OpenXPTargetButton:LeftButton")

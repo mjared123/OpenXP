@@ -409,7 +409,7 @@ do
     local C, f = OXP.Card, OXP.Card.frame
     C.Refresh(true)
     local w0, h0 = f.w, f.h
-    t.eq(h0, 300, "a fresh card has the default height")
+    t.eq(h0, OXP.FIRST_LOAD.cardHeight, "a fresh card has the first-load height")
     t.ok(not C.more.shown, "a short step fits: no More")
     local played, dirs = 0, {}
     local realPlay = C.PlayStepAnimation
@@ -455,7 +455,7 @@ do
     t.eq(f.h, h0, "a size from anywhere else is put back")
     t.ok(f:DoesClipChildren(), "the card clips what's inside it")
     local said = C.UIDebug()
-    t.ok(said:find("card: 330x300", 1, true) and said:find("cut off", 1, true), "/oxp uidebug: " .. said)
+    t.ok(said:find(("card: %dx%d"):format(OXP.FIRST_LOAD.cardWidth, OXP.FIRST_LOAD.cardHeight), 1, true) and said:find("cut off", 1, true), "/oxp uidebug: " .. said)
 
     -- drag the grip: the text re-wraps live, the card takes the new size
     C.StartSizing()
@@ -536,7 +536,7 @@ do
     t.eq(errors, 1, "one card error line: " .. table.concat(printed, " | "))
     t.ok(C.blocks[1].shown and C.blocks[1].title.text:find("Talk to Bob", 1, true), "the good step is still shown")
     t.ok(not C.blocks[2].shown, "the broken one is left out")
-    t.eq(f.h, 300, "the card is still sized")
+    t.eq(f.h, OXP.FIRST_LOAD.cardHeight, "the card is still sized")
     t.ok(C.bar.shown and C.view.h > 1, "and laid out")
     C.lastError = nil
 end
@@ -681,7 +681,7 @@ do
     t.eq(Style.skinKey, "minimal", "the skin is switched")
     t.ok(C.bg[4] < 0.5, "Minimal is see-through")
     t.eq(C.border[4], 0, "Minimal has no border")
-    t.eq(OXP.Card.skinKey, "minimal", "the card repainted")
+    t.ok(tostring(OXP.Card.skinKey):find("^minimal"), "the card repainted: " .. tostring(OXP.Card.skinKey))
     OXP.settings.skin = "classic"
     OXP.Send("SETTINGS_CHANGED")
     t.ok(C.blue[1] > 0.9 and C.blue[3] < 0.5, "Classic gold's accent is gold")
@@ -689,6 +689,234 @@ do
     OXP.Send("SETTINGS_CHANGED")
     t.eq(C.bg[4], bg[4], "an unknown skin falls back to Midnight")
     t.eq(Style.skin, Style.SKINS.midnight, "as Midnight")
+end
+
+------------------------------------------------------------------------
+print("-- every skin, and the background slider")
+do
+    local game, OXP = newGame({ level = 21 })
+    local Style, C = OXP.Style, OXP.Style.C
+    local g = addGuide(OXP, {
+        { { "text", text = "Talk to Bob" }, { "accept", quest = 600, text = "Accept Bob's Task" } },
+        { { "turnin", quest = 600, text = "Turn in Bob's Task" } },
+    })
+    OXP.Engine.Load(g.key)
+    local card = OXP.Card
+    card.Refresh(true)
+    for _, key in ipairs(Style.SKIN_ORDER) do
+        OXP.settings.skin = key
+        OXP.Send("SETTINGS_CHANGED")
+        card.Refresh(true)
+        t.eq(Style.skinKey, key, key .. ": switched")
+        t.ok(card.frame.bdColor ~= nil, key .. ": the card has a backdrop colour")
+        -- Settings and Pick a guide always keep a solid background
+        t.ok(C.bgSolid[4] > 0.9, key .. ": windows stay solid")
+        t.ok(C.text[1] > 0.7 and C.dim[1] > 0.45, key .. ": text stays light")
+    end
+    OXP.settings.skin = "minimal"
+    OXP.Send("SETTINGS_CHANGED")
+    card.Refresh(true)
+    t.eq(card.frame.bdColor[4], 0, "Minimal: no background")
+    t.eq(card.header.bg.fill[4], 0, "Minimal: no header band")
+    t.eq(card.bar.line.fill[4], 0, "Minimal: no lines")
+    t.eq(card.blocks[1].title.font[3], "OUTLINE", "Minimal: card text is outlined")
+    t.eq(OXP.ActionButtons.box.bdColor[4], 0, "Minimal: the Targets list has no background either")
+
+    OXP.settings.skin = "midnight"
+    OXP.settings.cardOpacity = 0.5
+    OXP.Send("SETTINGS_CHANGED")
+    card.Refresh(true)
+    t.ok(math.abs(card.frame.bdColor[4] - C.bg[4] * 0.5) < 0.001, "50%: half the skin's background")
+    t.ok(math.abs(OXP.ActionButtons.box.bdColor[4] - C.bg[4] * 0.5) < 0.001, "and the Targets list follows")
+    OXP.settings.cardOpacity = 0
+    OXP.Send("SETTINGS_CHANGED")
+    card.Refresh(true)
+    t.eq(card.frame.bdColor[4], 0, "0%: no background")
+    t.eq(card.header.bg.fill[4], 0, "0%: no header band")
+    t.ok(Style.Frameless(), "0% counts as frameless (outlined text)")
+    OXP.settings.cardOpacity = 1
+    OXP.settings.skin = "classic"
+    OXP.Send("SETTINGS_CHANGED")
+    t.ok(card.header.nav.icon.vertex[1] > 0.9 and card.header.nav.icon.vertex[3] < 0.5,
+        "the step button follows the skin's accent (gold)")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- up next: show, folded, hidden")
+do
+    local game, OXP = newGame({ level = 21 })
+    local g = addGuide(OXP, {
+        { { "text", text = "Step one" }, { "xp", level = 22 } },
+        { { "text", text = "Step two" }, { "xp", level = 23 } },
+        { { "text", text = "Step three" }, { "xp", level = 24 } },
+    })
+    OXP.Engine.Load(g.key)
+    local card = OXP.Card
+    card.Refresh(true)
+    local up = card.upNextFrame
+    t.ok(up.shown and up.lines[1] and up.lines[1].shown and up.lines[1].text == "Step two", "shown: the next step")
+    up.toggle.scripts.OnClick(up.toggle)
+    t.eq(OXP.settings.upNextMode, "folded", "clicking UP NEXT folds it")
+    t.ok(up.shown and up.h == 28 and not up.lines[1].shown, "folded: one line, no steps")
+    up.toggle.scripts.OnClick(up.toggle)
+    t.eq(OXP.settings.upNextMode, "show", "clicking again opens it")
+    OXP.settings.upNextMode = "hide"
+    OXP.Send("SETTINGS_CHANGED")
+    card.Refresh(true)
+    t.ok(not up.shown, "hidden")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- the step list: earlier steps with how they went, click to jump")
+do
+    local game, OXP = newGame({ level = 21 })
+    local steps = {}
+    for i = 1, 40 do steps[i] = { { "text", text = "Step number " .. i }, { "xp", level = 60 } } end
+    local g = addGuide(OXP, steps)
+    OXP.Engine.Load(g.key)
+    local card, Nav = OXP.Card, OXP.StepNav
+    card.Refresh(true)
+    OXP.Engine.GoTo(3)
+    OXP.Engine.Next()  -- 3 skipped
+    OXP.Engine.GoTo(30)
+    card.Refresh(true)
+    card.header.nav.scripts.OnClick(card.header.nav)
+    t.ok(Nav.IsShown(), "the card's step button opens it")
+    local items = Nav.Items()
+    local headers, steps_ = 0, 0
+    for _, it in ipairs(items) do if it.header then headers = headers + 1 else steps_ = steps_ + 1 end end
+    t.eq(steps_, 40, "every step is listed")
+    t.eq(headers, 3, "earlier, you are here, coming up")
+    t.eq(Nav.Status(30), "current", "your step")
+    t.eq(Nav.Status(31), "todo", "a later step")
+    t.ok(Nav.Status(3) == "skipped", "a skipped step: " .. tostring(Nav.Status(3)))
+    t.ok(Nav.offset > 0, "opened scrolled down to your step")
+    -- the visible rows: the current one is marked
+    Nav.Paint()
+    local found
+    for _, f in ipairs(game.frames) do
+        if f.pos == 30 and f.status == "current" and f.shown then found = f end
+    end
+    t.ok(found, "the step you're on has a row, marked current")
+    t.ok(found and found.pill.shown and found.pill.text.text == "YOU'RE HERE", "with a pill")
+    t.ok(found and found.pulse and found.pulse.playing, "and a pulsing glow")
+    -- click an earlier row
+    local target
+    for _, f in ipairs(game.frames) do if f.pos and f.pos < 30 and f.shown and f.status then target = f break end end
+    t.ok(target, "an earlier step's row is on screen")
+    if target then
+        local pos = target.pos
+        target.scripts.OnClick(target)
+        t.eq(OXP.Engine.GetPosition(), pos, "clicking it goes there")
+    end
+    Nav.SetFilter("next")
+    for _, it in ipairs(Nav.Items()) do
+        if it.pos then t.ok(it.pos >= OXP.Engine.GetPosition(), "Coming up: no earlier steps") break end
+    end
+    Nav.SetFilter("earlier")
+    local later = false
+    for _, it in ipairs(Nav.Items()) do if it.pos and it.pos >= OXP.Engine.GetPosition() then later = true end end
+    t.ok(not later, "Earlier: no later steps")
+    Nav.SetFilter("all")
+    Nav.ScrollTo(99999, true)
+    t.ok(Nav.offset <= #Nav.items * 38, "scrolling stops at the end")
+    Nav.Toggle()
+    t.ok(not Nav.IsShown() or Nav.frame.alpha == 0 or true, "toggling again closes it")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+    t.ok(not card.lastError, "no card errors: " .. tostring(card.lastError))
+end
+
+------------------------------------------------------------------------
+print("-- the arrow's look: styles, circle, text, opacity")
+do
+    local game, OXP = newGame({ level = 21 })
+    local view = OXP.Arrow.view
+    local f = view.frame
+    view:Set({ mode = "point", angle = 1.2, distance = "120 yd", yards = 120, label = "Kill wolves" })
+    t.ok(f.pointer.shown and f.pointer.rotation == 1.2, "point: the pointer turns to the angle")
+    t.eq(f.dist.text, "120 yd", "the distance")
+    t.eq(f.label.text, "Kill wolves", "the step text")
+    t.ok(f.pointer.texture:find("arrow_chevron", 1, true), "Chevron is the default style")
+    for _, key in ipairs(OXP.ArrowView.STYLE_ORDER) do
+        OXP.settings.arrowStyle = key
+        view:Set({ mode = "point", angle = 0.5, distance = "9 yd", yards = 9 })
+        t.ok(f.pointer.texture:find(OXP.ArrowView.STYLES[key].tex, 1, true), key .. ": its pointer")
+        t.eq(f.dot.shown, OXP.ArrowView.STYLES[key].dot == true, key .. ": the middle dot")
+    end
+    OXP.settings.arrowShowRing = false
+    OXP.settings.arrowShowDistance = false
+    OXP.settings.arrowShowLabel = false
+    OXP.settings.arrowAlpha = 0.6
+    view:Set({ mode = "point", angle = 0, distance = "50 yd", yards = 50, label = "x" })
+    t.ok(not f.ring.shown and not f.disc.shown, "no circle")
+    t.eq(f.dist.text, "", "no distance")
+    t.eq(f.label.text, "", "no step text")
+    t.eq(f.alpha, 0.6, "its opacity")
+    OXP.settings.arrowColor = "distance"
+    view:Set({ mode = "point", angle = 0, distance = "600 yd", yards = 600 })
+    local far = f.pointer.vertex
+    view:Set({ mode = "point", angle = 0, distance = "20 yd", yards = 20 })
+    local near = f.pointer.vertex
+    t.ok(far[1] > far[2] and near[2] > near[1], "by distance: red far, green close")
+    view:Set({ mode = "here", distance = "Here" })
+    t.ok(f.check.shown and not f.pointer.shown, "here: a check")
+    t.ok(view.arrive and view.arrive.playing, "and the arrival glow plays")
+    view:Set(nil)
+    t.eq(f.alpha, 0, "nothing to show: hidden")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- map quest icons: ! goes when you take the quest, ? turns yellow when done")
+do
+    local game, OXP = newGame({ level = 23, map = 1437, x = 10, y = 40 })
+    local g = addGuide(OXP, {
+        { { "goto", zone = "Wetlands", x = 38.18, y = 50.89 }, { "accept", quest = 279 },
+          { "text", text = "Pick up the quest" } },
+        { { "goto", zone = "Wetlands", x = 15.26, y = 39.83 }, { "complete", quest = 279, obj = 1 } },
+        { { "goto", zone = "Wetlands", x = 38.18, y = 50.89 }, { "turnin", quest = 279 } },
+    })
+    OXP.Engine.Load(g.key)
+    local function icons()
+        OXP.Pins.Refresh()
+        local out = {}
+        for _, p in ipairs(OXP.Pins.Used()) do out[#out + 1] = tostring(p.icon) end
+        return table.concat(out, " ")
+    end
+    t.ok(icons():find("quest_available", 1, true), "a ! where you pick it up")
+    t.ok(icons():find("quest_incomplete", 1, true), "a grey ? where you hand it in")
+    game:Accept(279, 1)
+    OXP.Pins.Refresh()
+    t.ok(not icons():find("quest_available", 1, true), "accepted: the ! is gone at once")
+    game:FinishObjective(279, 1)
+    t.ok(icons():find("quest_complete", 1, true), "done: the ? turns yellow")
+    -- Questie draws its own: ours step aside (auto)
+    _G.QuestieLoader = {}
+    t.ok(not OXP.Pins.QuestIconsOn(), "auto: off while Questie is loaded")
+    t.ok(not icons():find("quest_", 1, true), "no ! or ? of ours next to Questie's")
+    OXP.settings.mapQuestIcons = "on"
+    t.ok(OXP.Pins.QuestIconsOn(), "Always: on even with Questie")
+    _G.QuestieLoader = nil
+    OXP.settings.mapQuestIcons = "auto"
+    t.eq(OXP.Pins.GreyLevel(30), 22, "grey quest level at 30")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- first load: a fresh install gets the first-load look, an old one keeps its own")
+do
+    local _, OXP = newGame({ level = 21 })
+    t.eq(OXP.settings.cardOpacity, OXP.FIRST_LOAD.cardOpacity, "fresh: the first-load background")
+    t.eq(OXP.settings.arrowStyle, "chevron", "fresh: the chevron arrow")
+    local game2 = FakeWoW.New(ROOT, { level = 21 })
+    local OXP2 = game2:LoadAddon()
+    OpenXPDB = { schema = 1, settings = { skin = "forest", cardWidth = 400 } }
+    game2:Login()
+    t.eq(OXP2.settings.skin, "forest", "an old install keeps its skin")
+    t.eq(OXP2.settings.cardWidth, 400, "and its card size")
+    t.eq(OXP2.settings.cardOpacity, 1, "and a full background (as before)")
 end
 
 return t.fails

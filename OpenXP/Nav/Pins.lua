@@ -28,7 +28,19 @@ local ICON = {
     accept = MAP .. "accept", turnin = MAP .. "turnin", turninGrey = MAP .. "turnin_grey",
     kill = MAP .. "kill", loot = MAP .. "loot", chest = MAP .. "chest", object = MAP .. "object",
     talk = MAP .. "talk", boss = MAP .. "boss",
+    -- the quest icons players know: yellow "!" to pick up, grey for a low
+    -- level quest, yellow "?" to hand in, grey while it isn't done
+    available = MAP .. "quest_available", availableGrey = MAP .. "quest_available_grey",
+    complete = MAP .. "quest_complete", incomplete = MAP .. "quest_incomplete",
 }
+-- objective marks (pfQuest's, MIT: Media/Map/pfQuest/README.md); one size,
+-- tinted by what to do
+local OBJ = {
+    slay = { MAP .. "pfQuest\\slay_mono", { 1, 0.55, 0.50 } },
+    loot = { MAP .. "pfQuest\\loot_mono", { 1, 0.84, 0.42 } },
+    object = { MAP .. "pfQuest\\object_mono", { 0.52, 0.88, 1 } },
+}
+Pins.OBJ = OBJ
 Pins.ICON = ICON
 -- ring colours of the numbered step badges, by what the step is
 local COLORS = {
@@ -135,8 +147,9 @@ local function Style(f, o, size)
     f.tex:SetShown(o.icon ~= nil)
     f.icon = o.icon
     if o.icon then
-        f.tex:SetTexture(IconFile(o.icon, size, f))
-        f.tex:SetVertexColor(1, 1, 1, o.alpha or 1)
+        f.tex:SetTexture(o.single and o.icon or IconFile(o.icon, size, f))
+        local c = o.tint or { 1, 1, 1 }
+        f.tex:SetVertexColor(c[1], c[2], c[3], o.alpha or 1)
     end
     local font, flags = OXP.Fonts.Path(), "OUTLINE"
     local n = o.num and tostring(o.num) or ""
@@ -164,7 +177,7 @@ local function Take(o)
         p = NewPin()
         pool[used] = p
     end
-    local size = o.size or 16
+    local size = (o.size or 16) * (OXP.settings.mapIconScale or 1)
     Style(p, o, size)
     Style(p.mini, o, size * 0.8)
     local font = OXP.Fonts.Path()
@@ -251,32 +264,137 @@ local function StepKind(step)
     return Card and Card.StepKind and Card.StepKind(step) or "travel"
 end
 
--- a turn-in step whose quests aren't all ready yet
-local function NotReady(step)
-    for _, g in ipairs(step.goals) do
-        if g[1] == "turnin" and g.quest and not OXP.Quests.IsComplete(g.quest) then return true end
-    end
-    return false
+--- True while OpenXP draws its own quest "!"/"?" and objective icons:
+--- Settings > Maps > Quest icons ("auto": not while Questie draws its own).
+function Pins.QuestIconsOn()
+    local mode = OXP.settings.mapQuestIcons or "auto"
+    if mode == "off" then return false end
+    if mode == "on" then return true end
+    local questie = _G.QuestieLoader ~= nil or (IsAddOnLoaded and IsAddOnLoaded("Questie"))
+        or (C_AddOns and C_AddOns.IsAddOnLoaded and C_AddOns.IsAddOnLoaded("Questie"))
+    return not questie
 end
+
+--- The highest quest level that's grey (trivial) for a player of `level`.
+function Pins.GreyLevel(level)
+    if level <= 5 then return 0 end
+    if level <= 39 then return level - 5 - math.floor(level / 10) end
+    return level - 1 - math.floor(level / 5)
+end
+
+local function Difficulty(ql)
+    local pl = OXP.Player.level or 1
+    if not ql or ql <= 0 then return "FFFFD100" end
+    local d = ql - pl
+    if d >= 5 then return "FFFF1A1A" end
+    if d >= 3 then return "FFFF8040" end
+    if d >= -2 then return "FFFFFF00" end
+    if ql > Pins.GreyLevel(pl) then return "FF40C040" end
+    return "FF808080"
+end
+Pins.Difficulty = Difficulty
+
+-- "[24] The Missing Diplomat", coloured by how hard it is for you
+local function QuestHead(id)
+    local info = OXP.QuestDB.Info(id) or {}
+    local lvl = info.l and info.l > 0 and ("[" .. info.l .. "] ") or ""
+    return C(Difficulty(info.l), lvl .. OXP.QuestDB.QuestName(id))
+end
+Pins.QuestHead = QuestHead
+
+-- What a step still asks for, right now (not what it asked for when the
+-- guide was written): the quests to pick up that aren't in your log, the
+-- quests to hand in, and whether those are done.
+local function OpenGoals(step)
+    local accepts, turnins = {}, {}
+    for _, g in ipairs(step.goals) do
+        if g.quest and OXP.Goals.State(g, step.marks) == "todo" then
+            if g[1] == "accept" and not OXP.Quests.IsOnQuest(g.quest) and not OXP.Quests.IsTurnedIn(g.quest) then
+                accepts[#accepts + 1] = g.quest
+            elseif g[1] == "turnin" and not OXP.Quests.IsTurnedIn(g.quest) then
+                turnins[#turnins + 1] = g.quest
+            end
+        end
+    end
+    return accepts, turnins
+end
+Pins.OpenGoals = OpenGoals
+
+-- The quest icon for a step's open pick-ups and hand-ins, and its tooltip.
+local function QuestIcon(step, pos, kind)
+    local accepts, turnins = OpenGoals(step)
+    if #turnins > 0 then
+        local ready = 0
+        for _, q in ipairs(turnins) do if OXP.Quests.IsComplete(q) then ready = ready + 1 end end
+        local tip = {}
+        for i, q in ipairs(turnins) do
+            local done = OXP.Quests.IsComplete(q)
+            tip[#tip + 1] = i == 1 and QuestHead(q) or QuestHead(q)
+            tip[#tip + 1] = done and C(HEX.green, L("Ready to turn in")) or C(HEX.grey, L("Not done yet"))
+            if not done then
+                for o = 1, 8 do
+                    local ob = OXP.Quests.GetObjective(q, o)
+                    if not ob then break end
+                    tip[#tip + 1] = { "  " .. Strip(ob.text or ""), ob.done and C(HEX.green, L("done")) or "" }
+                end
+            end
+        end
+        local info = OXP.QuestDB.Info(turnins[1]) or {}
+        if info.f and info.f[1] then tip[#tip + 1] = C(HEX.grey, L("Turn in to") .. " " .. info.f[1]) end
+        tip[#tip + 1] = C(HEX.grey, ("%s %d"):format(L("Step"), pos))
+        return ready > 0 and ICON.complete or ICON.incomplete, tip
+    end
+    if #accepts > 0 then
+        local grey = true
+        local pl = OXP.Player.level or 1
+        local tip = {}
+        for _, q in ipairs(accepts) do
+            local info = OXP.QuestDB.Info(q) or {}
+            if not info.l or info.l <= 0 or info.l > Pins.GreyLevel(pl) then grey = false end
+            tip[#tip + 1] = QuestHead(q)
+            if info.r and info.r > pl then tip[#tip + 1] = C("FFFF6060", (L("Needs level %d")):format(info.r)) end
+        end
+        local info = OXP.QuestDB.Info(accepts[1]) or {}
+        if info.s and info.s[1] then tip[#tip + 1] = C(HEX.grey, L("Started by") .. " " .. info.s[1]) end
+        tip[#tip + 1] = C(HEX.grey, ("%s %d"):format(L("Step"), pos))
+        return grey and ICON.availableGrey or ICON.available, tip
+    end
+end
+Pins.QuestIcon = QuestIcon
+
+-- The step's kind from what it still asks for: a pickup step whose quests
+-- are all in your log is now about its other goals.
+local function LiveKind(step)
+    local accepts, turnins = OpenGoals(step)
+    if #accepts > 0 then return "accept" end
+    if #turnins > 0 then return "turnin" end
+    local open = { goals = {} }
+    for _, g in ipairs(step.goals) do
+        if not ((g[1] == "accept" or g[1] == "turnin") and g.quest) then open.goals[#open.goals + 1] = g end
+    end
+    return StepKind(open)
+end
+Pins.LiveKind = LiveKind
 
 local function AddSteps()
     local current = Engine.GetPosition()
+    local quests = Pins.QuestIconsOn()
     for i, e in ipairs(Pins.Steps()) do
         local pos, step = e[1], e[2]
         local spot = OXP.Areas.StepSpot(step)
         if spot then
-            local kind = StepKind(step)
             local now = i == 1 or pos == current
-            local tip = StepTip(step, pos, kind)
+            local icon, qtip
+            if quests then icon, qtip = QuestIcon(step, pos) end
             local p
-            if kind == "accept" or kind == "turnin" then
-                local icon = kind == "accept" and ICON.accept or (NotReady(step) and ICON.turninGrey or ICON.turnin)
-                p = Take({ icon = icon, size = now and 26 or 20, tag = pos, glow = now,
-                           alpha = now and 1 or 0.92, tip = tip })
+            if icon then
+                p = Take({ icon = icon, size = now and 24 or 19, tag = pos, glow = now,
+                           alpha = 1, tip = qtip })
             else
+                local kind = LiveKind(step)
                 local c = COLORS[kind] or COLORS.travel
                 p = Take({ ring = c, num = pos, size = now and 26 or 20, glow = now,
-                           alpha = now and 1 or 0.92, tip = tip })
+                           alpha = now and 1 or 0.92, tip = StepTip(step, pos, kind) })
             end
             Place(p, spot.map, spot.x, spot.y, 3, now and "edge" or true) -- 3: zone and continent maps
         end
@@ -303,7 +421,7 @@ local function AddAreas()
 end
 
 local function AddMobs()
-    if OXP.settings.mapMobs == false then return end
+    if OXP.settings.mapMobs == false or not Pins.QuestIconsOn() then return end
     local seen, count = {}, 0
     for _, pos in ipairs(Engine.GetActive()) do
         local step = Engine.GetSteps()[pos]
@@ -323,28 +441,34 @@ local function AddMobs()
                         seen[key] = true
                         local few = (per[src] or 0) <= FEW and src.kind == "NPC"
                         local o = OXP.Quests.GetObjective(g.quest, g.obj)
+                        -- tooltip like the quest addons': the quest, what to do, your progress
                         local tip = { src.name or "?" }
-                        local icon
+                        local obj
                         if src.kind == "Object" then
-                            icon = src.item and ICON.chest or ICON.object
+                            obj = OBJ.object
                             tip[2] = src.item and C(HEX.loot, L("Has") .. " " .. src.item) or C(HEX.loot, L("Use it"))
                         elseif src.item then
-                            icon = ICON.loot
+                            obj = OBJ.loot
                             tip[2] = C(HEX.loot, L("Drops") .. " " .. src.item)
                         elseif okind == "talk" then
-                            icon = ICON.talk
+                            obj = OBJ.object
                             tip[2] = C(HEX.travel, L("Talk to them"))
                         else
-                            icon = ICON.kill
+                            obj = OBJ.slay
                             tip[2] = C(HEX.kill, L("Kill it"))
                         end
-                        if few then icon = ICON.boss end
-                        local line = quest
-                        if o and o.need and o.need > 0 then line = { quest, (o.have or 0) .. "/" .. o.need } end
-                        tip[3] = line
-                        tip[4] = C(HEX.grey, ("%s %d"):format(L("Step"), pos))
-                        local p = Take({ icon = icon, size = few and 20 or 13, label = few and src.name or nil,
-                                         alpha = few and 1 or 0.95, tip = tip })
+                        tip[3] = QuestHead(g.quest)
+                        if o and o.need and o.need > 0 then
+                            tip[4] = { "  " .. Strip(o.text or quest):gsub(":%s*%d+%s*/%s*%d+%s*$", ""),
+                                       (o.have or 0) .. "/" .. o.need }
+                        end
+                        tip[#tip + 1] = C(HEX.grey, ("%s %d"):format(L("Step"), pos))
+                        local p
+                        if few then
+                            p = Take({ icon = ICON.boss, size = 20, label = src.name, alpha = 1, tip = tip })
+                        else
+                            p = Take({ icon = obj[1], tint = obj[2], single = true, size = 14, alpha = 1, tip = tip })
+                        end
                         if Place(p, map, x, y, 0, few and true or nil) then
                             count = count + 1
                         else
@@ -380,6 +504,9 @@ function Pins.Used()
 end
 
 local function Soon() OXP.Soon("PINS", Pins.Refresh) end
-for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "SETTINGS_CHANGED" }) do
+-- QUESTS_CHANGED: accepting, finishing or handing in a quest changes its
+-- icon at once ("!" gone, objectives shown, "?" turning yellow), even while
+-- the step itself stays put
+for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "SETTINGS_CHANGED", "QUESTS_CHANGED" }) do
     OXP.Listen(m, Soon)
 end
