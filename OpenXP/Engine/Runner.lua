@@ -27,7 +27,27 @@ local lastSignature
 -- Building a run
 ------------------------------------------------------------------------
 
+-- Mark each "reach" that leads into another zone (the spot before it in the
+-- guide is in a different zone): it also counts once you're out in that
+-- zone (Engine/Goals.lua). Done once per guide.
+local function markEntries(guide)
+    if guide.entriesMarked then return end
+    guide.entriesMarked = true
+    local last
+    for _, data in ipairs(guide.steps) do
+        for _, goal in ipairs(data) do
+            local k = goal[1]
+            if (k == "goto" or k == "reach" or k == "area") and goal.zone then
+                local zone = OXP.Places.MapID(goal.zone)
+                if k == "reach" and last and zone and zone ~= last then goal.entry = true end
+                last = zone or last
+            end
+        end
+    end
+end
+
 local function buildSteps(guide)
+    markEntries(guide)
     local steps = {}
     for index, data in ipairs(guide.steps) do
         if Filters.Matches(data.only) then

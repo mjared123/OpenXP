@@ -42,3 +42,24 @@ function Util.PlaceKey(s)
     s = s:lower():gsub("[%p]", " "):gsub("%s+", " ")
     return Util.Trim(s)
 end
+
+-- Map icons come in 128, 64 and 32 px (Media/Map/name, name_64, name_32):
+-- the game draws addon textures without mipmaps, so a big file shrunk to a
+-- few pixels comes out jagged. Pick the smallest file at least as big as the
+-- icon on screen (in real pixels: Retina and UI scale counted).
+local pixelRatio
+function Util.PixelsPerPoint()
+    if pixelRatio then return pixelRatio end
+    local h = GetPhysicalScreenSize and select(2, GetPhysicalScreenSize())
+    pixelRatio = (h and h > 0) and h / 768 or 1
+    return pixelRatio
+end
+
+--- The file of a map icon for `size` points on `region` (its scale counted).
+function Util.IconFile(base, size, region)
+    local scale = region and region.GetEffectiveScale and region:GetEffectiveScale() or 1
+    local px = (size or 16) * (scale or 1) * Util.PixelsPerPoint()
+    if px <= 36 then return base .. "_32" end
+    if px <= 72 then return base .. "_64" end
+    return base
+end

@@ -51,9 +51,22 @@ do
 end
 
 ------------------------------------------------------------------------
-print("-- shipped guide data")
+print("-- only your own faction's guides are loaded (memory)")
 do
     local game, OXP = newGame({ faction = "Alliance" })
+    game:Login()
+    local horde = 0
+    for _, g in ipairs(OXP.Registry.All()) do if g.faction == "Horde" then horde = horde + 1 end end
+    t.eq(horde, 0, "an Alliance character loads no Horde guide data")
+    t.ok(#OXP.Registry.All() >= 70, "but all of its own: " .. #OXP.Registry.All())
+end
+
+------------------------------------------------------------------------
+print("-- shipped guide data")
+do
+    -- a character that hasn't picked a side loads both factions' guides
+    -- (everyone else only their own: see the next test)
+    local game, OXP = newGame({ faction = "Neutral" })
     game:Login()
     local problems = OXP.Registry.Problems()
     t.eq(#problems, 0, "guide data problems")

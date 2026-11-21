@@ -12,6 +12,20 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.0-dev2", date = "2026-11",
+        changes = {
+            "The card starts unlocked and shown, and this What's New window opens after every update.",
+            "Going through a tunnel or path into a new zone (like Talondeep Path into Stonetalon) now counts once you're out in that zone.",
+            "The target button only targets mobs you still need, and nameplates stop marking mobs you've finished. It's now a movable Targets list with each mob's portrait: click a row to target that mob, or use your key for the nearest one. Shift-drag the quest item button to move it.",
+            "Sharper map and minimap pins, quest icons and route line, with direction arrows along the route.",
+            "The card's guide title has its own line, so it never runs into the level range or step count.",
+            "Right-click opens the menu where you clicked.",
+            "Pick a guide: a tab for each type of guide, and a scrollbar you can drag or click.",
+            "Skins under Settings > Guide card: Midnight, Minimal (see-through), Glass, Classic gold, Ember and Forest.",
+            "Less memory and smoother frames: only your faction's guides load, map data is let go when you leave a zone, and the minimap route does less work. /oxp mem shows how much memory OpenXP uses.",
+        },
+    },
+    {
         version = "2.0.0-dev", date = "2026-11",
         changes = {
             "OpenXP 2.0 test build: a new engine and a new home for every part of OpenXP, written by OpenXP's own contributors.",
@@ -116,6 +130,8 @@ OXP.OnReady(function()
     local seen = OXP.db.welcomeSeen
     if seen == OXP.version then return end
     OXP.db.welcomeSeen = OXP.version
+    -- a new version starts with the card on screen
+    OXP.settings.cardShown = true
     C_Timer.After(3, function() Welcome.Show(seen and "update" or "welcome", seen) end)
 end)
 

@@ -20,6 +20,7 @@ local ACCOUNT_DEFAULTS = {
         fontSize = 12,
         font = "default",
         fontOutline = "",
+        skin = "midnight",         -- Settings > Guide card > Skin (UI/Style.lua)
         lockFrames = false,
         -- arrow
         arrowShown = true,
@@ -69,4 +70,12 @@ OXP.OnLoaded(function()
     OXP.db = OpenXPDB
     OXP.char = OpenXPCharDB
     OXP.settings = OpenXPDB.settings
+    -- Test builds up to 2.0.0-dev could start with the card hidden and
+    -- locked (1.x's "lock frames" and "hide the guide window" were copied
+    -- over). Once: shown and unlocked; your own choices after that stay.
+    if (OpenXPDB.uiFixed or 0) < 1 then
+        OpenXPDB.uiFixed = 1
+        OXP.settings.lockFrames = false
+        OXP.settings.cardShown = true
+    end
 end)

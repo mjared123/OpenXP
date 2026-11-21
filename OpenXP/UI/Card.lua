@@ -22,7 +22,8 @@ local fmt = string.format
 -- so the buttons stay under your mouse while you click through steps.
 local WIDTH, HEIGHT = 330, 300
 local MIN_W, MIN_H, MAX_W, MAX_H = 200, 150, 640, 900
-local TOP_H = 1 + 28 + 2      -- border, header, progress line
+local HEADER_H = 44           -- two rows: the guide's name, then its levels and your step
+local TOP_H = 1 + HEADER_H + 2 -- border, header, progress line
 local BAR_H = 38 + 1          -- button bar, border
 local COLLAPSED_H = 42
 local MAX_UPNEXT = 12
@@ -62,6 +63,7 @@ local function SavePosition()
 end
 
 f:SetScript("OnDragStart", function(self)
+    Card.dragged = true
     if Settings().lockFrames then return end
     self:StartMoving()
 end)
@@ -76,8 +78,13 @@ else
     if f.SetMinResize then f:SetMinResize(MIN_W, MIN_H) end
     if f.SetMaxResize then f:SetMaxResize(MAX_W, MAX_H) end
 end
+f:SetScript("OnMouseDown", function() Card.dragged = false end)
 f:SetScript("OnMouseUp", function(_, button)
-    if button == "RightButton" and OXP.GuidePicker then OXP.GuidePicker.Toggle(f) end
+    if button == "RightButton" and OXP.GuidePicker then
+        OXP.GuidePicker.Toggle("cursor")
+    elseif button == "LeftButton" and not Card.dragged and not Engine.GetGuide() and OXP.GuidePicker then
+        OXP.GuidePicker.ShowGuides() -- the "no guide yet" line
+    end
 end)
 
 local grip = CreateFrame("Button", nil, f)
@@ -106,10 +113,12 @@ function Card.StartSizing()
     if Settings().lockFrames then return end
     Card.sizing = true
     f:StartSizing("BOTTOMRIGHT")
+    grip:SetScript("OnUpdate", Card.SizingUpdate)
 end
 
 function Card.StopSizing()
     if not Card.sizing then return end
+    grip:SetScript("OnUpdate", nil)
     f:StopMovingOrSizing()
     Card.sizing = false
     Card.TakeSize()
@@ -124,14 +133,16 @@ function Card.StopSizing()
     Card.Refresh(true)
 end
 
+-- the live re-wrap runs only while you drag the grip
+local function SizingUpdate()
+    if Card.sizing and Card.TakeSize() then Card.Refresh(true) end
+end
+Card.SizingUpdate = SizingUpdate
 grip:SetScript("OnMouseDown", function(_, button)
     if button == "LeftButton" then Card.StartSizing() end
 end)
 grip:SetScript("OnMouseUp", function() Card.StopSizing() end)
 grip:SetScript("OnHide", function() Card.StopSizing() end)
-grip:SetScript("OnUpdate", function()
-    if Card.sizing and Card.TakeSize() then Card.Refresh(true) end
-end)
 -- The size comes from you and nothing else: while you drag, the text
 -- re-wraps to it at once; at any other time a size that isn't the saved
 -- one is put back.
@@ -150,34 +161,40 @@ end)
 grip:SetScript("OnEnter", function(self) Style.Tooltip(self, L("Drag to resize")) end)
 grip:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
--- Header: dot, ZONE, level range ............ Step 12 / 82
+-- Header, two rows so the name never runs into the numbers:
+--   dot  ASHENVALE, WETLANDS & STONETALON MOUNTAINS
+--        Levels 22-25 ........................ Step 16 / 52
 local header = CreateFrame("Frame", nil, f)
+Card.header = header
 header:SetPoint("TOPLEFT", 1, -1)
 header:SetPoint("TOPRIGHT", -1, -1)
-header:SetHeight(28)
+header:SetHeight(HEADER_H)
 header.bg = header:CreateTexture(nil, "BACKGROUND")
 header.bg:SetAllPoints()
 header.bg:SetColorTexture(1, 1, 1, 0.03)
 header.dot = header:CreateTexture(nil, "ARTWORK")
 header.dot:SetTexture(TEX .. "filledcircle")
 header.dot:SetSize(9, 9)
-header.dot:SetPoint("LEFT", PAD - 1, 0)
+header.dot:SetPoint("TOPLEFT", PAD - 1, -10)
 Tint(header.dot, C.blue)
 header.zone = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 header.zone:SetPoint("LEFT", header.dot, "RIGHT", 7, 0)
+header.zone:SetPoint("RIGHT", header, "RIGHT", -PAD + 1, 0)
 header.zone:SetTextColor(unpack(C.text))
 header.zone:SetJustifyH("LEFT")
 header.zone:SetWordWrap(false)
 header.range = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-header.range:SetPoint("LEFT", header.zone, "RIGHT", 6, 0)
+header.range:SetPoint("BOTTOMLEFT", header, "BOTTOMLEFT", PAD + 15, 7)
+header.range:SetJustifyH("LEFT")
 header.range:SetTextColor(unpack(C.dim))
 header.step = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-header.step:SetPoint("RIGHT", -PAD + 1, 0)
+header.step:SetPoint("BOTTOMRIGHT", header, "BOTTOMRIGHT", -PAD + 1, 7)
+header.step:SetJustifyH("RIGHT")
 header.step:SetTextColor(unpack(C.dim))
 header.stepBtn = CreateFrame("Button", nil, header)
-header.stepBtn:SetPoint("TOPRIGHT", 0, 0)
 header.stepBtn:SetPoint("BOTTOMRIGHT", 0, 0)
-header.stepBtn:SetWidth(80)
+header.stepBtn:SetHeight(22)
+header.stepBtn:SetWidth(100)
 header.stepBtn:SetScript("OnClick", function() Card.ToggleStepList() end)
 header.stepBtn:SetScript("OnEnter", function(self)
     Style.Tooltip(self, L("Show every step in this guide"), L("Click a step to jump to it. Mouse wheel scrolls."))
@@ -606,7 +623,7 @@ local function GetBlock(i)
     b.sep:SetPoint("TOPLEFT", PAD, 0)
     b.sep:SetPoint("TOPRIGHT", -PAD, 0)
     b.sep:SetHeight(1)
-    b.sep:SetColorTexture(1, 1, 1, 0.07)
+    b.sep:SetColorTexture(1, 1, 1, Style.skin.line)
     b.badge = Style.Badge(b, 34)
     b.badge:SetPoint("TOPLEFT", PAD, -10)
     b.num = b:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -1194,7 +1211,10 @@ mini.text:SetPoint("LEFT", mini.badge, "RIGHT", 10, 0)
 mini.text:SetJustifyH("LEFT")
 mini.text:SetWordWrap(false)
 mini.text:SetTextColor(unpack(C.text))
-mini.expand = Btn(mini, "down", L("Show the full guide"), function() Card.SetCollapsed(false) end)
+mini.expand = Btn(mini, "down", L("Show the full guide"), function()
+    if mini.empty then OXP.GuidePicker.ShowGuides() else Card.SetCollapsed(false) end
+end)
+mini:EnableMouse(false)
 mini.expand:SetPoint("RIGHT", -4, 0)
 mini.count = mini:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 mini.count:SetPoint("RIGHT", mini.expand, "LEFT", -4, 0)
@@ -1234,8 +1254,10 @@ local function NextStepTexts(after, count)
     return out
 end
 
+-- Shown whenever it's switched on: with no guide loaded yet it is one line
+-- that opens Pick a guide, so it's never missing at login.
 local function Visible()
-    return Settings() ~= nil and Settings().cardShown and Engine.GetGuide() ~= nil
+    return Settings() ~= nil and Settings().cardShown and Card.enabled
 end
 
 -- a cheap fingerprint of what the card draws: it's only laid out again when
@@ -1358,14 +1380,12 @@ end
 local function LayoutHeader(guide, current, total, detourStep, detourIndex)
     local zone, range = SplitGuideName(guide)
     SetFont(header.zone, -1)
-    SetFont(header.range, -1)
-    SetFont(header.step, -1)
-    header.zone:SetWidth(0)
+    SetFont(header.range, -2)
+    SetFont(header.step, -2)
+    -- the name has the whole top row (cut with "..." only past the card's edge)
     header.zone:SetText(zone:upper())
-    local zoneMax = math.max(50, Width() - 150)
-    if header.zone:GetStringWidth() > zoneMax then header.zone:SetWidth(zoneMax) end
-    header.range:SetText(range)
-    header.range:SetShown(Width() >= 300)
+    header.range:SetText(range ~= "" and fmt(L("Levels %s"), range) or "")
+    header.range:SetShown(true)
     header.step:SetText(fmt(L("Step %d / %d"), current, total))
     local frac = total > 0 and current / total or 0
     if detourStep then
@@ -1465,7 +1485,14 @@ function Card.Refresh(force)
     -- background and stays blank until it's set again (in game: the step's
     -- title missing until the card was resized). Once the step changes, set
     -- every text again a moment later and lay the card out again.
-    if sig ~= Card.lastSig and not Card.retexting and C_Timer and C_Timer.After then
+    -- (only for a new step or font, not every kill count: setting every
+    -- text in OpenXP again costs a frame)
+    local textKey = tostring(Engine.GetGuide()) .. ":" .. tostring(Engine.GetPosition()) .. ":" .. tostring(Card.detour)
+        .. ":" .. tostring(Settings().font) .. ":" .. tostring(Settings().fontSize)
+    if textKey ~= Card.textKey and Card.retexting then
+        Card.textKey = textKey -- the re-text already on its way covers it
+    elseif textKey ~= Card.textKey and C_Timer and C_Timer.After then
+        Card.textKey = textKey
         Card.retexting = true
         -- twice: a slow disk can take longer than the first moment
         C_Timer.After(0.1, function()
@@ -1487,7 +1514,8 @@ function Card.Refresh(force)
     if f:GetScale() ~= scale then f:SetScale(scale) end
     -- the size is yours: set it back to what you chose (while you drag the
     -- grip the game sizes the frame and the layout follows)
-    local collapsed = s.cardCollapsed
+    local guide = Engine.GetGuide()
+    local collapsed = s.cardCollapsed or not guide
     grip:SetShown(not s.lockFrames and not collapsed)
     if not Card.sizing then
         Card.settingSize = true
@@ -1495,7 +1523,6 @@ function Card.Refresh(force)
         Card.settingSize = false
     end
 
-    local guide = Engine.GetGuide()
     local total = #Engine.GetSteps()
     local current = math.min(Engine.GetPosition() or 1, math.max(total, 1))
 
@@ -1505,7 +1532,16 @@ function Card.Refresh(force)
     if collapsed then
         header:Hide(); progressBg:Hide(); progress:Hide(); view:Hide(); upNext:Hide(); bar:Hide(); more:Hide()
         mini:Show()
-        Try(LayoutCollapsed, shown, current, total)
+        if guide then
+            mini.empty = false
+            Try(LayoutCollapsed, shown, current, total)
+        else
+            mini.empty = true
+            SetFont(mini.text, 1)
+            mini.badge:SetKind("travel")
+            mini.text:SetText(L("No guide yet: click to pick one"))
+            mini.count:SetText("")
+        end
         return
     end
 
@@ -1735,6 +1771,7 @@ ticker:SetScript("OnUpdate", function(_, dt)
     Card.Tick()
 end)
 
+OXP.Listen("SETTINGS_CHANGED", function() if Card.enabled then Card.ApplySkin() end end)
 for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "QUESTS_CHANGED", "SETTINGS_CHANGED" }) do
     OXP.Listen(m, function()
         Card.ticks = Card.ticks + 1
@@ -1864,9 +1901,28 @@ end
 -- Turning on, and the settings window's buttons
 ---------------------------------------------------------------------------
 
+--- Paints the card's own pieces in the chosen skin (Settings > Guide card).
+function Card.ApplySkin()
+    local key = Settings().skin or "midnight"
+    if Card.skinKey == key then return end
+    Card.skinKey = key
+    local skin = Style.ApplySkin(key)
+    header.bg:SetColorTexture(1, 1, 1, skin.header)
+    Tint(header.dot, C.blue)
+    progress:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 1)
+    progressBg:SetColorTexture(1, 1, 1, skin.header > 0 and 0.06 or 0.03)
+    more.back:SetColorTexture(C.bg[1], C.bg[2], C.bg[3], math.min(1, C.bg[4] + 0.5))
+    bar.bg:SetColorTexture(1, 1, 1, skin.header > 0 and 0.04 or 0)
+    bar.line:SetColorTexture(1, 1, 1, skin.line)
+    upNext.sep:SetColorTexture(1, 1, 1, skin.line)
+    for _, b in pairs(blocks) do b.sep:SetColorTexture(1, 1, 1, skin.line) end
+    if OXP.ActionButtons and OXP.ActionButtons.ApplySkin then OXP.ActionButtons.ApplySkin() end
+end
+
 function Card.Enable()
     Card.enabled = true
     local s = Settings()
+    Card.ApplySkin()
     if s.cardPos then
         f:ClearAllPoints()
         f:SetPoint(s.cardPos[1], UIParent, s.cardPos[2], s.cardPos[3], s.cardPos[4])

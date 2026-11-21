@@ -5,7 +5,7 @@
 --
 -- Areas are smoothed outlines filled with thin horizontal strips (WoW has no
 -- polygon fill); on the minimap everything is clipped to its round edge.
-local _, OXP = ...
+local ADDON, OXP = ...
 
 local Draw = {}
 OXP.MapDraw = Draw
@@ -15,15 +15,23 @@ local floor, sqrt, min, max = math.floor, math.sqrt, math.min, math.max
 
 local AREA_FILL = { 0.20, 0.55, 1.0, 0.30 }
 local AREA_EDGE = { 0.35, 0.70, 1.0, 0.95 }
-local WHITE = "Interface\\Buttons\\WHITE8X8"
-local ROUND = "Interface\\CHARACTERFRAME\\TempPortraitAlphaMask"
+-- The line's own textures (tools/make_icons.py): a stroke with soft edges,
+-- so lines are smooth instead of stair-stepped, a round cap for joints and
+-- ends, and a chevron for the direction.
+local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Map\\"
+local LINE = MEDIA .. "line"     -- 32 px tall, the solid part the middle 16
+local LINE_WIDEN = 1.8           -- thickness given to the game for a stroke `thickness` wide
+local ROUND = MEDIA .. "dot"     -- the disc fills 72% of the file
+local ROUND_WIDEN = 1 / 0.72
+local CHEVRON = MEDIA .. "chevron"
 local STEPS_AHEAD = 4
-local MAP_TICK, MINI_TICK = 0.25, 0.05
+local MAP_TICK, MINI_TICK = 0.25, 0.1
 
 local function RouteOn() return OXP.settings.mapRoute ~= false end
 
 local routeColor = { 0.72, 0.42, 1.0, 0.92 }
-local CASING = { 0.05, 0.03, 0.10, 0.55 }
+local CASING = { 0.04, 0.02, 0.08, 0.6 }
+local CHEVRON_COLOR = { 1, 1, 1, 0.9 }
 local function RouteColor()
     local c = OXP.settings.routeColor
     if c and c[1] then routeColor[1], routeColor[2], routeColor[3] = c[1], c[2], c[3] end
@@ -117,12 +125,12 @@ local function Line(c, color, thickness, x1, y1, x2, y2, sub)
     local l = c.lines[c.nl]
     if not l then
         l = c.frame:CreateLine(nil, "OVERLAY")
-        l:SetTexture(WHITE)
+        l:SetTexture(LINE)
         c.lines[c.nl] = l
     end
     l:SetVertexColor(color[1], color[2], color[3], color[4])
     l:SetDrawLayer("OVERLAY", sub or 0)
-    l:SetThickness(thickness)
+    l:SetThickness(thickness * LINE_WIDEN)
     l:SetStartPoint("TOPLEFT", c.frame, x1, -y1)
     l:SetEndPoint("TOPLEFT", c.frame, x2, -y2)
     l:Show()
@@ -134,7 +142,7 @@ local function Rect(c, color, x, y, w, h)
     local t = c.rects[c.nr]
     if not t then
         t = c.frame:CreateTexture(nil, "ARTWORK")
-        t:SetTexture(WHITE)
+        t:SetTexture("Interface\\Buttons\\WHITE8X8")
         if t.SetSnapToPixelGrid then t:SetSnapToPixelGrid(false) end
         if t.SetTexelSnappingBias then t:SetTexelSnappingBias(0) end
         c.rects[c.nr] = t
@@ -146,14 +154,19 @@ local function Rect(c, color, x, y, w, h)
     t:Show()
 end
 
-local function Tex(c, texture, color, size, x, y, sub)
+local function Tex(c, texture, color, size, x, y, sub, angle)
     c.nt = c.nt + 1
     local t = c.tex[c.nt]
     if not t then
         t = c.frame:CreateTexture(nil, "OVERLAY")
         c.tex[c.nt] = t
     end
-    t:SetTexture(texture)
+    if t.file ~= texture then
+        t:SetTexture(texture)
+        t.file = texture
+    end
+    if texture == ROUND then size = size * ROUND_WIDEN end
+    if t.SetRotation then t:SetRotation(angle or 0) end
     t:SetDrawLayer("OVERLAY", sub or 0)
     t:SetVertexColor(color[1], color[2], color[3], color[4])
     t:SetSize(size, size)
@@ -282,11 +295,11 @@ local function RouteLeg(c, pts, thickness, clip, perYard)
     for i = 1, #pts - 1 do
         local ax, ay, bx, by = ClipSegment(pts[i][1], pts[i][2], pts[i + 1][1], pts[i + 1][2], clip)
         if ax then
-            Line(c, CASING, thickness * 2, ax, ay, bx, by, -2)
-            Tex(c, ROUND, CASING, thickness * 2, bx, by, -2)
+            Line(c, CASING, thickness * 1.9, ax, ay, bx, by, -2)
+            Tex(c, ROUND, CASING, thickness * 1.9, bx, by, -2)
         end
     end
-    local travelled, nextMark = 0, thickness * 40
+    local travelled, nextMark = 0, thickness * 30
     for i = 1, #pts - 1 do
         local ax, ay, bx, by = ClipSegment(pts[i][1], pts[i][2], pts[i + 1][1], pts[i + 1][2], clip)
         if ax then
@@ -296,14 +309,12 @@ local function RouteLeg(c, pts, thickness, clip, perYard)
             local len = sqrt(dx * dx + dy * dy)
             if len > 0 then
                 local ux, uy = dx / len, dy / len
-                local size = thickness * 2.5
+                -- a small dark chevron on the line now and then, pointing on
+                local angle = math.atan2(-uy, ux)
                 while nextMark < travelled + len do
                     local d = nextMark - travelled
-                    local mx, my = ax + ux * d, ay + uy * d
-                    local tx, ty = mx - ux * size, my - uy * size
-                    Line(c, color, thickness * 0.75, tx - uy * size, ty + ux * size, mx, my)
-                    Line(c, color, thickness * 0.75, tx + uy * size, ty - ux * size, mx, my)
-                    nextMark = nextMark + thickness * 60
+                    Tex(c, CHEVRON, CHEVRON_COLOR, thickness * 2.2, ax + ux * d, ay + uy * d, 2, angle)
+                    nextMark = nextMark + thickness * 45
                 end
                 travelled = travelled + len
             end
@@ -333,7 +344,36 @@ end
 --- { {map, x, y, area}, ... } for the shown steps and the next few, in order.
 --- Steps ahead whose quests are done, or that need a quest you don't have and
 --- won't pick up on the way, aren't stops.
+-- The minimap redraws up to ten times a second; what the next stops are
+-- only changes with the step, your quests or the arrow's spot, so it is
+-- worked out at most twice a second (and at once after such a change).
+local upcomingCache, upcomingAt = nil, -math.huge
+local UPCOMING_AGAIN = 0.5
+local function ForgetUpcoming() upcomingCache = nil end
+for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "QUESTS_CHANGED", "SETTINGS_CHANGED", "ARROW_CHANGED" }) do
+    OXP.Listen(m, ForgetUpcoming)
+end
+
+local upcomingAim = {}
 function Draw.Upcoming()
+    local now = GetTime and GetTime() or 0
+    -- the arrow's spot is the first stop: a new one (or a moved one) at once
+    local T = OXP.Target
+    local hint = not T.BAKED_ONLY and OXP.PathHints.go
+    local aim = T.Real and (hint or T.override or T.Real())
+    local cur = T.Current and T.Current()
+    local focus = cur and cur.focus
+    local a = upcomingAim
+    if upcomingCache and now - upcomingAt < UPCOMING_AGAIN and a.aim == aim and a.wx == (aim and aim.wx)
+        and a.wy == (aim and aim.wy) and a.focus == focus and a.pos == Engine.GetPosition() then
+        return upcomingCache
+    end
+    a.aim, a.wx, a.wy, a.focus, a.pos = aim, aim and aim.wx, aim and aim.wy, focus, Engine.GetPosition()
+    upcomingCache, upcomingAt = Draw.WorkOutUpcoming(), now
+    return upcomingCache
+end
+
+function Draw.WorkOutUpcoming()
     local out = {}
     local steps = Engine.GetSteps()
     local first = Engine.GetPosition()
@@ -491,7 +531,7 @@ function Draw.WorldMap()
         for _, line in ipairs(tlines) do
             local pts = {}
             for _, p in ipairs(line) do pts[#pts + 1] = { P(p[1], p[2]) } end
-            RouteLeg(wmc, pts, 2 / scale)
+            RouteLeg(wmc, pts, 3 / scale)
         end
     elseif px and #stops > 0 and (pmap == map or OXP.Target.BAKED_ONLY) then
         if pmap ~= map then
@@ -503,7 +543,7 @@ function Draw.WorldMap()
         if px then
             local pts = {}
             for _, p in ipairs(RoutePoints(map, px, py, stops, level)) do pts[#pts + 1] = { P(p[1], p[2]) } end
-            RouteLeg(wmc, pts, 2 / scale, nil, perYard)
+            RouteLeg(wmc, pts, 3 / scale, nil, perYard)
         end
     end
 end
@@ -591,7 +631,7 @@ local function DrawMinimap()
                 local x, y = P(p[1], p[2])
                 if x then route[#route + 1] = { x, y } end
             end
-            RouteLeg(mmc, route, 1.5, clip)
+            RouteLeg(mmc, route, 2.5, clip)
         end
         return
     end
@@ -600,7 +640,7 @@ local function DrawMinimap()
         local x, y = P(p[1], p[2])
         if x then route[#route + 1] = { x, y } end
     end
-    RouteLeg(mmc, route, 1.5, clip, ppy)
+    RouteLeg(mmc, route, 2.5, clip, ppy)
 end
 
 function Draw.Minimap()

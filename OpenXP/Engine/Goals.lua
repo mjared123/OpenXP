@@ -142,12 +142,34 @@ local function near(g, yards)
     return px ~= nil and inst == s.instance and OXP.Places.Distance(px, py, s.wx, s.wy) <= yards
 end
 
+-- A "reach" is a checkpoint on the way. Besides standing within `radius`
+-- yards of it (default 25), it counts as passed when you're in the sub-zone
+-- it's named after ("Windshear Crag"), or, for one that leads into another
+-- zone (the step before is in a different zone: `entry`, set when the guide
+-- is loaded, Engine/Runner.lua), once you're out in that zone. Coming out of
+-- a tunnel a few dozen yards from the spot no longer leaves the guide
+-- waiting at the tunnel.
+local function InSubZone(g)
+    local name = g.text and OXP.Text.Strip(g.text)
+    if not name or name == "" or not GetSubZoneText then return false end
+    local key = OXP.Util.PlaceKey(name)
+    if not key or key == "" then return false end
+    return OXP.Util.PlaceKey(GetSubZoneText() or "") == key
+end
+
+local function OutInZone(g)
+    if not g.entry then return false end
+    if IsIndoors and IsIndoors() then return false end -- still in the tunnel
+    local _, _, map = OXP.Places.PlayerZone()
+    return map ~= nil and map == OXP.Places.MapID(g.zone)
+end
+
 Goals.Define("reach", {
     fields = { "zone", "x", "y" },
     position = true,
     state = function(g, marks)
         if marks[g] then return "done" end
-        if near(g, g.radius or 15) then
+        if near(g, g.radius or 25) or InSubZone(g) or OutInZone(g) then
             marks[g] = true
             return "done"
         end
@@ -181,6 +203,37 @@ Goals.Define("fly", {
         return "todo"
     end,
 })
+
+--- The mobs of a step you still need: { { name = n, goal = g }, ... } in
+--- the guide's order. A "mob" line belongs to the objective line just
+--- before it ("Kill Venture Co. Logger: 10" then "mob Venture Co. Logger"):
+--- once that objective is done its mobs are dropped. A mob line with no
+--- objective before it counts while any objective of the step is open.
+function Goals.NeededMobs(step)
+    local out, seen = {}, {}
+    if not step then return out end
+    local owner, anyOpen = nil, false
+    for _, g in ipairs(step.goals or {}) do
+        local k = g[1]
+        if k == "complete" or k == "collect" or k == "finish" then
+            if Goals.State(g, step.marks) == "todo" then anyOpen = true end
+        end
+    end
+    for _, g in ipairs(step.goals or {}) do
+        local k = g[1]
+        if k == "complete" or k == "collect" or k == "finish" then
+            owner = g
+        elseif k == "mob" and g.name and not seen[g.name] then
+            local open
+            if owner then open = Goals.State(owner, step.marks) == "todo" else open = anyOpen end
+            if open then
+                seen[g.name] = true
+                out[#out + 1] = { name = g.name, goal = owner }
+            end
+        end
+    end
+    return out
+end
 
 --- Does any goal of these kinds depend on where you stand (so the engine
 --- has to look again as you move)?

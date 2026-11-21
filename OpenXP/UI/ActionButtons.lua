@@ -1,12 +1,13 @@
--- Two buttons beside the guide card, both keybindable (Key Bindings >
--- AddOns > OpenXP):
+-- Beside the guide card, both keybindable (Key Bindings > AddOns > OpenXP):
 --   item button    uses the quest item the shown steps need (a step's
 --                  "item" goal you carry, or the item a quest in the step
---                  gives you to use)
---   target button  targets the NPC or mob the shown steps name
+--                  gives you to use); Shift-drag moves it
+--   targets        a small movable list of the mobs and NPCs the shown steps
+--                  still need, each with its portrait; click one to target
+--                  it, or bind a key to the first row
 -- They are secure buttons, so the game only lets them change outside
 -- combat; a change asked for in combat waits until combat ends.
-local _, OXP = ...
+local ADDON, OXP = ...
 
 local Buttons = {}
 OXP.ActionButtons = Buttons
@@ -25,8 +26,8 @@ local function GetItemCooldown(id)
     if fn then return fn(id) end
 end
 
-local function Make(name, size)
-    local b = CreateFrame("Button", name, UIParent, "SecureActionButtonTemplate")
+local function Make(name, size, parent)
+    local b = CreateFrame("Button", name, parent or UIParent, "SecureActionButtonTemplate")
     b:SetSize(size, size)
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetMovable(true)
@@ -50,26 +51,132 @@ local function Make(name, size)
 end
 
 local item = Make("OpenXPItemButton", 36)
-local target = Make("OpenXPTargetButton", 30)
-Buttons.item, Buttons.target = item, target
-target.icon:SetTexture("Interface\\Icons\\Ability_Hunter_SniperShot")
+Buttons.item = item
 
-local function Tip(self)
-    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    if self == item and self.itemID then
-        GameTooltip:SetItemByID(self.itemID)
-    elseif self == target and self.unitName then
-        GameTooltip:SetText(L("Target") .. " " .. self.unitName, 1, 1, 1)
-    end
-    GameTooltip:AddLine(L("Bind a key: Key Bindings > AddOns > OpenXP"), 0.6, 0.6, 0.6)
-    GameTooltip:Show()
-end
-for _, b in ipairs({ item, target }) do
-    b:SetScript("OnEnter", Tip)
-    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+--- The skin's accent on the button edges (Settings > Guide card > Skin).
+function Buttons.ApplySkin()
+    item.border:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 0.6)
 end
 
 ------------------------------------------------------------------------
+-- The targets frame: a small movable list of who the shown steps need,
+-- one row each (the mob's portrait once you've seen it, its name), click
+-- a row to target that one. The first row is OpenXPTargetButton, the one
+-- you can bind a key to: it targets the first of them that's near you.
+-- Mobs whose objective is done drop off the list (Goals.NeededMobs).
+------------------------------------------------------------------------
+
+local MAX_ROWS, ROW_H, ROW_W = 5, 26, 190
+local ENEMY, FRIEND = { 1, 112 / 255, 67 / 255 }, { 61 / 255, 187 / 255, 122 / 255 }
+local MAPICON = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Map\\"
+
+local box = CreateFrame("Frame", "OpenXPTargets", UIParent, "BackdropTemplate")
+Buttons.box = box
+box:SetSize(ROW_W, 20 + ROW_H)
+box:SetClampedToScreen(true)
+box:SetMovable(true)
+box:EnableMouse(true)
+box:RegisterForDrag("LeftButton")
+box:SetFrameStrata("MEDIUM")
+Style.Backdrop(box, C.bg, C.border)
+box.title = box:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+box.title:SetPoint("TOPLEFT", 8, -5)
+box.title:SetTextColor(unpack(C.dim))
+box.key = box:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+box.key:SetPoint("TOPRIGHT", -8, -5)
+box.key:SetTextColor(unpack(C.faint))
+box:Hide()
+
+local rows = {}
+local function Row(i)
+    if rows[i] then return rows[i] end
+    local name = i == 1 and "OpenXPTargetButton" or ("OpenXPTargetRow" .. i)
+    local b = CreateFrame("Button", name, box, "SecureActionButtonTemplate")
+    b:RegisterForClicks("AnyUp", "AnyDown")
+    b:SetHeight(ROW_H)
+    b:SetPoint("TOPLEFT", box, "TOPLEFT", 1, -18 - (i - 1) * ROW_H)
+    b:SetPoint("TOPRIGHT", box, "TOPRIGHT", -1, -18 - (i - 1) * ROW_H)
+    b.hl = b:CreateTexture(nil, "BACKGROUND")
+    b.hl:SetAllPoints()
+    b.hl:SetColorTexture(1, 1, 1, 0)
+    b.bar = b:CreateTexture(nil, "ARTWORK")
+    b.bar:SetPoint("TOPLEFT", 0, -4)
+    b.bar:SetPoint("BOTTOMLEFT", 0, 4)
+    b.bar:SetWidth(2)
+    b.slot = CreateFrame("Frame", nil, b)
+    b.slot:SetSize(20, 20)
+    b.slot:SetPoint("LEFT", 8, 0)
+    b.placeholder = b.slot:CreateTexture(nil, "ARTWORK")
+    b.placeholder:SetAllPoints()
+    b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    b.text:SetPoint("LEFT", b.slot, "RIGHT", 8, 0)
+    b.text:SetPoint("RIGHT", -8, 0)
+    b.text:SetJustifyH("LEFT")
+    b.text:SetWordWrap(false)
+    b:SetScript("OnEnter", function(self)
+        self.hl:SetColorTexture(1, 1, 1, 0.08)
+        if not self.unitName then return end
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetText(L("Target") .. " " .. self.unitName, 1, 1, 1)
+        if self == rows[1] and Buttons.count and Buttons.count > 1 then
+            GameTooltip:AddLine(L("Or the next one on the list, when this one isn't near."), 0.8, 0.8, 0.8, true)
+        end
+        GameTooltip:AddLine(L("Bind a key: Key Bindings > AddOns > OpenXP"), 0.6, 0.6, 0.6)
+        if not OXP.settings.lockFrames then GameTooltip:AddLine(L("Drag the title to move this."), 0.6, 0.6, 0.6) end
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function(self)
+        self.hl:SetColorTexture(1, 1, 1, 0)
+        GameTooltip:Hide()
+    end)
+    b:Hide()
+    rows[i] = b
+    return b
+end
+
+-- the first row is the bindable button (the tests and older code call it `target`)
+local target = Row(1)
+Buttons.target, Buttons.rows = target, rows
+
+-- Portraits: the game only draws one from a unit you can see, so each mob's
+-- is drawn when it is your target, under your mouse or on a nameplate, and
+-- kept (one texture per name, the oldest reused past PORTRAITS).
+local PORTRAITS = 24
+local portraits, nPortraits = {}, 0
+
+local function Portrait(name)
+    return name and portraits[name]
+end
+
+function Buttons.SeeUnit(unit)
+    if not (unit and UnitExists and UnitExists(unit)) or (UnitIsPlayer and UnitIsPlayer(unit)) then return end
+    local name = UnitName(unit)
+    if not name or not SetPortraitTexture then return end
+    local listed = false
+    for _, r in ipairs(rows) do if r.unitName == name then listed = true end end
+    if not listed then return end
+    local t = portraits[name]
+    if not t then
+        if nPortraits >= PORTRAITS then
+            local oldest, oldName
+            for n, tex in pairs(portraits) do
+                if not oldest or tex.seen < oldest.seen then oldest, oldName = tex, n end
+            end
+            portraits[oldName] = nil
+            t = oldest
+        else
+            t = box:CreateTexture(nil, "ARTWORK", nil, 1)
+            nPortraits = nPortraits + 1
+        end
+        portraits[name] = t
+    end
+    t.seen = GetTime and GetTime() or 0
+    SetPortraitTexture(t, unit)
+    Buttons.PaintRows()
+end
+
+------------------------------------------------------------------------
+-- What the buttons should do now------------------------------------------------------------------------
 -- What the buttons should do now
 ------------------------------------------------------------------------
 
@@ -141,26 +248,88 @@ function Buttons.WantedItem()
     end
 end
 
---- The NPC or mob to put on the target button: name or nil. A step's
---- mobs while it still has things to kill, otherwise who to talk to.
-function Buttons.WantedTarget()
+--- Who the targets list shows: { { name = n, enemy = bool }, ... }, the
+--- mobs still needed first (in the guide's order), then who to talk to.
+function Buttons.WantedTargets()
     local walk = WalkQuest()
-    if walk then return WalkTarget(walk) end
-    for _, step in ipairs(ActiveSteps()) do
-        local killing, mob, talk = false, nil, nil
-        for _, g in ipairs(step.goals) do
-            local state = OXP.Goals.State(g, step.marks)
-            if g[1] == "complete" and state == "todo" then killing = true end
-            if g[1] == "mob" and not mob then mob = g.name end
-            if g[1] == "target" and not talk then talk = g.name end
-        end
-        if killing and mob then return mob end
-        if talk then return talk end
-        if mob then return mob end
+    if walk then
+        local name = WalkTarget(walk)
+        return name and { { name = name, enemy = OXP.Quests.IsOnQuest(walk) and not OXP.Quests.IsComplete(walk) } } or {}
     end
+    local out, seen = {}, {}
+    local function Add(name, enemy)
+        if name and not seen[name] and #out < MAX_ROWS then
+            seen[name] = true
+            out[#out + 1] = { name = name, enemy = enemy }
+        end
+    end
+    local talk = {}
+    for _, step in ipairs(ActiveSteps()) do
+        for _, m in ipairs(OXP.Goals.NeededMobs(step)) do Add(m.name, true) end
+        local open = false
+        for _, g in ipairs(step.goals) do
+            if (g[1] == "accept" or g[1] == "turnin" or g[1] == "finish") and OXP.Goals.State(g, step.marks) == "todo" then
+                open = true
+            end
+        end
+        -- a step with nothing left but its people: who to talk to
+        local hasStateful = false
+        for _, g in ipairs(step.goals) do if OXP.Goals.Blocks(g[1]) then hasStateful = true end end
+        for _, g in ipairs(step.goals) do
+            if g[1] == "target" and g.name and (open or not hasStateful) then talk[#talk + 1] = g.name end
+        end
+    end
+    for _, name in ipairs(talk) do Add(name, false) end
+    return out
+end
+
+--- The first of them (the bindable button's): name or nil.
+function Buttons.WantedTarget()
+    local list = Buttons.WantedTargets()
+    return list[1] and list[1].name or nil
 end
 
 local pending = false
+
+-- the first row's macro tries every name, the most wanted last (the last
+-- /targetexact that finds someone wins)
+local function AllMacro(list)
+    local lines = { "/cleartarget" }
+    for i = #list, 1, -1 do lines[#lines + 1] = "/targetexact " .. list[i].name end
+    return table.concat(lines, "\n")
+end
+
+--- Draw the rows' look (portraits, colours, names): safe in combat.
+function Buttons.PaintRows()
+    local fontPath = OXP.Fonts and OXP.Fonts.Path()
+    for i, r in ipairs(rows) do
+        if r.unitName then
+            local col = r.enemy and ENEMY or FRIEND
+            r.bar:SetColorTexture(col[1], col[2], col[3], 1)
+            local p = Portrait(r.unitName)
+            if p then
+                p:SetParent(r.slot)
+                p:ClearAllPoints()
+                p:SetAllPoints(r.slot)
+                p:SetDrawLayer("ARTWORK", 1)
+                p:Show()
+                r.placeholder:Hide()
+            else
+                r.placeholder:SetTexture(MAPICON .. (r.enemy and "kill_32" or "talk_32"))
+                r.placeholder:Show()
+            end
+            -- a portrait drawn for another row's old name: not ours
+            for n, tex in pairs(portraits) do
+                if n ~= r.unitName and tex:GetParent() == r.slot then tex:Hide() end
+            end
+            if fontPath then OXP.Fonts.Apply(r.text, fontPath, 12, "") end
+            r.text:SetText(r.unitName)
+            r.text:SetTextColor(unpack(r.done and C.faint or C.text))
+        end
+    end
+    local key = GetBindingKey and GetBindingKey("CLICK OpenXPTargetButton:LeftButton")
+    box.key:SetText(key and (GetBindingText and GetBindingText(key, "KEY_") or key) or "")
+end
 
 function Buttons.Refresh()
     if InCombatLockdown and InCombatLockdown() then
@@ -187,18 +356,51 @@ function Buttons.Refresh()
     else
         item:Hide()
     end
-    local name = s.targetButton ~= false and Engine.GetGuide() and Buttons.WantedTarget() or nil
-    if name ~= target.unitName then
-        target.unitName = name
-        if name then
-            target:SetAttribute("type", "macro")
-            target:SetAttribute("macrotext", "/cleartarget\n/targetexact " .. name)
-        else
-            target:SetAttribute("type", nil)
+
+    local list = (s.targetButton ~= false and Engine.GetGuide()) and Buttons.WantedTargets() or {}
+    Buttons.count = #list
+    for i = 1, MAX_ROWS do
+        local e = list[i]
+        local r = e and Row(i) or rows[i]
+        if r then
+            local name = e and e.name or nil
+            local macro = e and (i == 1 and AllMacro(list) or ("/cleartarget\n/targetexact " .. name)) or nil
+            if macro ~= r.macro then
+                r.macro = macro
+                if macro then
+                    r:SetAttribute("type", "macro")
+                    r:SetAttribute("macrotext", macro)
+                else
+                    r:SetAttribute("type", nil)
+                    r:SetAttribute("macrotext", nil)
+                end
+            end
+            r.unitName, r.enemy, r.done = name, e and e.enemy, nil
+            r:SetShown(e ~= nil)
         end
     end
-    target.label:SetText(name or "")
-    target:SetShown(name ~= nil)
+    target.unitName = list[1] and list[1].name or nil
+    box.title:SetText(#list > 0 and list[1].enemy and L("TARGETS") or L("TALK TO"))
+    if OXP.Fonts then
+        OXP.Fonts.Apply(box.title, OXP.Fonts.Path(), 10, "")
+        OXP.Fonts.Apply(box.key, OXP.Fonts.Path(), 10, "")
+    end
+    box:SetHeight(20 + math.max(1, #list) * ROW_H)
+    Buttons.PaintRows()
+    box:SetShown(#list > 0)
+end
+
+-- In combat the list can't change, but a row whose mob is done greys out.
+function Buttons.Dim()
+    if not (InCombatLockdown and InCombatLockdown()) then return end
+    local still = {}
+    for _, e in ipairs((OXP.settings.targetButton ~= false and Engine.GetGuide()) and Buttons.WantedTargets() or {}) do
+        still[e.name] = true
+    end
+    for _, r in ipairs(rows) do
+        if r.unitName then r.done = not still[r.unitName] end
+    end
+    Buttons.PaintRows()
 end
 
 local function UpdateCooldown()
@@ -208,12 +410,15 @@ local function UpdateCooldown()
     end
 end
 
+local function Saved(pos)
+    return type(pos) == "table" and type(pos[1]) == "string" and type(pos[3]) == "number" and pos or nil
+end
+
 function Buttons.Place()
     if InCombatLockdown and InCombatLockdown() then return end
     local card = OXP.Card and OXP.Card.frame
     item:ClearAllPoints()
-    target:ClearAllPoints()
-    local pos = OXP.settings.itemButtonPos
+    local pos = Saved(OXP.settings.itemButtonPos)
     if pos then
         item:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
     elseif card and card:GetLeft() and card:GetTop() then
@@ -225,10 +430,20 @@ function Buttons.Place()
     else
         item:SetPoint("CENTER", UIParent, "CENTER", -200, 0)
     end
-    target:SetPoint("TOP", item, "BOTTOM", 0, -18)
+    box:ClearAllPoints()
+    local tpos = Saved(OXP.settings.targetsPos)
+    if tpos then
+        box:SetPoint(tpos[1], UIParent, tpos[2], tpos[3], tpos[4])
+    elseif card and card:GetLeft() and card:GetTop() then
+        local scale = card:GetEffectiveScale() / UIParent:GetEffectiveScale()
+        box:SetPoint("TOPRIGHT", UIParent, "BOTTOMLEFT", card:GetLeft() * scale - 8, card:GetTop() * scale - 52)
+    else
+        box:SetPoint("CENTER", UIParent, "CENTER", -200, -60)
+    end
 end
 
--- Shift-drag moves the pair (unless frames are locked)
+-- Shift-drag moves the item button; the targets list moves by its title
+-- (any drag on it). Neither while frames are locked, nor in combat.
 item:RegisterForDrag("LeftButton")
 item:SetScript("OnDragStart", function(self)
     if OXP.settings.lockFrames or not (IsShiftKeyDown and IsShiftKeyDown()) then return end
@@ -239,8 +454,25 @@ item:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     local point, _, rel, x, y = self:GetPoint()
     OXP.settings.itemButtonPos = { point, rel, x, y }
-    target:ClearAllPoints()
-    target:SetPoint("TOP", self, "BOTTOM", 0, -18)
+end)
+item:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    if self.itemID then GameTooltip:SetItemByID(self.itemID) end
+    GameTooltip:AddLine(L("Bind a key: Key Bindings > AddOns > OpenXP"), 0.6, 0.6, 0.6)
+    GameTooltip:AddLine(L("Shift-drag to move it."), 0.6, 0.6, 0.6)
+    GameTooltip:Show()
+end)
+item:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+box:SetScript("OnDragStart", function(self)
+    if OXP.settings.lockFrames and not (IsAltKeyDown and IsAltKeyDown()) then return end
+    if InCombatLockdown and InCombatLockdown() then return end
+    self:StartMoving()
+end)
+box:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    local point, _, rel, x, y = self:GetPoint()
+    OXP.settings.targetsPos = { point, rel, x, y }
 end)
 
 local function Soon() OXP.Soon("ACTION_BUTTONS", Buttons.Refresh) end
@@ -249,6 +481,15 @@ for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "SETTINGS_
     OXP.Listen(m, Soon)
 end
 OXP.On("PLAYER_REGEN_ENABLED", function() if pending then Buttons.Refresh() end end)
+-- in combat: grey out what's done (the list itself waits for combat to end)
+for _, m in ipairs({ "STEPS_UPDATED", "QUESTS_CHANGED" }) do
+    OXP.Listen(m, function() if InCombatLockdown and InCombatLockdown() then Buttons.Dim() end end)
+end
+-- portraits: from your target, the unit under the mouse, nameplates
+OXP.On("PLAYER_TARGET_CHANGED", function() Buttons.SeeUnit("target") end)
+OXP.On("UPDATE_MOUSEOVER_UNIT", function() Buttons.SeeUnit("mouseover") end)
+OXP.On("NAME_PLATE_UNIT_ADDED", function(_, unit) Buttons.SeeUnit(unit) end)
+OXP.On("UPDATE_BINDINGS", function() Buttons.PaintRows() end)
 OXP.On("BAG_UPDATE_COOLDOWN", UpdateCooldown)
 OXP.OnReady(function()
     Buttons.Place()

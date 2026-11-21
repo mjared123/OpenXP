@@ -237,9 +237,17 @@ function Tips.GuideStep(unitName, npcId)
         local step = steps[pos]
         local state = Engine.StepState(pos)
         if state == "current" or state == "todo" then
+            -- a mob whose objective is done no longer counts (Goals.NeededMobs)
+            local needed
             for _, g in ipairs(step.goals) do
                 local role
-                if (g[1] == "mob" or g[1] == "target") and g.name and SameName(g.name, unitName) then
+                if g[1] == "mob" and g.name and SameName(g.name, unitName) then
+                    if not needed then
+                        needed = {}
+                        for _, m in ipairs(OXP.Goals.NeededMobs(step)) do needed[m.name:lower()] = true end
+                    end
+                    if needed[g.name:lower()] then role = "mob" end
+                elseif g[1] == "target" and g.name and SameName(g.name, unitName) then
                     role = g[1]
                 elseif npcId and (g[1] == "accept" or g[1] == "turnin") and g.quest then
                     local info = QuestDB.Info(g.quest)
@@ -536,7 +544,7 @@ function Tips.UpdatePlate(unit)
     local f = PlateFrame(plate)
     local big = info.kind == "boss"
     f.badge:SetSize(big and 26 or 22, big and 26 or 22)
-    f.badge:SetTexture(MAP .. (PLATE_ICON[info.kind] or "kill"))
+    f.badge:SetTexture(OXP.Util.IconFile(MAP .. (PLATE_ICON[info.kind] or "kill"), big and 26 or 22, f))
     local icon = info.item and GetItemIcon and GetItemIcon(info.item)
     f.item:SetTexture(icon)
     f.item:SetShown(icon ~= nil)

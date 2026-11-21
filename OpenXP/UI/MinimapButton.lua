@@ -49,7 +49,7 @@ end)
 b:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
 b:SetScript("OnClick", function(self, button)
     if button == "RightButton" then
-        OXP.GuidePicker.Toggle(self)
+        OXP.GuidePicker.Toggle("cursor")
     elseif not OXP.Engine.GetGuide() then
         OXP.SmartStart.Run(false)
         OXP.settings.cardShown = true

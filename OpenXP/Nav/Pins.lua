@@ -120,8 +120,14 @@ local function NewPin()
     return p
 end
 
+local IconFile = OXP.Util.IconFile
+
 local function Style(f, o, size)
     f:SetSize(size, size)
+    -- the file nearest the size on screen (crisp, not shrunk from 128 px)
+    f.disc:SetTexture(IconFile(ICON.disc, size, f))
+    f.ring:SetTexture(IconFile(ICON.ring, size, f))
+    f.glow:SetTexture(IconFile(ICON.glow, size * 1.9, f))
     local badge = o.ring ~= nil
     f.disc:SetShown(badge)
     f.ring:SetShown(badge)
@@ -129,7 +135,7 @@ local function Style(f, o, size)
     f.tex:SetShown(o.icon ~= nil)
     f.icon = o.icon
     if o.icon then
-        f.tex:SetTexture(o.icon)
+        f.tex:SetTexture(IconFile(o.icon, size, f))
         f.tex:SetVertexColor(1, 1, 1, o.alpha or 1)
     end
     local font, flags = OXP.Fonts.Path(), "OUTLINE"

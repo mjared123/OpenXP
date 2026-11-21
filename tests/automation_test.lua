@@ -200,13 +200,72 @@ do
     t.eq(B.item:GetAttribute("item"), "item:9001", "nothing changes in combat")
     combat = false
     game:Fire("PLAYER_REGEN_ENABLED")
-    t.ok(B.target:GetAttribute("macrotext"):find("Gryan", 1, true) == nil or true, "after combat it catches up")
+    t.ok(not B.target:IsShown(), "after combat it catches up: the objective is done, nothing left to target")
     local anchor = B.item.points[1] and B.item.points[1][2]
     t.ok(anchor ~= OXP.Card.frame and B.target.points[1][2] ~= OXP.Card.frame,
         "secure buttons aren't anchored to the card (in game the card got blocked in combat)")
     OXP.settings.targetButton = false
     B.Refresh()
     t.ok(not B.target:IsShown(), "target button off in settings")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- targets: only the mobs still needed (Loggers done, Deforesters left)")
+do
+    local game, OXP = newGame({ level = 23 })
+    InCombatLockdown = function() return false end
+    addGuide(OXP, {
+        { { "text", text = "Windshear Crag: kill these as you meet them" },
+          { "complete", quest = 1071, obj = 1 }, { "mob", name = "Venture Co. Logger" },
+          { "complete", quest = 1071, obj = 2 }, { "mob", name = "Venture Co. Deforester" },
+          { "complete", quest = 1093, obj = 1 }, { "mob", name = "Venture Co. Operator" } },
+        { { "turnin", quest = 1071 }, { "target", name = "Gaxim Rustfizzle" } },
+    })
+    game:Accept(1071, 2)
+    game:Accept(1093, 1)
+    local B = OXP.ActionButtons
+    B.Refresh()
+    local names = {}
+    for _, e in ipairs(B.WantedTargets()) do names[#names + 1] = e.name end
+    t.eq(table.concat(names, ","), "Venture Co. Logger,Venture Co. Deforester,Venture Co. Operator", "all three to start")
+    game:FinishObjective(1071, 1)
+    B.Refresh()
+    names = {}
+    for _, e in ipairs(B.WantedTargets()) do names[#names + 1] = e.name end
+    t.eq(table.concat(names, ","), "Venture Co. Deforester,Venture Co. Operator", "Loggers done: off the list")
+    t.eq(B.target.unitName, "Venture Co. Deforester", "the bindable button: the first still needed")
+    local macro = B.target:GetAttribute("macrotext")
+    t.ok(macro and not macro:find("Logger", 1, true), "its macro no longer targets Loggers")
+    t.ok(macro:find("Deforester", 1, true) and macro:find("Operator", 1, true), "but the others")
+    t.ok(B.rows[2]:IsShown() and B.rows[2]:GetAttribute("macrotext"):find("Operator", 1, true), "a row per mob")
+    t.ok(B.box:IsShown(), "the list is shown")
+    local OnDragStart = B.box.scripts.OnDragStart
+    t.ok(OnDragStart ~= nil, "and can be dragged")
+    -- the nameplate/tooltip side: a Logger no longer counts for the step
+    t.eq(OXP.Tooltips and OXP.Tooltips.GuideStep and select(3, OXP.Tooltips.GuideStep("Venture Co. Logger")) or nil, nil,
+        "nameplates: Loggers aren't marked any more")
+    t.eq(OXP.Tooltips and select(3, OXP.Tooltips.GuideStep("Venture Co. Deforester")), "mob", "Deforesters still are")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+print("-- a checkpoint into another zone counts once you're out in that zone")
+do
+    local game, OXP = newGame({ level = 23, map = 1440, x = 40, y = 61 })
+    addGuide(OXP, {
+        { { "goto", zone = "1440", x = 37, y = 51 }, { "accept", quest = 1034 } },
+        { { "text", text = "Stonetalon Mountains" }, { "reach", text = "Windshear Crag", x = 76.5, y = 45.5, zone = "1442" } },
+        { { "goto", zone = "1442", x = 61, y = 55 }, { "accept", quest = 1071 } },
+    })
+    game:Accept(1034, 0)
+    local E = OXP.Engine
+    game:Flush()
+    t.eq(E.GetPosition(), 2, "on the checkpoint step")
+    local reach = E.GetSteps()[2].goals[2]
+    t.ok(reach.entry, "a reach into another zone is marked as an entry")
+    t.eq(OXP.Goals.State(reach, E.GetSteps()[2].marks), "todo", "still in Ashenvale: not yet")
+    game.pos = { map = 1442, x = 70, y = 52 } -- out of the tunnel, far from the spot
+    t.eq(OXP.Goals.State(reach, E.GetSteps()[2].marks), "done", "out in Stonetalon: passed")
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 

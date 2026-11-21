@@ -37,6 +37,61 @@ Style.C = {
 }
 local C = Style.C
 
+-- Skins: the card's look. Each one changes a few of the colours above in
+-- place (so everything built from them follows) plus how strong the card's
+-- header band, lines and borders are. Pick one under Settings > Guide card.
+local function rgb(r, g, b, a) return { r / 255, g / 255, b / 255, a } end
+local DEFAULT = {}
+for k, v in pairs(C) do DEFAULT[k] = { v[1], v[2], v[3], v[4] } end
+Style.SKIN_ORDER = { "midnight", "minimal", "glass", "classic", "ember", "forest" }
+Style.SKINS = {
+    midnight = { name = "Midnight", header = 0.03, line = 0.07 },
+    minimal = { name = "Minimal (transparent)", header = 0, line = 0.05,
+                bg = { 0, 0, 0, 0.32 }, border = { 1, 1, 1, 0 } },
+    glass = { name = "Glass", header = 0.05, line = 0.08,
+              bg = rgb(18, 26, 38, 0.62), border = { 1, 1, 1, 0.16 } },
+    classic = { name = "Classic gold", header = 0.04, line = 0.08,
+                bg = rgb(20, 16, 11, 0.95), border = rgb(196, 160, 86, 0.55),
+                blue = rgb(242, 195, 92), accentDark = rgb(120, 88, 30) },
+    ember = { name = "Ember", header = 0.04, line = 0.07,
+              bg = rgb(22, 13, 12, 0.94), border = rgb(255, 112, 67, 0.25),
+              blue = rgb(255, 128, 76), accentDark = rgb(120, 46, 24) },
+    forest = { name = "Forest", header = 0.04, line = 0.07,
+               bg = rgb(12, 20, 15, 0.94), border = rgb(61, 187, 122, 0.25),
+               blue = rgb(84, 204, 140), accentDark = rgb(28, 92, 58) },
+}
+local SKINNED = { "bg", "border", "blue", "accentDark" }
+
+--- The skin in use (its table); `Style.skin` after Style.ApplySkin.
+Style.skin = Style.SKINS.midnight
+
+--- Switches the colours to skin `key` (unknown keys: Midnight). The colour
+--- tables change in place; windows repaint on SETTINGS_CHANGED.
+function Style.ApplySkin(key)
+    local skin = Style.SKINS[key] or Style.SKINS.midnight
+    Style.skin, Style.skinKey = skin, key
+    for _, k in ipairs(SKINNED) do
+        local from = skin[k] or DEFAULT[k]
+        local to = C[k]
+        to[1], to[2], to[3], to[4] = from[1], from[2], from[3], from[4]
+    end
+    if Style.RepaintBackdrops then Style.RepaintBackdrops() end
+    return skin
+end
+
+-- first in line on a settings change, so every window repaints in the new one
+OXP.Listen("SETTINGS_CHANGED", function()
+    local key = OXP.settings and OXP.settings.skin or "midnight"
+    if Style.skinKey ~= key then Style.ApplySkin(key) end
+end)
+
+function Style.SkinChoices()
+    local list = {}
+    local L = OXP.L or function(t) return t end
+    for _, k in ipairs(Style.SKIN_ORDER) do list[#list + 1] = { k, L(Style.SKINS[k].name) } end
+    return list
+end
+
 -- spacing: every window uses these, so margins line up everywhere
 Style.S = { xs = 4, sm = 8, md = 12, lg = 16, xl = 24, header = 48, footer = 52, row = 52 }
 local S = Style.S
@@ -50,12 +105,26 @@ local function Fill(tex, color, alpha)
 end
 Style.Fill = Fill
 
+-- every backdrop, with the colour tables it was painted from, so a skin
+-- change repaints them (the tables change in place)
+local backdrops = setmetatable({}, { __mode = "k" })
+
 --- A 1px-bordered dark backdrop.
 function Style.Backdrop(f, bg, border)
     f:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1,
                     insets = { left = 1, right = 1, top = 1, bottom = 1 } })
-    f:SetBackdropColor(unpack(bg or C.bg))
-    f:SetBackdropBorderColor(unpack(border or C.border))
+    bg, border = bg or C.bg, border or C.border
+    backdrops[f] = { bg, border }
+    f:SetBackdropColor(unpack(bg))
+    f:SetBackdropBorderColor(unpack(border))
+end
+
+--- Repaints every backdrop in the current skin's colours.
+function Style.RepaintBackdrops()
+    for f, spec in pairs(backdrops) do
+        f:SetBackdropColor(unpack(spec[1]))
+        f:SetBackdropBorderColor(unpack(spec[2]))
+    end
 end
 
 function Style.FontSize(offset)
@@ -380,9 +449,12 @@ function Style.Slider(parent, width, opts)
     s:SetScript("OnMouseDown", function(self)
         self.dragging = true
         FromCursor()
+        self:SetScript("OnUpdate", FromCursor) -- only while dragging
     end)
-    s:SetScript("OnMouseUp", function(self) self.dragging = false end)
-    s:SetScript("OnUpdate", function(self) if self.dragging then FromCursor() end end)
+    s:SetScript("OnMouseUp", function(self)
+        self.dragging = false
+        self:SetScript("OnUpdate", nil)
+    end)
     s:SetScript("OnMouseWheel", function(self, delta) self:SetValue((opts.get() or lo) + delta * step) end)
     s:SetScript("OnEnter", function(self) Style.Tint(self.thumb, C.blue) end)
     s:SetScript("OnLeave", function(self) Style.Tint(self.thumb, { 1, 1, 1 }) end)
@@ -532,6 +604,7 @@ end
 ---------------------------------------------------------------------------
 
 --- A scroll area: area.content is what you fill; call area:SetContentHeight(h).
+--- Scroll with the wheel, drag the thumb, or click the track to jump a page.
 function Style.ScrollArea(parent)
     local area = CreateFrame("ScrollFrame", nil, parent)
     if area.SetClipsChildren then area:SetClipsChildren(true) end
@@ -541,14 +614,32 @@ function Style.ScrollArea(parent)
     area.content = content
     area.offset = 0
     area:EnableMouseWheel(true)
-    local bar = CreateFrame("Frame", nil, area)
-    bar:SetWidth(4)
-    bar:SetPoint("TOPRIGHT", -2, -2)
-    bar:SetPoint("BOTTOMRIGHT", -2, 2)
-    bar.thumb = bar:CreateTexture(nil, "OVERLAY")
-    bar.thumb:SetWidth(4)
-    Fill(bar.thumb, { 1, 1, 1 }, 0.18)
+    -- the track: a 12 px strip you can click, with a thin thumb in it that
+    -- widens under the mouse and can be dragged
+    local bar = CreateFrame("Button", nil, area)
+    bar:SetWidth(12)
+    bar:SetPoint("TOPRIGHT", 0, -2)
+    bar:SetPoint("BOTTOMRIGHT", 0, 2)
+    bar:SetFrameLevel(area:GetFrameLevel() + 20)
+    bar.track = bar:CreateTexture(nil, "BACKGROUND")
+    bar.track:SetPoint("TOPRIGHT", -3, 0)
+    bar.track:SetPoint("BOTTOMRIGHT", -3, 0)
+    bar.track:SetWidth(4)
+    Fill(bar.track, { 1, 1, 1 }, 0.04)
+    local thumb = CreateFrame("Button", nil, bar)
+    thumb:SetWidth(12)
+    thumb:SetFrameLevel(bar:GetFrameLevel() + 1)
+    thumb.tex = thumb:CreateTexture(nil, "OVERLAY")
+    thumb.tex:SetPoint("TOPRIGHT", -3, 0)
+    thumb.tex:SetPoint("BOTTOMRIGHT", -3, 0)
+    thumb.tex:SetWidth(4)
+    Fill(thumb.tex, { 1, 1, 1 }, 0.22)
+    bar.thumb = thumb
     area.bar = bar
+    local function Hot(on)
+        thumb.tex:SetWidth(on and 6 or 4)
+        Fill(thumb.tex, on and C.blue or { 1, 1, 1 }, on and 0.9 or 0.22)
+    end
     function area:Max()
         return math.max(0, (self.contentHeight or 0) - (self:GetHeight() or 0))
     end
@@ -556,12 +647,13 @@ function Style.ScrollArea(parent)
         local max = self:Max()
         self.offset = math.max(0, math.min(max, self.offset))
         self:SetVerticalScroll(self.offset)
-        local h = self:GetHeight() or 0
+        local h = (self:GetHeight() or 0) - 4
         if max <= 0 or h <= 0 then bar:Hide() return end
-        local th = math.max(24, h * h / (self.contentHeight or 1))
-        bar.thumb:SetHeight(th)
-        bar.thumb:ClearAllPoints()
-        bar.thumb:SetPoint("TOP", bar, "TOP", 0, -(h - 4 - th) * self.offset / max)
+        local th = math.min(h, math.max(24, h * h / math.max(1, self.contentHeight or 1)))
+        thumb:SetHeight(th)
+        thumb:ClearAllPoints()
+        thumb:SetPoint("TOP", bar, "TOP", 0, -(h - th) * self.offset / max)
+        bar.travel = h - th
         bar:Show()
     end
     function area:SetContentHeight(hgt)
@@ -573,6 +665,42 @@ function Style.ScrollArea(parent)
         self.offset = y
         self:Paint()
     end
+    -- dragging the thumb: the content follows the mouse
+    local function CursorY()
+        local _, y = GetCursorPosition()
+        return y / (bar:GetEffectiveScale() or 1)
+    end
+    thumb:RegisterForDrag("LeftButton")
+    local function Follow(self)
+        local travel = bar.travel or 0
+        if travel <= 0 then return end
+        local dy = self.startY - CursorY()
+        area:ScrollTo(self.startOffset + dy / travel * area:Max())
+    end
+    thumb:SetScript("OnMouseDown", function(self)
+        self.startY, self.startOffset = CursorY(), area.offset
+        self.dragging = true
+        self:SetScript("OnUpdate", Follow) -- only while dragging
+        Hot(true)
+    end)
+    thumb:SetScript("OnMouseUp", function(self)
+        self.dragging = false
+        self:SetScript("OnUpdate", nil)
+        Hot(self:IsMouseOver())
+    end)
+    thumb:SetScript("OnHide", function(self)
+        self.dragging = false
+        self:SetScript("OnUpdate", nil)
+    end)
+    thumb:SetScript("OnEnter", function() Hot(true) end)
+    thumb:SetScript("OnLeave", function(self) if not self.dragging then Hot(false) end end)
+    -- clicking the track above or below the thumb: a page that way
+    bar:SetScript("OnClick", function()
+        local top = thumb:GetTop()
+        local y = CursorY()
+        local page = (area:GetHeight() or 100) * 0.9
+        if top and y > top then area:ScrollTo(area.offset - page) else area:ScrollTo(area.offset + page) end
+    end)
     area:SetScript("OnMouseWheel", function(self, delta) self:ScrollTo(self.offset - delta * 40) end)
     area:SetScript("OnSizeChanged", function(self, w)
         if w and w > 0 then content:SetWidth(w) end

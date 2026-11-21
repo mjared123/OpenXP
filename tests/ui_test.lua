@@ -669,4 +669,26 @@ do
     t.eq(bad, 0, "texts with a colour tag left over")
 end
 
+------------------------------------------------------------------------
+print("-- skins: picking one repaints the card, and Midnight puts it back")
+do
+    local game, OXP = newGame({ level = 21 })
+    local C, Style = OXP.Style.C, OXP.Style
+    local bg = { C.bg[1], C.bg[2], C.bg[3], C.bg[4] }
+    t.eq(#Style.SkinChoices(), #Style.SKIN_ORDER, "every skin is in the Settings list")
+    OXP.settings.skin = "minimal"
+    OXP.Send("SETTINGS_CHANGED")
+    t.eq(Style.skinKey, "minimal", "the skin is switched")
+    t.ok(C.bg[4] < 0.5, "Minimal is see-through")
+    t.eq(C.border[4], 0, "Minimal has no border")
+    t.eq(OXP.Card.skinKey, "minimal", "the card repainted")
+    OXP.settings.skin = "classic"
+    OXP.Send("SETTINGS_CHANGED")
+    t.ok(C.blue[1] > 0.9 and C.blue[3] < 0.5, "Classic gold's accent is gold")
+    OXP.settings.skin = "nope"
+    OXP.Send("SETTINGS_CHANGED")
+    t.eq(C.bg[4], bg[4], "an unknown skin falls back to Midnight")
+    t.eq(Style.skin, Style.SKINS.midnight, "as Midnight")
+end
+
 return t.fails

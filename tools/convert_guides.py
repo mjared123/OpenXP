@@ -340,8 +340,10 @@ def convert_file(path):
             "-- (https://github.com/fitzforge/polestar, commit %s, GPL-3.0)," % inserts.get("commit", "?"),
             "-- added by tools/import_polestar.py; see NOTICE.md.",
         ]
+    out += ["local _, OXP = ..."]
+    if faction:
+        out += [line % faction if "%s" in line else line for line in FACTION_GUARD]
     out += [
-        "local _, OXP = ...",
         "OXP.AddGuides({",
         "  file = %s," % lua_str(os.path.splitext(name)[0]),
     ]
@@ -350,6 +352,14 @@ def convert_file(path):
     out += [render_guide(g) for g in guides]
     out.append("})")
     return "\n".join(out) + "\n", guides
+
+
+FACTION_GUARD = [
+    "-- Only your own faction's guides are loaded (half the memory). A character",
+    "-- that hasn't picked a side yet (\"Neutral\") gets both.",
+    "local myFaction = UnitFactionGroup and UnitFactionGroup(\"player\")",
+    "if (myFaction == \"Alliance\" or myFaction == \"Horde\") and myFaction ~= \"%s\" then return end",
+]
 
 
 GUIDES_DIR = os.path.join(ROOT, "OpenXP", "Guides")

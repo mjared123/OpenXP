@@ -8,6 +8,10 @@
 -- This file is part of OpenXP and is licensed under the GNU General Public License, version 3
 -- (see LICENSE in this folder).
 local _, OXP = ...
+-- Only your own faction's guides are loaded (half the memory). A character
+-- that hasn't picked a side yet ("Neutral") gets both.
+local myFaction = UnitFactionGroup and UnitFactionGroup("player")
+if (myFaction == "Alliance" or myFaction == "Horde") and myFaction ~= "Alliance" then return end
 OXP.AddGuides({
   file = "Alliance-SoupEngine-Test-PoleStar-01-60",
   faction = "Alliance",

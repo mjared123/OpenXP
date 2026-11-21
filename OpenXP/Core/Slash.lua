@@ -38,6 +38,20 @@ SlashCmdList.OPENXP = function(msg) OXP.RunCommand(msg) end
 OXP.AddCommand("perf", "time each part of OpenXP (/oxp perf, then /oxp perf again to see it)", function(rest)
     OXP.Perf.Command(rest:lower())
 end)
+OXP.AddCommand("mem", "show how much memory OpenXP and its maps use", function()
+    if not (UpdateAddOnMemoryUsage and GetAddOnMemoryUsage) then return end
+    UpdateAddOnMemoryUsage()
+    local total = 0
+    for _, name in ipairs({ "OpenXP", "OpenXP_Nav" }) do
+        local loaded = (C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded or function() return true end)(name)
+        if loaded then
+            local kb = GetAddOnMemoryUsage(name) or 0
+            total = total + kb
+            OXP.Print("%s: %.1f MB", name, kb / 1024)
+        end
+    end
+    OXP.Print("Total: %.1f MB (the game frees unused memory on its own over time).", total / 1024)
+end)
 OXP.AddCommand("debug", "turn debug messages on or off", function()
     OXP.settings.debug = not OXP.settings.debug
     OXP.Print("Debug messages %s.", OXP.settings.debug and "on" or "off")

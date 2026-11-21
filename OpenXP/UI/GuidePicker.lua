@@ -127,15 +127,29 @@ function Picker.MenuEntries()
     }
 end
 
+--- Where the menu opens: "cursor" (a right-click: its top-left corner at
+--- the mouse, kept on screen), a frame (above it, a button's menu), or
+--- where it was last.
 function Picker.Show(anchor)
     if not menu then BuildMenu() end
-    if anchor then
+    FillMenu(Picker.MenuEntries())
+    if anchor == "cursor" and GetCursorPosition then
+        local x, y = GetCursorPosition()
+        local scale = menu:GetEffectiveScale() or 1
+        x, y = x / scale, y / scale
+        local h = menu:GetHeight() or 200
+        local sw, sh = UIParent:GetWidth() or 1920, UIParent:GetHeight() or 1080
+        -- open down and right from the mouse; flip when that would leave the screen
+        local point = (y - h < 0) and "BOTTOM" or "TOP"
+        point = point .. ((x + MENU_W > sw) and "RIGHT" or "LEFT")
+        menu:ClearAllPoints()
+        menu:SetPoint(point, UIParent, "BOTTOMLEFT", x, math.min(y, sh))
+    elseif anchor then
         menu:ClearAllPoints()
         menu:SetPoint("BOTTOMRIGHT", anchor, "TOPRIGHT", 0, 4)
     elseif not menu:GetPoint() then
         menu:SetPoint("CENTER")
     end
-    FillMenu(Picker.MenuEntries())
     Style.Fade(menu, true, 0.12)
 end
 
@@ -153,7 +167,7 @@ Picker.menuFrame = function() return menu end
 -- Pick a guide
 ---------------------------------------------------------------------------
 
-local WIN_W, WIN_H, LIST_W = 820, 560, 340
+local WIN_W, WIN_H, LIST_W = 820, 600, 340
 local LIST_ROW, LIST_HEAD = 40, 30
 local win
 local selected        -- the guide shown in the details pane
@@ -180,27 +194,90 @@ local function Percent(g)
     return math.floor(done / total * 100 + 0.5), done, total
 end
 
---- The list as rows: { header = text } and { guide = g }, filtered by
---- the search text (zone, group or a level inside the range).
-function Picker.ListRows(search)
+---------------------------------------------------------------------------
+-- Tabs: one per kind of guide (Leveling, Dungeons, ...), sections inside
+---------------------------------------------------------------------------
+
+-- "OpenXP Leveling (Alliance)" -> "Leveling"; "SoupEngine Test (Horde)" -> "SoupEngine Test"
+local function TabLabel(group)
+    local name = GroupTitle(group)
+    return (name:gsub("^OpenXP%s+", ""))
+end
+
+-- a section heading inside a tab: "OpenXP 1-20" -> "LEVELS 1-20"
+local function SectionOf(g)
+    local sub = g.subgroup and tostring(g.subgroup)
+    local range = sub and sub:match("^OpenXP%s+(%d+%s*%-%s*%d+)$")
+    if range then return fmt(L("Levels %s"), range) end
+    return nil
+end
+
+--- The tabs for this character: { { key, label, guides = {...} }, ... } in
+--- load order (a group of each faction is one tab).
+function Picker.Tabs()
+    local out, index = {}, {}
+    for _, group in ipairs(OXP.Registry.Groups()) do
+        local label = TabLabel(group.name)
+        local tab = index[label]
+        if not tab then
+            tab = { key = label, label = label, guides = {} }
+            index[label] = tab
+            out[#out + 1] = tab
+        end
+        for _, g in ipairs(group.guides) do tab.guides[#tab.guides + 1] = g end
+    end
+    return out
+end
+
+local function Matches(g, search, level)
+    if search == "" then return true end
+    if level and g.minLevel and level >= g.minLevel and level <= (g.maxLevel or g.minLevel) then return true end
+    return Zone(g):lower():find(search, 1, true) ~= nil or tostring(g.group):lower():find(search, 1, true) ~= nil
+end
+
+local function AddTabRows(out, tab, search, level, withTabName)
+    local section, count = nil, 0
+    local headerAt
+    for _, g in ipairs(tab.guides) do
+        if Matches(g, search, level) then
+            local sec = SectionOf(g) or (withTabName and tab.label) or tab.label
+            if withTabName and SectionOf(g) then sec = tab.label .. "  ·  " .. sec end
+            if sec ~= section then
+                section = sec
+                out[#out + 1] = { header = sec, count = 0 }
+                headerAt = #out
+            end
+            out[headerAt].count = out[headerAt].count + 1
+            out[#out + 1] = { guide = g }
+            count = count + 1
+        end
+    end
+    return count
+end
+
+--- The list as rows: { header = text, count = n } and { guide = g }. With
+--- search text (a zone, a group or a level inside the range), every tab is
+--- searched; without, the tab `tabKey` (default: the open one).
+function Picker.ListRows(search, tabKey)
     search = (search or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
     local level = tonumber(search)
     local out = {}
-    for _, group in ipairs(OXP.Registry.Groups()) do
-        local hits = {}
-        for _, g in ipairs(group.guides) do
-            local ok = search == ""
-                or (level and g.minLevel and level >= g.minLevel and level <= (g.maxLevel or g.minLevel))
-                or Zone(g):lower():find(search, 1, true)
-                or tostring(group.name):lower():find(search, 1, true)
-            if ok then hits[#hits + 1] = g end
-        end
-        if #hits > 0 then
-            out[#out + 1] = { header = GroupTitle(group.name), count = #hits }
-            for _, g in ipairs(hits) do out[#out + 1] = { guide = g } end
-        end
+    local tabs = Picker.Tabs()
+    if search ~= "" then
+        for _, tab in ipairs(tabs) do AddTabRows(out, tab, search, level, #tabs > 1) end
+        return out
     end
+    local want = tabKey or Picker.tab
+    local tab = tabs[1]
+    for _, t in ipairs(tabs) do if t.key == want then tab = t end end
+    if tab then AddTabRows(out, tab, "", nil, false) end
     return out
+end
+
+--- The tab a guide is in.
+function Picker.TabOf(g)
+    if not g then return nil end
+    return TabLabel(g.group)
 end
 
 local function ForYourLevel(g)
@@ -266,6 +343,7 @@ end
 
 function Picker.FillList()
     local data = Picker.ListRows(query)
+    Picker.PaintTabs()
     local y = 0
     local current = OXP.Engine.GetGuide()
     for i = 1, math.max(#data, #listRows) do
@@ -275,7 +353,7 @@ function Picker.FillList()
             local h = e.header and LIST_HEAD or LIST_ROW
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", 0, -y)
-            row:SetPoint("RIGHT", win.list.content, "RIGHT", -8, 0)
+            row:SetPoint("RIGHT", win.list.content, "RIGHT", -14, 0)
             row:SetHeight(h)
             row.guide = e.guide
             row.head:SetShown(e.header ~= nil)
@@ -424,21 +502,89 @@ local function BuildDetails(parent)
     return d
 end
 
+local TAB_H = 40
+local tabButtons = {}
+
+--- Show a tab (search text cleared).
+function Picker.SelectTab(key)
+    Picker.tab = key
+    if win then
+        if query ~= "" then win.search:SetText("") query = "" end
+        Picker.FillList()
+        win.list:ScrollTo(0)
+    end
+end
+
+function Picker.PaintTabs()
+    if not win then return end
+    local tabs = Picker.Tabs()
+    local x = Style.S.lg
+    for i = 1, math.max(#tabs, #tabButtons) do
+        local tab, b = tabs[i], tabButtons[i]
+        if tab and not b then
+            b = CreateFrame("Button", nil, win.tabs)
+            b:SetHeight(TAB_H)
+            b.label = Style.Text(b, 13, C.dim)
+            b.label:SetPoint("CENTER", 0, 1)
+            b.count = Style.Text(b, 11, C.faint)
+            b.count:SetPoint("LEFT", b.label, "RIGHT", 6, 0)
+            b.line = b:CreateTexture(nil, "OVERLAY")
+            b.line:SetPoint("BOTTOMLEFT", 6, 0)
+            b.line:SetPoint("BOTTOMRIGHT", -6, 0)
+            b.line:SetHeight(2)
+            Style.Fill(b.line, C.blue)
+            b:SetScript("OnClick", function(self) Picker.SelectTab(self.key) end)
+            b:SetScript("OnEnter", function(self) if self.key ~= Picker.tab then self.label:SetTextColor(unpack(C.text)) end end)
+            b:SetScript("OnLeave", function() Picker.PaintTabs() end)
+            tabButtons[i] = b
+        end
+        if tab then
+            local on = query == "" and tab.key == Picker.tab
+            b.key = tab.key
+            b.label:SetText(tab.label)
+            b.count:SetText(tostring(#tab.guides))
+            b.label:SetTextColor(unpack(on and { 1, 1, 1 } or C.dim))
+            b.line:SetShown(on)
+            local w = (b.label:GetStringWidth() or 60) + (b.count:GetStringWidth() or 10) + 34
+            b:SetWidth(w)
+            b.label:ClearAllPoints()
+            b.label:SetPoint("LEFT", 14, 1)
+            b:ClearAllPoints()
+            b:SetPoint("BOTTOMLEFT", win.tabs, "BOTTOMLEFT", x, 0)
+            x = x + w + 2
+            b:Show()
+        elseif b then
+            b:Hide()
+        end
+    end
+end
+
 local function BuildWindow()
     win = Style.Window("OpenXPGuides", WIN_W, WIN_H, L("Pick a guide"),
-        L("Every guide for your character, by level. Double-click to start."))
+        L("Pick a tab, then a guide. Double-click to start."))
+    -- the tab strip across the top
+    win.tabs = CreateFrame("Frame", nil, win.body)
+    win.tabs:SetPoint("TOPLEFT")
+    win.tabs:SetPoint("TOPRIGHT")
+    win.tabs:SetHeight(TAB_H)
+    win.tabs.bg = win.tabs:CreateTexture(nil, "BACKGROUND")
+    win.tabs.bg:SetAllPoints()
+    Style.Fill(win.tabs.bg, C.panel)
+    local tabLine = Style.Divider(win.tabs)
+    tabLine:SetPoint("BOTTOMLEFT")
+    tabLine:SetPoint("BOTTOMRIGHT")
     -- left: search and list
     local left = CreateFrame("Frame", nil, win.body)
-    left:SetPoint("TOPLEFT")
+    left:SetPoint("TOPLEFT", 0, -TAB_H)
     left:SetPoint("BOTTOMLEFT")
     left:SetWidth(LIST_W)
     left.bg = left:CreateTexture(nil, "BACKGROUND")
     left.bg:SetAllPoints()
     Style.Fill(left.bg, C.panel)
     local line = Style.Divider(win.body, true)
-    line:SetPoint("TOPLEFT", LIST_W, 0)
+    line:SetPoint("TOPLEFT", LIST_W, -TAB_H)
     line:SetPoint("BOTTOMLEFT", LIST_W, 0)
-    win.search = Style.SearchBox(left, LIST_W - S.lg * 2, L("Search a zone or a level"), function(text)
+    win.search = Style.SearchBox(left, LIST_W - S.lg * 2, L("Search every tab: a zone or a level"), function(text)
         query = text
         Picker.FillList()
     end)
@@ -453,7 +599,7 @@ local function BuildWindow()
     win.empty:Hide()
     -- right: details
     local right = CreateFrame("Frame", nil, win.body)
-    right:SetPoint("TOPLEFT", LIST_W + 1, 0)
+    right:SetPoint("TOPLEFT", LIST_W + 1, -TAB_H)
     right:SetPoint("BOTTOMRIGHT")
     win.details = BuildDetails(right)
     win.none = Style.Text(right, 13, C.faint)
@@ -481,6 +627,8 @@ function Picker.ShowGuides()
     end
     win.search:SetText("")
     query = ""
+    -- open on the tab of the guide you're on (or the first)
+    Picker.tab = Picker.TabOf(selected) or (Picker.Tabs()[1] and Picker.Tabs()[1].key)
     local data = Picker.FillList()
     -- scroll the selected guide into view
     local y = 0

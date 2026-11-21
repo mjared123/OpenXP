@@ -74,10 +74,21 @@ local TOLERANCE = 3    -- yards: corners closer than this to a straight line are
 local SEARCH = 4       -- map cells (1%) around a point to look for a graph node
 
 local graphs = {}      -- [map] = unpacked graph, or false
+-- An unpacked zone graph is big (The Barrens: tens of thousands of nodes
+-- and links), so only the last KEEP zones stay unpacked; going back to an
+-- older one unpacks it again (a few milliseconds, once).
+local KEEP = 2
+local recent = {}      -- maps unpacked, most recent last
 
 --- The unpacked graph for a zone (with node map % in g.px, g.py), or nil.
 function G.Graph(nav, map)
-    if graphs[map] ~= nil then return graphs[map] or nil end
+    if graphs[map] ~= nil then
+        if graphs[map] and recent[#recent] ~= map then
+            for i = #recent, 1, -1 do if recent[i] == map then table.remove(recent, i) end end
+            recent[#recent + 1] = map
+        end
+        return graphs[map] or nil
+    end
     local packed = nav and nav.packed and nav.packed[map]
     local f = FRAMES[map]
     if not (packed and f and nav.Unpack) then graphs[map] = false return nil end
@@ -92,10 +103,15 @@ function G.Graph(nav, map)
     g.ydx = abs(left - right) / 100   -- yards per 1% across
     g.ydy = abs(top - bottom) / 100   -- yards per 1% down
     graphs[map] = g
+    recent[#recent + 1] = map
+    while #recent > KEEP do
+        local old = table.remove(recent, 1)
+        graphs[old] = nil -- unpacked again if it's needed
+    end
     return g
 end
 
-function G.Reset() graphs = {} end
+function G.Reset() graphs, recent = {}, {} end
 
 -- Yards between two map % points on graph g's zone.
 local function Yards(g, ax, ay, bx, by)

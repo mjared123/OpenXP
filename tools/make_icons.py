@@ -1,7 +1,9 @@
 """Draw OpenXP 2.0's map, minimap and nameplate icons (Media/Map/*.tga).
 
-Every icon is drawn at 4x and scaled down, so edges are smooth at any size
-the game shows them. Run from the repo root: python3 tools/make_icons.py
+Every icon is drawn at 4x and scaled down to 128, 64 and 32 px
+(name.tga, name_64.tga, name_32.tga). The game draws a texture without
+mipmaps, so a 128 px icon shown 14 px wide on the minimap came out jagged;
+the pins pick the file nearest their size on screen (Nav/Pins.lua Icon). Run from the repo root: python3 tools/make_icons.py
 Needs Pillow. The "!" and "?" use Atkinson Hyperlegible Bold from
 Media/Fonts (SIL Open Font License, see Media/Fonts/licenses).
 """
@@ -19,18 +21,50 @@ SS = 4
 S = SIZE * SS  # drawing size
 
 
-def save_tga(img, name):
+def write_tga(img, path):
     """32-bit uncompressed TGA, top-left origin (like the other Media files)."""
     img = img.convert("RGBA")
     w, h = img.size
     header = struct.pack("<BBBHHBHHHHBB", 0, 0, 2, 0, 0, 0, 0, 0, w, h, 32, 0x28)
     px = img.tobytes("raw", "BGRA")
-    with open(os.path.join(OUT, name + ".tga"), "wb") as f:
+    with open(path, "wb") as f:
         f.write(header + px)
 
 
+def premultiplied_resize(img, size):
+    """Resize without dark fringes: scale colour weighted by alpha."""
+    img = img.convert("RGBA")
+    import numpy as np
+    a = np.asarray(img).astype("float32") / 255.0
+    rgb, al = a[..., :3] * a[..., 3:4], a[..., 3:4]
+    pre = Image.fromarray((np.concatenate([rgb, al], axis=2) * 255).astype("uint8"), "RGBA")
+    pre = pre.resize((size, size), Image.LANCZOS)
+    b = np.asarray(pre).astype("float32") / 255.0
+    al = b[..., 3:4]
+    rgb = np.where(al > 0.0001, b[..., :3] / np.maximum(al, 0.0001), 0)
+    out = np.concatenate([np.clip(rgb, 0, 1), al], axis=2)
+    return Image.fromarray((out * 255 + 0.5).astype("uint8"), "RGBA")
+
+
+def save_tga(img, name):
+    for size in SIZES:
+        im = premultiplied_resize(img, size)
+        if size <= 32:
+            im = sharpen_small(im)
+        write_tga(im, os.path.join(OUT, name + ("" if size == 128 else "_%d" % size) + ".tga"))
+
+
+SIZES = (128, 64, 32)
+
+
 def finish(img):
-    return img.resize((SIZE, SIZE), Image.LANCZOS)
+    """The 128 px icon; save_tga writes the smaller ones from the full drawing."""
+    return img
+
+
+def sharpen_small(im):
+    # a touch of sharpening after the big downscale keeps the outlines crisp
+    return im.filter(ImageFilter.UnsharpMask(radius=0.6, percent=60, threshold=0))
 
 
 def layer():
@@ -67,46 +101,52 @@ def gradient_disc(r, top, bottom, cx=S // 2, cy=S // 2):
     return out
 
 
-def badge(fill_top, fill_bottom, ring, r=200, ring_w=22, rim=(10, 11, 14)):
-    """A round badge: shadow, dark rim, coloured ring, gradient fill, gloss."""
+def badge(fill_top, fill_bottom, ring, r=200, ring_w=22, rim=(12, 13, 17)):
+    """A round badge, flat and high-contrast so it reads at 12 px: a soft
+    shadow, a dark rim, a light ring and a gently shaded fill."""
     img = layer()
-    img.alpha_composite(shadow(disc_mask(r + 10)))
-    img.alpha_composite(gradient_disc(r + 10, rim, rim))
-    img.alpha_composite(gradient_disc(r, tuple(min(255, c + 40) for c in ring), ring))
+    img.alpha_composite(shadow(disc_mask(r + 16), blur=8, offset=5, strength=110))
+    rim_layer = gradient_disc(r + 16, rim, rim)
+    img.alpha_composite(rim_layer)
+    if ring_w > 0:
+        img.alpha_composite(gradient_disc(r, tuple(min(255, c + 25) for c in ring), ring))
     img.alpha_composite(gradient_disc(r - ring_w, fill_top, fill_bottom))
-    # gloss: a faint light band over the top half
-    gloss = layer()
-    gd = ImageDraw.Draw(gloss)
+    # a faint lighter top edge inside the ring, no glossy band
+    hl = layer()
     inner = r - ring_w
-    gd.ellipse((S // 2 - inner * 0.85, S // 2 - inner * 0.95, S // 2 + inner * 0.85, S // 2 + inner * 0.15),
-               fill=(255, 255, 255, 34))
-    m = disc_mask(inner)
-    clipped = layer()
-    clipped.paste(gloss, (0, 0), Image.composite(gloss.getchannel("A"), Image.new("L", (S, S), 0), m))
-    img.alpha_composite(clipped)
+    ImageDraw.Draw(hl).ellipse((S // 2 - inner, S // 2 - inner, S // 2 + inner, S // 2 + inner),
+                               outline=(255, 255, 255, 40), width=10)
+    top = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(top).rectangle((0, 0, S, S // 2), fill=255)
+    hl.putalpha(Image.composite(hl.getchannel("A"), Image.new("L", (S, S), 0), top))
+    img.alpha_composite(hl)
     return img
 
 
-def glyph(img, text, size, color=(255, 255, 255), dy=0, outline=(0, 0, 0, 120)):
+def glyph(img, text, size, color=(255, 255, 255), dy=0, outline=(40, 22, 0, 200)):
+    """A bold glyph with a crisp dark edge (not a blur: blurs go muddy small)."""
     font = ImageFont.truetype(FONT, size)
     d = ImageDraw.Draw(img)
     box = d.textbbox((0, 0), text, font=font)
     w, h = box[2] - box[0], box[3] - box[1]
     x, y = (S - w) // 2 - box[0], (S - h) // 2 - box[1] + dy
-    sh = layer()
-    ImageDraw.Draw(sh).text((x, y + 8), text, font=font, fill=outline)
-    img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(6)))
+    edge = layer()
+    ImageDraw.Draw(edge).text((x, y + 5), text, font=font, fill=outline, stroke_width=9, stroke_fill=outline)
+    img.alpha_composite(edge)
     d.text((x, y), text, font=font, fill=color + (255,))
 
 
 def icon_shape(draw_fn, color=(255, 255, 255)):
-    """An icon drawn white on its own layer, with a soft dark shadow under it."""
+    """An icon drawn white on its own layer, with a crisp dark edge under it."""
     m = Image.new("L", (S, S), 0)
     draw_fn(ImageDraw.Draw(m))
     ic = Image.new("RGBA", (S, S), color + (255,))
     ic.putalpha(m)
+    edge_mask = m.filter(ImageFilter.MaxFilter(13))
+    edge = Image.new("RGBA", (S, S), (20, 10, 8, 170))
+    edge.putalpha(edge_mask.point(lambda v: v * 170 // 255))
     out = layer()
-    out.alpha_composite(shadow(m, blur=6, offset=5, strength=170))
+    out.alpha_composite(edge, (0, 6))
     out.alpha_composite(ic)
     return out
 
@@ -234,5 +274,37 @@ def main():
     save_tga(finish(out), "plate_chevron")
 
 
+def route_textures():
+    """The route line's own textures: a soft-edged stroke, a round cap and a
+    direction chevron, all white (tinted in game)."""
+    # line: 64 x 32, solid across the middle 16 px with a 4 px soft edge each side
+    w, h = 64, 32
+    line = Image.new("RGBA", (w, h), (255, 255, 255, 0))
+    px = line.load()
+    for y in range(h):
+        d = abs(y + 0.5 - h / 2)
+        a = 1.0 if d <= 8 else max(0.0, 1 - (d - 8) / 6)
+        for x in range(w):
+            px[x, y] = (255, 255, 255, int(a * 255 + 0.5))
+    write_tga(line, os.path.join(OUT, "line.tga"))
+    # dot: an anti-aliased disc with the same soft edge (joints and the end)
+    dot = layer()
+    m = disc_mask(int(S * 0.36)).filter(ImageFilter.GaussianBlur(S * 0.03))
+    dot = Image.new("RGBA", (S, S), (255, 255, 255, 255))
+    dot.putalpha(m)
+    for size in (64, 32):
+        write_tga(premultiplied_resize(dot, size), os.path.join(OUT, "dot" + ("" if size == 64 else "_32") + ".tga"))
+    # chevron pointing right
+    m = Image.new("L", (S, S), 0)
+    d = ImageDraw.Draw(m)
+    c = S // 2
+    d.polygon([(c - 120, c - 170), (c + 60, c), (c - 120, c + 170), (c - 40, c + 170), (c + 140, c), (c - 40, c - 170)],
+              fill=255)
+    ch = Image.new("RGBA", (S, S), (255, 255, 255, 255))
+    ch.putalpha(m)
+    write_tga(premultiplied_resize(ch, 32), os.path.join(OUT, "chevron.tga"))
+
+
 if __name__ == "__main__":
     main()
+    route_textures()

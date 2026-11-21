@@ -161,6 +161,9 @@ local function Preview(page)
     card.bar:SetSize(85, 5)
     card.bar:SetColorTexture(C.orange[1], C.orange[2], C.orange[3], 1)
     function card:Update()
+        self:SetBackdropColor(unpack(C.bg))
+        self:SetBackdropBorderColor(unpack(C.border))
+        self.line:SetColorTexture(1, 1, 1, Style.skin.line + 0.01)
         Style.SetFont(self.zone, -1)
         Style.SetFont(self.step, -1)
         Style.SetFont(self.title, 3)
@@ -198,6 +201,8 @@ local PAGES = {
     { key = "card", title = L("Guide card"), sub = L("How the step card looks and behaves"), build = function(p)
         Preview(p)
         Heading(p, L("Look"))
+        Dropdown(p, "skin", L("Skin"), L("The card's colours. Minimal is see-through with no borders."),
+            Style.SkinChoices(), "midnight")
         Slider(p, "fontSize", L("Text size"), L("The size of the step text on the card."), 9, 20, 1,
             function(v) return tostring(v) end)
         Slider(p, "cardScale", L("Card scale"), L("Makes the whole card, buttons and all, bigger or smaller."), 0.7, 1.5, 0.05, Pct)

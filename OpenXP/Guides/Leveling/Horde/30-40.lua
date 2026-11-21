@@ -4,6 +4,10 @@
 -- (https://github.com/fitzforge/polestar, commit c0c99712a7b907455dd49cc928484aa0114765d8, GPL-3.0),
 -- added by tools/import_polestar.py; see NOTICE.md.
 local _, OXP = ...
+-- Only your own faction's guides are loaded (half the memory). A character
+-- that hasn't picked a side yet ("Neutral") gets both.
+local myFaction = UnitFactionGroup and UnitFactionGroup("player")
+if (myFaction == "Alliance" or myFaction == "Horde") and myFaction ~= "Horde" then return end
 OXP.AddGuides({
   file = "Horde-30-40",
   faction = "Horde",
