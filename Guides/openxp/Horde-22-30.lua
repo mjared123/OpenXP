@@ -648,7 +648,7 @@ step
 step
     .goto The Barrens,51.50,30.34
     >>Talk to |cRXP_FRIENDLY_Devrak|r
-    .fp the Crossroads >>Get the the Crossroads flight path
+    .fp Crossroads >>Get the Crossroads flight path
     .target Devrak
 step
     .goto The Barrens,65.84,43.86
