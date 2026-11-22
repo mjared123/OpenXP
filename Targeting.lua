@@ -86,6 +86,18 @@ function addon.targeting:Setup()
 
     self:RegisterEvent("PLAYER_TARGET_CHANGED")
     self:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+    self:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+    self:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+
+    if addon.portrait and addon.portrait.OnIndexReady then
+        addon.portrait.OnIndexReady(function()
+            if not InCombatLockdown() then
+                self:UpdateTargetFrame()
+            elseif self.RefreshPortraitStates then
+                self:RefreshPortraitStates()
+            end
+        end)
+    end
 
     if addon.settings.profile.createFollowMacro then
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -99,9 +111,6 @@ function addon.targeting:Setup()
     if not addon.settings.profile.enableTargetAutomation then return end
 
     -- TODO toggle without reloads
-
-    -- Only works when nameplates are enabled
-    self:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 
     -- If enabled, increase nameplate scanning distance to max allowed
     if addon.settings.profile.enableMaxNameplateDistance then
@@ -390,18 +399,58 @@ function addon.targeting:GROUP_LEFT() self:UpdateFollowMacro("") end
 
 function addon.targeting:PARTY_LEADER_CHANGED() self:UpdateFollowMacro() end
 
-function addon.targeting:NAME_PLATE_UNIT_ADDED(_, nameplateID)
-    if not nameplateID or not shouldTargetCheck() then return end
+local activeTargetNames = {}
+local portraitRefreshQueued = false
 
-    self:CheckNameplate(nameplateID)
+function addon.targeting:SchedulePortraitRefresh(immediate)
+    local targetFrame = self.activeTargetFrame
+    if not (targetFrame and targetFrame:IsShown() and addon.portrait) then return end
+    if immediate then
+        portraitRefreshQueued = false
+        self:RefreshPortraitStates()
+        return
+    end
+    if portraitRefreshQueued then return end
+    portraitRefreshQueued = true
+    C_Timer.After(0.08, function()
+        portraitRefreshQueued = false
+        if self.activeTargetFrame and self.activeTargetFrame:IsShown() and self.RefreshPortraitStates then
+            self:RefreshPortraitStates()
+        end
+    end)
+end
+
+function addon.targeting:NoteRelevantUnit(unit, immediate)
+    local unitName = unit and UnitName(unit)
+    if unitName and activeTargetNames[unitName] then
+        if addon.portrait then addon.portrait.RememberUnit(unit, unitName) end
+        self:SchedulePortraitRefresh(immediate)
+    elseif immediate and next(activeTargetNames) ~= nil then
+        self:SchedulePortraitRefresh(true)
+    end
+    return unitName
+end
+
+function addon.targeting:NAME_PLATE_UNIT_ADDED(_, nameplateID)
+    self:NoteRelevantUnit(nameplateID)
+    if not nameplateID or not shouldTargetCheck() then return end
+    if addon.settings.profile.enableTargetAutomation then
+        self:CheckNameplate(nameplateID)
+    end
+end
+
+function addon.targeting:NAME_PLATE_UNIT_REMOVED(_, nameplateID)
+    local unitName = nameplateID and UnitName(nameplateID)
+    if not unitName or activeTargetNames[unitName] then
+        self:SchedulePortraitRefresh()
+    end
 end
 
 function addon.targeting:UPDATE_MOUSEOVER_UNIT()
+    local unitName = self:NoteRelevantUnit("mouseover")
     if not shouldTargetCheck() then return end
 
     local kind = "mouseover"
-    local unitName = UnitName(kind)
-
     if not unitName then return end
 
     if addon.settings.profile.enableFriendlyTargeting then
@@ -455,11 +504,10 @@ function addon.targeting:UPDATE_MOUSEOVER_UNIT()
 end
 
 function addon.targeting:PLAYER_TARGET_CHANGED()
+    local unitName = self:NoteRelevantUnit("target", true)
     if not shouldTargetCheck() then return end
 
     local kind = "target"
-    local unitName = UnitName(kind)
-
     if not unitName then return end
 
     if addon.settings.profile.enableFriendlyTargeting then
@@ -808,7 +856,7 @@ local OXP_WHITE = "Interface/Buttons/WHITE8X8"
 local OXP_FONT = (addon.SafeFont and addon.SafeFont("Fonts\\ARIALN.TTF") or "Fonts\\ARIALN.TTF")
 local OXP_BACKDROP = {bgFile = OXP_WHITE, edgeFile = OXP_WHITE, edgeSize = 1,
                       insets = {left = 1, right = 1, top = 1, bottom = 1}}
-local OXP_ROW_W, OXP_ROW_H, OXP_HEAD_H = 200, 24, 24
+local OXP_ROW_W, OXP_ROW_H, OXP_HEAD_H = 224, 34, 24
 
 local function UpdateV1IconFrameVisuals(self)
     self:SetScale(addon.settings.profile.activeTargetScale or 1)
@@ -891,6 +939,9 @@ function addon.targeting:CreateTargetFrame()
 
     f:SetScript("OnMouseDown", f.onMouseDown)
     f:SetScript("OnMouseUp", f.onMouseUp)
+    f:SetScript("OnHide", function()
+        if addon.portrait and addon.portrait.HidePreview then addon.portrait.HidePreview() end
+    end)
     f.friendlyTargetButtons = {}
     f.enemyTargetButtons = {}
 
@@ -940,25 +991,83 @@ function addon.targeting:RenderTargetFrameBackground()
     end
 end
 
-local fOnEnter = function(self)
-    if self:IsForbidden() or GameTooltip:IsForbidden() or not self.targetData then return end
+local function ResolveButtonUnitAndId(data, selector, platesByName)
+    local name = data.name
+    local matchedUnit
+    if selector and UnitName(selector) == name then
+        matchedUnit = selector
+    elseif UnitName("target") == name then
+        matchedUnit = "target"
+    elseif UnitName("mouseover") == name then
+        matchedUnit = "mouseover"
+    elseif platesByName and platesByName[name] then
+        matchedUnit = platesByName[name]
+    elseif data.unit and UnitExists and UnitExists(data.unit) and UnitName(data.unit) == name then
+        matchedUnit = data.unit
+    end
 
+    local npcId = data.npcId
+    if matchedUnit and addon.portrait then
+        npcId = addon.portrait.RememberUnit(matchedUnit, name) or npcId
+    end
+    if not npcId and addon.portrait then
+        local steps = addon.RXPFrame and addon.RXPFrame.activeSteps
+        npcId = addon.portrait.ResolveNpcId(name, steps)
+    end
+    local isCurrentTarget = UnitName("target") == name
+    data.npcId = npcId
+    data.unit = matchedUnit
+    return matchedUnit, npcId, isCurrentTarget
+end
+
+local fOnEnter = function(self)
+    if self:IsForbidden() or not self.targetData then return end
+    if self.hl then self.hl:SetColorTexture(1, 1, 1, 0.08) end
+
+    local data = self.targetData
+    if addon.portrait and addon.portrait.ShowPreview then
+        local isEnemy = self.kind == "enemy" or data.kind ~= "friendly"
+        local unit, npcId, isCurrentTarget = ResolveButtonUnitAndId(data)
+        local marking = isEnemy and addon.settings.profile.enableEnemyMarking
+            or (not isEnemy and addon.settings.profile.enableTargetMarking)
+        addon.portrait.ShowPreview(self, {
+            name = data.name,
+            kind = data.kind,
+            isEnemy = isEnemy,
+            npcId = npcId,
+            unit = unit,
+            nearby = data.nearby,
+            isCurrentTarget = isCurrentTarget,
+            keybind = data.keybind,
+            marking = marking and true or false,
+            fallbackTexture = isEnemy and mobPlaceholder or targetPlaceholder,
+            anchorFrame = self:GetParent(),
+        })
+        return
+    end
+
+    if GameTooltip:IsForbidden() then return end
     GameTooltip:ClearLines()
     GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, 0)
 
-    if self.targetData.kind == "friendly" then
-        GameTooltip:AddLine(self.targetData.name, 0, 1, 0)
+    if data.kind == "friendly" then
+        GameTooltip:AddLine(data.name, 0, 1, 0)
     else
-        GameTooltip:AddLine(self.targetData.name, 1, 0, 0)
+        GameTooltip:AddLine(data.name, 1, 0, 0)
     end
 
     GameTooltip:Show()
 end
 
 local fOnLeave = function(self)
-    if self:IsForbidden() or _G.GameTooltip:IsForbidden() then return end
-
-    GameTooltip:Hide()
+    if self:IsForbidden() then return end
+    if self.hl then self.hl:SetColorTexture(1, 1, 1, 0) end
+    if addon.portrait and addon.portrait.HidePreview then
+        addon.portrait.HidePreview(self)
+    end
+    if GameTooltip and not GameTooltip:IsForbidden() then
+        GameTooltip:Hide()
+    end
 end
 
 function addon.targeting:GetMarkerIndex(kind, kindIndex)
@@ -1106,8 +1215,12 @@ local function RowifyTargets(targetFrame, btn, buttons, kind)
     end
 
     btn.iconHolder = CreateFrame("Frame", nil, btn)
-    btn.iconHolder:SetSize(18, 18)
-    btn.iconHolder:SetPoint("LEFT", 10, 0)
+    btn.iconHolder:SetSize(28, 28)
+    btn.iconHolder:SetPoint("LEFT", 8, 0)
+    if addon.portrait then
+        btn.portrait = addon.portrait.Create(btn.iconHolder, 28)
+        btn.portrait:SetPoint("CENTER")
+    end
 
     btn.key = btn:CreateFontString(nil, "OVERLAY")
     btn.key:SetPoint("RIGHT", -10, 0)
@@ -1156,7 +1269,9 @@ local function ResizeTargetsFrame(targetFrame, friendlyCount, enemyCount)
             local btn = buttons[i]
             btn:ClearAllPoints()
             btn:SetPoint("TOPLEFT", targetFrame, "TOPLEFT", 1, -y)
-            if btn.key then btn.key:SetText(ShortKey(binding .. i .. ":LeftButton")) end
+            local keyText = ShortKey(binding .. i .. ":LeftButton")
+            if btn.key then btn.key:SetText(keyText) end
+            if btn.targetData then btn.targetData.keybind = keyText end
             y = y + OXP_ROW_H
         end
         y = y + 4
@@ -1202,6 +1317,58 @@ function addon.targeting:UpdateQuickTargets(enemies, friends)
     quickNpcs:SetAttribute("macrotext", self:QuickTargetMacro(friends))
 end
 
+local function VisibleNameplateUnits()
+    local byName = {}
+    if not (GetNamePlates and next(activeTargetNames) ~= nil) then return byName end
+    local plates = GetNamePlates()
+    if not plates then return byName end
+    for _, plate in ipairs(plates) do
+        local unit = plate and plate.namePlateUnitToken
+        if unit then
+            local name = UnitName(unit)
+            if name and name ~= "" and activeTargetNames[name] then
+                byName[name] = unit
+                if addon.portrait then addon.portrait.RememberUnit(unit, name) end
+            end
+        end
+    end
+    return byName
+end
+
+local function RenderButtonPortrait(btn, targetName, isEnemy, selector, fallbackTex, platesByName)
+    if not (btn and btn.portrait and addon.portrait) then return end
+    btn.targetData = btn.targetData or { name = targetName }
+    local matchedUnit, npcId, isCurrentTarget = ResolveButtonUnitAndId(btn.targetData, selector, platesByName)
+    local isNearby = (platesByName and platesByName[targetName] ~= nil) or
+                     (proxmityPolling.scannedTargets[targetName] ~= nil) or
+                     isCurrentTarget
+    btn.targetData.nearby = isNearby
+    local tone = isCurrentTarget and "target" or (isEnemy and "hostile" or "friendly")
+    addon.portrait.Render(btn.portrait, {
+        npcId = npcId,
+        unit = matchedUnit,
+        fallbackTexture = fallbackTex,
+        tone = tone,
+        nearby = isNearby,
+    })
+end
+
+function addon.targeting:RefreshPortraitStates()
+    local targetFrame = self.activeTargetFrame
+    if not (targetFrame and targetFrame:IsShown() and addon.portrait) then return end
+    local platesByName = VisibleNameplateUnits()
+    for _, btn in ipairs(targetFrame.enemyTargetButtons or {}) do
+        if btn:IsShown() and btn.targetData and btn.targetData.name then
+            RenderButtonPortrait(btn, btn.targetData.name, true, nil, mobPlaceholder, platesByName)
+        end
+    end
+    for _, btn in ipairs(targetFrame.friendlyTargetButtons or {}) do
+        if btn:IsShown() and btn.targetData and btn.targetData.name then
+            RenderButtonPortrait(btn, btn.targetData.name, false, nil, targetPlaceholder, platesByName)
+        end
+    end
+end
+
 function addon.targeting:UpdateTargetFrame(selector)
     if not addon.settings.profile.enableTargetFrame then return end
 
@@ -1240,8 +1407,26 @@ function addon.targeting:UpdateTargetFrame(selector)
 
     table.wipe(addon.targeting.activeIcons)
 
+    local enemyNames = {}
+    for name in pairs(enemiesList) do tinsert(enemyNames, name) end
+    table.sort(enemyNames)
+
+    local friendlyList = addon.settings.profile.showTargetingOnProximity and {} or targetList
+    if addon.settings.profile.showTargetingOnProximity then
+        for name, data in pairs(proxmityPolling.scannedTargets) do
+            if data.kind == 'friendly' then tinsert(friendlyList, name) end
+        end
+    end
+
+    wipe(activeTargetNames)
+    for _, name in ipairs(enemyNames) do activeTargetNames[name] = true end
+    for _, name in ipairs(friendlyList) do activeTargetNames[name] = true end
+
+    local platesByName = addon.portrait and VisibleNameplateUnits() or nil
+
     local btn, icon, ht
-    for targetName, enemyKind in pairs(enemiesList) do
+    for _, targetName in ipairs(enemyNames) do
+        local enemyKind = enemiesList[targetName]
 
         enemyTargetButtonIndex = enemyTargetButtonIndex + 1
         btn = enemyTargetButtons[enemyTargetButtonIndex]
@@ -1258,16 +1443,18 @@ function addon.targeting:UpdateTargetFrame(selector)
 
             RowifyTargets(targetFrame, btn, enemyTargetButtons, "enemy")
 
-            btn.icon = btn.iconHolder:CreateTexture(nil, "ARTWORK")
-            btn.placeholder = btn.icon
-            btn.placeholder.isDefault = true
-            btn.GetUnitTexture = GetUnitTexture
+            if not btn.portrait then
+                btn.icon = btn.iconHolder:CreateTexture(nil, "ARTWORK")
+                btn.placeholder = btn.icon
+                btn.placeholder.isDefault = true
+                btn.GetUnitTexture = GetUnitTexture
 
-            icon = btn.icon
+                icon = btn.icon
 
-            icon.isDefault = true
-            icon:SetAllPoints(true)
-            icon:SetTexture(mobPlaceholder)
+                icon.isDefault = true
+                icon:SetAllPoints(true)
+                icon:SetTexture(mobPlaceholder)
+            end
 
             btn:SetScript("OnEnter", fOnEnter)
             btn:SetScript("OnLeave", fOnLeave)
@@ -1281,19 +1468,21 @@ function addon.targeting:UpdateTargetFrame(selector)
         self:ConfigureTargetButton(btn, targetName, enemyKind, enemyTargetButtonIndex,
             addon.settings.profile.enableEnemyMarking)
 
-        if btn.targetData and btn.targetData.name ~= targetName then
-            btn.placeholder:SetTexture(mobPlaceholder)
-            btn.placeholder.isDefault = true
-        end
-
-        btn:GetUnitTexture(targetName, selector)
         btn.targetData = {name = targetName, kind = enemyKind}
         if btn.label then btn.label:SetText(targetName) end
 
-        -- If target or mouseover, set portrait
-        if selector and UnitName(selector) == targetName and btn.icon.isDefault then
-            SetPortraitTexture(btn.placeholder, selector)
-            btn.placeholder.isDefault = false
+        if btn.portrait then
+            RenderButtonPortrait(btn, targetName, true, selector, mobPlaceholder, platesByName)
+        else
+            if btn.targetData and btn.targetData.name ~= targetName then
+                btn.placeholder:SetTexture(mobPlaceholder)
+                btn.placeholder.isDefault = true
+            end
+            btn:GetUnitTexture(targetName, selector)
+            if selector and UnitName(selector) == targetName and btn.icon.isDefault then
+                SetPortraitTexture(btn.placeholder, selector)
+                btn.placeholder.isDefault = false
+            end
         end
 
         btn:Show()
@@ -1301,14 +1490,6 @@ function addon.targeting:UpdateTargetFrame(selector)
 
     local friendlyTargetButtons = targetFrame.friendlyTargetButtons
     local friendlyTargetButtonIndex = 0
-    -- If proximity disabled, show all
-    local friendlyList = addon.settings.profile.showTargetingOnProximity and {} or targetList
-
-    if addon.settings.profile.showTargetingOnProximity then
-        for name, data in pairs(proxmityPolling.scannedTargets) do
-            if data.kind == 'friendly' then tinsert(friendlyList, name) end
-        end
-    end
 
     for _, targetName in ipairs(friendlyList) do
         friendlyTargetButtonIndex = friendlyTargetButtonIndex + 1
@@ -1325,17 +1506,20 @@ function addon.targeting:UpdateTargetFrame(selector)
 
             RowifyTargets(targetFrame, btn, friendlyTargetButtons, "friendly")
 
-            btn.icon = btn.iconHolder:CreateTexture(nil, "ARTWORK")
+            if not btn.portrait then
+                btn.icon = btn.iconHolder:CreateTexture(nil, "ARTWORK")
 
-            icon = btn.icon
+                icon = btn.icon
 
-            btn.placeholder = icon
+                btn.placeholder = icon
 
-            icon.isDefault = true
-            icon:SetAllPoints(true)
-            icon:SetTexture(targetPlaceholder)
+                icon.isDefault = true
+                icon:SetAllPoints(true)
+                icon:SetTexture(targetPlaceholder)
 
-            btn.GetUnitTexture = GetUnitTexture
+                btn.GetUnitTexture = GetUnitTexture
+            end
+
             btn:SetScript("OnEnter", fOnEnter)
             btn:SetScript("OnLeave", fOnLeave)
 
@@ -1348,20 +1532,21 @@ function addon.targeting:UpdateTargetFrame(selector)
         self:ConfigureTargetButton(btn, targetName, "friendly", friendlyTargetButtonIndex,
             addon.settings.profile.enableTargetMarking)
 
-        if btn.targetData and btn.targetData.name ~= targetName then
-            btn.placeholder:SetTexture(targetPlaceholder)
-            btn.placeholder.isDefault = true
-        end
-
-        btn:GetUnitTexture(targetName, selector)
-
         btn.targetData = {name = targetName, kind = "friendly"}
         if btn.label then btn.label:SetText(targetName) end
 
-        -- If target or mouseover, set portrait
-        if selector and btn.placeholder.isDefault and UnitName(selector) == targetName then
-            SetPortraitTexture(btn.placeholder, selector)
-            btn.placeholder.isDefault = false
+        if btn.portrait then
+            RenderButtonPortrait(btn, targetName, false, selector, targetPlaceholder, platesByName)
+        else
+            if btn.targetData and btn.targetData.name ~= targetName then
+                btn.placeholder:SetTexture(targetPlaceholder)
+                btn.placeholder.isDefault = true
+            end
+            btn:GetUnitTexture(targetName, selector)
+            if selector and btn.placeholder.isDefault and UnitName(selector) == targetName then
+                SetPortraitTexture(btn.placeholder, selector)
+                btn.placeholder.isDefault = false
+            end
         end
 
         btn:Show()
@@ -1371,21 +1556,22 @@ function addon.targeting:UpdateTargetFrame(selector)
 
     for f = friendlyTargetButtonIndex + 1, #friendlyTargetButtons do
         friendlyTargetButtons[f]:Hide()
-        friendlyTargetButtons[f].placeholder:SetTexture(targetPlaceholder)
-        friendlyTargetButtons[f].icon.isDefault = true
+        if friendlyTargetButtons[f].placeholder then
+            friendlyTargetButtons[f].placeholder:SetTexture(targetPlaceholder)
+            friendlyTargetButtons[f].icon.isDefault = true
+        end
     end
 
     for e = enemyTargetButtonIndex + 1, #enemyTargetButtons do
         enemyTargetButtons[e]:Hide()
-        enemyTargetButtons[e].placeholder:SetTexture(mobPlaceholder)
-        enemyTargetButtons[e].icon.isDefault = true
+        if enemyTargetButtons[e].placeholder then
+            enemyTargetButtons[e].placeholder:SetTexture(mobPlaceholder)
+            enemyTargetButtons[e].icon.isDefault = true
+        end
     end
 
     self.activeTargetCount = friendlyTargetButtonIndex + enemyTargetButtonIndex
 
-    local enemyNames = {}
-    for name in pairs(enemiesList) do tinsert(enemyNames, name) end
-    table.sort(enemyNames)
     self:UpdateQuickTargets(enemyNames, friendlyList)
 
     ResizeTargetsFrame(targetFrame, friendlyTargetButtonIndex, enemyTargetButtonIndex)

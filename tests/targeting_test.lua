@@ -76,7 +76,7 @@ try("enemy and friendly rows with key labels", function()
     for _, b in ipairs(f.enemyTargetButtons) do labels[b.label:GetText()] = b.key:GetText() end
     assert(labels["Kobold Vermin"] ~= nil and labels["Kobold Worker"] ~= nil, "row names missing")
     assert(f.enemyTargetButtons[1].key:GetText() == "F1", "key label")
-    assert(f._w == 200 and f._h > 80, "frame size " .. tostring(f._w) .. "x" .. tostring(f._h))
+    assert(f._w == 224 and f._h > 100, "frame size " .. tostring(f._w) .. "x" .. tostring(f._h))
     local m = OpenXPTargetMobs:GetAttribute("macrotext")
     assert(m:find("/targetexact Kobold Vermin") and m:find("/targetexact Kobold Worker"), m)
     assert(OpenXPTargetNPCs:GetAttribute("macrotext") == "/targetexact Marshal McBride")

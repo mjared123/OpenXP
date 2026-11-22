@@ -971,7 +971,11 @@ function addon.ReplaceNpcIds(textLine,element)
     local inactive = element and element.step and not element.step.active
     textLine = textLine:gsub("npc:(.-):(%d+)",function(name,id)
         if not inactive then
-            return addon.GetNpcName(tonumber(id)) or name
+            local resolved = addon.GetNpcName(tonumber(id)) or name
+            if addon.portrait and addon.portrait.RememberNpc then
+                addon.portrait.RememberNpc(resolved, tonumber(id))
+            end
+            return resolved
         else
             return id
         end
@@ -985,6 +989,9 @@ function addon.ReplaceNpcIds(textLine,element)
             local newName = addon.GetNpcName(tonumber(npcId))
         --end
         newName = newName or name
+        if addon.portrait and addon.portrait.RememberNpc then
+            addon.portrait.RememberNpc(newName, tonumber(npcId))
+        end
         textLine = textLine:gsub(name.."::%d+",newName)
     end
 
@@ -5080,6 +5087,9 @@ local function CheckNpcIds(element,t)
     for i,v in ipairs(t) do
         local name,id = v:match("(.+)::(%d+)$")
         id = tonumber(id) or tonumber(v)
+        if name and id and addon.portrait and addon.portrait.RememberNpc then
+            addon.portrait.RememberNpc(name, id)
+        end
         if name and addon.player.lang == "en" then
             t[i] = name
         elseif id then
@@ -5110,6 +5120,9 @@ local function UpdateNpcNames(element)
             if id then
                 local name = addon.GetNpcName(id,element)
                 if name then
+                    if addon.portrait and addon.portrait.RememberNpc then
+                        addon.portrait.RememberNpc(name, id)
+                    end
                     t[i] = name
                     reload = true
                 else

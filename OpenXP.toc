@@ -41,6 +41,7 @@ QuestLog.lua
 ActiveItemFrame.lua
 LevelingTracker.lua
 Timers.lua
+OpenXPPortrait.lua
 Targeting.lua
 Tips.lua
 InventoryManager.lua

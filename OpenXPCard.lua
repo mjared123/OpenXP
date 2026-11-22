@@ -134,19 +134,21 @@ f:SetBackdropColor(unpack(C.bg))
 f:SetBackdropBorderColor(unpack(C.border))
 f:Hide()
 
-f:SetScript("OnDragStart", function(self)
+local function StartCardDrag()
     local p = Profile()
     if p and p.lockFrames then return end
-    self:StartMoving()
-end)
-f:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
+    f:StartMoving()
+end
+local function StopCardDrag()
+    f:StopMovingOrSizing()
     local p = Profile()
     if p then
-        local point, _, relPoint, x, y = self:GetPoint()
+        local point, _, relPoint, x, y = f:GetPoint()
         p.openxpCardPos = {point, relPoint, x, y}
     end
-end)
+end
+f:SetScript("OnDragStart", StartCardDrag)
+f:SetScript("OnDragStop", StopCardDrag)
 f:SetResizable(true)
 if f.SetResizeBounds then
     f:SetResizeBounds(MIN_W, MIN_H, MAX_W, MAX_H)
@@ -426,6 +428,44 @@ local function GetBlock(i)
     b.sep:SetColorTexture(1, 1, 1, 0.07)
     b.badge = MakeBadge(b, 34)
     b.badge:SetPoint("TOPLEFT", PAD, -10)
+    if addon.portrait then
+        b.portrait = addon.portrait.Create(b, 34)
+        b.portrait:SetPoint("TOPLEFT", PAD, -10)
+        b.portrait:EnableMouse(true)
+        b.portrait:RegisterForDrag("LeftButton")
+        b.portrait:SetScript("OnDragStart", StartCardDrag)
+        b.portrait:SetScript("OnDragStop", StopCardDrag)
+        b.portrait:SetScript("OnMouseUp", function(_, button)
+            if button == "RightButton" and addon.RXPFrame and addon.RXPFrame.DropDownMenu then
+                addon.RXPFrame.DropDownMenu()
+            end
+        end)
+        b.portrait:SetScript("OnEnter", function(self)
+            local t = self.portraitTarget
+            if t and addon.portrait and addon.portrait.ShowPreview then
+                addon.portrait.ShowPreview(self, {
+                    name = t.name,
+                    npcId = t.npcId,
+                    tone = t.tone,
+                    isEnemy = t.tone == "hostile",
+                    kind = t.tone == "hostile" and "mob" or "friendly",
+                    step = self.portraitStep,
+                    clickable = false,
+                    anchorFrame = f,
+                })
+            end
+        end)
+        b.portrait:SetScript("OnLeave", function(self)
+            if addon.portrait and addon.portrait.HidePreview then
+                addon.portrait.HidePreview(self)
+            end
+        end)
+        b.portrait:Hide()
+        b.miniBadge = MakeBadge(b, 15)
+        b.miniBadge:SetPoint("TOPRIGHT", b.portrait, "TOPRIGHT", 3, 3)
+        b.miniBadge:SetFrameLevel(b.portrait:GetFrameLevel() + 4)
+        b.miniBadge:Hide()
+    end
     -- step number under the badge, so stacked steps are easy to tell apart
     b.num = b:CreateFontString(nil, "OVERLAY")
     b.num:SetPoint("TOP", b.badge, "BOTTOM", 0, -4)
@@ -579,9 +619,14 @@ local function QGet(kind, id)
     local fn = db["Get" .. kind]
     if type(fn) ~= "function" then return end
     if qcount >= QCACHE_MAX then qcache, qcount = {}, 0 end
-    -- Questie defines some of these as QuestieDB.GetX(id), others as
-    -- QuestieDB:GetX(id); try both
-    local ok, obj = pcall(fn, id)
+    -- Questie defines GetNPC as QuestieDB:GetNPC(id) and GetQuest/GetItem/GetObject
+    -- as QuestieDB.GetX(id); try the matching form first to avoid wasted pcall errors.
+    local ok, obj
+    if kind == "NPC" then
+        ok, obj = pcall(fn, db, id)
+        if ok and type(obj) == "table" then card.questieStyle = "colon"; qcache[key] = obj; qcount = qcount + 1; return obj end
+    end
+    ok, obj = pcall(fn, id)
     if ok and type(obj) == "table" then card.questieStyle = "dot"; qcache[key] = obj; qcount = qcount + 1; return obj end
     ok, obj = pcall(fn, db, id)
     if ok and type(obj) == "table" then card.questieStyle = "colon"; qcache[key] = obj; qcount = qcount + 1; return obj end
@@ -1017,7 +1062,7 @@ function card.DetourStep()
     local info = QuestInfo(id) or {}
     local name = QuestName(id)
     local level = info.l and info.l > 0 and fmt(" |cFF9EA3B3(lvl %d)|r", info.l) or ""
-    local elements, target
+    local elements, target, portraitNpcId, portraitTone
     if not (addon.IsOnQuest and addon.IsOnQuest(id)) then
         local who = info.s and info.s[1] or "?"
         local where = info.s and info.s[2] == 0 and L("Loot or use %s to start it") or L("Get it from %s")
@@ -1029,6 +1074,8 @@ function card.DetourStep()
             tinsert(elements, {textOnly = true, text = fmt(L("|cFFF2C35CYou need level %d for this quest|r"), info.r)})
         end
         target = SpotElement(info.s)
+        portraitNpcId = info.q and info.q.startedBy and info.q.startedBy[1] and info.q.startedBy[1][1]
+        portraitTone = "friendly"
     else
         local objs = ObjectivesOf(id)
         local open = false
@@ -1040,6 +1087,8 @@ function card.DetourStep()
             end
             local spot = info.o and info.o[1]
             target = SpotElement(spot)
+            portraitNpcId = info.q and info.q.objectives and info.q.objectives[1] and info.q.objectives[1][1] and info.q.objectives[1][1][1]
+            portraitTone = "hostile"
         else
             local who = info.f and info.f[1] or "?"
             elements = {
@@ -1047,9 +1096,11 @@ function card.DetourStep()
                 {tag = "turnin", text = fmt(L("Talk to %s"), who)},
             }
             target = SpotElement(info.f)
+            portraitNpcId = info.q and info.q.finishedBy and info.q.finishedBy[1] and info.q.finishedBy[1][1]
+            portraitTone = "friendly"
         end
     end
-    return {index = nil, detour = true, elements = elements}, index, target
+    return {index = nil, detour = true, elements = elements, portraitNpcId = portraitNpcId, portraitTone = portraitTone}, index, target
 end
 
 local function GetWarn(b)
@@ -1143,8 +1194,44 @@ end
 
 local function LayoutBlock(b, step, first)
     local textWidth = Width() - PAD * 2 - 34 - 12
+    local kind = StepKind(step)
     b.sep:SetShown(not first)
-    b.badge:SetKind(StepKind(step))
+    b.badge:SetKind(kind)
+    if b.portrait and addon.portrait then
+        local target = addon.portrait.StepTarget(step)
+        if target and target.npcId then
+            b.portrait.portraitTarget = target
+            b.portrait.portraitStep = step
+            b.badge:Show()
+            b.portrait:Show()
+            addon.portrait.Render(b.portrait, {
+                npcId = target.npcId,
+                tone = target.tone,
+                hideFallbackIcon = true,
+                onLoaded = function(p)
+                    if p.SetBackdropColor then p:SetBackdropColor(C.bg[1], C.bg[2], C.bg[3], 0.95) end
+                    b.badge:Hide()
+                    if b.miniBadge then
+                        b.miniBadge:SetKind(kind)
+                        b.miniBadge:Show()
+                    end
+                end,
+                onFallback = function(p)
+                    if p.SetBackdropColor then p:SetBackdropColor(0, 0, 0, 0) end
+                    b.badge:Show()
+                    if b.miniBadge then b.miniBadge:Hide() end
+                end,
+            })
+        else
+            b.portrait.portraitTarget = nil
+            b.portrait.portraitStep = nil
+            b.portrait:Hide()
+            if b.miniBadge then b.miniBadge:Hide() end
+            b.badge:Show()
+        end
+    else
+        b.badge:Show()
+    end
     SetFont(b.num, -2)
     b.num:SetText(step.index and not step.detour and ("#" .. step.index) or "")
 
@@ -2455,6 +2542,11 @@ function card.Enable()
     card.ParkClassicWindow()
     card.SetupArrow()
     card.GuardSetStep()
+    if addon.portrait and addon.portrait.OnIndexReady then
+        addon.portrait.OnIndexReady(function()
+            if card.enabled then card.Refresh(true) end
+        end)
+    end
     pcall(card.RestoreStep)
     card.Refresh(true)
     -- Once per character: point out that Questie adds chains and levels
