@@ -871,10 +871,12 @@ end
 Style.BADGES = {
     accept = { glyph = "!", color = C.gold },
     turnin = { glyph = "?", color = C.gold },
-    kill = { icon = "cross", color = C.orange },
-    loot = { icon = "diamond", color = C.cyan },
-    travel = { icon = "travel", color = C.blue },
-    town = { icon = "house", color = C.purple },
+    -- one flat glyph set (tools/make_ui_icons.py step_icons); kill wears the
+    -- skin's accent, not alarm red
+    kill = { icon = "step_kill", color = C.blue },
+    loot = { icon = "step_loot", color = C.cyan },
+    travel = { icon = "step_travel", color = C.green },
+    town = { icon = "step_town", color = C.purple },
 }
 
 --- A round step badge: "!" pick up, "?" turn in, or an icon.

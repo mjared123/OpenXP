@@ -175,8 +175,63 @@ def quest_glyph(text, fill_top, fill_bottom, name):
     mi.save_tga(out, name)
 
 
+def glyph_mask(draw_fn):
+    m = Image.new("L", (S, S), 0)
+    draw_fn(ImageDraw.Draw(m))
+    return m
+
+
+def save_glyph(m, name, size=64):
+    img = Image.new("RGBA", (S, S), (255, 255, 255, 255))
+    img.putalpha(m)
+    save(img, name, size)
+
+
+def step_icons():
+    """The card's step badges (Media/Card/step_*.tga): flat white glyphs
+    of one weight, tinted in game. 64 px: sharp at the badge's ~19 px and
+    on a scaled-up card."""
+    # kill: two crossed swords
+    def sword(d):
+        tip, base = C - 215, C + 95
+        d.polygon([(C, tip), (C + 30, tip + 70), (C + 30, base), (C - 30, base), (C - 30, tip + 70)], fill=255)
+        d.rounded_rectangle((C - 92, base, C + 92, base + 36), 14, fill=255)   # crossguard
+        d.rectangle((C - 17, base + 36, C + 17, base + 120), fill=255)           # grip
+        d.ellipse((C - 32, base + 112, C + 32, base + 176), fill=255)          # pommel
+    one = glyph_mask(sword)
+    a = one.rotate(45, resample=Image.BICUBIC, center=(C, C))
+    b = one.rotate(-45, resample=Image.BICUBIC, center=(C, C))
+    from PIL import ImageChops
+    save_glyph(ImageChops.lighter(a, b), "step_kill")
+
+    # loot: a tied sack
+    def sack(d):
+        d.ellipse((C - 175, C - 60, C + 175, C + 215), fill=255)
+        d.polygon([(C - 70, C - 40), (C + 70, C - 40), (C + 115, C - 150), (C - 115, C - 150)], fill=255)
+        d.rounded_rectangle((C - 95, C - 95, C + 95, C - 55), 16, fill=0)        # the tie
+        d.rounded_rectangle((C - 80, C - 88, C + 80, C - 62), 12, fill=255)
+    save_glyph(glyph_mask(sack), "step_loot")
+
+    # travel: a winged boot's simpler cousin, a footprint pair
+    def steps(d):
+        for dx, dy in ((-85, 40), (85, -70)):
+            x, y = C + dx, C + dy
+            d.ellipse((x - 62, y - 120, x + 62, y + 60), fill=255)       # sole
+            d.ellipse((x - 48, y + 82, x + 48, y + 170), fill=255)       # heel
+    save_glyph(glyph_mask(steps), "step_travel")
+
+    # town: a house
+    def house(d):
+        d.polygon([(C, C - 200), (C + 210, C - 10), (C - 210, C - 10)], fill=255)
+        d.rectangle((C - 150, C - 30, C + 150, C + 190), fill=255)
+        d.rectangle((C - 45, C + 60, C + 45, C + 190), fill=0)                  # door
+        d.rectangle((C + 85, C - 175, C + 135, C - 70), fill=255)               # chimney
+    save_glyph(glyph_mask(house), "step_town")
+
+
 def main():
     arrows()
+    step_icons()
     small_icons()
     yellow = ((255, 236, 110), (240, 168, 0))
     grey = ((214, 216, 222), (128, 130, 138))
