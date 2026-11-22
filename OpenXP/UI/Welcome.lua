@@ -12,6 +12,18 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.0-dev7", date = "2026-11",
+        changes = {
+            "The arrow and the route line on the map and minimap no longer send you back to a waypoint you've passed. Once you've done what a waypoint was for (picked up the quest from across the room, turned it in, killed or looted what it asked), they go straight on to the next thing still to do, also after a /reload. A waypoint you still need stays until it's done.",
+            "The card's header is clean again: the zone and levels line up with the step, and \"Step 13 / 116\" with a list icon opens the step list (it lights up in your skin's colour under the mouse). The bottom bar's menu button has three dots, and its first row is All steps.",
+            "\"Finish it\", \"Get the quest\" and the other step buttons wear your skin's colour; Skip stays quiet. No more \"You haven't finished\" warning on the step that does the quest's objectives.",
+            "The map and minimap look and work like Questie's: the same icon sizes (smaller on continent and world maps), a coloured glow per objective, every spawn marked (no merged pins or name labels), and objectives on the minimap too, waiting on its rim and fading with distance.",
+            "The game's own round \"?\" and \"...\" quest markers are hidden while OpenXP's quest icons show, like Questie does (Settings > Maps > Hide Blizzard's quest markers).",
+            "Map tooltips follow Questie's layout: everything under the mouse in one tooltip, (Available) and (Complete) tags, objective progress, Shift for more. Click a pin to open its map, or with the chat box open to link the quest.",
+            "New map settings: minimap icons, their size and fade distance, icons on continent maps, objective glow and colours.",
+        },
+    },
+    {
         version = "2.0.0-dev6", date = "2026-11",
         changes = {
             "The card shows just your step: the earlier-steps history (scrolling up on the card) and Up next are gone, and the step gets the room. The step list shows every other step.",
