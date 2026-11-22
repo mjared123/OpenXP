@@ -448,6 +448,36 @@ OXP.Listen("HEARTH_CHANGED", function()
     refreshSoon()
 end)
 
+-- Taking off: a "fly to" step on screen is done now, not when you land, so
+-- the card, arrow and route line move on to what's next at once. The way
+-- to the flight master (its "reach" checkpoint) counts as done with it.
+-- A flight whose destination isn't known counts for the fly step shown.
+function Engine.TakeOff(dest)
+    if not run then return end
+    local changed = false
+    for _, pos in ipairs(activePositions()) do
+        local step = run.steps[pos]
+        for _, goal in ipairs(step.goals) do
+            if goal[1] == "fly" and not step.marks[goal]
+                and (dest == nil or World.SameFlightPoint(dest, goal.name)) then
+                step.marks[goal] = true
+                for _, other in ipairs(step.goals) do
+                    if other == goal then break end
+                    if other[1] == "reach" then step.marks[other] = true end
+                end
+                changed = true
+            end
+        end
+    end
+    if changed then
+        lastSignature = nil
+        Engine.Refresh()
+        OXP.Send("ARROW_CHANGED")
+    end
+end
+
+OXP.Listen("TAXI_STARTED", function(_, dest) Engine.TakeOff(dest) end)
+
 OXP.Listen("TRAINED", function()
     markShown("train", function() return true end)
     refreshSoon()

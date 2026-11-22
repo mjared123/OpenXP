@@ -192,13 +192,18 @@ Goals.Define("train", {
     end,
 })
 
--- A flight to a flight master: done once you land near it (wx, wy, inst are
--- its world spot).
+-- A flight to a flight master: done as soon as you take off towards it
+-- (or once you're near it: you got there another way). wx, wy, inst are
+-- its world spot.
 Goals.Define("fly", {
     fields = { "name" },
     position = true,
     state = function(g, marks)
         if marks[g] then return "done" end
+        if g.name and World.FlyingTo(g.name) then
+            marks[g] = true
+            return "done"
+        end
         if not g.wx then return "todo" end
         local px, py, inst = OXP.Places.Player()
         if px and inst == g.inst and OXP.Places.Distance(px, py, g.wx, g.wy) <= 250 then
@@ -217,7 +222,7 @@ Goals.Define("fly", {
 function Goals.NeededMobs(step)
     local out, seen = {}, {}
     if not step then return out end
-    local owner, anyOpen = nil, false
+    local owner, anyOpen, spot, spotOf = nil, false, nil, {}
     for _, g in ipairs(step.goals or {}) do
         local k = g[1]
         if k == "complete" or k == "collect" or k == "finish" then
@@ -226,15 +231,51 @@ function Goals.NeededMobs(step)
     end
     for _, g in ipairs(step.goals or {}) do
         local k = g[1]
-        if k == "complete" or k == "collect" or k == "finish" then
+        if k == "goto" or k == "reach" then
+            spot = g
+        elseif k == "complete" or k == "collect" or k == "finish" then
             owner = g
+            spotOf[g] = spot
         elseif k == "mob" and g.name and not seen[g.name] then
             local open
             if owner then open = Goals.State(owner, step.marks) == "todo" else open = anyOpen end
             if open then
                 seen[g.name] = true
-                out[#out + 1] = { name = g.name, goal = owner }
+                out[#out + 1] = { name = g.name, goal = owner, spot = owner and spotOf[owner] or spot }
             end
+        end
+    end
+    return out
+end
+
+--- The people a step still needs you to talk to: { { name = n, goal = g,
+--- spot = goto goal }, ... }. A "target" line belongs to the goal line
+--- just before it ("Accept A Threat Within" then "target Deputy Willem"):
+--- only while that goal is still to do. One before any goal counts while
+--- the step has anything left to do.
+function Goals.TalkTargets(step)
+    local out, seen = {}, {}
+    if not step then return out end
+    local anyOpen = false
+    for _, g in ipairs(step.goals or {}) do
+        if Goals.Blocks(g[1]) and Goals.State(g, step.marks) == "todo" then anyOpen = true end
+    end
+    local owner, spot
+    for _, g in ipairs(step.goals or {}) do
+        local k = g[1]
+        if k == "goto" or k == "reach" then
+            spot = g
+        elseif k == "target" then
+            if g.name and not seen[g.name] then
+                local open
+                if owner then open = Goals.State(owner, step.marks) == "todo" else open = anyOpen end
+                if open then
+                    seen[g.name] = true
+                    out[#out + 1] = { name = g.name, goal = owner, spot = spot }
+                end
+            end
+        elseif Goals.Blocks(k) then
+            owner = g
         end
     end
     return out

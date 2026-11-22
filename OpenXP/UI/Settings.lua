@@ -278,6 +278,9 @@ local PAGES = {
         Toggle(p, "autoReward", L("Take the reward when there's no choice"))
         Toggle(p, "autoBestReward", L("With a choice, take the one that sells for most"), L("Off: you pick the reward yourself."))
         Toggle(p, "skipGossip", L("Skip gossip"), L("Picks the guide's quest or the only option. Never sets your Hearthstone by itself."))
+        Heading(p, L("Travel"))
+        Toggle(p, "autoFlight", L("Fly to the step's flight master"),
+            L("On a \"fly to\" step, talking to a flight master takes that flight. Hold Shift while you talk to choose yourself."))
     end },
     { key = "buttons", title = L("Buttons and timers"), sub = L("Quest item and target buttons, timers"), build = function(p)
         Heading(p, L("Buttons"))
@@ -412,11 +415,43 @@ local function Build()
     local done = Style.Button(foot, L("Done"), "primary", 110, function() f:Hide() end)
     done:SetPoint("RIGHT", -S.lg, 0)
     f.done = done
+    local reset = Style.Button(foot, L("Reset to defaults"), "ghost", 150, function() Settings.AskReset() end,
+        L("Every OpenXP setting back to how it started. Your guide progress stays."))
+    reset:SetPoint("RIGHT", done, "LEFT", -S.sm, 0)
+    f.reset = reset
+    note:SetPoint("RIGHT", reset, "LEFT", -S.sm, 0)
+    note:SetWordWrap(false)
     f:HookScript("OnShow", function()
         DB().minimapShown = not (DB().minimap and DB().minimap.hide)
         for _, update in ipairs(controls) do update() end
     end)
     Settings.frame = f
+end
+
+--- Every setting back to its default (guide progress stays), then the
+--- card, arrow, buttons, maps and this window repaint in the new look.
+function Settings.ResetAll()
+    OXP.ResetSettings()
+    if OXP.Card then
+        OXP.Card.skinKey = nil
+        OXP.Card.ResetPosition()
+    end
+    if OXP.Arrow then
+        OXP.Arrow.ResetPosition()
+        if OXP.Arrow.ApplySizes then OXP.Arrow.ApplySizes() end
+    end
+    if OXP.ActionButtons and OXP.ActionButtons.Place then OXP.ActionButtons.Place() end
+    if OXP.MinimapButton and OXP.MinimapButton.Refresh then OXP.MinimapButton.Refresh() end
+    DB().minimapShown = not (DB().minimap and DB().minimap.hide)
+    if OXP.Fonts and OXP.Fonts.Changed then OXP.Fonts.Changed() else Changed() end
+    if OXP.Card then OXP.Card.Refresh(true) end
+    for _, update in ipairs(controls) do update() end
+    OXP.Print(L("Settings reset to their defaults."))
+end
+
+function Settings.AskReset()
+    return Style.Confirm(L("Reset every OpenXP setting to its default?\n\nThe look, positions, sizes and automation go back to how they started. Your guide progress stays."),
+        L("Reset to defaults"), Settings.ResetAll)
 end
 
 function Settings.Show(key)

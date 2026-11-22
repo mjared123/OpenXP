@@ -415,6 +415,27 @@ function Nav.SetFilter(key)
     Nav.ScrollToCurrent(true)
 end
 
+-- The panel's own text: the card's font, size and outline (Style.SetFont),
+-- set again by Nav.ApplySkin whenever the look changes.
+local navFonts = {}
+local function NavText(parent, offset, color)
+    local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    fs:SetJustifyH("LEFT")
+    navFonts[#navFonts + 1] = { fs, offset }
+    Style.SetFont(fs, offset)
+    TextColor(fs, color or C.text)
+    return fs
+end
+
+-- a 1 px line whose alpha Nav.ApplySkin sets (the card's lines fade with
+-- its background and vanish in Minimal)
+local function PlainLine(parent)
+    local t = parent:CreateTexture(nil, "ARTWORK")
+    t:SetHeight(1)
+    t:SetColorTexture(1, 1, 1, 0.07)
+    return t
+end
+
 local function Build()
     f = CreateFrame("Frame", "OpenXPSteps", UIParent, "BackdropTemplate")
     Nav.frame = f
@@ -423,7 +444,9 @@ local function Build()
     f:SetClampedToScreen(true)
     f:EnableMouse(true)
     f:EnableMouseWheel(true)
-    Style.Backdrop(f, C.bgSolid, C.border)
+    -- the card's own background, border and Background slider (and none
+    -- at all in Minimal)
+    Style.Backdrop(f, C.bg, C.border, { card = true })
     Style.Shadow(f)
     if _G.UISpecialFrames then tinsert(_G.UISpecialFrames, "OpenXPSteps") end
 
@@ -432,7 +455,7 @@ local function Build()
     f.head:SetPoint("TOPLEFT", 1, -1)
     f.head:SetPoint("TOPRIGHT", -1, -1)
     f.head:SetHeight(HEAD_H - 1)
-    Fill(f.head, C.panel)
+    -- painted by Nav.ApplySkin, like the card's header band
     f.accentLine = f:CreateTexture(nil, "ARTWORK")
     f.accentLine:SetPoint("TOPLEFT", 1, -1)
     f.accentLine:SetPoint("TOPRIGHT", -1, -1)
@@ -441,25 +464,25 @@ local function Build()
     f.back = Style.IconButton(f, "prev", L("Back to the card"), function() Nav.Hide() end)
     f.back:SetSize(30, 30)
     f.back:SetPoint("LEFT", f, "TOPLEFT", 8, -HEAD_H / 2)
-    f.title = Style.Text(f, 15, { 1, 1, 1 })
+    f.title = NavText(f, 3, { 1, 1, 1 })
     f.title:SetPoint("TOPLEFT", f.back, "TOPRIGHT", 6, -1)
     f.title:SetText(L("Steps"))
-    f.guide = Style.Text(f, 11, C.dim)
+    f.guide = NavText(f, -1, C.dim)
     f.guide:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -3)
     f.guide:SetPoint("RIGHT", f, "RIGHT", -44, 0)
     f.guide:SetWordWrap(false)
     f.close = Style.IconButton(f, "cross", L("Close"), function() Nav.Hide() end)
     f.close:SetSize(30, 30)
     f.close:SetPoint("RIGHT", f, "TOPRIGHT", -8, -HEAD_H / 2)
-    f.headLine = Style.Divider(f)
+    f.headLine = PlainLine(f)
     f.headLine:SetPoint("TOPLEFT", 1, -HEAD_H)
     f.headLine:SetPoint("TOPRIGHT", -1, -HEAD_H)
 
     -- summary: counts and a progress track (done green, skipped grey, a
     -- marker where you are)
-    f.count = Style.Text(f, 12, C.text)
+    f.count = NavText(f, 0, C.text)
     f.count:SetPoint("TOPLEFT", S.lg, -HEAD_H - 10)
-    f.stats = Style.Text(f, 11, C.dim)
+    f.stats = NavText(f, -1, C.dim)
     f.stats:SetPoint("TOPRIGHT", -S.lg, -HEAD_H - 11)
     f.stats:SetJustifyH("RIGHT")
     f.track = f:CreateTexture(nil, "ARTWORK")
@@ -484,7 +507,7 @@ local function Build()
     f.tabBar:SetPoint("TOPLEFT", 1, -HEAD_H - SUM_H)
     f.tabBar:SetPoint("TOPRIGHT", -1, -HEAD_H - SUM_H)
     f.tabBar:SetHeight(TABS_H)
-    f.tabLine = Style.Divider(f.tabBar)
+    f.tabLine = PlainLine(f.tabBar)
     f.tabLine:SetPoint("BOTTOMLEFT")
     f.tabLine:SetPoint("BOTTOMRIGHT")
     f.tabs = {}
@@ -492,7 +515,7 @@ local function Build()
     for _, def in ipairs(TABS) do
         local tab = CreateFrame("Button", nil, f.tabBar)
         tab.key = def[1]
-        tab.label = Style.Text(tab, 12, C.dim)
+        tab.label = NavText(tab, 0, C.dim)
         tab.label:SetPoint("CENTER", 0, 1)
         tab.label:SetText(L(def[2]))
         local w = math.max(56, (tab.label:GetStringWidth() or 40) + 20)
@@ -539,6 +562,12 @@ local function Build()
         return y / (bar:GetEffectiveScale() or 1)
     end
     local function Follow(self)
+        -- released anywhere (OnMouseUp only comes when it's over the thumb)
+        if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then
+            self:SetScript("OnUpdate", nil)
+            Fill(self.tex, { 1, 1, 1 }, 0.25)
+            return
+        end
         if (bar.travel or 0) <= 0 then return end
         Nav.ScrollTo(self.startOffset + (self.startY - CursorY()) / bar.travel * MaxOffset(), true)
     end
@@ -569,11 +598,10 @@ local function Build()
     f.foot:SetPoint("BOTTOMLEFT", 1, 1)
     f.foot:SetPoint("BOTTOMRIGHT", -1, 1)
     f.foot:SetHeight(FOOT_H)
-    Fill(f.foot, C.panel)
-    f.footLine = Style.Divider(f)
+    f.footLine = PlainLine(f)
     f.footLine:SetPoint("BOTTOMLEFT", 1, FOOT_H + 1)
     f.footLine:SetPoint("BOTTOMRIGHT", -1, FOOT_H + 1)
-    f.hint = Style.Text(f, 11, C.faint)
+    f.hint = NavText(f, -1, C.faint)
     f.hint:SetPoint("BOTTOMLEFT", S.lg, FOOT_H / 2 - 5)
     f.hint:SetText(L("Click a step to go there"))
     f.mine = Style.Button(f, L("Back to my step"), "secondary", 130, function()
@@ -584,7 +612,11 @@ local function Build()
     f.mine:SetHeight(26)
     f.mine:SetPoint("BOTTOMRIGHT", -S.sm, (FOOT_H - 26) / 2 + 1)
 
-    f:SetScript("OnHide", function()
+    -- HookScript, not SetScript: Style.Shadow already hooked OnHide to hide
+    -- the shadow frame (a SetScript here wiped that and left the shadow, a
+    -- big dark box, on screen after closing)
+    f:HookScript("OnHide", function()
+        f:SetAlpha(1)
         for _, row in ipairs(rows) do if row.pulse then row.pulse:Stop() end end
         if OXP.Card and OXP.Card.header and OXP.Card.header.nav then
             Tint(OXP.Card.header.nav.bg, C.blue, 0)
@@ -592,6 +624,7 @@ local function Build()
     end)
     f:Hide()
     PaintTabs(false)
+    Nav.ApplySkin()
 end
 
 ---------------------------------------------------------------------------
@@ -638,6 +671,10 @@ end
 
 function Nav.Show()
     if not f then Build() end
+    -- opened again while it was fading out: stop the fade (its end would
+    -- hide the panel again)
+    Style.Tween(f, 1, 1, 0, function(a) f:SetAlpha(a) end)
+    Nav.ApplySkin()
     Nav.Place()
     Nav.items, Nav.itemsKey = nil, nil
     f:Show()
@@ -664,9 +701,32 @@ function Nav.Toggle()
     if Nav.IsShown() then Nav.Hide() else Nav.Show() end
 end
 
+--- Paints the panel like the card (UI/Card.lua Card.ApplySkin): the
+--- skin's background at the card's Background opacity, the header and
+--- footer bands and thin lines the same way, no background, lines or
+--- shadow in Minimal (or at 0%), and the card's font, size and outline.
 function Nav.ApplySkin()
-    if f then Nav.Paint() end
+    if not f then return end
+    local o = Style.CardOpacity()
+    local bare = Style.Frameless()
+    local skin = Style.skin
+    local line = bare and 0 or skin.line * math.min(1, o * 1.4)
+    Style.PaintBackdrop(f)
+    local band = bare and 0 or math.max(skin.header or 0, 0.03) * o
+    f.head:SetColorTexture(1, 1, 1, band)
+    f.foot:SetColorTexture(1, 1, 1, band)
+    for _, t in ipairs({ f.headLine, f.footLine, f.tabLine }) do t:SetColorTexture(1, 1, 1, line) end
+    f.track:SetColorTexture(1, 1, 1, bare and 0.12 or 0.07)
+    if f.shadow then f.shadow:SetAlpha(bare and 0 or o) end
+    for _, spec in ipairs(navFonts) do Style.SetFont(spec[1], spec[2]) end
+    for _, row in ipairs(rows) do row.headerLine:SetAlpha(bare and 0 or 1) end
+    Nav.lineAlpha = line
+    if f:IsShown() then
+        PaintTabs(false)
+        Nav.Paint()
+    end
 end
+OXP.Listen("SETTINGS_CHANGED", function() Nav.ApplySkin() end)
 
 for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED" }) do
     OXP.Listen(m, function() OXP.Soon("STEPNAV", function() Nav.Refresh() end) end)

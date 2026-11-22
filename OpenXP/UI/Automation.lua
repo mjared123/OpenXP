@@ -7,6 +7,8 @@
 --   skip gossip    pick a quest-giver's guide quest in the gossip window, or
 --                  the only option when there is just one (never the
 --                  innkeeper's "make this inn your home")
+--   auto flight    on a "fly to" step, take that flight when the flight
+--                  master's map opens
 local _, OXP = ...
 
 local Auto = {}
@@ -202,5 +204,63 @@ OXP.On("QUEST_GREETING", function()
             SelectAvailableQuest(i)
             return
         end
+    end
+end)
+
+------------------------------------------------------------------------
+-- Auto-flight: the flight master's map opens while the step says "fly to"
+-- somewhere: take that flight (Settings > Automation > Fly to the step's
+-- flight master; hold Shift while talking to choose yourself).
+------------------------------------------------------------------------
+
+--- The flight the shown steps want: the fly goal still to do, or nil.
+function Auto.WantedFlight()
+    local steps = Engine.GetSteps()
+    for _, pos in ipairs(Engine.GetActive()) do
+        local step = steps[pos]
+        for _, g in ipairs(step and step.goals or {}) do
+            if g[1] == "fly" and g.name and OXP.Goals.State(g, step.marks) == "todo" then return g end
+        end
+    end
+end
+
+--- The taxi map node for the wanted flight: index, name; nil when the
+--- step has no flight, the node isn't on this map or can't be flown to.
+function Auto.FlightNode()
+    local g = Auto.WantedFlight()
+    if not g then return nil end
+    for i = 1, (NumTaxiNodes and NumTaxiNodes() or 0) do
+        local name = TaxiNodeName(i)
+        local kind = TaxiNodeGetType and TaxiNodeGetType(i)
+        if kind == "REACHABLE" and OXP.World.SameFlightPoint(name, g.name) then return i, name end
+    end
+    return nil, nil, g
+end
+
+function Auto.TakeFlight()
+    if not On("autoFlight") or not Engine.GetGuide() then return false end
+    local i, name, wanted = Auto.FlightNode()
+    if not i then
+        -- not on this flight master's map (not learned yet): you pick
+        if wanted then OXP.Debug("auto flight: %s isn't on this map", tostring(wanted.name)) end
+        return false
+    end
+    Auto.last = "fly " .. tostring(name)
+    OXP.Print(OXP.L("Flying to %s (hold Shift when you talk to the flight master to choose yourself)."),
+        (name:match("^([^,]+)") or name))
+    TakeTaxiNode(i)
+    return true
+end
+
+OXP.On("TAXIMAP_OPENED", function()
+    if not On("autoFlight") then return end
+    -- the map's nodes are there when it opens; if not yet, a moment later
+    if (NumTaxiNodes and NumTaxiNodes() or 0) > 0 then
+        Auto.TakeFlight()
+    elseif C_Timer and C_Timer.After then
+        C_Timer.After(0.2, function()
+            if TaxiFrame and TaxiFrame.IsShown and not TaxiFrame:IsShown() then return end
+            Auto.TakeFlight()
+        end)
     end
 end)

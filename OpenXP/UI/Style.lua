@@ -551,7 +551,15 @@ function Style.Slider(parent, width, opts)
     s:SetScript("OnMouseDown", function(self)
         self.dragging = true
         FromCursor()
-        self:SetScript("OnUpdate", FromCursor) -- only while dragging
+        -- only while dragging; let go anywhere and it stops
+        self:SetScript("OnUpdate", function(me)
+            if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then
+                me.dragging = false
+                me:SetScript("OnUpdate", nil)
+                return
+            end
+            FromCursor()
+        end)
     end)
     s:SetScript("OnMouseUp", function(self)
         self.dragging = false
@@ -772,24 +780,34 @@ function Style.ScrollArea(parent)
         local _, y = GetCursorPosition()
         return y / (bar:GetEffectiveScale() or 1)
     end
-    thumb:RegisterForDrag("LeftButton")
+    -- No RegisterForDrag: in the game a frame registered for dragging gets
+    -- OnDragStart/OnDragStop instead of OnMouseUp once the mouse moves, so
+    -- the thumb never let go. The drag ends when the button is up, checked
+    -- every frame (the mouse can be released anywhere on screen).
+    local function StopDrag(self)
+        self.dragging = false
+        self:SetScript("OnUpdate", nil)
+        Hot(self:IsMouseOver())
+    end
     local function Follow(self)
+        if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then
+            StopDrag(self)
+            return
+        end
         local travel = bar.travel or 0
         if travel <= 0 then return end
         local dy = self.startY - CursorY()
         area:ScrollTo(self.startOffset + dy / travel * area:Max())
     end
+    thumb.Follow, thumb.StopDrag = Follow, StopDrag
     thumb:SetScript("OnMouseDown", function(self)
         self.startY, self.startOffset = CursorY(), area.offset
         self.dragging = true
         self:SetScript("OnUpdate", Follow) -- only while dragging
         Hot(true)
     end)
-    thumb:SetScript("OnMouseUp", function(self)
-        self.dragging = false
-        self:SetScript("OnUpdate", nil)
-        Hot(self:IsMouseOver())
-    end)
+    thumb:SetScript("OnMouseUp", StopDrag)
+    thumb:SetScript("OnDragStop", StopDrag)
     thumb:SetScript("OnHide", function(self)
         self.dragging = false
         self:SetScript("OnUpdate", nil)
@@ -994,6 +1012,51 @@ function Style.Window(name, width, height, title, subtitle)
     Style.Shadow(f)
     f:Hide()
     return f
+end
+
+--- A yes/no question in the skin's look, over everything (one at a time):
+--- Style.Confirm(text, yesLabel, onYes, noLabel). Escape or "Cancel"
+--- closes it without doing anything.
+local confirm
+function Style.Confirm(text, yesLabel, onYes, noLabel)
+    if not confirm then
+        confirm = CreateFrame("Frame", "OpenXPConfirm", UIParent, "BackdropTemplate")
+        confirm:SetSize(380, 150)
+        confirm:SetPoint("CENTER", 0, 120)
+        confirm:SetFrameStrata("FULLSCREEN_DIALOG")
+        confirm:SetToplevel(true)
+        confirm:EnableMouse(true)
+        confirm:SetClampedToScreen(true)
+        Style.Backdrop(confirm, C.bgSolid, C.borderStrong)
+        confirm.accent = confirm:CreateTexture(nil, "ARTWORK")
+        confirm.accent:SetPoint("TOPLEFT", 1, -1)
+        confirm.accent:SetPoint("TOPRIGHT", -1, -1)
+        confirm.accent:SetHeight(2)
+        Fill(confirm.accent, C.blue, 0.9)
+        confirm.text = Style.Text(confirm, 13, C.text)
+        confirm.text:SetPoint("TOPLEFT", S.lg, -S.lg - 2)
+        confirm.text:SetPoint("TOPRIGHT", -S.lg, -S.lg - 2)
+        confirm.text:SetJustifyH("CENTER")
+        confirm.text:SetWordWrap(true)
+        confirm.yes = Style.Button(confirm, "", "primary", 150, function()
+            confirm:Hide()
+            if confirm.onYes then confirm.onYes() end
+        end)
+        confirm.no = Style.Button(confirm, "", "secondary", 110, function() confirm:Hide() end)
+        confirm.yes:SetPoint("BOTTOMRIGHT", confirm, "BOTTOM", -4, S.lg)
+        confirm.no:SetPoint("BOTTOMLEFT", confirm, "BOTTOM", 4, S.lg)
+        Style.Shadow(confirm)
+        if _G.UISpecialFrames then tinsert(_G.UISpecialFrames, "OpenXPConfirm") end
+        confirm:Hide()
+    end
+    confirm.onYes = onYes
+    confirm.text:SetText(text)
+    confirm.yes:SetLabel(yesLabel or OXP.L("OK"))
+    confirm.no:SetLabel(noLabel or OXP.L("Cancel"))
+    confirm:SetHeight(math.max(120, (confirm.text:GetStringHeight() or 30) + 30 + S.lg * 3 + 8))
+    confirm:Show()
+    confirm:Raise()
+    return confirm
 end
 
 --- A footer bar along the bottom of a window (for its buttons); the body

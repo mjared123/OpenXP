@@ -100,9 +100,21 @@ function Game:InstallGlobals()
             local old = self.scripts[name]
             self.scripts[name] = function(...) if old then old(...) end return fn(...) end
         end,
-        Show = function(self) self.shown = true end,
-        Hide = function(self) self.shown = false end,
-        SetShown = function(self, v) self.shown = v and true or false end,
+        -- like the game: OnShow / OnHide run when a frame's own shown state
+        -- changes (a parent's isn't followed here)
+        Show = function(self)
+            if self.shown then return end
+            self.shown = true
+            if self.scripts.OnShow then self.scripts.OnShow(self) end
+        end,
+        Hide = function(self)
+            if not self.shown then return end
+            self.shown = false
+            if self.scripts.OnHide then self.scripts.OnHide(self) end
+        end,
+        SetShown = function(self, v)
+            if v then self:Show() else self:Hide() end
+        end,
         IsShown = function(self) return self.shown end,
         IsVisible = function(self) return self.shown end,
         SetText = function(self, t)
@@ -229,7 +241,18 @@ function Game:InstallGlobals()
     GameTooltip = Widget("Frame")
     UISpecialFrames = {}
     SlashCmdList = {}
-    hooksecurefunc = function() end
+    -- like the game's: runs fn after the global function `name`
+    hooksecurefunc = function(a, b, c)
+        local tbl, name, fn = _G, a, b
+        if type(a) == "table" then tbl, name, fn = a, b, c end
+        local orig = tbl[name]
+        if type(orig) ~= "function" then return end
+        tbl[name] = function(...)
+            local r = { orig(...) }
+            fn(...)
+            return unpack(r)
+        end
+    end
     strsplit = function(sep, s)
         local out = {}
         for piece in (s .. sep):gmatch("(.-)" .. sep:gsub("%p", "%%%0")) do out[#out + 1] = piece end
@@ -243,7 +266,8 @@ function Game:InstallGlobals()
     UnitXPMax = function() return 1000 end
     GetXPExhaustion = function() return 0 end
     UnitExists = function() return false end
-    UnitOnTaxi = function() return false end
+    UnitOnTaxi = function() return game.onTaxi == true end
+    IsMouseButtonDown = function() return game.mouseDown == true end
     IsIndoors = function() return false end
     IsResting = function() return false end
     IsInInstance = function() return false end
@@ -346,6 +370,11 @@ function Game:InstallGlobals()
     NumTaxiNodes = function() return #game.taxi end
     TaxiNodeName = function(i) return game.taxi[i] and game.taxi[i].name end
     TaxiNodeGetType = function(i) return game.taxi[i] and game.taxi[i].type or "NONE" end
+    -- the flight starts (UnitOnTaxi true) a moment later: Game:TakeOff
+    TakeTaxiNode = function(i)
+        game.tookTaxi = i
+        game.taxiOpen = false
+    end
     ERR_NEWTAXIPATH = "New flight path discovered!"
 end
 
@@ -587,6 +616,29 @@ function Game:OpenTaxi(nodes)
         self.taxi[i] = { name = name, type = i == 1 and "CURRENT" or "REACHABLE" }
     end
     self:Fire("TAXIMAP_OPENED")
+    self:Flush()
+end
+
+--- The flight actually starting after TakeTaxiNode (yours or OpenXP's):
+--- the game takes control away and UnitOnTaxi turns true.
+function Game:TakeOff()
+    self.onTaxi = true
+    self:Fire("PLAYER_CONTROL_LOST")
+    self:Flush()
+end
+
+--- Click node `i` on the open taxi map, then take off.
+function Game:FlyTo(i)
+    TakeTaxiNode(i)
+    self:Flush()
+    self:TakeOff()
+end
+
+--- Landing at a world spot.
+function Game:Land(wx, wy, inst)
+    self.onTaxi = false
+    if wx then self:MoveToWorld(wx, wy, inst) end
+    self:Fire("PLAYER_CONTROL_GAINED")
     self:Flush()
 end
 

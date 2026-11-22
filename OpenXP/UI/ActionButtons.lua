@@ -256,30 +256,44 @@ function Buttons.WantedTargets()
         local name = WalkTarget(walk)
         return name and { { name = name, enemy = OXP.Quests.IsOnQuest(walk) and not OXP.Quests.IsComplete(walk) } } or {}
     end
-    local out, seen = {}, {}
-    local function Add(name, enemy)
-        if name and not seen[name] and #out < MAX_ROWS then
-            seen[name] = true
-            out[#out + 1] = { name = name, enemy = enemy }
-        end
+    -- Only what the shown steps need right now (like 1.x): the mobs of
+    -- objectives still open, and the people of goals still to do (a
+    -- "target" line counts for the accept/turn-in line just before it).
+    -- Nothing for finished objectives or later steps. Nearest first, by
+    -- the spot the guide gives for each (the /targetexact macro takes the
+    -- nearest of each name itself).
+    local cand = {}
+    local px, py, inst = OXP.Places.Player()
+    local function Dist(spotGoal)
+        local s = spotGoal and OXP.Places.Spot(spotGoal)
+        if not (s and px and s.instance == inst) then return math.huge end
+        return OXP.Places.Distance(px, py, s.wx, s.wy)
     end
-    local talk = {}
+    local order = 0
     for _, step in ipairs(ActiveSteps()) do
-        for _, m in ipairs(OXP.Goals.NeededMobs(step)) do Add(m.name, true) end
-        local open = false
-        for _, g in ipairs(step.goals) do
-            if (g[1] == "accept" or g[1] == "turnin" or g[1] == "finish") and OXP.Goals.State(g, step.marks) == "todo" then
-                open = true
-            end
+        for _, m in ipairs(OXP.Goals.NeededMobs(step)) do
+            order = order + 1
+            cand[#cand + 1] = { name = m.name, enemy = true, d = Dist(m.spot), order = order }
         end
-        -- a step with nothing left but its people: who to talk to
-        local hasStateful = false
-        for _, g in ipairs(step.goals) do if OXP.Goals.Blocks(g[1]) then hasStateful = true end end
-        for _, g in ipairs(step.goals) do
-            if g[1] == "target" and g.name and (open or not hasStateful) then talk[#talk + 1] = g.name end
+        for _, t in ipairs(OXP.Goals.TalkTargets(step)) do
+            order = order + 1
+            cand[#cand + 1] = { name = t.name, enemy = false, d = Dist(t.spot), order = order }
         end
     end
-    for _, name in ipairs(talk) do Add(name, false) end
+    -- spots within 40 yards of each other count as the same place (the
+    -- guide's order decides there)
+    table.sort(cand, function(a, b)
+        local da, db = math.floor(a.d / 40), math.floor(b.d / 40)
+        if da ~= db then return da < db end
+        return a.order < b.order
+    end)
+    local out, seen = {}, {}
+    for _, c in ipairs(cand) do
+        if not seen[c.name] and #out < MAX_ROWS then
+            seen[c.name] = true
+            out[#out + 1] = { name = c.name, enemy = c.enemy }
+        end
+    end
     return out
 end
 

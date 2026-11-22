@@ -332,6 +332,16 @@ function Card.StepContent(step)
         title = lines[1].text
         table.remove(lines, 1)
     end
+    -- a line saying just what the title says ("Boat to Menethil Harbor"
+    -- over a "Boat to Menethil Harbor" checkpoint) read as the title
+    -- twice, the second one faded: shown once
+    if title then
+        local key = Text.Strip(title):lower():gsub("[%p%s]+", " "):gsub("^ ", ""):gsub(" $", "")
+        for i = #lines, 1, -1 do
+            local k = Text.Strip(lines[i].text or ""):lower():gsub("[%p%s]+", " "):gsub("^ ", ""):gsub(" $", "")
+            if k == key then table.remove(lines, i) end
+        end
+    end
     return title or fmt(L("Step %d"), step.index or 0), lines
 end
 
@@ -936,7 +946,9 @@ local function LayoutBlock(b, step, pos, first)
         b.missing = nil
         if b.warn then b.warn:Hide() end
     end
-    local height = math.max(y + 4, 34 + 20 + (b.num:GetText() ~= "" and 14 or 0))
+    -- tall enough for the badge and the "#32" under it, at any text size
+    local numH = b.num:GetText() ~= "" and ((b.num:GetStringHeight() or 0) > 0 and b.num:GetStringHeight() or 14) + 4 or 0
+    local height = math.max(y + 4, 10 + 34 + numH + 8, 34 + 20 + (numH > 0 and 14 or 0))
     b:SetHeight(height)
     return height
 end

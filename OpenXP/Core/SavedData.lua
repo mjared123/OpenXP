@@ -51,6 +51,7 @@ local ACCOUNT_DEFAULTS = {
         autoReward = true,         -- take the reward when there is no real choice
         autoBestReward = false,    -- with a choice, take the one that sells for most
         skipGossip = true,         -- pick the guide's quest, or the only option, in gossip
+        autoFlight = true,         -- take the step's flight when the flight master's map opens
         -- buttons and timers
         itemButton = true,
         targetButton = true,
@@ -85,6 +86,20 @@ local FIRST_LOAD = {
     cardHeight = 310,
 }
 OXP.FIRST_LOAD = FIRST_LOAD
+OXP.DEFAULT_SETTINGS = ACCOUNT_DEFAULTS.settings
+
+--- Every OpenXP setting back to how a new install starts (Settings >
+--- Reset to defaults): the look, positions and sizes, automation, all of
+--- it. Guide progress, learned flight paths and recorded paths are not
+--- settings and stay. The table is emptied and filled in place, so
+--- everything holding OXP.settings sees the new values.
+function OXP.ResetSettings()
+    local s = OXP.settings
+    if not s then return end
+    for k in pairs(s) do s[k] = nil end
+    OXP.Util.ApplyDefaults(s, ACCOUNT_DEFAULTS.settings) -- copies the tables (minimap, routeColor)
+    for k, v in pairs(FIRST_LOAD) do s[k] = v end
+end
 
 OXP.OnLoaded(function()
     local fresh = type(OpenXPDB) ~= "table" or next(OpenXPDB) == nil
