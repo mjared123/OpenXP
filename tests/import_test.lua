@@ -65,7 +65,7 @@ local ACCOUNT = {
 }
 
 ------------------------------------------------------------------------
-print("-- mid 21-60 guide: same guide, same step, skips and flight paths")
+print("-- mid 1.x 21-60 guide (dropped in 2.0.0-dev5): smart start places you on the route, flight paths kept")
 do
     local char = {
         currentGuideGroup = "RestedXP Forever Guide (A)", currentGuideName = "21-22 Ashenvale", currentStep = 5,
@@ -77,19 +77,11 @@ do
     for _, class in ipairs({ "WARRIOR", "MAGE" }) do
         local game, OXP, note = login({ faction = "Alliance", race = "Human", class = class, level = 22 }, char, ACCOUNT)
         local g = OXP.Engine.GetGuide()
-        t.eq(g and g.name, "21-22 Ashenvale", class .. ": same guide")
-        t.ok((oldOrdinal(OXP) or 0) >= 5, class .. ": at 1.x step 5 or past it (done steps passed): " .. tostring(oldOrdinal(OXP)))
-        local save = OXP.char.guides[g.key]
-        local skippedOld = 0
-        for i in pairs(save.skipped) do
-            if not g.steps[i].source then skippedOld = skippedOld + 1 end
-        end
-        t.eq(skippedOld, 2, class .. ": skipped and chain-missed steps carried over")
+        t.ok(g and g.group == "OpenXP Leveling (Alliance)", class .. ": placed on the leveling route: " .. tostring(g and g.name))
+        t.eq(OXP.Import.FindGuide("RestedXP Forever Guide (A)", "21-22 Ashenvale"), nil, class .. ": the old guide isn't there")
         t.ok(OXP.World.KnowsFlightPath("Astranaar"), class .. ": flight paths carried over")
-        local wet = OXP.Import.FindGuide("RestedXP Forever Guide (A)", "22-23 Wetlands")
-        t.ok(wet and OXP.char.guides[wet.key] and OXP.char.guides[wet.key].step >= 5, class .. ": place in another guide carried over")
-        t.ok(note and note.guide == g and not note.smart, class .. ": the note says where")
-        t.ok(OXP.ImportNote.Text(note):find("21-22 Ashenvale, step", 1, true), class .. ": note text")
+        t.ok(note and note.smart, class .. ": the note says smart start placed you")
+        t.ok(OXP.ImportNote.Text(note):find("new leveling route", 1, true), class .. ": note text")
         t.eq(#game.errors, 0, class .. ": no Lua errors: " .. table.concat(game.errors, " | "))
     end
 end
@@ -137,7 +129,7 @@ do
     local g = OXP.Engine.GetGuide()
     t.eq(g and g.name, "1-11 Elwynn Forest", "smart start picked the new 1-20 guide")
     t.ok(note and note.smart and note.placed == g, "the note says smart start placed you")
-    t.ok(OXP.ImportNote.Text(note):find("new 1-20 route", 1, true), "and why")
+    t.ok(OXP.ImportNote.Text(note):find("new leveling route", 1, true), "and why")
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
@@ -174,7 +166,7 @@ do
     OXP2.Listen("IMPORTED", function() again = true end)
     game2:Login()
     t.ok(not again, "no second import")
-    t.eq(OXP2.Engine.GetGuide() and OXP2.Engine.GetGuide().name, "21-22 Ashenvale", "2.0's own place is kept")
+    t.eq(OXP2.Engine.GetGuide() and OXP2.Engine.GetGuide().key, OXP.Engine.GetGuide() and OXP.Engine.GetGuide().key, "2.0's own place is kept")
     local _ = OXP
 end
 

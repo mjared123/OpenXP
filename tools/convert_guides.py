@@ -405,8 +405,12 @@ def main(argv):
         files.append(argv[i])
         i += 1
     if not files:
+        # Only the dungeon guides: the 1.x 21-60 leveling guides ("OpenXP
+        # Legacy (<Faction>)") were dropped in 2.0.0-dev5; the leveling
+        # route is Leveling/<Faction>/PoleStar-01-60.lua.
         src = os.path.join(ROOT, "Guides", "openxp")
-        files = sorted(os.path.join(src, f) for f in os.listdir(src) if f.endswith(".lua"))
+        files = sorted(os.path.join(src, f) for f in os.listdir(src)
+                       if f.endswith(".lua") and f.startswith("Dungeons-"))
     total = 0
     for f in files:
         lua, guides = convert_file(f)

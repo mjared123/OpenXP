@@ -50,7 +50,7 @@ function Note.Text(r)
     end
     local lines = { ("OpenXP 2.0: we moved you to %s."):format(where) }
     if r.smart then
-        lines[#lines + 1] = L("2.0 has a new 1-20 route, so OpenXP picked your place from your quest log and finished quests.")
+        lines[#lines + 1] = L("2.0 has a new leveling route, so OpenXP picked your place from your quest log and finished quests.")
     else
         lines[#lines + 1] = L("Same guide and step as in 1.x.")
     end

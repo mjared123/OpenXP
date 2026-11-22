@@ -6,13 +6,13 @@
 -- This file only reads them; nothing in them is ever changed.
 --
 -- Per character, on the first 2.0 login:
---   * the guide you were on: 21-60 and dungeon guides have the same steps in
---     2.0 (class quest steps added in 2.0 are skipped when counting), so the
---     same step; your saved place in every other guide too, and steps you
---     skipped or whose chain was missed
+--   * the guide you were on: dungeon guides have the same steps in 2.0, so
+--     the same step; your saved place in every other dungeon guide too, and
+--     steps you skipped or whose chain was missed
 --   * flight paths you know
---   * a 1-20 guide (2.0 has a new 1-20 route) or anything that doesn't match:
---     smart start places you from your quest log and finished quests
+--   * a leveling guide (2.0 has a new 1-60 route; the 1.x 21-60 guides were
+--     dropped in 2.0.0-dev5) or anything that doesn't match: smart start
+--     places you from your quest log and finished quests
 -- Per account, once: the settings that still exist (card place and size,
 -- font, arrow, maps, extras) and arrow paths you recorded or OpenXP learned.
 local _, OXP = ...

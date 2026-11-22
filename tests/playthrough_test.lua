@@ -115,10 +115,10 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
     for _, race in ipairs(RACES[faction]) do
         for _, class in ipairs(CLASSES) do
             local who = faction .. " " .. race .. " " .. class
-            -- Leveling chains: the default (PoleStar's 1-60), then our legacy 21-60, then
+            -- Leveling chains: the default (PoleStar's 1-60), then
             -- SoupEngine's test group when its guide files are in Guides.xml (docs/2.0/SOUPENGINE.md).
             local soupGroup = "SoupEngine Test (" .. faction .. ")"
-            for _, groupName in ipairs({ "OpenXP Leveling (" .. faction .. ")", "OpenXP Legacy (" .. faction .. ")", soupGroup }) do
+            for _, groupName in ipairs({ "OpenXP Leveling (" .. faction .. ")", soupGroup }) do
             local who = who .. " [" .. groupName .. "]"
             local game = FakeWoW.New(ROOT, { faction = faction, race = race, class = class, level = 1 })
             local OXP = game:LoadAddon()

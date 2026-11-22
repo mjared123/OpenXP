@@ -12,6 +12,12 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.0-dev5", date = "2026-11",
+        changes = {
+            "The old 1.x 21-60 guides (\"OpenXP Legacy\" in Pick a guide) are gone: the leveling route covers 1-60. A character that was on one is placed on the route by smart start, flight paths kept. About 1.3 MB less to load.",
+        },
+    },
+    {
         version = "2.0.0-dev4", date = "2026-11",
         changes = {
             "Fly steps are done as you take off, and the arrow and map line move straight on to the next step (they kept pointing at the flight master until you landed).",

@@ -58,7 +58,7 @@ do
     local horde = 0
     for _, g in ipairs(OXP.Registry.All()) do if g.faction == "Horde" then horde = horde + 1 end end
     t.eq(horde, 0, "an Alliance character loads no Horde guide data")
-    t.ok(#OXP.Registry.All() >= 70, "but all of its own: " .. #OXP.Registry.All())
+    t.ok(#OXP.Registry.All() >= 40, "but all of its own: " .. #OXP.Registry.All())
 end
 
 ------------------------------------------------------------------------
@@ -72,7 +72,7 @@ do
     t.eq(#problems, 0, "guide data problems")
     for i = 1, math.min(#problems, 10) do print("    " .. problems[i]) end
     local all = OXP.Registry.All()
-    t.ok(#all >= 160, "guides loaded: " .. #all)
+    t.ok(#all >= 90, "guides loaded: " .. #all)
     local wc = 0
     for _, g in ipairs(all) do
         if g.name == "17-24 Wailing Caverns" then wc = wc + 1 end

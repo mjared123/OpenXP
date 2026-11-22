@@ -654,6 +654,13 @@ OXP.OnReady(function()
         -- back on the step you were on, whatever the goals look like yet
         Engine.Load(key, nil, true)
     else
+        -- no guide, or one that's gone (the "OpenXP Legacy" 21-60 guides were
+        -- removed in 2.0.0-dev5): forget it, and smart start places you on
+        -- the leveling route (Engine/SmartStart.lua, NO_GUIDE)
+        if key then
+            OXP.char.currentGuide = nil
+            Engine.lostGuide = key
+        end
         OXP.Send("NO_GUIDE")
     end
 end)

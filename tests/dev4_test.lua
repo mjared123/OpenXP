@@ -348,4 +348,27 @@ do
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
+------------------------------------------------------------------------
+print("-- a character saved on a removed guide (the 1.x 21-60 'OpenXP Legacy' ones) gets the leveling route")
+do
+    local KEY = "OpenXP Legacy (Alliance)/21-22 Ashenvale <Alliance>"
+    local saved = {
+        OpenXPDB = nil,
+        OpenXPCharDB = { schema = 1, currentGuide = KEY, guides = { [KEY] = { step = 12, skipped = {}, status = {} } },
+                         flightPaths = { astranaar = true }, trainers = {} },
+    }
+    local game = FakeWoW.New(ROOT, { level = 22, faction = "Alliance", race = "Human", class = "WARRIOR",
+                                    map = 1440, x = 36, y = 49 }, saved)
+    local OXP = game:LoadAddon()
+    game:Login()
+    game:Advance(1)
+    local g = OXP.Engine.GetGuide()
+    t.ok(g ~= nil, "a guide is loaded")
+    t.eq(g and g.group, "OpenXP Leveling (Alliance)", "the leveling route (smart start): " .. tostring(g and g.name))
+    t.ok(OXP.char.currentGuide ~= KEY, "the removed guide is forgotten")
+    t.eq(OXP.Engine.lostGuide, KEY, "and noted")
+    t.ok(OXP.World.KnowsFlightPath("Astranaar"), "flight paths stay")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
 return t.fails
