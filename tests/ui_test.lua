@@ -954,10 +954,12 @@ do
         return table.concat(out, " ")
     end
     t.ok(icons():find("quest_available", 1, true), "a ! where you pick it up")
-    t.ok(icons():find("quest_incomplete", 1, true), "a grey ? where you hand it in")
+    -- the hand-in is two steps ahead: not on the map yet (only the current and next step)
+    t.ok(not icons():find("quest_incomplete", 1, true), "no ? two steps ahead")
     game:Accept(279, 1)
     OXP.Pins.Refresh()
     t.ok(not icons():find("quest_available", 1, true), "accepted: the ! is gone at once")
+    t.ok(icons():find("quest_incomplete", 1, true), "a grey ? where you hand it in, now the next step")
     game:FinishObjective(279, 1)
     t.ok(icons():find("quest_complete", 1, true), "done: the ? turns yellow")
     -- Questie draws its own: ours step aside (auto)

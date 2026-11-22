@@ -13,8 +13,9 @@ OXP.MapDraw = Draw
 local Places, Terrain, Areas, Engine = OXP.Places, OXP.Terrain, OXP.Areas, OXP.Engine
 local floor, sqrt, min, max = math.floor, math.sqrt, math.min, math.max
 
-local AREA_FILL = { 0.20, 0.55, 1.0, 0.30 }
-local AREA_EDGE = { 0.35, 0.70, 1.0, 0.95 }
+-- a soft fill and a thin edge, so the map under an area stays readable
+local AREA_FILL = { 0.20, 0.55, 1.0, 0.12 }
+local AREA_EDGE = { 0.35, 0.70, 1.0, 0.55 }
 -- The line's own textures (tools/make_icons.py): a stroke with soft edges,
 -- so lines are smooth instead of stair-stepped, a round cap for joints and
 -- ends, and a chevron for the direction.
@@ -29,9 +30,24 @@ local MAP_TICK, MINI_TICK = 0.25, 0.1
 
 local function RouteOn() return OXP.settings.mapRoute ~= false end
 
-local routeColor = { 0.72, 0.42, 1.0, 0.92 }
-local CASING = { 0.04, 0.02, 0.08, 0.6 }
-local CHEVRON_COLOR = { 1, 1, 1, 0.9 }
+-- The line's width in world map pixels (at canvas scale 1): Settings > Maps
+-- > Route line width. Thin and a little see-through, over a faint dark
+-- casing, so the ground under it can still be read.
+local ROUTE_WIDTH = 1.5
+local MINI_WIDTH = 0.85   -- the minimap's line, of the world map's
+local CASING_WIDEN = 1.7  -- the casing's width, of the line's
+local TIDY_WIDTH = 3      -- the tidy (Tidy) works at this width whatever the line's
+Draw.ROUTE_WIDTH = ROUTE_WIDTH
+local function RouteWidth()
+    local w = tonumber(OXP.settings.routeWidth)
+    if not w or w <= 0 then return ROUTE_WIDTH end
+    return w
+end
+Draw.RouteWidth = RouteWidth
+
+local routeColor = { 0.72, 0.42, 1.0, 0.8 }
+local CASING = { 0.02, 0.01, 0.04, 0.4 }
+local CHEVRON_COLOR = { 1, 1, 1, 0.75 }
 local function RouteColor()
     local c = OXP.settings.routeColor
     if c and c[1] then routeColor[1], routeColor[2], routeColor[3] = c[1], c[2], c[3] end
@@ -131,6 +147,7 @@ local function Line(c, color, thickness, x1, y1, x2, y2, sub)
     l:SetVertexColor(color[1], color[2], color[3], color[4])
     l:SetDrawLayer("OVERLAY", sub or 0)
     l:SetThickness(thickness * LINE_WIDEN)
+    l.oxpWidth, l.oxpColor = thickness, color
     l:SetStartPoint("TOPLEFT", c.frame, x1, -y1)
     l:SetEndPoint("TOPLEFT", c.frame, x2, -y2)
     l:Show()
@@ -287,19 +304,24 @@ Draw.Tidy = Tidy
 
 -- One clean line with rounded corners, round joints, a small chevron now
 -- and then for the direction, and a dot where it ends.
-local function RouteLeg(c, pts, thickness, clip, perYard)
+-- `tidy`: the width the points are tidied at (the line's own width when nil).
+local function RouteLeg(c, pts, thickness, clip, perYard, tidy)
     if #pts < 2 or not RouteOn() then return end
     local color = RouteColor()
-    pts = SmoothOpen(Tidy(pts, thickness, perYard), 2)
-    -- a dark casing under the line keeps it readable on any ground
+    pts = SmoothOpen(Tidy(pts, tidy or thickness, perYard), 2)
+    -- a faint dark casing under the line keeps it readable on any ground
+    local casing = thickness * CASING_WIDEN
     for i = 1, #pts - 1 do
         local ax, ay, bx, by = ClipSegment(pts[i][1], pts[i][2], pts[i + 1][1], pts[i + 1][2], clip)
         if ax then
-            Line(c, CASING, thickness * 1.9, ax, ay, bx, by, -2)
-            Tex(c, ROUND, CASING, thickness * 1.9, bx, by, -2)
+            Line(c, CASING, casing, ax, ay, bx, by, -2)
+            Tex(c, ROUND, CASING, casing, bx, by, -2)
         end
     end
-    local travelled, nextMark = 0, thickness * 30
+    -- chevrons and the end dot keep about their old size (in pixels) on a
+    -- thinner line, so the direction still shows
+    local mark = tidy or thickness
+    local travelled, nextMark = 0, mark * 30
     for i = 1, #pts - 1 do
         local ax, ay, bx, by = ClipSegment(pts[i][1], pts[i][2], pts[i + 1][1], pts[i + 1][2], clip)
         if ax then
@@ -313,8 +335,8 @@ local function RouteLeg(c, pts, thickness, clip, perYard)
                 local angle = math.atan2(-uy, ux)
                 while nextMark < travelled + len do
                     local d = nextMark - travelled
-                    Tex(c, CHEVRON, CHEVRON_COLOR, thickness * 2.2, ax + ux * d, ay + uy * d, 2, angle)
-                    nextMark = nextMark + thickness * 45
+                    Tex(c, CHEVRON, CHEVRON_COLOR, mark * 2, ax + ux * d, ay + uy * d, 2, angle)
+                    nextMark = nextMark + mark * 45
                 end
                 travelled = travelled + len
             end
@@ -322,7 +344,7 @@ local function RouteLeg(c, pts, thickness, clip, perYard)
     end
     local last = pts[#pts]
     if not clip or ClipSegment(last[1], last[2], last[1] + 0.01, last[2], clip) then
-        Tex(c, ROUND, color, thickness * 2.6, last[1], last[2])
+        Tex(c, ROUND, color, mark * 2, last[1], last[2])
     end
 end
 
@@ -349,9 +371,59 @@ end
 -- worked out at most twice a second (and at once after such a change).
 local upcomingCache, upcomingAt = nil, -math.huge
 local UPCOMING_AGAIN = 0.5
-local function ForgetUpcoming() upcomingCache = nil end
+local areasCache, areasAt = nil, -math.huge
+local function ForgetUpcoming() upcomingCache, areasCache = nil, nil end
 for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "QUESTS_CHANGED", "SETTINGS_CHANGED", "ARROW_CHANGED" }) do
     OXP.Listen(m, ForgetUpcoming)
+end
+
+-- An area's middle and size (map units): { cx, cy, r }
+local function AreaShape(a)
+    local x0, y0, x1, y1 = math.huge, math.huge, -math.huge, -math.huge
+    for _, p in ipairs(a.poly) do
+        x0, y0, x1, y1 = min(x0, p[1]), min(y0, p[2]), max(x1, p[1]), max(y1, p[2])
+    end
+    return (x0 + x1) / 2, (y0 + y1) / 2, max(x1 - x0, y1 - y0) / 2
+end
+
+--- True when two areas are the same one drawn twice: the same outline, or
+--- on the same map with about the same middle and size.
+function Draw.SameArea(a, b)
+    if a.poly == b.poly then return true end
+    if a.map ~= b.map then return false end
+    local ax, ay, ar = AreaShape(a)
+    local bx, by, br = AreaShape(b)
+    local r = max(ar, br, 0.5)
+    return sqrt((ax - bx) ^ 2 + (ay - by) ^ 2) <= r * 0.25 and math.abs(ar - br) <= r * 0.3
+end
+
+--- The kill/loot areas of the step(s) you're on now (Engine.GetActive(), not
+--- the steps ahead), each once: { {area = a, pos = first step, positions =
+--- {...}, step = step, cx, cy, r}, ... }. {} while areas are off in settings.
+function Draw.CurrentAreas()
+    if not Areas.On() then return {} end
+    local now = GetTime and GetTime() or 0
+    if areasCache and now - areasAt < UPCOMING_AGAIN and now >= areasAt then return areasCache end
+    local out = {}
+    local steps = Engine.GetSteps()
+    for _, pos in ipairs(Engine.GetActive()) do
+        local step = steps[pos]
+        local a = step and Areas.ForStep(step)
+        if a and a.map and a.poly and #a.poly >= 3 then
+            local dup
+            for _, e in ipairs(out) do
+                if Draw.SameArea(e.area, a) then dup = e break end
+            end
+            if dup then
+                dup.positions[#dup.positions + 1] = pos
+            else
+                local cx, cy, r = AreaShape(a)
+                out[#out + 1] = { area = a, pos = pos, positions = { pos }, step = step, cx = cx, cy = cy, r = r }
+            end
+        end
+    end
+    areasCache, areasAt = out, now
+    return out
 end
 
 local upcomingAim = {}
@@ -512,12 +584,14 @@ function Draw.WorldMap()
         if yards > 0 then perYard = w / yards end
     end
 
-    for _, s in ipairs(stops) do
-        if s[4] and s[4].map == map then
+    -- the areas of the step you're on (not the steps ahead), each once;
+    -- their names are in a tooltip on the area's middle (Nav/Pins.lua)
+    for _, e in ipairs(Draw.CurrentAreas()) do
+        if e.area.map == map then
             local px = {}
-            for _, p in ipairs(Rounded(s[4])) do px[#px + 1] = { P(p[1], p[2]) } end
+            for _, p in ipairs(Rounded(e.area)) do px[#px + 1] = { P(p[1], p[2]) } end
             Draw.Fill(wmc, px, AREA_FILL, max(1, 2 / scale))
-            Outline(wmc, px, AREA_EDGE, 2.5 / scale)
+            Outline(wmc, px, AREA_EDGE, 1.2 / scale)
         end
     end
 
@@ -531,7 +605,7 @@ function Draw.WorldMap()
         for _, line in ipairs(tlines) do
             local pts = {}
             for _, p in ipairs(line) do pts[#pts + 1] = { P(p[1], p[2]) } end
-            RouteLeg(wmc, pts, 3 / scale)
+            RouteLeg(wmc, pts, RouteWidth() / scale, nil, nil, TIDY_WIDTH / scale)
         end
     elseif px and #stops > 0 and (pmap == map or OXP.Target.BAKED_ONLY) then
         if pmap ~= map then
@@ -543,7 +617,7 @@ function Draw.WorldMap()
         if px then
             local pts = {}
             for _, p in ipairs(RoutePoints(map, px, py, stops, level)) do pts[#pts + 1] = { P(p[1], p[2]) } end
-            RouteLeg(wmc, pts, 3 / scale, nil, perYard)
+            RouteLeg(wmc, pts, RouteWidth() / scale, nil, perYard, TIDY_WIDTH / scale)
         end
     end
 end
@@ -576,8 +650,9 @@ local function DrawMinimap()
     if not (mm and mm:IsShown()) then return end
     mmc = mmc or NewCanvas(mm, mm:GetFrameLevel() + 2)
     local stops = Draw.Upcoming()
+    local areas = Draw.CurrentAreas()
     local plan = OXP.Travel.Current()
-    if #stops == 0 and not plan then lastMini = nil return Clear(mmc) end
+    if #stops == 0 and #areas == 0 and not plan then lastMini = nil return Clear(mmc) end
     local wx, wy = Places.Player()
     local px, py, pmap = Places.PlayerZone()
     if not (wx and px) then lastMini = nil return Clear(mmc) end
@@ -590,9 +665,12 @@ local function DrawMinimap()
     local col = RouteColor()
     local ppy = size / radius
     local sig = { pmap, floor(wx * ppy), floor(wy * ppy), floor(facing * size), radius, size, tostring(plan),
-                  RouteOn() and 1 or 0, Areas.On() and 1 or 0, col[1], col[2], col[3] }
+                  RouteOn() and 1 or 0, Areas.On() and 1 or 0, col[1], col[2], col[3], RouteWidth() }
     for _, st in ipairs(stops) do
-        sig[#sig + 1] = st[1] .. "/" .. floor(st[2] * 10) .. "/" .. floor(st[3] * 10) .. "/" .. tostring(st[4])
+        sig[#sig + 1] = st[1] .. "/" .. floor(st[2] * 10) .. "/" .. floor(st[3] * 10)
+    end
+    for _, e in ipairs(areas) do
+        sig[#sig + 1] = e.area.map .. "/" .. floor(e.cx * 10) .. "/" .. floor(e.cy * 10) .. "/" .. floor(e.r * 10)
     end
     sig = table.concat(sig, ":")
     if sig == lastMini then return end
@@ -607,17 +685,17 @@ local function DrawMinimap()
         if rotate then dx, dy = dx * cos - dy * sin, dx * sin + dy * cos end
         return size + dx / radius * size, size + dy / radius * size
     end
-    for _, s in ipairs(stops) do
-        if s[4] and s[4].map == pmap then
+    for _, e in ipairs(areas) do
+        if e.area.map == pmap then
             local pts = {}
-            for _, p in ipairs(Rounded(s[4])) do
+            for _, p in ipairs(Rounded(e.area)) do
                 local x, y = P(p[1], p[2])
                 if not x then pts = nil break end
                 pts[#pts + 1] = { x, y }
             end
             if pts then
                 Draw.Fill(mmc, pts, AREA_FILL, 2, clip)
-                Outline(mmc, pts, AREA_EDGE, 2, clip)
+                Outline(mmc, pts, AREA_EDGE, 1.2, clip)
             end
         end
     end
@@ -631,7 +709,7 @@ local function DrawMinimap()
                 local x, y = P(p[1], p[2])
                 if x then route[#route + 1] = { x, y } end
             end
-            RouteLeg(mmc, route, 2.5, clip)
+            RouteLeg(mmc, route, RouteWidth() * MINI_WIDTH, clip, nil, 2.5)
         end
         return
     end
@@ -640,7 +718,13 @@ local function DrawMinimap()
         local x, y = P(p[1], p[2])
         if x then route[#route + 1] = { x, y } end
     end
-    RouteLeg(mmc, route, 2.5, clip, ppy)
+    RouteLeg(mmc, route, RouteWidth() * MINI_WIDTH, clip, ppy, 2.5)
+end
+
+--- What's drawn now (for tests): the world map's or minimap's canvas,
+--- { lines = {...}, rects = {...}, nl = lines in use, nr = strips in use }.
+function Draw.Canvas(which)
+    return which == "minimap" and mmc or wmc
 end
 
 function Draw.Minimap()

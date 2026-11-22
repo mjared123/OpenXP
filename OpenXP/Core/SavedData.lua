@@ -43,6 +43,9 @@ local ACCOUNT_DEFAULTS = {
         routeStyle = "roads",      -- "roads": keep to roads; "direct": the shortest way
         mapMobs = true,            -- a mark on every spawn of the mobs you need
         routeColor = { 0.72, 0.42, 1.0 },
+        routeWidth = 1.5,          -- the route line's width (Nav/MapDraw.lua ROUTE_WIDTH)
+        mapStepNumbers = true,     -- step numbers on the step pins
+        mapNextStep = true,        -- a pin for the next step too, not only the current one
         travel = true,             -- plan trips to other zones
         -- automation (hold Shift to pause it)
         autoAccept = true,         -- accept the quests the guide picks up
