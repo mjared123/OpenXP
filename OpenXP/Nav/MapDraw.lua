@@ -354,7 +354,10 @@ end
 
 local function StepStop(step)
     local a = Areas.ForStep(step)
-    local s = Areas.StepSpot(step)
+    -- its first waypoint still to go to: not one whose goals are done already
+    -- (a quest of a step ahead picked up early)
+    local w = OXP.Target.StepWaypoint and OXP.Target.StepWaypoint(step, false)
+    local s = w and w.spot or Areas.StepSpot(step)
     if s then return { s.map, s.x, s.y, a } end
     if a then
         local cx, cy = 0, 0
