@@ -371,4 +371,62 @@ do
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
+------------------------------------------------------------------------
+print("-- Call of Earth (Dwarf Shaman): the Earth Sapta button, the chain's parts, More below the text")
+do
+    local game, OXP = newGame({ level = 5, race = "Dwarf", class = "SHAMAN", map = 1426, x = 28.79, y = 66.18 })
+    InCombatLockdown = function() return false end
+    addGuide(OXP, {
+        { { "text", text = "Call of Earth" },
+          { "goto", x = 28.79, y = 66.18, zone = "1426" },
+          { "turnin", quest = 94373, text = "Turn in Call of Earth" }, { "target", name = "Teo Hammerstorm" },
+          { "goto", x = 28.79, y = 66.18, zone = "1426" },
+          { "accept", quest = 94374, text = "Accept Call of Earth" }, { "target", name = "Teo Hammerstorm" },
+          { "goto", x = 25, y = 62.4, zone = "1426" },
+          { "item", item = 6635, text = "Use Earth Sapta (|cOXP_LOOT_Earth Sapta|r, beside the Spirit Stone)" },
+          { "goto", x = 24.8, y = 61.8, zone = "1426" },
+          { "turnin", quest = 94374, text = "Turn in Call of Earth" }, { "target", name = "Minor Manifestation of Earth" },
+          { "goto", x = 24.8, y = 61.8, zone = "1426" },
+          { "accept", quest = 94375, text = "Accept Call of Earth" }, { "target", name = "Minor Manifestation of Earth" },
+          { "goto", x = 28.79, y = 66.18, zone = "1426" },
+          { "turnin", quest = 94375, text = "Turn in Call of Earth (|cOXP_FRIENDLY_Teo Hammerstorm|r: Stoneskin Totem)" },
+          { "target", name = "Teo Hammerstorm" } },
+    })
+    game:Accept(94373, 0)
+    game:TurnIn(94373)
+    game:Accept(94374, 0)
+    local B = OXP.ActionButtons
+    t.eq(B.WantedItem(), nil, "no Sapta in the bags yet: no button")
+    game:AddItem(6635, 1)
+    t.eq(B.WantedItem(), 6635, "part 2 accepted, Sapta in the bags: the button offers it")
+    game:TurnIn(94374)
+    t.eq(B.WantedItem(), nil, "part 2 handed in: the button goes")
+
+    local _, lines = OXP.Card.StepContent(OXP.Engine.GetSteps()[1])
+    local texts = {}
+    for _, l in ipairs(lines) do texts[#texts + 1] = OXP.Text.Strip(l.text) end
+    local all = table.concat(texts, " | ")
+    t.ok(all:find("Turn in Call of Earth (part 1)", 1, true), "part 1 named: " .. all)
+    t.ok(all:find("Accept Call of Earth (part 2)", 1, true), "part 2 named")
+    t.ok(all:find("Turn in Call of Earth (part 3) (Teo Hammerstorm", 1, true), "part 3 named, before its note")
+    t.eq(#lines, 6, "every line once (no true duplicates here)")
+
+    -- the same quest and action twice in a step: shown once
+    local step = { goals = { { "accept", quest = 94374, text = "Accept Call of Earth" },
+                             { "accept", quest = 94374, text = "Accept Call of Earth" } }, marks = {} }
+    local _, two = OXP.Card.StepContent(step)
+    t.ok(#two <= 1, "a real duplicate line is dropped")
+
+    -- More: its own row under the steps, never over a line
+    OXP.settings.cardHeight = 180
+    OXP.Card.height = 180
+    OXP.Card.Refresh(true)
+    local more = OXP.Card.more
+    t.ok(OXP.Card.overflow, "a long step on a short card: cut off")
+    t.ok(more:IsShown(), "More shown")
+    local p = more.points[#more.points]
+    t.ok(p and p[1] == "TOPRIGHT" and p[3] == "BOTTOMRIGHT", "More sits under the step text, not on it")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
 return t.fails

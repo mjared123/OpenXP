@@ -358,20 +358,69 @@ end
 -- just before them (like its "mob" lines, Goals.NeededMobs): the item is
 -- wanted only while that goal is still to do. One before any goal counts
 -- while the step has anything left to do.
+-- An item in your bags by its name (a "Use <item>" line with no item id):
+-- id or nil. Bags 0-4.
+local function BagItemByName(name)
+    if not name or name == "" then return nil end
+    local slots = (C_Container and C_Container.GetContainerNumSlots) or _G.GetContainerNumSlots
+    local idAt = (C_Container and C_Container.GetContainerItemID) or _G.GetContainerItemID
+    if not (slots and idAt and GetItemInfo) then return nil end
+    local want = name:lower()
+    for bag = 0, 4 do
+        for slot = 1, (slots(bag) or 0) do
+            local id = idAt(bag, slot)
+            local n = id and GetItemInfo(id)
+            if type(n) == "string" and n:lower() == want then return id end
+        end
+    end
+end
+Buttons.BagItemByName = BagItemByName
+
+-- "Use Earth Sapta (beside the Spirit Stone)" -> "Earth Sapta"
+local function UseName(text)
+    local plain = text and OXP.Text.Strip(text)
+    local name = plain and plain:match("^Use (.-)%s*%(") or (plain and plain:match("^Use (.+)$"))
+    return name and name:gsub("%s+$", "") or nil
+end
+
+-- The items the step says to use, while what they're for is open. An
+-- "item" line sits between the goal it follows and the one it leads to
+-- (Call of Earth: accept part 2, use the Earth Sapta, turn in part 2), so
+-- it counts while either of those is still to do (before 2.0.0-dev5 only
+-- the goal before it counted: once part 2 was accepted the Sapta button
+-- never showed). A "Use <item>" line without an item id is looked up in
+-- your bags by name.
 local function StepItems(step, out)
     local Goals = OXP.Goals
-    local anyOpen = false
-    for _, g in ipairs(step.goals or {}) do
-        if Goals.Blocks(g[1]) and Goals.State(g, step.marks) == "todo" then anyOpen = true end
+    local goals = step.goals or {}
+    local function Open(g) return g and Goals.State(g, step.marks) == "todo" end
+    local function Around(i)
+        local before, after
+        for j = i - 1, 1, -1 do
+            local k = goals[j][1]
+            if Goals.Blocks(k) and k ~= "reach" then before = goals[j] break end
+        end
+        for j = i + 1, #goals do
+            local k = goals[j][1]
+            if Goals.Blocks(k) and k ~= "reach" then after = goals[j] break end
+        end
+        return before, after
     end
-    local owner
-    for _, g in ipairs(step.goals or {}) do
-        if Goals.Blocks(g[1]) and g[1] ~= "reach" then -- a place, not what the item is for
-            owner = g
-        elseif g[1] == "item" and g.item then
-            local open
-            if owner then open = Goals.State(owner, step.marks) == "todo" else open = anyOpen end
-            if open then out[#out + 1] = { id = g.item, quest = owner and owner.quest } end
+    local anyOpen = false
+    for _, g in ipairs(goals) do
+        if Goals.Blocks(g[1]) and Open(g) then anyOpen = true end
+    end
+    if not anyOpen then return end
+    for i, g in ipairs(goals) do
+        if g[1] == "item" and g.item then
+            local before, after = Around(i)
+            if (not before and not after) or Open(before) or Open(after) then
+                local owner = Open(after) and after or before
+                out[#out + 1] = { id = g.item, quest = owner and owner.quest }
+            end
+        elseif g.text and (g[1] == "complete" or g[1] == "text") and Open(g[1] == "text" and select(2, Around(i)) or g) then
+            local id = BagItemByName(UseName(g.text))
+            if id then out[#out + 1] = { id = id, quest = g.quest } end
         end
     end
 end

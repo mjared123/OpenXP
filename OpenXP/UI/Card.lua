@@ -258,7 +258,30 @@ function Card.StepKind(step)
 end
 
 --- The text a goal shows on the card, made live where it can be (kill counts).
-function Card.GoalText(g)
+-- "Call of Earth" three times in a row reads like a repeat: quests of one
+-- name that follow each other get "(part 2)" after the name. Part 1 too
+-- when its next part is in the same step (`step` given).
+local function WithPart(text, g, step)
+    if not (text and g.quest) then return text end
+    local name = QuestDB.QuestName(g.quest)
+    if not name or name == "" then return text end
+    local part = QuestDB.ChainPart(g.quest) or 1
+    if part == 1 and step then
+        for _, o in ipairs(step.goals or {}) do
+            if o.quest and o.quest ~= g.quest and QuestDB.QuestName(o.quest) == name then part = -1 break end
+        end
+        if part == -1 then part = 1 else return text end
+    elseif part == 1 then
+        return text
+    end
+    local tag = name .. " " .. fmt(L("(part %d)"), part)
+    local s, e = text:find(name, 1, true)
+    if s then return text:sub(1, s - 1) .. tag .. text:sub(e + 1) end
+    return text .. " " .. fmt(L("(part %d)"), part)
+end
+Card.WithPart = WithPart
+
+function Card.GoalText(g, step)
     local kind = g[1]
     if kind == "complete" then
         local o = Quests.GetObjective(g.quest, g.obj)
@@ -280,9 +303,9 @@ function Card.GoalText(g)
         end
         return g.text or fmt(L("Objective %d of %s"), g.obj, QuestDB.QuestName(g.quest))
     elseif kind == "accept" then
-        return g.text or fmt(L("Accept %s"), QuestDB.QuestName(g.quest))
+        return WithPart(g.text or fmt(L("Accept %s"), QuestDB.QuestName(g.quest)), g, step)
     elseif kind == "turnin" then
-        return g.text or fmt(L("Turn in %s"), QuestDB.QuestName(g.quest))
+        return WithPart(g.text or fmt(L("Turn in %s"), QuestDB.QuestName(g.quest)), g, step)
     elseif kind == "collect" then
         local have = OXP.World.ItemCount(g.item)
         return fmt("%s: %d/%d", g.text or (GetItemInfo and GetItemInfo(g.item)) or ("item " .. g.item),
@@ -309,14 +332,17 @@ end
 
 --- The step's title (its first text) and checklist lines.
 function Card.StepContent(step)
-    local title, lines = nil, {}
+    local title, lines, seen = nil, {}, {}
     for _, g in ipairs(step.goals or {}) do
         local kind = g[1]
         if BLOCKING[kind] then
             local state = OXP.Goals.State(g, step.marks)
             if state ~= "skip" then
-                local text = Card.GoalText(g)
-                if text then
+                local text = Card.GoalText(g, step)
+                -- the same quest and action twice in a step: once
+                local key = g[1] .. ":" .. tostring(g.quest or "") .. ":" .. tostring(g.obj or "")
+                if text and not (g.quest and seen[key]) then
+                    seen[key] = true
                     lines[#lines + 1] = { text = Text.Format(text), done = state == "done", goal = g }
                 end
             end
@@ -1248,7 +1274,10 @@ more:SetFrameLevel(f:GetFrameLevel() + 8)
 more.back = more:CreateTexture(nil, "BACKGROUND", nil, -1) -- solid, so cut-off text doesn't show through
 more.back:SetAllPoints()
 more.back:SetColorTexture(C.bg[1], C.bg[2], C.bg[3], 1)
-more:SetPoint("BOTTOMRIGHT", view, "BOTTOMRIGHT", -PAD, 3)
+-- in a row of its own under the steps (the view is made that much
+-- shorter), never on top of a line of text
+local MORE_ROW = 22
+more:SetPoint("TOPRIGHT", view, "BOTTOMRIGHT", -PAD, -2)
 more:Hide()
 
 function Card.SetExpanded(value)
@@ -1653,9 +1682,11 @@ function Card.Refresh(force)
     upH = okU and upH or 0
 
     local viewH = math.max(1, room - upH)
+    Card.overflow = contentH > viewH + 0.5
+    -- cut off (or "More" open): the steps give up a row for the button
+    if Card.overflow or Card.expanded then viewH = math.max(1, viewH - MORE_ROW) end
     view:SetHeight(viewH)
     Card.viewHeight, Card.contentHeight = viewH, contentH
-    Card.overflow = contentH > viewH + 0.5
     Card.maxScroll = math.max(0, contentH - viewH)
     if not Card.expanded then Card.scroll = 0 end
     Card.scroll = Clamp(Card.scroll or 0, 0, Card.maxScroll)

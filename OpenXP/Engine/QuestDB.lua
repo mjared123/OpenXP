@@ -193,6 +193,25 @@ function DB.Info(id)
     return info
 end
 
+--- For a quest in a chain of quests with the same name (Call of Earth
+--- 94373, 94374, 94375): which part it is, 1-based, or nil when the quest
+--- before it has another name. Follows the "needs one of" quests back.
+function DB.ChainPart(id)
+    local name = DB.QuestName(id)
+    local part, cur, guard = 1, id, 0
+    while guard < 20 do
+        guard = guard + 1
+        local pre = DB.Prereqs(cur)
+        local prev
+        for _, p in ipairs(pre and (pre.any or pre.all) or {}) do
+            if DB.QuestName(p) == name then prev = p break end
+        end
+        if not prev then break end
+        part, cur = part + 1, prev
+    end
+    return part
+end
+
 function DB.QuestName(id)
     local info = DB.Info(id)
     return (info and info.n) or Quests.GetTitle(id) or ("#" .. id)

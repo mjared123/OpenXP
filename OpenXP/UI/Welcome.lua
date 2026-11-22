@@ -15,6 +15,9 @@ Welcome.CHANGELOG = {
         version = "2.0.0-dev5", date = "2026-11",
         changes = {
             "The old 1.x 21-60 guides (\"OpenXP Legacy\" in Pick a guide) are gone: the leveling route covers 1-60. A character that was on one is placed on the route by smart start, flight paths kept. About 1.3 MB less to load.",
+            "The quest item button shows for every \"Use <item>\" line while the item is in your bags and what it's for is still open (the Earth Sapta in Call of Earth never got a button).",
+            "Quests in a chain with the same name say which part they are: \"Accept Call of Earth (part 2)\". A line repeated in a step shows once.",
+            "\"More\" on the card has its own row under the step text and no longer covers the last line.",
         },
     },
     {
