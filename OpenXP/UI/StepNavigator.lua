@@ -361,21 +361,26 @@ end
 -- Header, summary, tabs, footer
 ---------------------------------------------------------------------------
 
+--- Steps done, skipped (or chain missed), still to do (not counting the one
+--- you're on) and in total: the same states the rows show.
 local function Counts()
-    local done, skipped, total = 0, 0, #Engine.GetSteps()
+    local done, skipped, todo, total = 0, 0, 0, #Engine.GetSteps()
     for pos = 1, total do
-        local st = Engine.StepState(pos)
-        if st == "done" then done = done + 1 elseif st == "skipped" or st == "chain" then skipped = skipped + 1 end
+        local st = Nav.Status(pos)
+        if st == "done" then done = done + 1
+        elseif st == "skipped" or st == "chain" then skipped = skipped + 1
+        elseif st == "todo" then todo = todo + 1 end
     end
-    return done, skipped, total
+    return done, skipped, total, todo
 end
+Nav.Counts = Counts
 
 local function PaintSummary()
-    local done, skipped, total = Counts()
+    local done, skipped, total, todo = Counts()
     local cur = Engine.GetPosition() or 1
     f.count:SetText(fmt(L("Step %d of %d"), math.min(cur, math.max(total, 1)), total))
     f.stats:SetText(fmt("|cFF3DBB7A%d %s|r   |cFF9EA3AD%d %s|r   %d %s", done, L("done"), skipped, L("skipped"),
-        math.max(0, total - cur), L("to go")))
+        todo, L("to go")))
     local w = WIDTH - 2 - S.lg * 2
     local dw = total > 0 and w * done / total or 0
     local sw = total > 0 and w * skipped / total or 0

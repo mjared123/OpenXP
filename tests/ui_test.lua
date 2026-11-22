@@ -829,6 +829,74 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- the step list: jumping ahead skips, it doesn't mark steps done")
+do
+    local game, OXP = newGame({ level = 21 })
+    local steps = {}
+    for i = 1, 10 do steps[i] = { { "text", text = "Step number " .. i }, { "xp", level = 60 } } end
+    steps[4] = { { "accept", quest = 50 } }
+    steps[6] = { { "xp", level = 20 } }  -- already done
+    local g = addGuide(OXP, steps)
+    local E, card, Nav = OXP.Engine, OXP.Card, OXP.StepNav
+    E.Load(g.key)
+    card.Refresh(true)
+    card.header.nav.scripts.OnClick(card.header.nav)
+    local function click(pos)
+        for i, it in ipairs(Nav.items or {}) do
+            if it.pos == pos then Nav.ScrollTo((i - 1) * 38, true) end  -- scroll its row into view
+        end
+        for _, f in ipairs(game.frames) do
+            if f.pos == pos and f.status and f.shown then f.scripts.OnClick(f) return true end
+        end
+    end
+    local function states()
+        local out = {}
+        for pos = 1, 10 do out[pos] = Nav.Status(pos) end
+        return table.concat(out, ",")
+    end
+    t.ok(click(8), "step 8's row is on screen")
+    t.eq(E.GetPosition(), 8, "clicking it goes there")
+    t.eq(states(), "skipped,skipped,skipped,skipped,skipped,done,skipped,current,todo,todo",
+        "the steps jumped over are skipped, the one already done is done")
+    for pos = 1, 7 do
+        t.eq(E.StepState(pos), Nav.Status(pos), "the card's history agrees: step " .. pos)
+    end
+    t.ok(card.StepRole(E.GetSteps()[5], 5) ~= "done", "the card doesn't call a jumped step DONE")
+    local done, skipped, total, todo = Nav.Counts()
+    t.eq(done .. "/" .. skipped .. "/" .. todo .. "/" .. total, "1/6/2/10", "counts: done / skipped / to go / total")
+    game:Accept(50, 0)
+    t.eq(Nav.Status(4), "done", "a jumped step really done (live quest log) shows done")
+    -- back: nothing changes
+    t.ok(click(3), "step 3's row is on screen")
+    t.eq(E.GetPosition(), 3, "back at step 3")
+    t.eq(states(), "skipped,skipped,current,done,skipped,done,skipped,todo,todo,todo",
+        "going back changes no statuses")
+    -- back to my step: the step you went back to is skipped again
+    card.Resume()
+    t.eq(E.GetPosition(), 8, "Back to my step")
+    t.eq(states(), "skipped,skipped,skipped,done,skipped,done,skipped,current,todo,todo", "as before")
+    -- the card's Next skips
+    card.GoNext()
+    t.eq(E.GetPosition(), 9, "Next moves on")
+    t.eq(Nav.Status(8), "skipped", "and skips the step")
+    -- a chain-missed step keeps its mark when you look at it and come back
+    E.MarkSkipped(E.GetSteps()[2].index, "chain")
+    t.eq(Nav.Status(2), "chain", "chain missed")
+    t.ok(click(2), "step 2's row is on screen")
+    t.eq(Nav.Status(5), "skipped", "a jumped step after it stays skipped")
+    card.Resume()
+    t.eq(E.GetPosition(), 9, "back to step 9")
+    t.eq(Nav.Status(2), "chain", "still chain missed")
+    -- jumping ahead again: the step you left is skipped
+    t.ok(click(10), "step 10's row is on screen")
+    t.eq(Nav.Status(9), "skipped", "the step you left is skipped")
+    done, skipped, total, todo = Nav.Counts()
+    t.eq(done .. "/" .. skipped .. "/" .. todo, "2/7/0", "counts agree with the rows")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+    t.ok(not card.lastError, "no card errors: " .. tostring(card.lastError))
+end
+
+------------------------------------------------------------------------
 print("-- the arrow's look: styles, circle, text, opacity")
 do
     local game, OXP = newGame({ level = 21 })

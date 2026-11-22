@@ -262,16 +262,48 @@ function Engine.Unload()
     OXP.Send("GUIDE_LOADED", nil)
 end
 
+-- Leaving the current step without doing it. The step you went back to
+-- gets back the mark it had before (skipped, chain missed); any other gets
+-- `mark` ("jumped": passed over by going ahead, shown as skipped).
+local function leaveUndone(mark)
+    local step = run.steps[run.pos]
+    if not step or stepDone(run.pos) then return end
+    local was = run.revisit
+    if was and was.pos == run.pos and (was.skipped or was.status) then
+        run.save.skipped[step.index] = was.skipped
+        run.save.status[step.index] = was.status
+    elseif mark == "skipped" then
+        run.save.skipped[step.index] = true
+    else
+        run.save.status[step.index] = mark
+    end
+end
+
 --- Show step `pos` (a position in Engine.GetSteps()). Un-skips it.
 --- A step that is already done when you go to it (looking back) stays shown
 --- until you move on; a step still to do moves on by itself once you do it,
 --- like any other. With noHold, never held.
+--- Going ahead marks nothing done: the step you leave and the steps past the
+--- furthest one reached that you jump over are marked "jumped" (shown as
+--- skipped) unless they are done. Going back changes no marks.
 function Engine.GoTo(pos, noHold)
     if not run or not run.steps[pos] then return false end
+    if pos > run.pos and run.steps[run.pos] then
+        leaveUndone("jumped")
+        local from = math.max(run.pos + 1, run.furthest or 0)
+        for p = from, pos - 1 do
+            local step = run.steps[p]
+            if not stepDone(p) and not run.save.status[step.index] then
+                run.save.status[step.index] = "jumped"
+            end
+        end
+    end
+    local index = run.steps[pos].index
+    run.revisit = { pos = pos, skipped = run.save.skipped[index], status = run.save.status[index] }
     run.pos = pos
     run.finished = nil
-    run.save.skipped[run.steps[pos].index] = nil
-    run.save.status[run.steps[pos].index] = nil
+    run.save.skipped[index] = nil
+    run.save.status[index] = nil
     run.held = (not noHold and stepDone(pos)) and pos or nil
     savePosition()
     OXP.Send("STEP_CHANGED", pos)
@@ -283,6 +315,7 @@ end
 --- Move on from the current step, marking it skipped if it isn't done.
 function Engine.Next()
     if not run or run.pos > #run.steps then return false end
+    leaveUndone("skipped")
     if not stepDone(run.pos) then
         run.save.skipped[run.steps[run.pos].index] = true
     end
@@ -382,18 +415,23 @@ function Engine.GoalState(pos, goal)
 end
 
 --- "done", "skipped", "chain" (skipped: its quest chain was missed),
---- "current" or "todo" for the step at `pos`.
+--- "current" or "todo" for the step at `pos`. A step jumped over (Engine.GoTo)
+--- is "skipped" until it is done.
 function Engine.StepState(pos)
     if not run or not run.steps[pos] then return nil end
     local index = run.steps[pos].index
     if pos == run.pos then return "current" end
-    if run.save.status[index] == "chain" then return "chain" end
+    local status = run.save.status[index]
+    if status == "chain" then return "chain" end
     if pos < run.pos then
         if ownGoalsDone(run.steps[pos]) then return "done" end
-        return run.save.skipped[index] and "skipped" or "done"
+        if run.save.skipped[index] then return "skipped" end
+        if status == "jumped" and not stepDone(pos) then return "skipped" end
+        return "done"
     end
     if run.save.skipped[index] then return "skipped" end
-    return stepDone(pos) and "done" or "todo"
+    if stepDone(pos) then return "done" end
+    return status == "jumped" and "skipped" or "todo"
 end
 
 --- Steps finished and steps in total for a guide (default: the loaded one),
