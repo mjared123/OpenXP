@@ -53,10 +53,96 @@ local function StepTitle(step)
 end
 Target.StepTitle = StepTitle
 
+-- A step's waypoints, in order: { {goal, spot, owned = {goal, ...}}, ... }.
+-- A goto or reach belongs to the goals that block the step after it, up to
+-- the next goto or reach ("goto, accept, target" is where you accept); a
+-- reach is also its own goal. A goto with no such goal is a waypoint on the
+-- way (a door, a tunnel). Worked out once per step.
+local function Waypoints(step)
+    local list = step.waypoints
+    if list then return list end
+    list = {}
+    local cur
+    for _, g in ipairs(step.goals) do
+        local k = g[1]
+        if k == "goto" or k == "reach" then
+            local s = Places.Spot(g)
+            cur = s and { goal = g, spot = s, owned = {} } or nil
+            if cur then
+                list[#list + 1] = cur
+                if k == "reach" then cur.owned[1] = g end
+            end
+        elseif cur and OXP.Goals.Blocks(k) then
+            cur.owned[#cur.owned + 1] = g
+        end
+    end
+    step.waypoints = list
+    return list
+end
+Target.Waypoints = Waypoints
+
+-- Is every goal this waypoint belongs to done (or skipped)? nil for a
+-- waypoint with no goal of its own.
+local function GoalsDone(w, marks)
+    if #w.owned == 0 then return nil end
+    for _, g in ipairs(w.owned) do
+        if OXP.Goals.State(g, marks) == "todo" then return false end
+    end
+    return true
+end
+
+-- Are you past waypoint w on the way to the next one still to go to (n):
+-- on the continent n is on while w isn't, or nearer n than w is?
+local function Beyond(w, n, px, py, inst)
+    if not (n and px) then return false end
+    local a, b = w.spot, n.spot
+    if b.instance ~= inst then return false end
+    if a.instance ~= inst then return true end
+    return Places.Distance(px, py, b.wx, b.wy) < Places.Distance(a.wx, a.wy, b.wx, b.wy)
+end
+
+--- The waypoint of `step` to go to now: (waypoint, index), or nil when the
+--- step has none. One whose goals are all done or skipped is passed wherever
+--- you are; one whose goal is still to do stays, even when you're next to
+--- it. A waypoint with no goal of its own is passed once you've been within
+--- REACHED yards of it or are past it (nearer the next waypoint still to go
+--- to than it is), and stays passed. When every waypoint is passed, the last one.
+--- With `live` false (a step ahead, not shown yet) only the goals count.
+function Target.StepWaypoint(step, live)
+    local list = Waypoints(step)
+    if #list == 0 then return nil end
+    local passed = live and step.marks.passed
+    if live and not passed then
+        passed = {}
+        step.marks.passed = passed
+    end
+    local px, py, inst
+    if live then px, py, inst = Places.Player() end
+    for i, w in ipairs(list) do
+        local done = GoalsDone(w, step.marks)
+        if done == nil and live and not passed[w.goal] then
+            local s = w.spot
+            -- the next waypoint still to go to after this one
+            local n
+            for k = i + 1, #list do
+                if GoalsDone(list[k], step.marks) ~= true then n = list[k] break end
+            end
+            if px and ((s.instance == inst and Places.Distance(px, py, s.wx, s.wy) <= REACHED)
+                or Beyond(w, n, px, py, inst)) then
+                passed[w.goal] = true
+            end
+        end
+        if done == false or (done == nil and not (live and passed[w.goal])) then
+            return w, i
+        end
+    end
+    return list[#list], #list
+end
+
 local real = {}
 
 --- The guide's spot for the shown steps: {wx, wy, instance, map, title, step,
---- pos}, or nil when the shown steps have no spot.
+--- pos, goal}, or nil when the shown steps have no spot.
 function Target.Real()
     local order = Engine.GetActive()
     -- a later step's turn-in you're standing by comes first (UI/Card.lua)
@@ -69,26 +155,14 @@ function Target.Real()
     end
     for _, pos in ipairs(order) do
         local step = Engine.GetSteps()[pos]
-        local spots = {}
-        for _, g in ipairs(step.goals) do
-            if g[1] == "goto" or g[1] == "reach" then
-                local s = Places.Spot(g)
-                if s then spots[#spots + 1] = s end
-            end
-        end
-        if #spots > 0 then
-            -- several waypoints: walk them in order
-            local i = step.marks.waypoint or 1
-            local px, py, inst = Places.Player()
-            while i < #spots and px and spots[i].instance == inst
-                and Places.Distance(px, py, spots[i].wx, spots[i].wy) <= REACHED do
-                i = i + 1
-            end
+        -- several waypoints: the first one not behind you (Target.StepWaypoint)
+        local w, i = Target.StepWaypoint(step, true)
+        if w then
             step.marks.waypoint = i
-            local s = spots[i]
+            local s = w.spot
             real.wx, real.wy, real.instance, real.map = s.wx, s.wy, s.instance, s.map
             real.x, real.y = s.x, s.y -- map %: finds the baked walk (Nav/WalkPaths.lua)
-            real.title, real.step, real.pos = StepTitle(step), step, pos
+            real.title, real.step, real.pos, real.goal = StepTitle(step), step, pos, w.goal
             return real
         end
     end
