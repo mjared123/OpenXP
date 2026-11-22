@@ -55,6 +55,12 @@ function FakeWoW.New(root, opts, saved)
         collapsed = {},    -- [questID] = true: hidden under a collapsed header
         unloaded = {},     -- [questID] = true: in the log, details not loaded by the client yet
         specialItems = {}, -- [questID] = itemID: the quest log's usable quest item (GetQuestLogSpecialItemInfo)
+        -- console variables (GetCVar/SetCVar); unknown ones read "0" and
+        -- false makes one missing (nil), like a client that hasn't got it.
+        -- questPOI: Blizzard's quest markers on the map, on by default.
+        cvars = { questPOI = (not opts.noQuestPOI) and "1" },
+        shift = false, ctrl = false, -- modifier keys held (IsShiftKeyDown, IsControlKeyDown)
+        mapInfo = {},      -- [uiMapID] = { mapType = Enum.UIMapType } for C_Map.GetMapInfo
     }, Game)
     game:InstallGlobals()
     saved = saved or {}
@@ -169,7 +175,12 @@ function Game:InstallGlobals()
         GetScale = function(self) return self.scale or 1 end,
         SetScale = function(self, s) self.scale = s end,
         GetEffectiveScale = function() return 1 end,
-        GetFrameLevel = function() return 1 end,
+        -- like the game: SetFrameLevel sticks (1 until set)
+        GetFrameLevel = function(self) return self.level or 1 end,
+        SetFrameLevel = function(self, l) self.level = l end,
+        SetFixedFrameLevel = function(self, v) self.fixedLevel = v and true or false end,
+        EnableMouse = function(self, v) self.mouse = v and true or false end,
+        IsMouseEnabled = function(self) return self.mouse or false end,
         GetID = function(self) return self.id or 0 end,
         GetName = function(self) return self.name end,
         GetParent = function(self) return self.parent end,
@@ -265,8 +276,16 @@ function Game:InstallGlobals()
         return unpack(out)
     end
     GetLocale = function() return "enUS" end
-    GetCVar = function() return "0" end
-    SetCVar = function() end
+    GetCVar = function(name)
+        local v = game.cvars[name]
+        if v == false then return nil end
+        return v or "0"
+    end
+    SetCVar = function(name, v)
+        if game.cvars[name] == false then return end
+        game.cvars[name] = tostring(v)
+    end
+    HideUIPanel = function(f) f:Hide() end
     GetPlayerFacing = function() return 0 end
     UnitXP = function() return 0 end
     UnitXPMax = function() return 1000 end
@@ -278,7 +297,9 @@ function Game:InstallGlobals()
     IsResting = function() return false end
     IsInInstance = function() return false end
     UnitIsDeadOrGhost = function() return false end
-    IsShiftKeyDown = function() return false end
+    IsShiftKeyDown = function() return game.shift == true end
+    IsControlKeyDown = function() return game.ctrl == true end
+    IsModifierKeyDown = function() return game.shift == true or game.ctrl == true end
     GetCursorPosition = function() return 0, 0 end
     debugprofilestop = function() return 0 end
 
@@ -377,7 +398,7 @@ function Game:InstallGlobals()
     GetSubZoneText = function() return game.subzone end
     C_Map = {
         GetBestMapForUnit = function() return nil end,
-        GetMapInfo = function() return nil end,
+        GetMapInfo = function(id) return game.mapInfo[id] end,
     }
     GetBindLocation = function() return game.bind end
     GetItemCount = function(id) return game.items[id] or 0 end
@@ -463,11 +484,21 @@ function FakeWoW.InstallHBD(game)
         return math.sqrt(dx * dx + dy * dy)
     end
     local pins = LibStub:NewLibrary("HereBeDragons-Pins-2.0", 999)
-    game.pins = { world = 0, minimap = 0 }
-    function pins:AddWorldMapIconWorld() game.pins.world = game.pins.world + 1 end
-    function pins:AddMinimapIconWorld() game.pins.minimap = game.pins.minimap + 1 end
-    function pins:RemoveAllWorldMapIcons() game.pins.world = 0 end
-    function pins:RemoveAllMinimapIcons() game.pins.minimap = 0 end
+    -- counts, and what each icon was added with (like HBD's calls):
+    -- worldIcons[icon] = { inst, x, y, showFlag }, minimapIcons[icon] = { inst, x, y, floatOnEdge }
+    game.pins = { world = 0, minimap = 0, worldIcons = {}, minimapIcons = {} }
+    function pins:AddWorldMapIconWorld(_, icon, inst, x, y, showFlag)
+        game.pins.world = game.pins.world + 1
+        game.pins.worldIcons[icon] = { inst, x, y, showFlag or 0 }
+    end
+    function pins:AddMinimapIconWorld(_, icon, inst, x, y, floatOnEdge)
+        game.pins.minimap = game.pins.minimap + 1
+        game.pins.minimapIcons[icon] = { inst, x, y, floatOnEdge == true }
+    end
+    function pins:RemoveAllWorldMapIcons() game.pins.world = 0 game.pins.worldIcons = {} end
+    function pins:RemoveAllMinimapIcons() game.pins.minimap = 0 game.pins.minimapIcons = {} end
+    -- the world map's data provider: the map refreshes it on every map change
+    pins.worldmapProvider = { RefreshAllData = function() end }
 end
 
 --- Put the player on a map at x, y (0-100).

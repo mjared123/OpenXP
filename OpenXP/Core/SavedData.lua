@@ -45,6 +45,15 @@ local ACCOUNT_DEFAULTS = {
         routeWidth = 1.5,          -- the route line's width (Nav/MapDraw.lua ROUTE_WIDTH)
         mapStepNumbers = true,     -- step numbers on the step pins
         mapNextStep = true,        -- a pin for the next step too, not only the current one
+        -- Questie's map look (Nav/Pins.lua, docs/questie-map-parity.md)
+        mapMinimapIcons = true,    -- quest and objective icons on the minimap too
+        mapContinentIcons = true,  -- and on continent and world maps (smaller)
+        mapObjectiveGlow = true,   -- a glow in the objective's colour behind its icons
+        mapObjectiveColors = false, -- tint the objective icons themselves in that colour
+        minimapIconScale = 1,      -- minimap icon size (x Questie's)
+        minimapFadeLevel = 20,     -- minimap icons fade out past this many tens of yards
+        minimapFadeOverPlayer = true, -- and fade to half right under you
+        mapHideBlizzardPOI = true, -- hide the game's own round ? and ... quest markers while ours show
         travel = true,             -- plan trips to other zones
         -- automation (hold Shift to pause it)
         autoAccept = true,         -- accept the quests the guide picks up
