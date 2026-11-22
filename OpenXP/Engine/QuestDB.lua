@@ -335,6 +335,15 @@ local function chainMissed(step, id, blocker, chain, needAccept)
     return #(chain or {}) == 0 and missed(blocker)
 end
 
+--- True when the step has objective goals of its own for quest `id` still to
+--- do (it is the step that finishes the quest).
+function DB.StepDoesObjectives(step, id)
+    for _, g in ipairs(step.goals) do
+        if g[1] == "complete" and g.quest == id and OXP.Goals.State(g, step.marks) == "todo" then return true end
+    end
+    return false
+end
+
 --- What's wrong with a step (an Engine step: { goals = {...} }), if anything:
 ---   { kind = "unfinished", quest }        turn in a quest whose objectives aren't done
 ---   { kind = "missing", quest }           turn in / kill for a quest not in the log
@@ -345,7 +354,9 @@ function DB.StepProblem(step)
     for _, g in ipairs(step.goals) do
         local kind, id = g[1], g.quest
         if QUEST_KINDS[kind] and id and OXP.Goals.State(g, step.marks) == "todo" then
-            if kind == "turnin" and OnQuest(id) and not Quests.IsComplete(id) then
+            -- (not when this very step does the objectives first: then the
+            -- turn-in is just the step's last line, nothing to warn about)
+            if kind == "turnin" and OnQuest(id) and not Quests.IsComplete(id) and not DB.StepDoesObjectives(step, id) then
                 return { kind = "unfinished", quest = id }
             end
             local needAccept

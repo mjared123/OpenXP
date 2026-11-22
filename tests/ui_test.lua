@@ -265,6 +265,27 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- a step that does a quest's objectives and then turns it in: no \"You haven't finished\" warning")
+do
+    local game, OXP = newGame({ level = 5 })
+    OXP.QuestDB.data = { prereqs = {}, info = {} }
+    local g = addGuide(OXP, {
+        { { "accept", quest = 811 }, { "complete", quest = 811, obj = 1 }, { "turnin", quest = 811 } },
+        { { "turnin", quest = 811 } },
+    })
+    OXP.Engine.Load(g.key)
+    game:Accept(811, 0)
+    game.log[#game.log].objectives = { { text = "Log: 0/1", done = false } }
+    OXP.Quests.Invalidate()
+    local C = OXP.Card
+    C.Refresh(true)
+    t.ok(not (C.blocks[1].warn and C.blocks[1].warn.shown), "the step itself finishes it: no warning")
+    t.eq(OXP.QuestDB.StepProblem(OXP.Engine.GetSteps()[2]) and OXP.QuestDB.StepProblem(OXP.Engine.GetSteps()[2]).kind, "unfinished",
+        "a turn-in step on its own still warns")
+    OXP.QuestDB.data = {}
+end
+
+------------------------------------------------------------------------
 print("-- standing by a later turn-in: do it first, then back")
 do
     local game, OXP = newGame({ level = 21, map = 1453, x = 50, y = 50 })
