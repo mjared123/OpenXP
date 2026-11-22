@@ -439,12 +439,10 @@ end
 
 local plates = {}
 local MAP = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Map\\"
-local CARD = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Card\\"
--- People keep the map's ! ? and talk icons; enemies get the card's step
--- glyphs (tools/make_ui_icons.py) in the skin's colours, like the card.
-local PLATE_ICON = { accept = "accept", turnin = "turnin", target = "talk" }
-local PLATE_GLYPH = { kill = { "step_kill", "blue" }, mob = { "step_kill", "blue" },
-                      loot = { "step_loot", "cyan" }, boss = { "step_kill", "gold" } }
+-- the one icon set (map, minimap, card): silver sword, sack, skull, speech
+-- bubble and the yellow ! ?, no circle behind them
+local PLATE_ICON = { accept = "quest_available", turnin = "quest_complete", target = "talk",
+                     kill = "kill", mob = "kill", loot = "loot", boss = "boss" }
 
 --- Does a step on the card (not a later one) want this mob for an
 --- objective of a quest in your log that is still open?
@@ -578,27 +576,10 @@ function Tips.UpdatePlate(unit)
     end
     local f = PlateFrame(plate)
     local big = info.kind == "boss"
-    local glyph = PLATE_GLYPH[info.kind]
-    if glyph then
-        -- a crisp glyph in the skin's colour on a dark disc, readable on any plate
-        local size = big and 20 or 17
-        local col = OXP.Style.C[glyph[2]] or OXP.Style.C.blue
-        f.badge:SetSize(size, size)
-        f.badge:SetTexture(CARD .. glyph[1])
-        f.badge:SetVertexColor(col[1], col[2], col[3], 1)
-        f.disc = f.disc or f:CreateTexture(nil, "BACKGROUND")
-        f.disc:SetTexture(CARD .. "disc")
-        f.disc:SetVertexColor(0, 0, 0, 0.6)
-        f.disc:ClearAllPoints()
-        f.disc:SetPoint("CENTER", f.badge, "CENTER")
-        f.disc:SetSize(size + 7, size + 7)
-        f.disc:Show()
-    else
-        f.badge:SetSize(22, 22)
-        f.badge:SetVertexColor(1, 1, 1, 1)
-        f.badge:SetTexture(OXP.Util.IconFile(MAP .. (PLATE_ICON[info.kind] or "talk"), 22, f))
-        if f.disc then f.disc:Hide() end
-    end
+    local size = big and 22 or 18
+    f.badge:SetSize(size, size)
+    f.badge:SetVertexColor(1, 1, 1, 1)
+    f.badge:SetTexture(OXP.Util.IconFile(MAP .. (PLATE_ICON[info.kind] or "kill"), size, f))
     local icon = info.item and GetItemIcon and GetItemIcon(info.item)
     f.item:SetTexture(icon)
     f.item:SetShown(icon ~= nil)

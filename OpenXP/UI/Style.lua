@@ -12,6 +12,7 @@ Style.TEX = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Card\\"
 Style.LOGO = "Interface\\AddOns\\" .. ADDON .. "\\Media\\openxp_logo-64"
 Style.LOGO_BIG = "Interface\\AddOns\\" .. ADDON .. "\\Media\\openxp_logo-128"
 Style.WHITE = "Interface\\Buttons\\WHITE8X8"
+Style.MAP = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Map\\"
 local TEX, WHITE = Style.TEX, Style.WHITE
 
 Style.C = {
@@ -871,12 +872,13 @@ end
 Style.BADGES = {
     accept = { glyph = "!", color = C.gold },
     turnin = { glyph = "?", color = C.gold },
-    -- one flat glyph set (tools/make_ui_icons.py step_icons); kill wears the
-    -- skin's accent, not alarm red
-    kill = { icon = "step_kill", color = C.blue },
-    loot = { icon = "step_loot", color = C.cyan },
-    travel = { icon = "step_travel", color = C.green },
-    town = { icon = "step_town", color = C.purple },
+    -- the same silver icons as the map and nameplates (Media/Map,
+    -- tools/make_objective_icons.py), no ring or disc behind them. `color`
+    -- is the kind's colour for progress bars and labels.
+    kill = { icon = "kill", color = C.blue },
+    loot = { icon = "loot", color = C.cyan },
+    travel = { icon = "travel", color = C.green },
+    town = { icon = "town", color = C.purple },
 }
 
 --- A round step badge: "!" pick up, "?" turn in, or an icon.
@@ -894,22 +896,19 @@ function Style.Badge(parent, size)
     b.icon:SetSize(size * 0.55, size * 0.55)
     b.glyph = b:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     b.glyph:SetPoint("CENTER", 0, 0)
+    -- One icon set everywhere (map, minimap, nameplates, card): plain
+    -- silver icons and the yellow ! ?, each with its own outline and
+    -- shadow, no ring or disc behind them.
+    b.fill:Hide()
+    b.ring:Hide()
+    b.icon:SetSize(size * 0.86, size * 0.86)
     function b:SetKind(kind)
         local k = Style.BADGES[kind] or Style.BADGES.travel
-        Style.Tint(self.fill, k.color, 0.16)
-        Style.Tint(self.ring, k.color, 1)
-        if k.glyph then
-            self.icon:Hide()
-            OXP.Fonts.Apply(self.glyph, OXP.Fonts.Path(), math.floor(size * 0.6), "")
-            self.glyph:SetText(k.glyph)
-            Style.TextColor(self.glyph, k.color)
-            self.glyph:Show()
-        else
-            self.glyph:Hide()
-            self.icon:SetTexture(TEX .. k.icon)
-            Style.Tint(self.icon, k.color)
-            self.icon:Show()
-        end
+        self.glyph:Hide()
+        local file = (k.glyph == "!" and "quest_available") or (k.glyph == "?" and "quest_complete") or k.icon
+        self.icon:SetTexture(OXP.Util.IconFile(Style.MAP .. file, size * 0.86, self))
+        self.icon:SetVertexColor(1, 1, 1, 1)
+        self.icon:Show()
     end
     return b
 end

@@ -34,7 +34,10 @@ def write_tga(img, path):
 def premultiplied_resize(img, size):
     """Resize without dark fringes: scale colour weighted by alpha."""
     img = img.convert("RGBA")
-    import numpy as np
+    try:
+        import numpy as np
+    except ImportError:  # Pillow's own premultiplied mode does the same
+        return img.convert("RGBa").resize((size, size), Image.LANCZOS).convert("RGBA")
     a = np.asarray(img).astype("float32") / 255.0
     rgb, al = a[..., :3] * a[..., 3:4], a[..., 3:4]
     pre = Image.fromarray((np.concatenate([rgb, al], axis=2) * 255).astype("uint8"), "RGBA")

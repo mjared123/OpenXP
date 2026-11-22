@@ -302,9 +302,7 @@ do
     t.ok(info and (info.kind == "mob" or info.kind == "kill"), "quest taken: its mob is marked (" .. tostring(info and info.kind) .. ")")
     T.UpdatePlate("nameplate1")
     local m = T.PlateMarker(plate)
-    t.ok(m and m.badge.texture and m.badge.texture:find("step_kill", 1, true), "with the card's sword glyph")
-    local C = OXP.Style.C
-    t.ok(m and m.badge.vertex and math.abs(m.badge.vertex[1] - C.blue[1]) < 0.001, "in the skin's accent")
+    t.ok(m and m.badge.texture and m.badge.texture:find("Map.kill"), "with the map's silver sword: " .. tostring(m and m.badge.texture))
     unitName = "Venture Co. Operator"
     t.eq(T.PlateInfo("nameplate1"), nil, "the later step's mob still isn't marked")
     game:FinishObjective(1071, 1)
