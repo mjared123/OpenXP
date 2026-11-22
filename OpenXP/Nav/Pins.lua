@@ -36,12 +36,14 @@ local ICON = {
     available = MAP .. "quest_available", availableGrey = MAP .. "quest_available_grey",
     complete = MAP .. "quest_complete", incomplete = MAP .. "quest_incomplete",
 }
--- objective marks (pfQuest's, MIT: Media/Map/pfQuest/README.md); one size,
--- tinted by what to do
+-- objective marks: OpenXP's own silver icons (tools/make_objective_icons.py),
+-- the same set as the card and nameplates; shown untinted, no circle
+local WHITE = { 1, 1, 1 }
 local OBJ = {
-    slay = { MAP .. "pfQuest\\slay_mono", { 1, 0.55, 0.50 } },
-    loot = { MAP .. "pfQuest\\loot_mono", { 1, 0.84, 0.42 } },
-    object = { MAP .. "pfQuest\\object_mono", { 0.52, 0.88, 1 } },
+    slay = { MAP .. "kill", WHITE },
+    loot = { MAP .. "loot", WHITE },
+    object = { MAP .. "object", WHITE },
+    talk = { MAP .. "talk", WHITE },
 }
 Pins.OBJ = OBJ
 Pins.ICON = ICON
@@ -482,7 +484,7 @@ local function MobTip(src, okind, g, pos, count)
         obj = OBJ.loot
         tip[2] = C(HEX.loot, L("Drops") .. " " .. src.item)
     elseif okind == "talk" then
-        obj = OBJ.object
+        obj = OBJ.talk
         tip[2] = C(HEX.travel, L("Talk to them"))
     else
         obj = OBJ.slay
@@ -569,7 +571,7 @@ local function AddMobs()
         if c.few then
             p = Take({ icon = ICON.boss, size = 18, label = c.src.name, alpha = 1, tip = tip, kind = "mob", count = 1 })
         else
-            p = Take({ icon = obj[1], tint = obj[2], single = true, size = MOB_SIZE, alpha = 0.9, tip = tip,
+            p = Take({ icon = obj[1], tint = obj[2], size = MOB_SIZE, alpha = 0.9, tip = tip,
                        tag = c.count > 1 and c.count or nil, count = c.count, kind = "mob" })
         end
         if not Place(p, c.map, c.x, c.y, 0, c.few and true or nil) then used = used - 1 end

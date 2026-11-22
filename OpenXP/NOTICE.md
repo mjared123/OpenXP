@@ -249,9 +249,9 @@ credits QuestieDB among its sources. The map's "!" and "?" quest icons
 (Media/Map/quest_*.tga) are OpenXP's own drawings (tools/make_ui_icons.py)
 in the familiar quest-addon style.
 
-## pfQuest objective icons
+## Objective icons
 
-`Media/Map/pfQuest/slay_mono.tga`, `loot_mono.tga` and `object_mono.tga`
-are by Eric Mauser (Shagu), from pfQuest (https://github.com/shagu/pfQuest),
-under the MIT license (`Media/Map/pfQuest/LICENSE.txt`). They were taken
-from Questie's `Icons` folder, which lists them as pfQuest's MIT files.
+The map, minimap, card and nameplate icons in `Media/Map` (sword, sack, cog,
+speech bubble, skull, chest, star, footsteps, house) are OpenXP's own drawings
+(`tools/make_objective_icons.py`). Earlier builds used three pfQuest icons
+(MIT); they are no longer included.

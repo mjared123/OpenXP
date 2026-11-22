@@ -12,6 +12,24 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.0-dev4", date = "2026-11",
+        changes = {
+            "Fly steps are done as you take off, and the arrow and map line move straight on to the next step (they kept pointing at the flight master until you landed).",
+            "Auto-flight: on a \"fly to\" step, talking to a flight master takes that flight for you and says where in chat. Hold Shift while you talk to choose yourself; Settings > Automation > Fly to the step's flight master.",
+            "Travel steps (boats, flights, roads into a zone) are only done when you are there now or have clearly gone past, never because you have been there before or know the flight path.",
+            "A relog or /reload keeps you on the step you were on. Smart start only places a new character, or when you pick a guide.",
+            "Step list: closing it no longer leaves a dark box beside the card, it wears the card's skin (background slider, Minimal, fonts), and jumping ahead marks the steps you jump over as skipped, not done. Going back changes nothing.",
+            "The card shows a step's text once (no faded copy under the title).",
+            "Settings: the scrollbar lets go when you release the mouse anywhere, and a Reset to defaults button (it asks first; your guide progress stays).",
+            "Quest trackers: Blizzard's and Questie's quest trackers are hidden while you use OpenXP (Settings > Extras > Show quest tracker brings them back, as you had them).",
+            "The quest item button: cooldown spiral, item count, your key, red when out of range, in your skin, and only while its objective is open.",
+            "Targets list and target key: only the mobs of objectives still open for quests in your log, and the people the step still needs, nearest first.",
+            "Nameplates: enemies are marked only for quests in your log with that objective open (not quests the guide picks up later). No second ! or ? over quest givers (the game shows its own) and no step numbers unless you turn them on (Settings > Extras).",
+            "One icon set everywhere: plain silver map icons (sword, sack, cog, speech bubble, skull) with the yellow ! and ?, no circles, on the map, minimap, card and nameplates.",
+            "A cleaner map: a thinner route line with a soft outline (Settings > Maps > Line width), kill areas only for the step you are on (soft fill, name on hover, no duplicates), mob pins only for objectives still open, close spawns merged into one pin with a count, a gentler glow, and step numbers only for this step and the next (all with Settings > Maps toggles).",
+        },
+    },
+    {
         version = "2.0.0-dev3", date = "2026-11",
         changes = {
             "A step list on the card: click the clock button (or \"Step 12 / 80\") to see every step of the guide on a timeline: what you've done, skipped or missed, the step you're on and what's coming. Click any step to go there. Tabs for All, Earlier and Coming up. Also /oxp steps.",
