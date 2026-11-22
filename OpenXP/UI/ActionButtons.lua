@@ -19,44 +19,182 @@ BINDING_HEADER_OPENXP = "OpenXP"
 _G["BINDING_NAME_CLICK OpenXPItemButton:LeftButton"] = "Use the quest item"
 _G["BINDING_NAME_CLICK OpenXPTargetButton:LeftButton"] = "Target the step's NPC or mob"
 
-local GetItemCount = C_Item and C_Item.GetItemCount or _G.GetItemCount
-local GetItemIcon = C_Item and C_Item.GetItemIconByID or _G.GetItemIcon
+-- Bag and item calls: Classic Era 1.15 has both C_Container / C_Item and the
+-- old globals, other clients one or the other. Looked up on each call.
+-- Forever has retail-style combat restrictions: some calls can hand back a
+-- "secret" value, and comparing one throws, so those read as unknown here.
+local function Readable(v)
+    if v ~= nil and issecretvalue and issecretvalue(v) then return nil end
+    return v
+end
+local function GetItemCount(id)
+    local fn = (C_Item and C_Item.GetItemCount) or _G.GetItemCount
+    local n = fn and Readable(fn(id))
+    return type(n) == "number" and n or 0
+end
+local function GetItemIcon(id)
+    local fn = (C_Item and C_Item.GetItemIconByID) or _G.GetItemIcon
+    return fn and Readable(fn(id)) or nil
+end
+-- start, duration in seconds (0, 0: none, or the game won't say)
 local function GetItemCooldown(id)
     local fn = (C_Container and C_Container.GetItemCooldown) or _G.GetItemCooldown
-    if fn then return fn(id) end
+    if not fn then return 0, 0 end
+    local ok, start, duration = pcall(fn, id)
+    if not ok then return 0, 0 end
+    start, duration = Readable(start), Readable(duration)
+    if type(start) ~= "number" or type(duration) ~= "number" then return 0, 0 end
+    return start, duration
 end
+local function InCombat() return InCombatLockdown and InCombatLockdown() or false end
 
-local function Make(name, size, parent)
-    local b = CreateFrame("Button", name, parent or UIParent, "SecureActionButtonTemplate")
-    b:SetSize(size, size)
-    b:RegisterForClicks("AnyUp", "AnyDown")
-    b:SetMovable(true)
-    b:SetClampedToScreen(true)
-    b.icon = b:CreateTexture(nil, "ARTWORK")
-    b.icon:SetAllPoints()
-    b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    b.border = b:CreateTexture(nil, "OVERLAY")
-    b.border:SetPoint("TOPLEFT", -1, 1)
-    b.border:SetPoint("BOTTOMRIGHT", 1, -1)
-    b.border:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 0.6)
-    b.border:SetDrawLayer("BACKGROUND")
-    b.label = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    b.label:SetPoint("TOP", b, "BOTTOM", 0, -3)
-    b.count = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    b.count:SetPoint("BOTTOMRIGHT", -2, 2)
-    b.cooldown = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
-    b.cooldown:SetAllPoints()
-    b:Hide()
-    return b
-end
+------------------------------------------------------------------------
+-- The item button: a secure action button (type "item") parented to and
+-- anchored on UIParent only, so it never makes another frame protected.
+-- Its attributes, shown state and spot only change outside combat; the
+-- look (icon, count, cooldown, range tint, key) changes any time.
+------------------------------------------------------------------------
 
-local item = Make("OpenXPItemButton", 36)
+local ITEM_SIZE = 36
+local item = CreateFrame("Button", "OpenXPItemButton", UIParent, "SecureActionButtonTemplate,BackdropTemplate")
 Buttons.item = item
+item:SetSize(ITEM_SIZE, ITEM_SIZE)
+item:RegisterForClicks("AnyUp", "AnyDown")
+item:SetMovable(true)
+item:SetClampedToScreen(true)
+item:SetFrameStrata("MEDIUM")
+-- the skin's panel with an accent edge (Style.Repaint repaints it)
+Style.Backdrop(item, C.bgSolid, C.blue)
+item.icon = item:CreateTexture(nil, "ARTWORK")
+item.icon:SetPoint("TOPLEFT", 2, -2)
+item.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+item.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+item.hl = item:CreateTexture(nil, "HIGHLIGHT")
+item.hl:SetAllPoints(item.icon)
+item.hl:SetColorTexture(1, 1, 1, 0.15)
+item.cooldown = CreateFrame("Cooldown", nil, item, "CooldownFrameTemplate")
+item.cooldown:SetAllPoints(item.icon)
+-- count and key sit above the cooldown spiral
+item.over = CreateFrame("Frame", nil, item)
+item.over:SetAllPoints()
+item.over:SetFrameLevel((item:GetFrameLevel() or 1) + 3)
+item.count = item.over:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+item.count:SetPoint("BOTTOMRIGHT", -3, 3)
+item.hotkey = item.over:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmallGray")
+item.hotkey:SetPoint("TOPRIGHT", -3, -3)
+item.hotkey:SetJustifyH("RIGHT")
+Style.TextColor(item.hotkey, C.dim)
+item:Hide()
+
+local ITEM_BINDING = "CLICK OpenXPItemButton:LeftButton"
+
+-- "SHIFT-F" -> "s-F", "BUTTON4" -> "M4", like the action bars: the
+-- modifiers by hand, the key itself by GetBindingText(key, abbreviate)
+local MOD_SHORT = { SHIFT = "s-", CTRL = "c-", ALT = "a-", META = "m-" }
+local function ShortKey(key)
+    if type(key) ~= "string" or key == "" then return "" end
+    local mods, base = "", key
+    while true do
+        local mod, rest = base:match("^(%u+)%-(.+)$")
+        if not (mod and MOD_SHORT[mod]) then break end
+        mods, base = mods .. MOD_SHORT[mod], rest
+    end
+    local n = base:match("^BUTTON(%d+)$")
+    local text
+    if n then
+        text = "M" .. n
+    else
+        text = GetBindingText and GetBindingText(base, true)
+        if type(text) ~= "string" or text == "" then text = base end
+    end
+    return mods .. text
+end
+
+--- The bound key, drawn on the button's corner.
+function Buttons.PaintKey()
+    local key = GetBindingKey and GetBindingKey(ITEM_BINDING)
+    item.hotkey:SetText(ShortKey(key))
+end
+
+local RANGE_RED = { 0.9, 0.25, 0.25 }
+
+--- Icon tint: red when the target is out of the item's range, grey when
+--- you no longer carry it (used up in combat, the button waits to hide).
+local function PaintIcon()
+    local id = item.itemID
+    if not id then return end
+    local n = GetItemCount(id) or 0
+    item.icon:SetDesaturated(n == 0 or item.stale == true)
+    if n == 0 or item.stale then
+        item.icon:SetVertexColor(0.5, 0.5, 0.5)
+    elseif item.outOfRange then
+        item.icon:SetVertexColor(RANGE_RED[1], RANGE_RED[2], RANGE_RED[3])
+    else
+        item.icon:SetVertexColor(1, 1, 1)
+    end
+end
+
+-- Is the item in range of your target? true / false, or nil when the game
+-- can't say (no target, an item with no range, in combat). Forever blocks
+-- addons' range checks in combat (on friendly targets too), so it isn't
+-- asked then and the tint clears.
+local function InRange(id)
+    if not (UnitExists and UnitExists("target")) then return nil end
+    if InCombat() then return nil end
+    local fn = (C_Item and C_Item.IsItemInRange) or _G.IsItemInRange
+    if not fn then return nil end
+    local ok, r = pcall(fn, id, "target")
+    if not ok then return nil end
+    r = Readable(r)
+    if r == 1 then r = true elseif r == 0 then r = false end
+    return r
+end
+
+function Buttons.UpdateRange()
+    local out = false
+    if item.itemID and item:IsShown() then out = InRange(item.itemID) == false end
+    if out ~= item.outOfRange then
+        item.outOfRange = out
+        PaintIcon()
+    end
+end
+
+-- a few times a second, only while there's a target to measure to
+local RANGE_EVERY = 0.2
+item:SetScript("OnUpdate", function(self, elapsed)
+    if not (self.itemID and self:IsShown()) then return end
+    self.rangeWait = (self.rangeWait or 0) - (elapsed or 0)
+    if self.rangeWait > 0 then return end
+    self.rangeWait = RANGE_EVERY
+    if self.outOfRange or (UnitExists and UnitExists("target")) then Buttons.UpdateRange() end
+end)
+
+local function UpdateCooldown()
+    local cd = item.cooldown
+    local start, duration = 0, 0
+    if item.itemID then start, duration = GetItemCooldown(item.itemID) end
+    if duration > 0 then cd:SetCooldown(start, duration) else cd:Clear() end
+end
+Buttons.UpdateCooldown = UpdateCooldown
+
+--- Draw what the item button shows (safe in combat: no attributes).
+function Buttons.PaintItem()
+    local id = item.itemID
+    if not id then return end
+    item.icon:SetTexture(GetItemIcon(id) or "Interface\\Icons\\INV_Misc_QuestionMark")
+    local n = GetItemCount(id) or 0
+    item.count:SetText(n > 1 and tostring(n) or "")
+    PaintIcon()
+    UpdateCooldown()
+    Buttons.PaintKey()
+end
 
 --- The skin's accent on the button edges (Settings > Guide card > Skin).
 function Buttons.ApplySkin()
-    item.border:SetColorTexture(C.blue[1], C.blue[2], C.blue[3], 0.6)
+    Style.PaintBackdrop(item)
+    Style.TextColor(item.hotkey, C.dim)
 end
+Style.OnRepaint(Buttons.ApplySkin)
 
 ------------------------------------------------------------------------
 -- The targets frame: a small movable list of who the shown steps need,
@@ -176,7 +314,6 @@ function Buttons.SeeUnit(unit)
 end
 
 ------------------------------------------------------------------------
--- What the buttons should do now------------------------------------------------------------------------
 -- What the buttons should do now
 ------------------------------------------------------------------------
 
@@ -217,17 +354,43 @@ local function WalkTarget(id)
     return info.f and info.f[1] or nil
 end
 
---- The item to put on the item button: id or nil.
-function Buttons.WantedItem()
-    for _, step in ipairs(WalkQuest() and {} or ActiveSteps()) do
-        for _, g in ipairs(step.goals) do
-            if g[1] == "item" and g.item and (GetItemCount(g.item) or 0) > 0 then return g.item end
+-- A step's "item" lines ("Use the flare on ...") belong to the goal line
+-- just before them (like its "mob" lines, Goals.NeededMobs): the item is
+-- wanted only while that goal is still to do. One before any goal counts
+-- while the step has anything left to do.
+local function StepItems(step, out)
+    local Goals = OXP.Goals
+    local anyOpen = false
+    for _, g in ipairs(step.goals or {}) do
+        if Goals.Blocks(g[1]) and Goals.State(g, step.marks) == "todo" then anyOpen = true end
+    end
+    local owner
+    for _, g in ipairs(step.goals or {}) do
+        if Goals.Blocks(g[1]) and g[1] ~= "reach" then -- a place, not what the item is for
+            owner = g
+        elseif g[1] == "item" and g.item then
+            local open
+            if owner then open = Goals.State(owner, step.marks) == "todo" else open = anyOpen end
+            if open then out[#out + 1] = { id = g.item, quest = owner and owner.quest } end
         end
     end
-    -- a quest in the step that hands you an item to use
-    if GetQuestLogSpecialItemInfo and GetNumQuestLogEntries then
+end
+
+--- The item to put on the item button: id (and the quest it's for) or nil.
+--- Only an item you carry, and only while what it's for is still open.
+function Buttons.WantedItem()
+    local walk = WalkQuest()
+    if not walk then
+        local found = {}
+        for _, step in ipairs(ActiveSteps()) do StepItems(step, found) end
+        for _, e in ipairs(found) do
+            if (GetItemCount(e.id) or 0) > 0 then return e.id, e.quest end
+        end
+    end
+    -- a quest in the step that hands you an item to use (the quest log's
+    -- special item), while its objectives are still open
+    if GetQuestLogSpecialItemInfo and GetNumQuestLogEntries and GetQuestLogTitle then
         local quests = {}
-        local walk = WalkQuest()
         if walk then
             quests[walk] = true
         else
@@ -237,12 +400,13 @@ function Buttons.WantedItem()
                 end
             end
         end
-        for i = 1, GetNumQuestLogEntries() do
-            local _, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
-            if not isHeader and quests[questID] then
-                local link = GetQuestLogSpecialItemInfo(i)
-                local id = link and tonumber(link:match("item:(%d+)"))
-                if id then return id end
+        for i = 1, GetNumQuestLogEntries() or 0 do
+            local _, _, _, isHeader, _, isComplete, _, questID = GetQuestLogTitle(i)
+            if not isHeader and questID and quests[questID] then
+                local link, _, _, showWhenComplete = GetQuestLogSpecialItemInfo(i)
+                local id = type(link) == "string" and tonumber(link:match("item:(%d+)"))
+                local done = isComplete == 1 or isComplete == true
+                if id and (not done or showWhenComplete) and (GetItemCount(id) or 0) > 0 then return id, questID end
             end
         end
     end
@@ -345,27 +509,41 @@ function Buttons.PaintRows()
     box.key:SetText(key and (GetBindingText and GetBindingText(key, "KEY_") or key) or "")
 end
 
+-- In combat the item button can't change: it keeps its item (count,
+-- cooldown and range still update) and greys out once it's no longer
+-- wanted; the change itself waits for combat to end.
+local function ItemInCombat()
+    if not item.itemID then return end
+    local s = OXP.settings
+    local id = s.itemButton ~= false and Engine.GetGuide() and Buttons.WantedItem() or nil
+    item.stale = id ~= item.itemID
+    Buttons.PaintItem()
+end
+
 function Buttons.Refresh()
-    if InCombatLockdown and InCombatLockdown() then
+    if InCombat() then
         pending = true
+        ItemInCombat()
         return
     end
     pending = false
     local s = OXP.settings
-    local id = s.itemButton ~= false and Engine.GetGuide() and Buttons.WantedItem() or nil
+    local id, quest = nil, nil
+    if s.itemButton ~= false and Engine.GetGuide() then id, quest = Buttons.WantedItem() end
+    item.quest, item.stale = quest, nil
     if id ~= item.itemID then
         item.itemID = id
+        item.outOfRange, item.rangeWait = false, 0
         if id then
             item:SetAttribute("type", "item")
             item:SetAttribute("item", "item:" .. id)
         else
             item:SetAttribute("type", nil)
+            item:SetAttribute("item", nil)
         end
     end
     if id then
-        item.icon:SetTexture(GetItemIcon and GetItemIcon(id) or "Interface\\Icons\\INV_Misc_QuestionMark")
-        local n = GetItemCount(id) or 0
-        item.count:SetText(n > 1 and n or "")
+        Buttons.PaintItem()
         item:Show()
     else
         item:Hide()
@@ -417,19 +595,18 @@ function Buttons.Dim()
     Buttons.PaintRows()
 end
 
-local function UpdateCooldown()
-    if item.itemID and GetItemCooldown then
-        local start, duration = GetItemCooldown(item.itemID)
-        if start and duration and duration > 0 then item.cooldown:SetCooldown(start, duration) end
-    end
-end
-
 local function Saved(pos)
     return type(pos) == "table" and type(pos[1]) == "string" and type(pos[3]) == "number" and pos or nil
 end
 
+local placePending = false
+
 function Buttons.Place()
-    if InCombatLockdown and InCombatLockdown() then return end
+    if InCombat() then
+        placePending = true -- secure buttons only move outside combat
+        return
+    end
+    placePending = false
     local card = OXP.Card and OXP.Card.frame
     item:ClearAllPoints()
     local pos = Saved(OXP.settings.itemButtonPos)
@@ -472,8 +649,15 @@ end)
 item:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
     if self.itemID then GameTooltip:SetItemByID(self.itemID) end
-    GameTooltip:AddLine(L("Bind a key: Key Bindings > AddOns > OpenXP"), 0.6, 0.6, 0.6)
-    GameTooltip:AddLine(L("Shift-drag to move it."), 0.6, 0.6, 0.6)
+    local quest = self.quest and OXP.QuestDB and OXP.QuestDB.QuestName(self.quest)
+    if quest then GameTooltip:AddLine(L("For") .. ": " .. quest, C.gold[1], C.gold[2], C.gold[3]) end
+    local key = GetBindingKey and GetBindingKey(ITEM_BINDING)
+    if key then
+        GameTooltip:AddLine(L("Key") .. ": " .. ((GetBindingText and GetBindingText(key)) or key), 0.6, 0.6, 0.6)
+    else
+        GameTooltip:AddLine(L("Bind a key: Key Bindings > AddOns > OpenXP"), 0.6, 0.6, 0.6)
+    end
+    if not OXP.settings.lockFrames then GameTooltip:AddLine(L("Shift-drag to move it."), 0.6, 0.6, 0.6) end
     GameTooltip:Show()
 end)
 item:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -494,7 +678,10 @@ Buttons.Soon = Soon
 for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "SETTINGS_CHANGED", "BAGS_CHANGED", "QUESTS_CHANGED" }) do
     OXP.Listen(m, Soon)
 end
-OXP.On("PLAYER_REGEN_ENABLED", function() if pending then Buttons.Refresh() end end)
+OXP.On("PLAYER_REGEN_ENABLED", function()
+    if placePending then Buttons.Place() end
+    if pending then Buttons.Refresh() end
+end)
 -- in combat: grey out what's done (the list itself waits for combat to end)
 for _, m in ipairs({ "STEPS_UPDATED", "QUESTS_CHANGED" }) do
     OXP.Listen(m, function() if InCombatLockdown and InCombatLockdown() then Buttons.Dim() end end)
@@ -503,8 +690,18 @@ end
 OXP.On("PLAYER_TARGET_CHANGED", function() Buttons.SeeUnit("target") end)
 OXP.On("UPDATE_MOUSEOVER_UNIT", function() Buttons.SeeUnit("mouseover") end)
 OXP.On("NAME_PLATE_UNIT_ADDED", function(_, unit) Buttons.SeeUnit(unit) end)
-OXP.On("UPDATE_BINDINGS", function() Buttons.PaintRows() end)
+OXP.On("UPDATE_BINDINGS", function()
+    Buttons.PaintRows()
+    Buttons.PaintKey()
+end)
+-- the item button's look: cooldown, count (also in combat), range
 OXP.On("BAG_UPDATE_COOLDOWN", UpdateCooldown)
+OXP.On("BAG_UPDATE_DELAYED", function() Buttons.PaintItem() end)
+OXP.On("PLAYER_TARGET_CHANGED", function()
+    item.rangeWait = 0
+    Buttons.UpdateRange()
+end)
+OXP.On("GET_ITEM_INFO_RECEIVED", function(_, id) if id and id == item.itemID then Buttons.PaintItem() end end)
 OXP.OnReady(function()
     Buttons.Place()
     Buttons.Refresh()
