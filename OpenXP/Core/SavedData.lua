@@ -9,7 +9,7 @@ local ACCOUNT_DEFAULTS = {
     schema = SCHEMA,
     settings = {
         autoNextGuide = true,      -- load a guide's #next when it is finished
-        smartStartOnLogin = true,  -- move you to the right section when you log in far past yours
+        smartStartOnLogin = true,  -- at login far past your section: say how to find the right one (you stay on your step)
         debug = false,
         -- guide card
         cardShown = true,

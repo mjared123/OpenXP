@@ -27,21 +27,49 @@ local lastSignature
 -- Building a run
 ------------------------------------------------------------------------
 
+-- The map a flight to this flight master lands on (Data/Flights.lua and
+-- Data/Travel.lua), or false when it isn't known.
+local function flightZone(name)
+    local nodes = OXP.flightData and OXP.flightData.nodes
+    local travel = OXP.travelData or {}
+    for _, n in pairs(nodes or {}) do
+        if World.SameFlightPoint(n.name, name) then
+            local first, second = n.name:match("^([^,]+),%s*(.+)$")
+            return (travel.fpCity or {})[first or n.name] or (travel.fpZone or {})[second or ""] or false
+        end
+    end
+    return false
+end
+
 -- Mark each "reach" checkpoint with how else it counts (Engine/Goals.lua):
 -- `entry` when it leads into another zone (the place before it is in a
 -- different zone, or the guide starts with "Into <that zone>"): done once
 -- you're out in that zone; `past` when the next place is in another zone
 -- (a dock, tram, portal or border): done once you're there. Worked out on
 -- the steps your character gets, so class-only steps don't get in the way.
+--
+-- Only a way in you walk through is an `entry`: being in its zone says
+-- nothing when a flight landed you in that zone, nor for a
+-- place you leave the zone from (a dock, portal or border: `past`), where
+-- you stand in its zone before you get to it. In game, landing in Darkshore
+-- passed the Auberdine boat step at once (the step before it, the
+-- Astranaar flight master, is in Ashenvale).
 local function markEntries(steps)
-    -- every place the guide sends you, in order
+    -- every place the guide sends you, in order; `flew`: the map a flight
+    -- between the place before it and this one lands on (false: not known)
     local spots = {}
+    local flew
     for si, step in ipairs(steps) do
         for _, goal in ipairs(step.goals) do
             local k = goal[1]
-            if (k == "goto" or k == "reach" or k == "area") and goal.zone then
+            if k == "fly" then
+                flew = flightZone(goal.name)
+            elseif (k == "goto" or k == "reach" or k == "area") and goal.zone then
                 local zone = OXP.Places.MapID(goal.zone)
-                if zone then spots[#spots + 1] = { goal = goal, zone = zone, step = si } end
+                if zone then
+                    spots[#spots + 1] = { goal = goal, zone = zone, step = si, flew = flew }
+                    flew = nil
+                end
             end
         end
     end
@@ -49,7 +77,15 @@ local function markEntries(steps)
     local function Before(i)
         local j = i - 1
         while spots[j] and spots[j].step == spots[i].step do j = j - 1 end
-        return spots[j]
+        return spots[j], j
+    end
+    -- a flight since spot j landed you in spot i's zone (or somewhere unknown)
+    local function FlewInto(j, i)
+        for k = math.max(j + 1, 1), i do
+            local f = spots[k].flew
+            if f == false or f == spots[i].zone then return true end
+        end
+        return false
     end
     local function After(i)
         local j = i + 1
@@ -59,20 +95,24 @@ local function markEntries(steps)
     for i, spot in ipairs(spots) do
         local goal = spot.goal
         if goal[1] == "reach" then
-            local before, after = Before(i), After(i)
+            local before, j = Before(i)
+            local after = After(i)
             goal.entry, goal.past = nil, nil
             local text = OXP.Text.Strip(goal.text or ""):lower()
-            -- the way into a new zone (a tunnel, a pass, a road in): done
-            -- once you're out in that zone
-            local into = not before and text:match("^into (.+)")
-            local zoneName = into and OXP.Places.ZoneName(spot.zone)
-            if (before and before.zone ~= spot.zone)
-                or (zoneName and OXP.Util.PlaceKey(into) == OXP.Util.PlaceKey(zoneName)) then
-                goal.entry = true
-            end
             -- a dock, tram, portal or border on the way to the next zone:
             -- done once you're in that zone
             if after and after.zone ~= spot.zone then goal.past = after.zone end
+            -- the way into a new zone (a tunnel, a pass, a road in): done
+            -- once you're out in that zone
+            -- ("Into Mulgore" says so itself, even with the Barrens next)
+            local into = text:match("^into (.+)")
+            local zoneName = into and OXP.Places.ZoneName(spot.zone)
+            local function key(s) return (OXP.Util.PlaceKey(s) or ""):gsub("^the ", "") end
+            local named = zoneName and key(into) == key(zoneName)
+            if not FlewInto(j, i) and ((named and (not before or before.zone ~= spot.zone))
+                or (not goal.past and before and before.zone ~= spot.zone)) then
+                goal.entry = true
+            end
         end
     end
 end
@@ -195,12 +235,55 @@ local function finish()
     end
 end
 
+-- After a log in or /reload the character's saved step stays shown, even
+-- when its goals look done: the game sends quest data a moment after login
+-- (quests can look missing or unfinished, then done), and a goal can look
+-- done from where you happen to stand. Until RESTORE_SETTLE seconds after
+-- the last loading screen or quest log update (at most RESTORE_LIMIT
+-- seconds after login) whatever the goals look like is taken as the
+-- starting point; after that, the first change you make live (a goal of a
+-- shown step changing) lets the guide move on as usual.
+local RESTORE_SETTLE, RESTORE_LIMIT = 3, 20
+Engine.RESTORE_SETTLE = RESTORE_SETTLE
+
+local function now() return GetTime and GetTime() or 0 end
+
+local function settleLonger()
+    local r = run and run.restored
+    if r and now() < r.settleAt then
+        r.settleAt = math.min(now() + RESTORE_SETTLE, r.limit)
+    end
+end
+OXP.On("PLAYER_ENTERING_WORLD", settleLonger)
+OXP.On("QUEST_LOG_UPDATE", settleLonger)
+
+-- True while the restored step is to stay where it is.
+local function restoreHolds()
+    local r = run.restored
+    if not r then return false end
+    if run.pos ~= r.pos then
+        run.restored = nil
+        return false
+    end
+    local sig = signature()
+    if not r.sig or now() < r.settleAt then
+        r.sig = sig
+        return true
+    end
+    if sig ~= r.sig then
+        run.restored = nil
+        return false
+    end
+    return true
+end
+
 --- Re-check the shown steps and move past finished ones.
 function Engine.Refresh()
     if not run then return end
     local before = run.pos
     while run.pos <= #run.steps do
         if run.held == run.pos then break end
+        if run.restored and restoreHolds() then break end
         if not stepDone(run.pos) then break end
         run.pos = run.pos + 1
     end
@@ -229,8 +312,10 @@ end
 
 --- Load a guide (a guide table or its key). With `stepIndex` (a step number
 --- in the guide data) start there; otherwise carry on from where this
---- character left it. Returns true when the guide was loaded.
-function Engine.Load(guideOrKey, stepIndex)
+--- character left it. With `restore` (logging in), that step stays shown
+--- until something changes live (see restoreHolds). Returns true when the
+--- guide was loaded.
+function Engine.Load(guideOrKey, stepIndex, restore)
     local guide = type(guideOrKey) == "table" and guideOrKey or Registry.Get(guideOrKey)
     if not guide then return false end
     local save = saveFor(guide)
@@ -247,6 +332,10 @@ function Engine.Load(guideOrKey, stepIndex)
         end
     end
     run = { guide = guide, steps = steps, pos = pos, save = save, furthest = pos }
+    if restore and not stepIndex and pos <= #steps then
+        local t = now()
+        run.restored = { pos = pos, settleAt = t + RESTORE_SETTLE, limit = t + RESTORE_LIMIT }
+    end
     lastSignature = nil
     OXP.char.currentGuide = guide.key
     OXP.Send("GUIDE_LOADED", guide)
@@ -270,6 +359,7 @@ function Engine.GoTo(pos, noHold)
     if not run or not run.steps[pos] then return false end
     run.pos = pos
     run.finished = nil
+    run.restored = nil
     run.save.skipped[run.steps[pos].index] = nil
     run.save.status[run.steps[pos].index] = nil
     run.held = (not noHold and stepDone(pos)) and pos or nil
@@ -519,7 +609,8 @@ end)
 OXP.OnReady(function()
     local key = OXP.char.currentGuide
     if key and Registry.Get(key) then
-        Engine.Load(key)
+        -- back on the step you were on, whatever the goals look like yet
+        Engine.Load(key, nil, true)
     else
         OXP.Send("NO_GUIDE")
     end

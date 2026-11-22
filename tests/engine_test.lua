@@ -419,4 +419,120 @@ do
     t.eq(#bad, 0, "each one ends: " .. table.concat(bad, " | "))
 end
 
+------------------------------------------------------------------------
+print("-- travel steps aren't passed from where you've been before (Darkshore boat to Menethil)")
+do
+    -- In game (22-25 Ashenvale, Wetlands & Stonetalon): flying Astranaar ->
+    -- Auberdine, the boat step was passed as soon as the flight crossed into
+    -- Darkshore (its reach counted as "the way into Darkshore": the step
+    -- before it is in Ashenvale), and "To Menethil Harbor" (only a flight
+    -- path to learn) with it, as the character had been to the Wetlands.
+    local game, OXP = newGame({ level = 24, race = "NightElf", map = 1440, x = 34.5, y = 48 })
+    game:Login()
+    OXP.char.flightPaths[OXP.Util.PlaceKey("Menethil Harbor")] = true -- been there before
+    local g = addGuide(OXP, {
+        { { "reach", text = "Astranaar flight master", x = 34.5, y = 48, zone = "1440" },
+          { "fly", name = "Auberdine", text = "Fly to Auberdine" } },
+        { { "reach", text = "Boat to Menethil Harbor", x = 32.4, y = 43.8, zone = "1439" } },
+        { { "goto", x = 9.49, y = 59.69, zone = "1437" }, { "fp", name = "Menethil Harbor" } },
+        { { "accept", quest = 279 } },
+    })
+    local E = OXP.Engine
+    E.Load(g.key)
+    t.eq(E.GetPosition(), 1, "at the Astranaar flight master")
+    local dock = E.GetSteps()[2].goals[1]
+    t.ok(not dock.entry, "the dock isn't a way into Darkshore (you fly in)")
+    t.eq(dock.past, 1437, "it leads to the Wetlands")
+    E.TakeOff()
+    t.eq(E.GetPosition(), 2, "taking off: on the boat step")
+    game:MoveTo(1439, 36, 45) -- over Darkshore, then landed at Auberdine
+    game:Advance(1)
+    game:Advance(1)
+    game:Advance(1)
+    t.eq(E.GetPosition(), 2, "in Darkshore, away from the dock: still the boat step")
+    game:MoveTo(1439, 32.5, 43.9)
+    game:Advance(1)
+    t.eq(E.GetPosition(), 4, "at the dock: on to Menethil (its flight path is known)")
+    -- and without the dock: arriving in the Wetlands passes the boat step
+    game:MoveTo(1439, 40, 60)
+    E.GetSteps()[2].marks[dock] = nil -- as on a fresh load of the guide
+    E.GoTo(2, true)
+    game:Advance(1)
+    t.eq(E.GetPosition(), 2, "back on the boat step in Darkshore")
+    game:MoveTo(1437, 5, 63)
+    game:Advance(1)
+    t.eq(E.GetPosition(), 4, "off the boat in the Wetlands: passed")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- a relog or /reload keeps the step you were on")
+do
+    local steps = {
+        { { "accept", quest = 300 } },
+        { { "accept", quest = 301 } },
+        { { "accept", quest = 302 } },
+        { { "accept", quest = 303 } },
+    }
+    local game, OXP = newGame({ level = 22 })
+    game:Login()
+    local g = addGuide(OXP, steps, { name = "Relog" })
+    OXP.Engine.Load(g.key)
+    game:Accept(300, 0)
+    t.eq(OXP.Engine.GetPosition(), 2, "on step 2")
+    t.eq(OXP.char.guides[g.key].step, 2, "step 2 saved")
+    -- quests 301-302 picked up while the guide wasn't looking: step 2 and 3 look done
+    local log = {}
+    for _, q in ipairs(game.log) do log[#log + 1] = q end
+    log[#log + 1] = { id = 301, title = "Quest 301", objectives = {} }
+    log[#log + 1] = { id = 302, title = "Quest 302", objectives = {} }
+
+    local function copy(v)
+        if type(v) ~= "table" then return v end
+        local out = {}
+        for k, x in pairs(v) do out[k] = copy(x) end
+        return out
+    end
+    local saved = copy(game:SavedVariables())
+    local function relog()
+        local g2, O2 = newGame({ level = 22 }, copy(saved))
+        O2.AddGuides({ file = "test", { name = "Relog", group = "Test", steps = steps } })
+        g2.completed = game.completed
+        g2.log = {} -- at PLAYER_LOGIN the quest log isn't there yet
+        g2:Login()
+        return g2, O2
+    end
+
+    local game2, OXP2 = relog()
+    t.eq(OXP2.Engine.GetGuide() and OXP2.Engine.GetGuide().key, g.key, "guide restored")
+    t.eq(OXP2.Engine.GetPosition(), 2, "on step 2 at login")
+    game2:Advance(1)
+    game2.log = log -- the quest log arrives: step 2's quest is in it
+    game2:Fire("QUEST_LOG_UPDATE")
+    game2:Flush()
+    for _ = 1, 8 do game2:Advance(1) end
+    t.eq(OXP2.Engine.GetPosition(), 2, "still step 2 once the quest log has loaded and settled")
+    t.eq(OXP2.char.guides[g.key].step, 2, "and still saved as step 2")
+    t.ok(OXP2.Engine.GoalState(2, OXP2.Engine.GetSteps()[2].goals[1]) == "done", "though its goal looks done")
+    OXP2.Engine.Next()
+    t.eq(OXP2.Engine.GetPosition(), 4, "moving on by hand passes the done step 3")
+    t.eq(#game2.errors, 0, "no Lua errors: " .. table.concat(game2.errors, " | "))
+
+    -- live progress after login still moves the guide on
+    log[#log] = nil -- 302 not taken
+    table.remove(log, #log) -- nor 301
+    local game3, OXP3 = relog()
+    t.eq(OXP3.Engine.GetPosition(), 2, "step 2 again")
+    game3.log = log
+    game3:Fire("QUEST_LOG_UPDATE")
+    game3:Flush()
+    for _ = 1, 5 do game3:Advance(1) end
+    t.eq(OXP3.Engine.GetPosition(), 2, "nothing done yet")
+    game3:Accept(301, 0)
+    t.eq(OXP3.Engine.GetPosition(), 3, "accepting it live moves on")
+    game3:Accept(302, 0)
+    t.eq(OXP3.Engine.GetPosition(), 4, "and on")
+    t.eq(#game3.errors, 0, "no Lua errors: " .. table.concat(game3.errors, " | "))
+end
+
 return t.fails

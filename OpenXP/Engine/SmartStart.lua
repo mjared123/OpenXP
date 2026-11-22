@@ -551,8 +551,9 @@ function SS.ShowCatchUp()
     end
 end
 
---- At login. With no guide: pick one. Far past your guide's levels with
---- none of its quests in your log: move you on; otherwise just say so.
+--- At login. With no guide (a new character): pick one. With one, you
+--- stay on the step you were on (Engine/Runner.lua); far past the guide's
+--- levels you're only told how to find the right section.
 function SS.OnLogin(hasGuide)
     local level = SS.api.PlayerLevel() or 1
     if not hasGuide then
@@ -562,11 +563,7 @@ function SS.OnLogin(hasGuide)
     local guide = OXP.Engine.GetGuide()
     local _, hi = SS.LevelRange(guide)
     if not (hi and level > hi + 1) then return end
-    local _, info = SS.ScoreGuide(guide, hi, "")
-    local started = info and info.started or 0
-    if level > hi + 4 and started == 0 then
-        SS.Run(false)
-    elseif not SS.hinted then
+    if not SS.hinted then
         SS.hinted = true
         OXP.Print("You're above this section's level. Type /oxp where to jump to the right section.")
     end

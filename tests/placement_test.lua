@@ -124,18 +124,23 @@ do
 end
 
 ------------------------------------------------------------------------
-print("-- logging in far past your section moves you on")
+print("-- logging in far past your section keeps your step; smart start only when asked")
 do
     local game, OXP = newGame({ faction = "Alliance", race = "Human", class = "WARRIOR", level = 21 })
     game:Login()
     local first = OXP.Engine.GetGuide()
     t.ok(first and first.minLevel == 21, "starts in a section for level 21: " .. tostring(first and first.name))
+    local step = OXP.char.guides[first.key].step
     local saved = game:SavedVariables()
     local game2, OXP2 = newGame({ faction = "Alliance", race = "Human", class = "WARRIOR", level = 30 })
     OpenXPDB, OpenXPCharDB = saved.OpenXPDB, saved.OpenXPCharDB
     game2:Login()
     local g = OXP2.Engine.GetGuide()
-    t.ok(g and g.minLevel and g.minLevel >= 28, "moved to a section for level 30: " .. tostring(g and g.name))
+    t.eq(g and g.key, first.key, "the same section at login")
+    t.eq(OXP2.char.guides[first.key].step, step, "on the same step")
+    OXP2.SmartStart.Run(true) -- "Find my place"
+    g = OXP2.Engine.GetGuide()
+    t.ok(g and g.minLevel and g.minLevel >= 28, "asked: moved to a section for level 30: " .. tostring(g and g.name))
     t.eq(#game2.errors, 0, "no Lua errors: " .. table.concat(game2.errors, " | "))
 end
 
