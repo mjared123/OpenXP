@@ -64,6 +64,7 @@ local ACCOUNT_DEFAULTS = {
         nameplateStepNumbers = false, -- "#12" beside nameplate markers
         autoLoot = false,
         maxCamera = false,
+        showQuestTracker = false,  -- off: Blizzard's and Questie's quest trackers are hidden (UI/QuestTracker.lua)
         minimap = { hide = false, angle = 200 },
     },
     paths = { areas = {}, passes = {}, off = false }, -- learned and recorded arrow paths (Nav/PathHints.lua)
