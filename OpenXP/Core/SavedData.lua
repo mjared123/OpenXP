@@ -60,6 +60,8 @@ local ACCOUNT_DEFAULTS = {
         -- extras
         tooltips = true,
         nameplates = true,
+        nameplateGivers = false,      -- OpenXP's ! ? over quest givers (the game shows its own)
+        nameplateStepNumbers = false, -- "#12" beside nameplate markers
         autoLoot = false,
         maxCamera = false,
         minimap = { hide = false, angle = 200 },

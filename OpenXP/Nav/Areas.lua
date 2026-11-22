@@ -284,7 +284,7 @@ function Areas.Pinpoints(step)
                 local key = tostring(src.id) .. ":" .. floor(p[1] * 10) .. ":" .. floor(p[2] * 10)
                 if per[src] <= FEW and not seen[key] then
                     seen[key] = true
-                    out[#out + 1] = { p[1], p[2], name = src.name, id = src.id, kind = src.kind, item = src.item }
+                    out[#out + 1] = { p[1], p[2], name = src.name, id = src.id, kind = src.kind, item = src.item, quest = g.quest }
                 end
             end
         end

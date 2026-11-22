@@ -295,7 +295,10 @@ local PAGES = {
     { key = "extras", title = L("Extras"), sub = L("Small helpers around the game"), build = function(p)
         Heading(p, L("Extras"))
         Toggle(p, "tooltips", L("Quest lines on tooltips"), L("Item, mob and NPC tooltips say which quest wants them."))
-        Toggle(p, "nameplates", L("Quest item icons on nameplates"), L("Enemies that drop what you need."))
+        Toggle(p, "nameplates", L("Quest markers on nameplates"), L("A sword or bag over enemies an open objective of a quest in your log needs (and its count), and a speech bubble over people the step says to talk to."))
+        Toggle(p, "nameplateGivers", L("! and ? on quest givers' nameplates"),
+            L("Off: the game's own ! and ? over their heads are enough."))
+        Toggle(p, "nameplateStepNumbers", L("Step numbers on nameplates"), L("The guide's step number beside a nameplate marker."))
         Toggle(p, "autoLoot", L("Auto loot"), nil, function() OXP.Tooltips.ApplyExtras(false) end)
         Toggle(p, "maxCamera", L("Zoom the camera out further"), nil, function() OXP.Tooltips.ApplyExtras(false) end)
         Toggle(p, "minimapShown", L("Minimap button"), L("Left-click: the card. Right-click: the menu."),

@@ -238,7 +238,14 @@ function Goals.NeededMobs(step)
             spotOf[g] = spot
         elseif k == "mob" and g.name and not seen[g.name] then
             local open
-            if owner then open = Goals.State(owner, step.marks) == "todo" else open = anyOpen end
+            if owner then
+                -- only for a quest you have: killing for one you haven't
+                -- picked up yet counts for nothing
+                open = Goals.State(owner, step.marks) == "todo"
+                    and (not owner.quest or Quests.IsOnQuest(owner.quest))
+            else
+                open = anyOpen
+            end
             if open then
                 seen[g.name] = true
                 out[#out + 1] = { name = g.name, goal = owner, spot = owner and spotOf[owner] or spot }

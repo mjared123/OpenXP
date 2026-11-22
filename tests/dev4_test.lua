@@ -268,4 +268,86 @@ do
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
+------------------------------------------------------------------------
+print("-- nameplates: enemies only for quests in your log with the objective open")
+do
+    local game, OXP = newGame({ level = 23, map = 1442, x = 61.48, y = 55.34 })
+    addGuide(OXP, {
+        { { "goto", zone = "1442", x = 61.48, y = 55.34 },
+          { "complete", obj = 1, quest = 1071, text = "Kill Venture Co. Logger: 10" },
+          { "mob", name = "Venture Co. Logger" } },
+        { { "goto", zone = "1442", x = 62.5, y = 53.8 },
+          { "complete", obj = 1, quest = 1093, text = "Super Reaper 6000 Blueprints: 1" },
+          { "mob", name = "Venture Co. Operator" } },
+    })
+    local saved = { UnitExists = _G.UnitExists, UnitName = _G.UnitName, UnitGUID = _G.UnitGUID,
+                    UnitCanAttack = _G.UnitCanAttack, UnitIsPlayer = _G.UnitIsPlayer, C_NamePlate = _G.C_NamePlate }
+    local unitName = "Venture Co. Logger"
+    local plate = CreateFrame("Frame")
+    plate.UnitFrame = CreateFrame("Frame", nil, plate)
+    _G.UnitExists = function() return true end
+    _G.UnitName = function() return unitName end
+    _G.UnitGUID = function() return "Creature-0-0-0-0-4567-0" end
+    _G.UnitCanAttack = function() return true end
+    _G.UnitIsPlayer = function() return false end
+    _G.C_NamePlate = { GetNamePlateForUnit = function() return plate end, GetNamePlates = function() return { plate } end }
+    local T = OXP.Tooltips
+    t.eq(T.PlateInfo("nameplate1"), nil, "quest not taken yet: no marker on its mob")
+    unitName = "Venture Co. Operator"
+    t.eq(T.PlateInfo("nameplate1"), nil, "a later step's mob: no marker")
+    t.eq(#OXP.ActionButtons.WantedTargets(), 0, "and nothing to target before you have the quest")
+    game:Accept(1071, 1)
+    unitName = "Venture Co. Logger"
+    local info = T.PlateInfo("nameplate1")
+    t.ok(info and (info.kind == "mob" or info.kind == "kill"), "quest taken: its mob is marked (" .. tostring(info and info.kind) .. ")")
+    T.UpdatePlate("nameplate1")
+    local m = T.PlateMarker(plate)
+    t.ok(m and m.badge.texture and m.badge.texture:find("step_kill", 1, true), "with the card's sword glyph")
+    local C = OXP.Style.C
+    t.ok(m and m.badge.vertex and math.abs(m.badge.vertex[1] - C.blue[1]) < 0.001, "in the skin's accent")
+    unitName = "Venture Co. Operator"
+    t.eq(T.PlateInfo("nameplate1"), nil, "the later step's mob still isn't marked")
+    game:FinishObjective(1071, 1)
+    unitName = "Venture Co. Logger"
+    t.eq(T.PlateInfo("nameplate1"), nil, "objective done: marker gone")
+    OXP.settings.nameplates = false
+    game:Abandon(1071)
+    game:Accept(1071, 1)
+    T.UpdatePlate("nameplate1")
+    t.ok(not T.PlateMarker(plate):IsShown(), "setting off: no markers")
+    OXP.settings.nameplates = true
+    for k, v in pairs(saved) do _G[k] = v end
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- nameplates over people: one marker, no step number unless asked")
+do
+    local game, OXP = newGame({ level = 5, map = 1426, x = 46, y = 52 })
+    addGuide(OXP, {
+        { { "goto", zone = "1426", x = 46.8, y = 52.4 },
+          { "accept", quest = 7001, text = "Accept Test" }, { "target", name = "Nori Pridedrift" },
+          { "goto", zone = "1426", x = 46.8, y = 52.5 },
+          { "accept", quest = 7002, text = "Accept Talk" }, { "talk", name = "x" }, { "target", name = "Grelin Whitebeard" } },
+    })
+    local saved = { UnitExists = _G.UnitExists, UnitName = _G.UnitName, UnitGUID = _G.UnitGUID,
+                    UnitCanAttack = _G.UnitCanAttack, UnitIsPlayer = _G.UnitIsPlayer }
+    local unitName = "Nori Pridedrift"
+    _G.UnitExists = function() return true end
+    _G.UnitName = function() return unitName end
+    _G.UnitGUID = function() return "Creature-0-0-0-0-1234-0" end
+    _G.UnitCanAttack = function() return false end
+    _G.UnitIsPlayer = function() return false end
+    local T = OXP.Tooltips
+    local info = T.PlateInfo("nameplate1")
+    t.ok(info and info.kind == "target", "the person to talk to: the talk marker (" .. tostring(info and info.kind) .. ")")
+    t.eq(info and info.text, "", "no step number by default")
+    OXP.settings.nameplateStepNumbers = true
+    info = T.PlateInfo("nameplate1")
+    t.eq(info and info.text, "#1", "step number when asked for")
+    t.eq(OXP.settings.nameplateGivers, false, "OpenXP's own ! ? over quest givers is off by default (the game shows its own)")
+    for k, v in pairs(saved) do _G[k] = v end
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
 return t.fails

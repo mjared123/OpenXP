@@ -439,8 +439,24 @@ end
 
 local plates = {}
 local MAP = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Map\\"
-local PLATE_ICON = { kill = "kill", loot = "loot", boss = "boss", accept = "accept", turnin = "turnin",
-                     target = "talk", mob = "kill" }
+local CARD = "Interface\\AddOns\\" .. ADDON .. "\\Media\\Card\\"
+-- People keep the map's ! ? and talk icons; enemies get the card's step
+-- glyphs (tools/make_ui_icons.py) in the skin's colours, like the card.
+local PLATE_ICON = { accept = "accept", turnin = "turnin", target = "talk" }
+local PLATE_GLYPH = { kill = { "step_kill", "blue" }, mob = { "step_kill", "blue" },
+                      loot = { "step_loot", "cyan" }, boss = { "step_kill", "gold" } }
+
+--- Does a step on the card (not a later one) want this mob for an
+--- objective of a quest in your log that is still open?
+function Tips.ActiveMobNeeded(unitName)
+    if not (unitName and Engine.GetGuide()) then return false end
+    for _, pos in ipairs(Engine.GetActive()) do
+        for _, m in ipairs(OXP.Goals.NeededMobs(Engine.GetSteps()[pos])) do
+            if SameName(m.name, unitName) then return true end
+        end
+    end
+    return false
+end
 
 --- What a mob's or NPC's nameplate shows: { kind, text, item = itemId,
 --- step = pos } or nil. kind: "loot" (drops an item a quest needs), "kill"
@@ -451,7 +467,14 @@ function Tips.PlateInfo(unit)
     if not (unit and UnitExists(unit)) or UnitIsPlayer(unit) then return nil end
     local name, npcId = UnitName(unit), Tips.NpcIdOf(UnitGUID(unit))
     if UnitCanAttack("player", unit) then
-        local loot = Tips.MobItemLines(name, npcId)
+        -- Enemies are marked only for quests in your log right now with
+        -- that objective still open. Before 2.0.0-dev4 the guide's later
+        -- steps marked them too (NeededItems' "later" items, GuideStep's
+        -- 40-step look-ahead), before you had the quest.
+        local loot = {}
+        for _, n in ipairs(Tips.MobItemLines(name, npcId)) do
+            if not n.later and n.questId and Quests.IsOnQuest(n.questId) then loot[#loot + 1] = n end
+        end
         local boss = Tips.IsPinpointed(npcId)
         local n = loot[1]
         if n then
@@ -461,11 +484,22 @@ function Tips.PlateInfo(unit)
         for _, q in ipairs(Tips.KillLines(name)) do
             if not q.done then return { kind = boss and "boss" or "kill", text = q.have .. "/" .. q.need } end
         end
+        -- the step on the card names it for an open objective of a quest you
+        -- have (an item the quest data doesn't tie to this mob)
         if boss then return { kind = "boss", text = "" } end
+        if Tips.ActiveMobNeeded(name) then return { kind = "mob", text = "" } end
+        return nil
     end
     local pos, _, role = Tips.GuideStep(name, npcId)
-    if pos and (role == "accept" or role == "turnin" or role == "target" or role == "mob") then
-        return { kind = role, text = "#" .. pos, step = pos }
+    -- People: the game already floats a ! or ? over a quest giver, so
+    -- OpenXP's own ! ? marker is off unless you ask for it (it made two
+    -- markers per NPC); "talk to" has no marker of the game's, so it shows.
+    -- Step numbers only with their setting.
+    if not pos then return nil end
+    local s = OXP.settings
+    if (role == "accept" or role == "turnin") and s.nameplateGivers ~= true then return nil end
+    if role == "accept" or role == "turnin" or role == "target" then
+        return { kind = role, text = s.nameplateStepNumbers == true and ("#" .. pos) or "", step = pos }
     end
 end
 
@@ -475,7 +509,8 @@ function Tips.IsPinpointed(npcId)
     for _, pos in ipairs(Engine.GetActive()) do
         local step = Engine.GetSteps()[pos]
         for _, p in ipairs(step and OXP.Areas.Pinpoints(step) or {}) do
-            if p.kind == "NPC" and p.id == npcId then return true end
+            -- only for a quest in your log (not one the step picks up later)
+            if p.kind == "NPC" and p.id == npcId and (not p.quest or Quests.IsOnQuest(p.quest)) then return true end
         end
     end
     return false
@@ -543,8 +578,27 @@ function Tips.UpdatePlate(unit)
     end
     local f = PlateFrame(plate)
     local big = info.kind == "boss"
-    f.badge:SetSize(big and 26 or 22, big and 26 or 22)
-    f.badge:SetTexture(OXP.Util.IconFile(MAP .. (PLATE_ICON[info.kind] or "kill"), big and 26 or 22, f))
+    local glyph = PLATE_GLYPH[info.kind]
+    if glyph then
+        -- a crisp glyph in the skin's colour on a dark disc, readable on any plate
+        local size = big and 20 or 17
+        local col = OXP.Style.C[glyph[2]] or OXP.Style.C.blue
+        f.badge:SetSize(size, size)
+        f.badge:SetTexture(CARD .. glyph[1])
+        f.badge:SetVertexColor(col[1], col[2], col[3], 1)
+        f.disc = f.disc or f:CreateTexture(nil, "BACKGROUND")
+        f.disc:SetTexture(CARD .. "disc")
+        f.disc:SetVertexColor(0, 0, 0, 0.6)
+        f.disc:ClearAllPoints()
+        f.disc:SetPoint("CENTER", f.badge, "CENTER")
+        f.disc:SetSize(size + 7, size + 7)
+        f.disc:Show()
+    else
+        f.badge:SetSize(22, 22)
+        f.badge:SetVertexColor(1, 1, 1, 1)
+        f.badge:SetTexture(OXP.Util.IconFile(MAP .. (PLATE_ICON[info.kind] or "talk"), 22, f))
+        if f.disc then f.disc:Hide() end
+    end
     local icon = info.item and GetItemIcon and GetItemIcon(info.item)
     f.item:SetTexture(icon)
     f.item:SetShown(icon ~= nil)
