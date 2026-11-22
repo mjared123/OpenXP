@@ -7,7 +7,8 @@ addons use), in OpenXP's own drawings.
 Writes OpenXP/Media/Map/<name>.tga, <name>_64.tga and <name>_32.tga for
 kill (a sword), loot (a sack), object (a cog: use or click), talk (a speech
 bubble), boss (a skull), chest, event (a star), travel (footsteps) and
-town (a house). The same files are the
+town (a house), and objective_glow (a soft white disc the map tints in
+each objective's colour behind its icon). The same files are the
 card's step icons and the nameplate markers, so every OpenXP icon matches.
 The "!" and "?" quest icons are tools/make_ui_icons.py's quest_* files.
 Needs Pillow (numpy optional). Reuses tools/make_icons.py's helpers.
@@ -149,6 +150,18 @@ def house(d):
     d.rectangle((C + 90, C - 185, C + 145, C - 75), fill=255)
 
 
+def glow_disc():
+    """A soft white disc: solid in the middle, fading out at the rim. The
+    map tints it per objective and draws it just bigger than the icon."""
+    m = Image.new("L", (S, S), 0)
+    r = int(S * 0.40)
+    ImageDraw.Draw(m).ellipse((C - r, C - r, C + r, C + r), fill=255)
+    m = m.filter(ImageFilter.GaussianBlur(S // 28))
+    out = Image.new("RGBA", (S, S), (255, 255, 255, 0))
+    out.putalpha(m.point(lambda v: v * 230 // 255))
+    return out
+
+
 def main():
     save(silver(sword(None)), "kill")
     save(silver(mask(sack)), "loot")
@@ -159,6 +172,7 @@ def main():
     save(silver(mask(star)), "event")
     save(silver(mask(steps)), "travel")
     save(silver(mask(house)), "town")
+    save(glow_disc(), "objective_glow")
 
 
 if __name__ == "__main__":

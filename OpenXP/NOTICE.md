@@ -244,10 +244,30 @@ tools/build_flights.py from World of Warcraft Classic Era client data tables
 
 When Questie is installed, OpenXP also asks its quest database, while the
 game runs, about anything Data/QuestDB.lua doesn't hold (Engine/QuestDB.lua).
-None of Questie's own code or data is copied into OpenXP; forever-db, above,
-credits QuestieDB among its sources. The map's "!" and "?" quest icons
-(Media/Map/quest_*.tga) are OpenXP's own drawings (tools/make_ui_icons.py)
-in the familiar quest-addon style.
+No Questie data is copied into OpenXP; forever-db, above, credits QuestieDB
+among its sources. The map's "!" and "?" quest icons (Media/Map/quest_*.tga)
+are OpenXP's own drawings (tools/make_ui_icons.py) in the familiar
+quest-addon style.
+
+Since 2.0.0-dev7 the map and minimap pins (`Nav/Pins.lua`) follow Questie's
+behaviour so they feel the same (see docs/questie-map-parity.md): its icon
+sizes and scales, draw order, minimap distance fade and edge icons, the
+objective spawn filter, the grouped map-icon tooltip layout, the map-icon
+clicks, and turning the client's own quest markers (CVar questPOI) off while
+its icons show. That logic is adapted from Questie v12.12.0
+(https://github.com/Questie/Questie; Modules/Map/QuestieMap.lua,
+QuestieMapUtils.lua, Modules/FramePool/QuestieFrame.lua,
+Modules/Tooltips/MapIconTooltip.lua, Modules/Quest/QuestieQuest.lua,
+Modules/Options/QuestieOptionsDefaults.lua and NativeOptionsIcons.lua). The
+Questie team lets its code be copied under the GNU General Public License,
+version 3 (Questie's LICENSE.md), the same licence as OpenXP. Credit:
+Aero/Logon/Muehe/TheCrux(BreakBB)/Drejjmit/Dyaxler/Cheeq/TechnoHunter/Yttrium
+and the other Questie contributors. Questie's icon art is all rights reserved
+and none of it is used: every icon is OpenXP's own (`tools/make_icons.py`,
+`tools/make_objective_icons.py`, including the objective glow,
+`Media/Map/objective_glow*.tga`), and the objective glow colours are OpenXP's
+own pick. "Questie" names the addon only; its name and logo are not used for
+OpenXP.
 
 ## Objective icons
 

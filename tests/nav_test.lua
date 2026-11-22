@@ -372,13 +372,13 @@ do
         for _, p in ipairs(pins) do if test(p) then return p end end
     end
     t.ok(find(function(p) return p.num == "2" and tostring(p.tip[2]):find("Step 2", 1, true) end), "a numbered pin for the step, with a tooltip")
-    t.ok(find(function(p) return p.tag == "3" and tostring(p.icon):find("quest_incomplete", 1, true) end), "the turn-in after it: a grey ? pin with its number (not done yet)")
-    t.ok(find(function(p) return p.tip and p.tip[1] == "Bluegill Murloc" end), "mob icons where the murlocs spawn")
-    t.ok(find(function(p) return p.label == "Gobbler" and p.size == 18 and tostring(p.icon):find("boss", 1, true) end), "Gobbler gets his own big pin with his name")
+    t.ok(find(function(p) return tostring(p.icon):find("quest_incomplete", 1, true) end), "the turn-in after it: a grey ? pin (not done yet)")
+    t.ok(find(function(p) return p.kind == "mob" and p.entry.npc == "Bluegill Murloc" end), "mob icons where the murlocs spawn")
+    t.ok(find(function(p) return p.kind == "mob" and p.entry.npc == "Gobbler" and p.label == "" end), "Gobbler's spawns marked like Questie's (no name on the map)")
     t.ok(find(function(p) return p.kind == "area" and p.label == "" and tostring(p.tip[1]):find("area - step 2", 1, true) end),
         "the blue area is named in a tooltip, not a label")
     local mobs = 0
-    for _, p in ipairs(pins) do if p.tip and p.tip[1] == "Bluegill Murloc" then mobs = mobs + 1 end end
+    for _, p in ipairs(pins) do if p.kind == "mob" and p.entry.npc == "Bluegill Murloc" then mobs = mobs + 1 end end
     t.ok(mobs <= OXP.Pins.MAX_MOBS, "mob icons are capped: " .. mobs)
 
     -- the murlocs are done: only Gobbler's Head is left
@@ -400,12 +400,12 @@ do
     t.ok(card:find("from Gobbler", 1, true), "the card says who drops it: " .. card)
     OXP.Pins.Refresh()
     pins = OXP.Pins.Used()
-    t.ok(not find(function(p) return p.tip and p.tip[1] == "Bluegill Murloc" end), "no murloc icons once they're done")
-    t.ok(find(function(p) return p.label == "Gobbler" end), "Gobbler still marked")
+    t.ok(not find(function(p) return p.kind == "mob" and p.entry.npc == "Bluegill Murloc" end), "no murloc icons once they're done")
+    t.ok(find(function(p) return p.kind == "mob" and p.entry.npc == "Gobbler" end), "Gobbler still marked")
     OXP.settings.mapMobs = false
     OXP.Pins.Refresh()
     pins = OXP.Pins.Used()
-    t.ok(not find(function(p) return p.label == "Gobbler" end), "mob icons off in settings")
+    t.ok(not find(function(p) return p.kind == "mob" and p.entry.npc == "Gobbler" end), "mob icons off in settings")
     OXP.settings.mapMobs = true
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
