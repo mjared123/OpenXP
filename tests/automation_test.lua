@@ -201,12 +201,132 @@ do
     combat = false
     game:Fire("PLAYER_REGEN_ENABLED")
     t.ok(not B.target:IsShown(), "after combat it catches up: the objective is done, nothing left to target")
+    t.ok(not B.item:IsShown() and B.item:GetAttribute("type") == nil, "and the item button goes: its objective is done")
     local anchor = B.item.points[1] and B.item.points[1][2]
     t.ok(anchor ~= OXP.Card.frame and B.target.points[1][2] ~= OXP.Card.frame,
         "secure buttons aren't anchored to the card (in game the card got blocked in combat)")
     OXP.settings.targetButton = false
     B.Refresh()
     t.ok(not B.target:IsShown(), "target button off in settings")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- the quest item button: quest log item, cooldown, range, key, combat")
+do
+    local game, OXP = newGame({ level = 21 })
+    local combat = false
+    InCombatLockdown = function() return combat end
+    local B, item = OXP.ActionButtons, OXP.ActionButtons.item
+    t.ok(B.UpdateCooldown and pcall(B.UpdateCooldown), "no cooldown API at all: no error")
+    addGuide(OXP, {
+        { { "accept", quest = 7200 } },
+        { { "complete", quest = 7200, obj = 1 }, { "complete", quest = 7201, obj = 1 },
+          { "item", item = 9101, text = "Use the totem on the Bristleback" } },
+        { { "turnin", quest = 7200 } },
+    })
+    game:Accept(7200, 1)
+    game.specialItems[7200] = 9100
+    B.Refresh()
+    t.ok(not item:IsShown(), "the quest's item isn't in the bags yet: no button")
+    game:AddItem(9100, 3)
+    game:Accept(7201, 1)
+    B.Refresh()
+    t.ok(item:IsShown(), "the quest log's special item: shown")
+    t.eq(item:GetAttribute("type"), "item", "a secure item button")
+    t.eq(item:GetAttribute("item"), "item:9100", "using the quest log's item")
+    t.eq(item.count:GetText(), "3", "with how many you carry")
+    t.eq(item.points[1] and item.points[1][2], UIParent, "anchored to UIParent only")
+    -- skin: the panel and accent edge follow the skin's colours
+    t.ok(item.backdrop ~= nil and item.bdBorder ~= nil, "styled with the skin's backdrop")
+    OXP.Style.ApplySkin("ember")
+    OXP.Style.Repaint()
+    local C = OXP.Style.C
+    t.ok(math.abs(item.bdBorder[1] - C.blue[1]) < 1e-6 and math.abs(item.bdBorder[2] - C.blue[2]) < 1e-6,
+        "repainted with the new skin's accent")
+    OXP.Style.ApplySkin("midnight")
+    -- cooldown spiral (C_Container first, then the old global)
+    local cd = 30
+    C_Container = { GetItemCooldown = function(id) return id == 9100 and game.now or 0, id == 9100 and cd or 0, 1 end }
+    game:Fire("BAG_UPDATE_COOLDOWN")
+    t.ok(item.cooldown.cd and item.cooldown.cd[2] == 30, "cooldown spiral from C_Container.GetItemCooldown")
+    cd = 0
+    game:Fire("BAG_UPDATE_COOLDOWN")
+    t.eq(item.cooldown.cd, nil, "spiral cleared once it's ready")
+    C_Container = nil
+    GetItemCooldown = function() return game.now, 10, 1 end
+    game:Fire("BAG_UPDATE_COOLDOWN")
+    t.ok(item.cooldown.cd and item.cooldown.cd[2] == 10, "or the old GetItemCooldown")
+    -- Forever: in combat some calls hand back secret values (comparing one throws)
+    local SECRET = setmetatable({}, { __lt = function() error("compared a secret") end,
+                                      __le = function() error("compared a secret") end })
+    issecretvalue = function(v) return v == SECRET end
+    GetItemCooldown = function() return SECRET, SECRET, 1 end
+    game:Fire("BAG_UPDATE_COOLDOWN")
+    t.eq(item.cooldown.cd, nil, "a secret cooldown reads as none, no error")
+    issecretvalue, GetItemCooldown = nil, nil
+    -- range: polled a few times a second, only with a target
+    local hasTarget, inRange, asked = false, false, 0
+    UnitExists = function(u) return u == "target" and hasTarget end
+    IsItemInRange = function() asked = asked + 1 return inRange end
+    game:Advance(0.3)
+    t.eq(asked, 0, "no target: range isn't asked")
+    hasTarget = true
+    game:Advance(0.3)
+    t.ok(asked > 0 and item.outOfRange == true, "target out of range: flagged")
+    local r, g = item.icon:GetVertexColor()
+    t.ok(r > 0.8 and g < 0.4, "and the icon goes red")
+    inRange = true
+    game:Advance(0.3)
+    r, g = item.icon:GetVertexColor()
+    t.ok(not item.outOfRange and r == 1 and g == 1, "in range: normal colour")
+    inRange = false
+    combat = true
+    local before = asked
+    game:Advance(0.3)
+    t.ok(asked == before and not item.outOfRange, "in combat range isn't asked (Forever blocks it): no tint")
+    combat = false
+    game:Advance(0.3)
+    t.ok(item.outOfRange == true, "out of combat again: asked")
+    hasTarget = false
+    game:Fire("PLAYER_TARGET_CHANGED")
+    t.ok(not item.outOfRange, "no target: no tint")
+    -- the bound key on the button
+    GetBindingKey = function(b) return b == "CLICK OpenXPItemButton:LeftButton" and "SHIFT-F" or nil end
+    game:Fire("UPDATE_BINDINGS")
+    t.eq(item.hotkey:GetText(), "s-F", "the bound key, short, on the button")
+    GetBindingKey = function() return "CTRL-SHIFT-BUTTON4" end
+    game:Fire("UPDATE_BINDINGS")
+    t.eq(item.hotkey:GetText(), "c-s-M4", "mouse buttons and two modifiers")
+    GetBindingKey = nil
+    -- combat: nothing secure changes, the look still does
+    combat = true
+    local before = item.points[1]
+    OXP.settings.itemButtonPos = { "CENTER", "CENTER", 40, 30 }
+    B.Place()
+    t.eq(item.points[1], before, "not moved in combat")
+    game.items[9100] = 0
+    game:FinishObjective(7200, 1)
+    B.Refresh()
+    t.ok(item:IsShown() and item:GetAttribute("item") == "item:9100", "in combat it stays (secure)")
+    t.ok(item.icon:IsDesaturated(), "but greys out: used up and its objective done")
+    t.eq(item.count:GetText(), "", "count follows the bags in combat")
+    combat = false
+    game:Fire("PLAYER_REGEN_ENABLED")
+    t.eq(item.points[1] and item.points[1][1], "CENTER", "after combat: moved to the saved spot")
+    t.eq(item.points[1] and item.points[1][2], UIParent, "still on UIParent")
+    t.ok(not item:IsShown(), "after combat: nothing carried for what's left, hidden")
+    -- the step's "item" line belongs to 7201's objective
+    game:AddItem(9101, 1)
+    B.Refresh()
+    t.eq(item:GetAttribute("item"), "item:9101", "the guide's item line, for the objective still open")
+    game:FinishObjective(7201, 1)
+    B.Refresh()
+    t.ok(not item:IsShown(), "its objective done: hidden though you still carry it")
+    -- 7200 is complete (to turn in): its quest log item isn't offered
+    game.items[9100] = 1
+    B.Refresh()
+    t.ok(not item:IsShown(), "complete quest: its quest log item isn't offered")
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 

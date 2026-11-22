@@ -54,6 +54,7 @@ function FakeWoW.New(root, opts, saved)
         noObjectiveAPI = opts.noObjectiveAPI,
         collapsed = {},    -- [questID] = true: hidden under a collapsed header
         unloaded = {},     -- [questID] = true: in the log, details not loaded by the client yet
+        specialItems = {}, -- [questID] = itemID: the quest log's usable quest item (GetQuestLogSpecialItemInfo)
     }, Game)
     game:InstallGlobals()
     saved = saved or {}
@@ -204,6 +205,11 @@ function Game:InstallGlobals()
         GetObjectType = function(self) return self.kind end,
         SetAttribute = function(self, k, v) self.attrs = self.attrs or {}; self.attrs[k] = v end,
         GetAttribute = function(self, k) return self.attrs and self.attrs[k] end,
+        -- cooldown frames and icons keep what they were told
+        SetCooldown = function(self, start, duration) self.cd = { start, duration } end,
+        Clear = function(self) self.cd = nil end,
+        SetDesaturated = function(self, v) self.desaturated = v and true or false end,
+        IsDesaturated = function(self) return self.desaturated or false end,
     }
     local function Creator(kind)
         return function(self, name)
@@ -338,6 +344,14 @@ function Game:InstallGlobals()
         local obj = q and q.objectives[o]
         if not obj then return nil end
         return obj.text, "monster", obj.done
+    end
+    -- like the game: the quest's usable item as a link, its icon, charges,
+    -- and whether it stays shown once the quest is complete
+    GetQuestLogSpecialItemInfo = function(i)
+        local q = visible()[i]
+        local id = q and not q.header and game.specialItems[q.id]
+        if not id then return nil end
+        return "|cffffffff|Hitem:" .. id .. "::::::::20:::::|h[Quest Item " .. id .. "]|h|r", 134400, 1, false
     end
     C_QuestLog = {
         IsOnQuest = function(id) return find(id) ~= nil and not game.unloaded[id] end,
