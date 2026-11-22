@@ -374,8 +374,9 @@ do
     t.ok(find(function(p) return p.num == "2" and tostring(p.tip[2]):find("Step 2", 1, true) end), "a numbered pin for the step, with a tooltip")
     t.ok(find(function(p) return p.tag == "3" and tostring(p.icon):find("quest_incomplete", 1, true) end), "the turn-in after it: a grey ? pin with its number (not done yet)")
     t.ok(find(function(p) return p.tip and p.tip[1] == "Bluegill Murloc" end), "mob icons where the murlocs spawn")
-    t.ok(find(function(p) return p.label == "Gobbler" and p.size == 20 and tostring(p.icon):find("boss", 1, true) end), "Gobbler gets his own big pin with his name")
-    t.ok(find(function(p) return (p.label or ""):find("area (#2)", 1, true) end), "the blue area is labelled")
+    t.ok(find(function(p) return p.label == "Gobbler" and p.size == 18 and tostring(p.icon):find("boss", 1, true) end), "Gobbler gets his own big pin with his name")
+    t.ok(find(function(p) return p.kind == "area" and p.label == "" and tostring(p.tip[1]):find("area - step 2", 1, true) end),
+        "the blue area is named in a tooltip, not a label")
     local mobs = 0
     for _, p in ipairs(pins) do if p.tip and p.tip[1] == "Bluegill Murloc" then mobs = mobs + 1 end end
     t.ok(mobs <= OXP.Pins.MAX_MOBS, "mob icons are capped: " .. mobs)
