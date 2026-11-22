@@ -10,6 +10,7 @@ Writes
   OpenXP/Media/Card/glow.tga      a soft round glow
   OpenXP/Media/Card/history.tga   the card's step list button
   OpenXP/Media/Card/skip.tga      the "skipped" mark in the step list
+  OpenXP/Media/Card/more.tga      the card's menu button (three dots)
   OpenXP/Media/Map/quest_*.tga    "!" and "?" in yellow and grey, drawn in
                                   the style quest addons use (128/64/32 px)
 Needs Pillow and numpy. Reuses tools/make_icons.py's helpers.
@@ -192,9 +193,23 @@ def steps_icon():
     save(img, "steps_32", 32)
 
 
+def more_icon():
+    """Media/Card/more(_32).tga: the card's menu button, three dots in a row
+    (the list icon belongs to the step list, so the menu doesn't look like it)."""
+    m = Image.new("L", (S, S), 0)
+    d = ImageDraw.Draw(m)
+    for x in (116, 256, 396):
+        d.ellipse((x - 46, 256 - 46, x + 46, 256 + 46), fill=255)
+    img = Image.new("RGBA", (S, S), (255, 255, 255, 255))
+    img.putalpha(m)
+    save(img, "more", 64)
+    save(img, "more_32", 32)
+
+
 def main():
     arrows()
     steps_icon()
+    more_icon()
     small_icons()
     yellow = ((255, 236, 110), (240, 168, 0))
     grey = ((214, 216, 222), (128, 130, 138))

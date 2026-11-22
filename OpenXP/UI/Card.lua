@@ -23,7 +23,7 @@ local fmt = string.format
 local WIDTH, HEIGHT = 330, 300
 local MIN_W, MIN_H, MAX_W, MAX_H = 200, 150, 640, 900
 local HEADER_H = 44           -- two rows: the guide's name, then its levels and your step
-local TOP_H = 1 + HEADER_H + 2 -- border, header, progress line
+-- (the header grows with big text, see LayoutHeader)
 local BAR_H = 38 + 1          -- button bar, border
 local COLLAPSED_H = 42
 local PAD = 12
@@ -160,9 +160,13 @@ end)
 grip:SetScript("OnEnter", function(self) Style.Tooltip(self, L("Drag to resize")) end)
 grip:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
--- Header, two rows so the name never runs into the numbers:
---   dot  ASHENVALE, WETLANDS & STONETALON MOUNTAINS
---        Levels 22-25 ........................ Step 16 / 52
+-- Header, two rows so the name never runs into the numbers, both rows on
+-- the same left edge as the step below (its badge):
+--   ASHENVALE, WETLANDS & STONETALON MOUNTAINS
+--   Levels 22-25 ................... [list] Step 16 / 52
+-- "[list] Step 16 / 52" is the way into the step list (UI/StepNavigator.lua):
+-- no box around it, the icon says it opens a list, and it lights up in the
+-- skin's accent under the mouse and while the list is open.
 local header = CreateFrame("Frame", nil, f)
 Card.header = header
 header:SetPoint("TOPLEFT", 1, -1)
@@ -171,83 +175,59 @@ header:SetHeight(HEADER_H)
 header.bg = header:CreateTexture(nil, "BACKGROUND")
 header.bg:SetAllPoints()
 header.bg:SetColorTexture(1, 1, 1, 0.03)
--- The step list button (UI/StepNavigator.lua): the main way to see every
--- step, so a real button: a list icon and "Steps" on a tinted pill in the
--- skin's accent with a border, brighter under the mouse and while the list
--- is open. It reads on Minimal too (border and outlined text).
-header.nav = CreateFrame("Button", nil, header, "BackdropTemplate")
-header.nav:SetHeight(22)
-header.nav:SetPoint("TOPLEFT", PAD - 4, -4)
-header.nav:SetBackdrop({ bgFile = Style.WHITE, edgeFile = Style.WHITE, edgeSize = 1,
-                         insets = { left = 1, right = 1, top = 1, bottom = 1 } })
-header.nav.bg = header.nav -- older code tints this
-header.nav.icon = header.nav:CreateTexture(nil, "ARTWORK")
-header.nav.icon:SetTexture(TEX .. "steps")
-header.nav.icon:SetSize(14, 14)
-header.nav.icon:SetPoint("LEFT", 6, 0)
-header.nav.label = header.nav:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-header.nav.label:SetPoint("LEFT", header.nav.icon, "RIGHT", 4, 0)
-header.nav.label:SetText(L("Steps"))
---- Paint the Steps button: hover / the list open make it brighter.
-function Card.PaintNav()
-    local nav = header.nav
-    local open = OXP.StepNav and OXP.StepNav.IsShown()
-    local a = (nav.hover and 0.38) or (open and 0.30) or 0.18
-    local c = C.blue
-    nav:SetBackdropColor(c[1], c[2], c[3], a)
-    nav:SetBackdropBorderColor(c[1], c[2], c[3], (nav.hover or open) and 1 or 0.7)
-    nav.icon:SetVertexColor(c[1], c[2], c[3], 1)
-    Style.SetFont(nav.label, -1)
-    nav.label:SetTextColor(1, 1, 1, 1)
-    nav:SetWidth(6 + 14 + 4 + math.max(30, nav.label:GetStringWidth() or 30) + 8)
-end
-header.nav:SetScript("OnClick", function() Card.ToggleStepList() end)
-header.nav:SetScript("OnEnter", function(self)
-    self.hover = true
-    Card.PaintNav()
-    Style.Tooltip(self, L("Steps"), L("Every step of this guide: what you've done, skipped and what's coming. Click one to go there. Also /oxp steps."))
-end)
-header.nav:SetScript("OnLeave", function(self)
-    self.hover = false
-    Card.PaintNav()
-    GameTooltip:Hide()
-end)
-header.dot = header.nav.icon -- older code and tests know it by this name
 header.zone = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-header.zone:SetPoint("LEFT", header.nav, "RIGHT", 8, 0)
+header.zone:SetPoint("TOPLEFT", header, "TOPLEFT", PAD - 1, -7)
 header.zone:SetPoint("RIGHT", header, "RIGHT", -PAD + 1, 0)
 Style.TextColor(header.zone, C.text)
 header.zone:SetJustifyH("LEFT")
 header.zone:SetWordWrap(false)
 header.range = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-header.range:SetPoint("BOTTOMLEFT", header, "BOTTOMLEFT", PAD - 2, 7)
+header.range:SetPoint("BOTTOMLEFT", header, "BOTTOMLEFT", PAD - 1, 7)
 header.range:SetJustifyH("LEFT")
+header.range:SetWordWrap(false)
 Style.TextColor(header.range, C.dim)
 header.step = header:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 header.step:SetPoint("BOTTOMRIGHT", header, "BOTTOMRIGHT", -PAD + 1, 7)
 header.step:SetJustifyH("RIGHT")
+header.step:SetWordWrap(false)
 Style.TextColor(header.step, C.dim)
-header.stepBtn = CreateFrame("Button", nil, header)
-header.stepBtn:SetPoint("BOTTOMRIGHT", 0, 0)
-header.stepBtn:SetHeight(22)
-header.stepBtn:SetWidth(100)
-header.stepBtn:SetScript("OnClick", function() Card.ToggleStepList() end)
--- "Step 16 / 52" opens the list too, and shows it can (accent and underline
--- under the mouse)
-header.stepBtn.line = header.stepBtn:CreateTexture(nil, "OVERLAY")
-header.stepBtn.line:SetHeight(1)
-header.stepBtn.line:SetPoint("TOPLEFT", header.step, "BOTTOMLEFT", 0, -1)
-header.stepBtn.line:SetPoint("TOPRIGHT", header.step, "BOTTOMRIGHT", 0, -1)
-header.stepBtn.line:Hide()
-header.stepBtn:SetScript("OnEnter", function(self)
-    Style.TextColor(header.step, C.blue)
-    Style.Fill(self.line, C.blue, 0.8)
-    self.line:Show()
-    Style.Tooltip(self, L("Show every step in this guide"), L("Click a step to jump to it. Mouse wheel scrolls."))
+-- the levels never run under the counter
+header.range:SetPoint("RIGHT", header.step, "LEFT", -28, 0)
+-- the button covers the icon and the counter (and a little round them)
+header.nav = CreateFrame("Button", nil, header)
+header.nav:SetPoint("BOTTOMRIGHT", header, "BOTTOMRIGHT", 0, 1)
+header.nav:SetHeight(22)
+header.nav:SetWidth(110)
+header.nav.icon = header.nav:CreateTexture(nil, "ARTWORK")
+header.nav.icon:SetTexture(TEX .. "steps_32")
+header.nav.icon:SetSize(12, 12)
+header.nav.icon:SetPoint("RIGHT", header.step, "LEFT", -5, 0)
+header.nav.label = header.step -- the counter is the button's text
+header.stepBtn = header.nav -- older code and tests know it by these names
+header.dot = header.nav.icon
+--- Paint the step counter: dim at rest; the accent under the mouse and while
+--- the list is open.
+function Card.PaintNav()
+    local nav = header.nav
+    local lit = nav.hover or (OXP.StepNav and OXP.StepNav.IsShown())
+    Style.Tint(nav.icon, lit and C.blue or C.dim, lit and 1 or 0.9)
+    Style.TextColor(header.step, lit and C.blue or C.dim)
+    nav.lit = lit and true or false
+end
+--- Size the button to the counter it covers (after the text or font changes).
+function Card.SizeNav()
+    local w = header.step:GetStringWidth() or 60
+    header.nav:SetWidth(math.floor(w + 12 + 5 + (PAD - 1) + 6 + 0.5))
+end
+header.nav:SetScript("OnClick", function() Card.ToggleStepList() end)
+header.nav:SetScript("OnEnter", function(self)
+    self.hover = true
+    Card.PaintNav()
+    Style.Tooltip(self, L("Show all steps"), L("Every step of this guide: what you've done, skipped and what's coming. Click one to go there. Also /oxp steps."))
 end)
-header.stepBtn:SetScript("OnLeave", function(self)
-    Style.TextColor(header.step, C.dim)
-    self.line:Hide()
+header.nav:SetScript("OnLeave", function(self)
+    self.hover = false
+    Card.PaintNav()
     GameTooltip:Hide()
 end)
 
@@ -845,6 +825,15 @@ local function LayoutWarn(b, step, pos, problem, y, textWidth)
     local anchor = list and w.list or w.text
     -- side by side, wrapping to a new row on a narrow card
     local rows, x, rowStart = 1, 0, nil
+    local bh = 22
+    for i, btn in ipairs(buttons) do
+        -- the first one is what to do (the skin's accent), Skip stays quiet;
+        -- words in the card's font and size (outlined on Minimal)
+        btn:SetKind((i == 1 and btn ~= w.skip) and "primary" or "quiet")
+        SetFont(btn.label, -1)
+        btn:SetLabel(btn.label:GetText() or "")
+        bh = math.max(bh, btn:GetHeight() or 22)
+    end
     for i, btn in ipairs(buttons) do
         btn:ClearAllPoints()
         local bw = btn:GetWidth() or 80
@@ -860,7 +849,7 @@ local function LayoutWarn(b, step, pos, problem, y, textWidth)
         end
         btn:Show()
     end
-    local h = w.text:GetStringHeight() + (list and (w.list:GetStringHeight() + 4) or 0) + 6 + 22 + (rows - 1) * 28
+    local h = w.text:GetStringHeight() + (list and (w.list:GetStringHeight() + 4) or 0) + 6 + bh + (rows - 1) * (bh + 6)
     w:SetHeight(h)
     w:Show()
     return h + 8
@@ -1122,7 +1111,9 @@ bar.collapse = Btn(bar, "up", L("Collapse to one line"), function() Card.SetColl
 bar.collapse:SetPoint("RIGHT", -20, 0)
 bar.settings = Btn(bar, "gear", L("Settings"), function() OXP.Settings.Toggle() end)
 bar.settings:SetPoint("RIGHT", bar.collapse, "LEFT", -2, 0)
-bar.menu = Btn(bar, "menu", L("Pick a guide, skipped quest chains, feedback"), function() OXP.GuidePicker.Toggle(bar.menu) end)
+-- the menu (UI/GuidePicker.lua): three dots, so it isn't taken for the
+-- step list (that is "Step 16 / 52" in the header, and the menu's first row)
+bar.menu = Btn(bar, "more", L("Menu: all steps, pick a guide, skipped quest chains, feedback"), function() OXP.GuidePicker.Toggle(bar.menu) end)
 bar.menu:SetPoint("RIGHT", bar.settings, "LEFT", -2, 0)
 
 -- "More" at the foot of the steps when they don't fit: the steps take the
@@ -1326,6 +1317,12 @@ local function LayoutHeader(guide, current, total, detourStep, detourIndex)
         header.step:SetText(fmt("%d / %d", detourIndex, #Card.detour.ids))
         frac = detourIndex / math.max(#Card.detour.ids, 1)
     end
+    -- big text: the header grows so its two rows never touch
+    -- (a line is about 1.2x the font size; 7 px above, 7 below, 2 between)
+    local need = math.ceil((Style.FontSize(-1) + Style.FontSize(-2)) * 1.2 + 16)
+    header:SetHeight(math.max(HEADER_H, need))
+    Card.SizeNav()
+    Card.PaintNav()
     Card.SetProgress(math.max(1, (Width() - 2) * frac))
 end
 
@@ -1453,7 +1450,7 @@ function Card.Refresh(force)
 
     -- all the room between the header and the buttons is the step's (the
     -- step list shows the other steps)
-    local room = (Card.sizing and (f:GetHeight() or Height()) or Height()) - TOP_H - BAR_H
+    local room = (Card.sizing and (f:GetHeight() or Height()) or Height()) - (1 + (header:GetHeight() or HEADER_H) + 2) - BAR_H
     local viewH = math.max(1, room)
     Card.overflow = contentH > viewH + 0.5
     -- cut off (or "More" open): the steps give up a row for the button

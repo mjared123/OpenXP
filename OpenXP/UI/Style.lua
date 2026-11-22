@@ -378,32 +378,56 @@ function Style.IconButton(parent, icon, tip, onClick, label)
     return btn
 end
 
---- A small grey button with words on it.
-function Style.TextButton(parent, text, tip, onClick)
+--- A small flat button with words on it, in the skin's colours (no box
+--- edge). kind "primary": a tint of the skin's accent, the thing to do;
+--- "quiet" (default): a faint wash and dim words that light up under the
+--- mouse. btn:SetKind changes it; btn:SetLabel sizes it to its words.
+local TEXT_KINDS = {
+    primary = { fill = "blue", rest = 0.22, hover = 0.36, down = 0.14, text = "text", hot = "text" },
+    quiet = { fill = "white", rest = 0.06, hover = 0.12, down = 0.04, text = "dim", hot = "text" },
+}
+function Style.TextButton(parent, text, tip, onClick, kind)
     local btn = CreateFrame("Button", nil, parent)
     btn:SetHeight(22)
     btn.bg = btn:CreateTexture(nil, "BACKGROUND")
     btn.bg:SetAllPoints()
-    btn.bg:SetColorTexture(1, 1, 1, 0.08)
+    btn.bg:SetTexture(WHITE)
     btn.label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     btn.label:SetPoint("CENTER")
     Style.FixedFont(btn.label, 12, "")
-    Style.TextColor(btn.label, C.text)
+    --- Repaint for the mouse ("rest", "hover" or "down").
+    function btn:Paint(state)
+        local k = TEXT_KINDS[self.kind] or TEXT_KINDS.quiet
+        state = state or (self:IsMouseOver() and "hover" or "rest")
+        local a = k[state] or k.rest
+        if k.fill == "white" then
+            Style.Tint(self.bg, { 1, 1, 1 }, a)
+        else
+            Style.Tint(self.bg, C[k.fill], a)
+        end
+        Style.TextColor(self.label, C[state == "rest" and k.text or k.hot])
+    end
+    function btn:SetKind(kd)
+        self.kind = TEXT_KINDS[kd] and kd or "quiet"
+        self:Paint("rest")
+    end
     function btn:SetLabel(t)
         self.label:SetText(t)
-        self:SetWidth(math.max(70, (self.label:GetStringWidth() or 60) + 18))
+        self:SetWidth(math.max(70, (self.label:GetStringWidth() or 60) + 20))
+        self:SetHeight(math.max(22, math.floor((self.label:GetStringHeight() or 12) + 10 + 0.5)))
     end
     btn:SetLabel(text)
+    btn:SetKind(kind)
     btn:SetScript("OnEnter", function(self)
-        self.bg:SetColorTexture(1, 1, 1, 0.15)
+        self:Paint("hover")
         if tip then Tooltip(self, tip) end
     end)
     btn:SetScript("OnLeave", function(self)
-        self.bg:SetColorTexture(1, 1, 1, 0.08)
+        self:Paint("rest")
         GameTooltip:Hide()
     end)
-    btn:SetScript("OnMouseDown", function(self) self.bg:SetColorTexture(1, 1, 1, 0.04) end)
-    btn:SetScript("OnMouseUp", function(self) self.bg:SetColorTexture(1, 1, 1, self:IsMouseOver() and 0.15 or 0.08) end)
+    btn:SetScript("OnMouseDown", function(self) self:Paint("down") end)
+    btn:SetScript("OnMouseUp", function(self) self:Paint() end)
     btn:SetScript("OnClick", onClick)
     return btn
 end

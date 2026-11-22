@@ -235,6 +235,30 @@ do
     OXP.Quests.Invalidate()
     C.Refresh(true)
     t.ok(warnButtons(C.blocks[1]):find("finish=Finish it", 1, true), "unfinished quest offers Finish it")
+    -- the buttons wear the skin: Finish it in the accent, Skip quiet, no box
+    local w, SC = C.blocks[1].warn, OXP.Style.C
+    t.eq(w.finish.kind, "primary", "Finish it is the thing to do")
+    t.eq(w.skip.kind, "quiet", "Skip stays quiet")
+    t.ok(math.abs(w.finish.bg.vertex[3] - SC.blue[3]) < 0.01 and w.finish.bg.vertex[4] > 0.15,
+        "Finish it: a tint of the accent")
+    t.eq(w.finish.bdColor, nil, "no box edge")
+    w.skip.scripts.OnEnter(w.skip)
+    t.ok(math.abs(w.skip.label.textColor[1] - SC.text[1]) < 0.01, "Skip lights up under the mouse")
+    w.skip.scripts.OnLeave(w.skip)
+    -- big card text: the buttons grow with it and the block makes room
+    OXP.settings.fontSize = 18
+    C.Refresh(true)
+    t.ok(w.finish.h >= w.finish.label:GetStringHeight() + 8, "taller with bigger text: " .. tostring(w.finish.h))
+    t.ok(w.finish.w >= w.finish.label:GetStringWidth() + 16, "and wide enough for its words")
+    OXP.settings.skin = "minimal"
+    OXP.Send("SETTINGS_CHANGED")
+    C.Refresh(true)
+    t.eq(w.finish.label.font and w.finish.label.font[3], "OUTLINE", "Minimal: outlined button words")
+    OXP.settings.skin = "midnight"
+    OXP.settings.fontSize = 12
+    OXP.Send("SETTINGS_CHANGED")
+    C.Refresh(true)
+    t.eq(C.bar.menu.icon.texture:sub(-4), "more", "the bar's menu button has three dots, not a list")
     C.blocks[1].warn.skip.scripts.OnClick()
     t.eq(OXP.Engine.StepState(3), "skipped", "Skip this step marks it skipped")
     OXP.QuestDB.data = {}
@@ -624,7 +648,8 @@ do
     local labels = {}
     for _, e in ipairs(P.MenuEntries()) do labels[#labels + 1] = e.text end
     t.ok(table.concat(labels, ","):find("Pick a guide,Find my place", 1, true), "menu: " .. table.concat(labels, ","))
-    P.MenuEntries()[1].fn()
+    t.eq(labels[1], "All steps", "the step list is the menu's first row")
+    P.MenuEntries()[2].fn()
     local win = P.window
     t.ok(win and win.shown, "Pick a guide opens")
     local rows = P.ListRows("")
@@ -736,8 +761,10 @@ do
     OXP.settings.cardOpacity = 1
     OXP.settings.skin = "classic"
     OXP.Send("SETTINGS_CHANGED")
+    card.header.nav.scripts.OnEnter(card.header.nav)
     t.ok(card.header.nav.icon.vertex[1] > 0.9 and card.header.nav.icon.vertex[3] < 0.5,
-        "the step button follows the skin's accent (gold)")
+        "the step counter lights up in the skin's accent (gold)")
+    card.header.nav.scripts.OnLeave(card.header.nav)
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
@@ -767,23 +794,47 @@ do
     -- the wheel over the card no longer scrolls into earlier steps
     card.frame.scripts.OnMouseWheel(card.frame, 1)
     t.eq(OXP.Engine.GetPosition(), 2, "the wheel changes nothing")
-    -- the Steps button: label, icon, tooltip, opens the list, brighter while open
-    local nav = card.header.nav
-    t.eq(nav.label.text, "Steps", "the button says Steps")
+    -- the step counter is the way in: "[list] Step 2 / 3", no box, accent
+    -- under the mouse and while the list is open
+    local nav, h = card.header.nav, card.header
+    t.eq(h.step.text, "Step 2 / 3", "the counter")
+    t.eq(nav.label, h.step, "the counter is the button's text")
     t.ok(nav.icon.texture and nav.icon.texture:find("steps", 1, true), "with the list icon")
+    t.eq(nav.bdColor, nil, "no box (no backdrop)")
+    local C = OXP.Style.C
     t.ok((nav.w or 0) >= 50, "a wide, easy target: " .. tostring(nav.w))
-    local before = nav.bdColor and nav.bdColor[4]
+    t.ok(math.abs(h.step.textColor[3] - C.dim[3]) < 0.01, "dim at rest")
     nav.scripts.OnEnter(nav)
-    t.ok(nav.bdColor[4] > before, "brighter under the mouse")
+    t.ok(math.abs(h.step.textColor[3] - C.blue[3]) < 0.01, "accent under the mouse")
+    t.eq(GameTooltip.text, "Show all steps", "tooltip")
     nav.scripts.OnLeave(nav)
     nav.scripts.OnClick(nav)
     t.ok(OXP.StepNav.IsShown(), "click: the step list opens")
-    t.ok(nav.bdColor[4] > before, "and the button shows it's open")
-    -- Minimal: still a visible button (border, outlined text)
+    t.ok(nav.lit, "and the counter stays lit while it's open")
+    -- the header's two rows start on one left edge, where the step starts
+    local zx = h.zone.points[1][4]
+    local rx = h.range.points[1][4]
+    t.eq(h.zone.points[1][1], "TOPLEFT", "the name sits at the top left")
+    t.eq(zx, rx, "name and levels share a left edge")
+    local badge = card.blocks[1] and card.blocks[1].badge
+    t.ok(badge and math.abs(badge.points[1][2] - zx) <= 1, "on the step's edge: " .. tostring(zx))
+    -- Minimal: outlined counter, no box
     OXP.settings.skin = "minimal"
     OXP.Send("SETTINGS_CHANGED")
-    t.ok(nav.bdBorder and nav.bdBorder[4] > 0.5, "Minimal: the border shows")
-    t.eq(nav.label.font and nav.label.font[3], "OUTLINE", "Minimal: outlined label")
+    card.Refresh(true)
+    t.eq(h.step.font and h.step.font[3], "OUTLINE", "Minimal: outlined counter")
+    -- big text on a narrow card: the header grows, the levels stop short of the counter
+    OXP.settings.fontSize = 20
+    card.frame:SetSize(200, 300)
+    card.Refresh(true)
+    t.ok(h.h >= (19 + 18) * 1.2 + 14, "taller header: " .. tostring(h.h))
+    local stops = false
+    for _, p in ipairs(h.range.points) do if p[1] == "RIGHT" and p[2] == h.step then stops = true end end
+    t.ok(stops, "the levels end before the counter")
+    local big = h.h
+    OXP.settings.fontSize = 12
+    card.Refresh(true)
+    t.ok(h.h < big, "smaller again with normal text: " .. tostring(h.h))
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 

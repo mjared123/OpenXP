@@ -149,6 +149,7 @@ end
 
 function Picker.MenuEntries()
     return {
+        { text = L("All steps"), icon = "steps", extra = L("this guide"), fn = function() if OXP.Card then OXP.Card.ToggleStepList() end end },
         { text = L("Pick a guide"), icon = "menu", extra = L("all guides"), fn = function() Picker.ShowGuides() end },
         { text = L("Find my place"), icon = "target", fn = function() OXP.SmartStart.Run(false) end },
         { text = L("Skipped quest chains"), icon = "travel", fn = function() OXP.SmartStart.ShowCatchUp() end },
