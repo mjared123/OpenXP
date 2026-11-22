@@ -87,6 +87,37 @@ local function BuildMenu()
     menu.line:SetPoint("TOPLEFT", 1, -54)
     menu.line:SetPoint("TOPRIGHT", -1, -54)
     Style.Shadow(menu)
+    -- A click anywhere outside the menu closes it (Escape already does,
+    -- through UISpecialFrames). The game sends GLOBAL_MOUSE_DOWN for every
+    -- mouse button press, wherever it lands (world, other frames); while the
+    -- menu is open we also watch the buttons ourselves each frame, in case a
+    -- client doesn't send that event. A press over the menu (its rows) is
+    -- left alone. The click that opened it was a button release, so it
+    -- doesn't count.
+    local function OutsideClick()
+        if menu:IsShown() and not menu:IsMouseOver() then menu:Hide() end
+    end
+    Picker.OutsideClick = OutsideClick
+    menu:SetScript("OnEvent", function(_, event)
+        if event == "GLOBAL_MOUSE_DOWN" then OutsideClick() end
+    end)
+    local wasDown = false
+    local function AnyDown()
+        if not IsMouseButtonDown then return false end
+        return IsMouseButtonDown("LeftButton") or IsMouseButtonDown("RightButton") or IsMouseButtonDown("MiddleButton")
+    end
+    menu:SetScript("OnUpdate", function()
+        local down = AnyDown() and true or false
+        if down and not wasDown then OutsideClick() end
+        wasDown = down
+    end)
+    menu:HookScript("OnShow", function(self) -- Hook: Style.Shadow hooked these too
+        wasDown = AnyDown() and true or false
+        pcall(self.RegisterEvent, self, "GLOBAL_MOUSE_DOWN")
+    end)
+    menu:HookScript("OnHide", function(self)
+        pcall(self.UnregisterEvent, self, "GLOBAL_MOUSE_DOWN")
+    end)
     menu:Hide()
 end
 

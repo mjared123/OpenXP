@@ -71,7 +71,6 @@ do
     t.ok(not OXP.Engine.IsHeld() and OXP.Engine.GetPosition() == 3, "resume returns to the furthest step")
     C.ToggleStepList()
     C.FillStepList()
-    C.histOffset = 1
     C.Refresh(true)
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
     t.ok(not C.lastError, "no card errors: " .. tostring(C.lastError))
@@ -443,7 +442,7 @@ do
     C.more.scripts.OnClick()
     t.ok(C.expanded and C.more.label.text == "Less", "More opens the text")
     t.eq(f.h, h0, "and the card still doesn't grow")
-    t.ok(C.view.h > upH, "the steps take the room of Up next (" .. upH .. " -> " .. C.view.h .. ")")
+    t.eq(C.view.h, upH, "the steps already have all the room there is (no Up next to give way)")
     t.ok(f.scripts.OnMouseWheel and C.ScrollText(-1) and C.view.scroll > 0, "the wheel scrolls the text")
     C.ScrollText(-1000)
     t.eq(C.view.scroll, C.maxScroll, "but not past the end")
@@ -743,7 +742,7 @@ do
 end
 
 ------------------------------------------------------------------------
-print("-- up next: show, folded, hidden")
+print("-- the card shows only the step: no earlier-steps history, no Up next; the Steps button opens the list")
 do
     local game, OXP = newGame({ level = 21 })
     local g = addGuide(OXP, {
@@ -752,19 +751,75 @@ do
         { { "text", text = "Step three" }, { "xp", level = 24 } },
     })
     OXP.Engine.Load(g.key)
+    OXP.Engine.GoTo(2)
     local card = OXP.Card
     card.Refresh(true)
-    local up = card.upNextFrame
-    t.ok(up.shown and up.lines[1] and up.lines[1].shown and up.lines[1].text == "Step two", "shown: the next step")
-    up.toggle.scripts.OnClick(up.toggle)
-    t.eq(OXP.settings.upNextMode, "folded", "clicking UP NEXT folds it")
-    t.ok(up.shown and up.h == 28 and not up.lines[1].shown, "folded: one line, no steps")
-    up.toggle.scripts.OnClick(up.toggle)
-    t.eq(OXP.settings.upNextMode, "show", "clicking again opens it")
-    OXP.settings.upNextMode = "hide"
+    t.eq(card.upNextFrame, nil, "no Up next")
+    t.eq(card.LayoutHistory, nil, "no earlier-steps history")
+    t.eq(OXP.settings.upNextMode, nil, "and no Up next setting")
+    for _, f in ipairs(game.frames) do
+        for _, region in pairs(f) do
+            if type(region) == "table" and region.text == "UP NEXT" or (type(region) == "table" and region.text == "EARLIER STEPS") then
+                t.ok(false, "found " .. region.text)
+            end
+        end
+    end
+    -- the wheel over the card no longer scrolls into earlier steps
+    card.frame.scripts.OnMouseWheel(card.frame, 1)
+    t.eq(OXP.Engine.GetPosition(), 2, "the wheel changes nothing")
+    -- the Steps button: label, icon, tooltip, opens the list, brighter while open
+    local nav = card.header.nav
+    t.eq(nav.label.text, "Steps", "the button says Steps")
+    t.ok(nav.icon.texture and nav.icon.texture:find("steps", 1, true), "with the list icon")
+    t.ok((nav.w or 0) >= 50, "a wide, easy target: " .. tostring(nav.w))
+    local before = nav.bdColor and nav.bdColor[4]
+    nav.scripts.OnEnter(nav)
+    t.ok(nav.bdColor[4] > before, "brighter under the mouse")
+    nav.scripts.OnLeave(nav)
+    nav.scripts.OnClick(nav)
+    t.ok(OXP.StepNav.IsShown(), "click: the step list opens")
+    t.ok(nav.bdColor[4] > before, "and the button shows it's open")
+    -- Minimal: still a visible button (border, outlined text)
+    OXP.settings.skin = "minimal"
     OXP.Send("SETTINGS_CHANGED")
-    card.Refresh(true)
-    t.ok(not up.shown, "hidden")
+    t.ok(nav.bdBorder and nav.bdBorder[4] > 0.5, "Minimal: the border shows")
+    t.eq(nav.label.font and nav.label.font[3], "OUTLINE", "Minimal: outlined label")
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+------------------------------------------------------------------------
+print("-- the right-click menu closes on a click outside it, not on one inside")
+do
+    local game, OXP = newGame({ level = 21 })
+    local P = OXP.GuidePicker
+    P.Show("cursor")
+    local menu = P.menuFrame()
+    t.ok(menu.shown, "open")
+    t.ok(menu.events.GLOBAL_MOUSE_DOWN, "listens for clicks anywhere while open")
+    -- a click on one of its rows
+    menu.IsMouseOver = function() return true end
+    game.mouseDown = true
+    game:Advance(0.05)
+    menu.scripts.OnEvent(menu, "GLOBAL_MOUSE_DOWN", "LeftButton")
+    t.ok(menu.shown, "a click inside keeps it open")
+    game.mouseDown = false
+    game:Advance(0.05)
+    -- a click somewhere else (the world, another frame)
+    menu.IsMouseOver = function() return false end
+    menu.scripts.OnEvent(menu, "GLOBAL_MOUSE_DOWN", "LeftButton")
+    t.ok(not menu.shown, "a click outside closes it")
+    t.ok(not menu.events.GLOBAL_MOUSE_DOWN, "and it stops listening")
+    t.ok(not menu.shadow.shown, "its shadow goes too")
+    -- no GLOBAL_MOUSE_DOWN from the client: the button watch does it
+    P.Show("cursor")
+    game:Advance(0.05)
+    game.mouseDown = true
+    game:Advance(0.05)
+    t.ok(not menu.shown, "without the event: a press outside still closes it")
+    game.mouseDown = false
+    t.ok(OXP.GuidePicker and _G.UISpecialFrames and (function()
+        for _, n in ipairs(_G.UISpecialFrames) do if n == "OpenXPMenu" then return true end end
+    end)(), "Escape closes it (UISpecialFrames)")
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 

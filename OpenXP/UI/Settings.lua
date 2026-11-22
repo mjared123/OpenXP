@@ -204,9 +204,6 @@ local PAGES = {
             Style.SkinChoices(), "midnight")
         Slider(p, "cardOpacity", L("Background"), L("How solid the card's and Targets list's background is. 0% shows no background at all."),
             0, 1, 0.05, Pct)
-        Dropdown(p, "upNextMode", L("Up next"), L("The next steps under the card's step. Folded: one line, click it to open."),
-            { { "show", L("Show") }, { "folded", L("Folded") }, { "hide", L("Hide") } }, "show",
-            function() if OXP.Card then OXP.Card.Refresh(true) end end)
         Slider(p, "fontSize", L("Text size"), L("The size of the step text on the card."), 9, 20, 1,
             function(v) return tostring(v) end)
         Slider(p, "cardScale", L("Card scale"), L("Makes the whole card, buttons and all, bigger or smaller."), 0.7, 1.5, 0.05, Pct)

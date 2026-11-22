@@ -12,6 +12,14 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.0-dev6", date = "2026-11",
+        changes = {
+            "The card shows just your step: the earlier-steps history (scrolling up on the card) and Up next are gone, and the step gets the room. The step list shows every other step.",
+            "A real Steps button on the card: a list icon and \"Steps\" on a pill in your skin's colour, brighter under the mouse and while the list is open. \"Step 16 / 52\" opens it too. Also /oxp steps.",
+            "The right-click menu closes when you click anywhere outside it (and on Escape).",
+        },
+    },
+    {
         version = "2.0.0-dev5", date = "2026-11",
         changes = {
             "The old 1.x 21-60 guides (\"OpenXP Legacy\" in Pick a guide) are gone: the leveling route covers 1-60. A character that was on one is placed on the route by smart start, flight paths kept. About 1.3 MB less to load.",

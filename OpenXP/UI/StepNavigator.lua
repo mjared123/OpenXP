@@ -623,8 +623,8 @@ local function Build()
     f:HookScript("OnHide", function()
         f:SetAlpha(1)
         for _, row in ipairs(rows) do if row.pulse then row.pulse:Stop() end end
-        if OXP.Card and OXP.Card.header and OXP.Card.header.nav then
-            Tint(OXP.Card.header.nav.bg, C.blue, 0)
+        if OXP.Card and OXP.Card.PaintNav then
+            OXP.Card.PaintNav()
         end
     end)
     f:Hide()
@@ -685,6 +685,7 @@ function Nav.Show()
     f:Show()
     Nav.Refresh(true)
     Nav.ScrollToCurrent(true)
+    if OXP.Card and OXP.Card.PaintNav then OXP.Card.PaintNav() end
     -- in: a short fade and a slide out from the card's side
     local dx = f.side == "left" and 14 or -14
     local p1, rel, p2, x, y = f:GetPoint()

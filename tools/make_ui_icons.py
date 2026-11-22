@@ -175,8 +175,26 @@ def quest_glyph(text, fill_top, fill_bottom, name):
     mi.save_tga(out, name)
 
 
+
+def steps_icon():
+    """Media/Card/steps(_32).tga: the card's Steps button, a timeline list
+    (a dot and a bar per row; the middle row, where you are, is bigger)."""
+    m = Image.new("L", (S, S), 0)
+    d = ImageDraw.Draw(m)
+    d.line((110, 120, 110, 392), fill=255, width=22)
+    for y, cur in ((150, False), (256, True), (362, False)):
+        r = 46 if cur else 34
+        d.ellipse((110 - r, y - r, 110 + r, y + r), fill=255)
+        d.rounded_rectangle((190, y - 26, 450 if cur else 400, y + 26), 26, fill=255)
+    img = Image.new("RGBA", (S, S), (255, 255, 255, 255))
+    img.putalpha(m)
+    save(img, "steps", 64)
+    save(img, "steps_32", 32)
+
+
 def main():
     arrows()
+    steps_icon()
     small_icons()
     yellow = ((255, 236, 110), (240, 168, 0))
     grey = ((214, 216, 222), (128, 130, 138))

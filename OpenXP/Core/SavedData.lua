@@ -22,7 +22,6 @@ local ACCOUNT_DEFAULTS = {
         fontOutline = "",
         skin = "midnight",         -- Settings > Guide card > Skin (UI/Style.lua)
         cardOpacity = 1,           -- the card's background: 0 (none) to 1 (the skin's own)
-        upNextMode = "show",       -- "show", "folded" (one line, click to open) or "hide"
         lockFrames = false,
         -- arrow
         arrowShown = true,
