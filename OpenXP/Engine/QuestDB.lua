@@ -196,6 +196,27 @@ end
 --- For a quest in a chain of quests with the same name (Call of Earth
 --- 94373, 94374, 94375): which part it is, 1-based, or nil when the quest
 --- before it has another name. Follows the "needs one of" quests back.
+--- Is `later` a later part of `id`'s same-name chain (its prereqs of the
+--- same name lead back to id)?
+function DB.IsLaterPart(id, later)
+    local name = DB.QuestName(id)
+    -- every same-name quest before `later` (one can need any of several:
+    -- Call of Earth 1517 follows 1516 or 1519)
+    local todo, seen = { later }, { [later] = true }
+    while #todo > 0 and #todo < 50 do
+        local cur = table.remove(todo)
+        local pre = DB.Prereqs(cur)
+        for _, p in ipairs(pre and (pre.any or pre.all) or {}) do
+            if p == id then return true end
+            if not seen[p] and DB.QuestName(p) == name then
+                seen[p] = true
+                todo[#todo + 1] = p
+            end
+        end
+    end
+    return false
+end
+
 function DB.ChainPart(id)
     local name = DB.QuestName(id)
     local part, cur, guard = 1, id, 0

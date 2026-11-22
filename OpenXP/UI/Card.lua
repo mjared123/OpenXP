@@ -267,10 +267,14 @@ local function WithPart(text, g, step)
     if not name or name == "" then return text end
     local part = QuestDB.ChainPart(g.quest) or 1
     if part == 1 and step then
+        -- only when a later part of this very chain is in the step: two
+        -- unrelated quests that share a name (one per race or class) aren't
+        local later = false
         for _, o in ipairs(step.goals or {}) do
-            if o.quest and o.quest ~= g.quest and QuestDB.QuestName(o.quest) == name then part = -1 break end
+            if o.quest and o.quest ~= g.quest and QuestDB.QuestName(o.quest) == name
+                and QuestDB.IsLaterPart(g.quest, o.quest) then later = true break end
         end
-        if part == -1 then part = 1 else return text end
+        if not later then return text end
     elseif part == 1 then
         return text
     end
