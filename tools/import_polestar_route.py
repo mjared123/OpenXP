@@ -105,7 +105,24 @@ def fix_bloodsail(out):
     steps[later:later] = [wild, turnins]
 
 
-ROUTE_FIXES = {"Horde": [fix_bloodsail]}
+def fix_fiora(out):
+    """GitHub #89 (Matt, 2026-11-23): Fiora Longears (1132) needs level 30;
+    30-33 Wetlands offered it on its first Menethil stop, where a level 29
+    player can't take it. The 32-33 guide's own Menethil stop picks it up."""
+    g = next((g for g in out if g["name"] == "30-33 Wetlands & Hillsbrad Foothills"), None)
+    if not g:
+        return
+    for st in g["steps"]:
+        goals = st["goals"]
+        for k, x in enumerate(goals):
+            if x.get(1) == "accept" and x.get("quest") == 1132:
+                start = k - 1 if k > 0 and goals[k - 1].get(1) == "goto" else k
+                end = k + 2 if k + 1 < len(goals) and goals[k + 1].get(1) == "target" else k + 1
+                del goals[start:end]
+                return
+
+
+ROUTE_FIXES = {"Horde": [fix_bloodsail], "Alliance": [fix_fiora]}
 
 
 def render(faction, guides_out, commit):
