@@ -87,7 +87,8 @@ print("-- auto-flight: the step's flight is taken when the map opens")
 do
     local game, OXP = newGame({ level = 23, map = 1440, x = 34.5, y = 48 })
     addGuide(OXP, FLY_GUIDE)
-    t.eq(OXP.settings.autoFlight, true, "on by default")
+    t.eq(OXP.settings.autoFlight, false, "off by default (Matt, 2.0.2)")
+    OXP.settings.autoFlight = true
     local said = {}
     local oldPrint = print
     print = function(msg) said[#said + 1] = tostring(msg) end
@@ -101,6 +102,7 @@ do
 
     -- Shift held while talking: you choose
     local game2, OXP2 = newGame({ level = 23, map = 1440, x = 34.5, y = 48 })
+    OXP2.settings.autoFlight = true
     addGuide(OXP2, FLY_GUIDE)
     IsShiftKeyDown = function() return true end
     game2:OpenTaxi(NODES)
@@ -109,12 +111,14 @@ do
 
     -- the destination isn't on this map (not learned yet): nothing
     local game3, OXP3 = newGame({ level = 23, map = 1440, x = 34.5, y = 48 })
+    OXP3.settings.autoFlight = true
     addGuide(OXP3, FLY_GUIDE)
     game3:OpenTaxi({ "Astranaar, Ashenvale", "Talrendis Point, Azshara" })
     t.eq(game3.tookTaxi, nil, "unknown destination: nothing taken")
 
     -- no fly step shown: nothing
     local game4, OXP4 = newGame({ level = 23, map = 1440, x = 34.5, y = 48 })
+    OXP4.settings.autoFlight = true
     addGuide(OXP4, { { { "goto", zone = "1440", x = 34, y = 48 }, { "accept", quest = 1010 } } })
     game4:OpenTaxi(NODES)
     t.eq(game4.tookTaxi, nil, "a step without a flight: the map is yours")

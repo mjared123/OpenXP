@@ -108,6 +108,32 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- 2.0.2: the 1.x automation settings 2.0.0 missed, once, never over a 2.0 change")
+do
+    local profile = { enableQuestAutomation = false, enableGossipAutomation = false, showFlightTimers = false,
+                      enableTargetFrame = false, enableMinimapButton = false }
+    local account = { settings = { profileKeys = { ["Tester - Test Realm"] = "Default" }, profiles = { Default = profile } } }
+    local _, OXP = login({ faction = "Alliance", race = "Human", class = "WARRIOR", level = 22, name = "Tester" }, nil, account)
+    local s = OXP.settings
+    t.eq(s.autoAccept, false, "quest automation off in 1.x: auto accept off")
+    t.eq(s.autoTurnIn, false, "and auto turn-in")
+    t.eq(s.skipGossip, false, "gossip automation off")
+    t.eq(s.flightTimer, false, "flight timer off")
+    t.eq(s.targetButton, false, "targets frame off (GitHub #84)")
+    t.eq(s.minimap.hide, true, "minimap button hidden")
+    t.eq(s.autoFlight, false, "auto-flight off (2.0.2's default)")
+    -- a 2.0.1 player who already imported and then changed a setting in 2.0
+    OXP.db.importedSettings2 = nil
+    s.skipGossip = false
+    OXP.Import.MissedSettings()
+    t.eq(s.skipGossip, false, "still off")
+    t.eq(OXP.db.importedSettings2 ~= nil, true, "marked done")
+    s.autoAccept = true
+    OXP.Import.MissedSettings()
+    t.eq(s.autoAccept, true, "runs only once")
+end
+
+------------------------------------------------------------------------
 print("-- mid dungeon guide")
 do
     local _, OXP, note = login({ faction = "Alliance", race = "Human", class = "PRIEST", level = 24 }, {

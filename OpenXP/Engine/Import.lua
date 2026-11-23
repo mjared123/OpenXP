@@ -107,6 +107,48 @@ function Import.Settings()
     return n > 0
 end
 
+-- 1.x settings 2.0.0 and 2.0.1 missed: 1.x called them enable* (true by
+-- default, so the profile only has them when turned off), and the importer
+-- above looked for an old disableQuestAutomation that 1.x profiles never
+-- had. Everyone who turned auto-flight off in 1.x got it back on in 2.0
+-- (CurseForge, 2026-11-23). 1.x key -> { 2.0 setting = value when the 1.x
+-- one was turned off }.
+local MISSED = {
+    enableQuestAutomation = { autoAccept = false, autoTurnIn = false, autoTurnInAny = false, autoReward = false },
+    enableFPAutomation = { autoFlight = false },
+    enableGossipAutomation = { skipGossip = false },
+    showFlightTimers = { flightTimer = false },
+    enableTargetFrame = { targetButton = false },
+}
+Import.MISSED = MISSED
+
+--- Once (2.0.2): the 1.x settings above, turned off in 1.x. Only over a
+--- 2.0 setting still at its default, so nothing changed in 2.0 is undone.
+function Import.MissedSettings()
+    local db = OXP.db
+    if db.importedSettings2 then return 0 end
+    db.importedSettings2 = OXP.version
+    local old = Import.OldProfile()
+    if not old then return 0 end
+    local s, defaults, n = OXP.settings, OXP.DEFAULT_SETTINGS, 0
+    for key, apply in pairs(MISSED) do
+        if old[key] == false then
+            for setting, value in pairs(apply) do
+                if s[setting] == defaults[setting] and s[setting] ~= value then
+                    s[setting] = value
+                    n = n + 1
+                end
+            end
+        end
+    end
+    -- the minimap button, hidden in 1.x
+    if old.enableMinimapButton == false and Table(s.minimap) and s.minimap.hide == false then
+        s.minimap.hide = true
+        n = n + 1
+    end
+    return n
+end
+
 ------------------------------------------------------------------------
 -- The character
 ------------------------------------------------------------------------
@@ -194,6 +236,8 @@ end
 
 OXP.OnLoaded(function()
     local ok, err = pcall(Import.Settings)
+    if not ok then OXP.report(err) end
+    ok, err = pcall(Import.MissedSettings)
     if not ok then OXP.report(err) end
 end)
 
