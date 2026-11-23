@@ -49,6 +49,8 @@ def build(conv, guides, faction):
     ip.CLASS_BEFORE = 60
     try:
         out = ip.build_faction(conv, guides, faction)
+        for fix in ROUTE_FIXES.get(faction, []):
+            fix(out)
     finally:
         ip.LAST.clear(); ip.LAST.update(saved[0])
         ip.HANDOFF.clear(); ip.HANDOFF.update(saved[1])
@@ -61,6 +63,49 @@ def build(conv, guides, faction):
     if dup:
         raise ip.ImportError_("two guides named %s" % ", ".join(sorted("%s <%s>" % d for d in dup)))
     return out
+
+
+def first_text(step):
+    for g in step["goals"]:
+        if g.get(1) == "text":
+            return g.get("text")
+
+
+def fix_bloodsail(out):
+    """GitHub #96 (Matt, 2026-11-23): in Horde 39-43 Stranglethorn the Wild
+    Shore fight (Bloodsail quests 41-43) came at step 6, at level 39. It and
+    its Booty Bay turn-ins move to the guide's second Booty Bay stop (after
+    the Mistvale / Nesingwary / Zul'Kunda loop, about 41-42); the quests are
+    still picked up on the first visit."""
+    g = next((g for g in out if g["name"] == "39-43 Stranglethorn Vale & Swamp of Sorrows"), None)
+    if not g:
+        return
+    steps = g["steps"]
+    shore = next(i for i, st in enumerate(steps) if first_text(st) == "The Wild Shore")
+    bay = shore + 1
+    assert first_text(steps[bay]) == "Booty Bay"
+    moved_quests = {587, 604, 576}
+    goals = steps[bay]["goals"]
+    keep, take = [goals[0]], [{1: "text", "text": "Booty Bay"},
+                              {1: "text", "text": "Back to Booty Bay with the Bloodsail charts, orders, snuff and Dizzy's Eye."}]
+    k = 1
+    while k < len(goals):
+        # a goto, its goal and its target travel together
+        group = [goals[k]]
+        while k + len(group) < len(goals) and goals[k + len(group)].get(1) not in ("goto",):
+            group.append(goals[k + len(group)])
+        q = next((x.get("quest") for x in group if x.get("quest")), None)
+        (take if q in moved_quests else keep).extend(group)
+        k += len(group)
+    steps[bay] = dict(steps[bay], goals=keep)
+    wild = steps.pop(shore)
+    later = next(i for i, st in enumerate(steps) if i > shore and any(
+        x.get("text", "").startswith("Head south to Booty Bay. Shaky") for x in st["goals"]))
+    turnins = {"goals": take}
+    steps[later:later] = [wild, turnins]
+
+
+ROUTE_FIXES = {"Horde": [fix_bloodsail]}
 
 
 def render(faction, guides_out, commit):

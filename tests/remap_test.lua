@@ -75,4 +75,27 @@ do
     t.eq(#where, 0, "no step needs a level well above its guide: " .. table.concat(where, "; "))
 end
 
+print("-- the Wild Shore fight comes on the second Booty Bay stop (GitHub #96)")
+do
+    local game = FakeWoW.New(ROOT, { faction = "Horde", race = "Troll", class = "WARRIOR", level = 39 })
+    local OXP = game:LoadAddon()
+    game:Login()
+    local g = OXP.Registry.Find("39-43 Stranglethorn Vale & Swamp of Sorrows", "OpenXP Leveling (Horde)")
+    local at = {}
+    for i, step in ipairs(g and g.steps or {}) do
+        for _, goal in ipairs(step) do
+            if goal[1] == "accept" and goal.quest == 604 then at.accept = i end
+            if goal[1] == "complete" and goal.quest == 604 and goal.obj == 1 then at.fight = i end
+            if goal[1] == "turnin" and goal.quest == 604 then at.turnin = i end
+            if goal[1] == "accept" and goal.quest == 348 then at.fever = i end
+            if goal[1] == "turnin" and goal.quest == 348 then at.feverIn = i end
+            if goal[1] == "complete" and goal.quest == 571 and not at.gorillas then at.gorillas = i end
+        end
+    end
+    t.ok(at.accept and at.gorillas and at.fight and at.accept < at.gorillas and at.gorillas < at.fight,
+        "picked up first, fought after the Mistvale loop")
+    t.ok(at.turnin and at.fight < at.turnin and at.turnin < at.feverIn, "turned in back in Booty Bay")
+    t.ok(at.fever and at.fever < at.feverIn, "Stranglethorn Fever still picked up before it's handed in")
+end
+
 return t.fails
