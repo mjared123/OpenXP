@@ -295,7 +295,7 @@ local PAGES = {
         Heading(p, L("Buttons"))
         Toggle(p, "itemButton", L("Quest item button"), L("Bind a key: Key Bindings > AddOns > OpenXP. Shift-drag to move."),
             function() OXP.ActionButtons.Refresh() end)
-        Toggle(p, "targetButton", L("Target button"), L("Targets the step's NPC or mob. Bind a key: Key Bindings > AddOns > OpenXP."),
+        Toggle(p, "targetButton", L("Targets list"), L("The mobs and NPCs the step needs, with portraits: click one to target it, or bind a key (Key Bindings > AddOns > OpenXP). Off: hidden, and that key does nothing."),
             function() OXP.ActionButtons.Refresh() end)
         Heading(p, L("Timers"))
         Toggle(p, "flightTimer", L("Flight timer"), L("How long until you land."))
