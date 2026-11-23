@@ -504,4 +504,29 @@ do
     t.eq(#game4.errors, 0, "no Lua errors: " .. table.concat(game4.errors, " | "))
 end
 
+print("-- objective pins for Forever's own quests: Spoils of War's timber and iron piles (QuestDB_Fill)")
+do
+    local game, OXP = newGame({ level = 22, map = 1437, x = 12, y = 53 })
+    OXP.settings.mapQuestIcons = "on"
+    local g = addGuide(OXP, {
+        { { "goto", zone = "Wetlands", x = 12, y = 53.3 },
+          { "complete", quest = 98197, obj = 1 },
+          { "goto", zone = "Wetlands", x = 11.4, y = 53 },
+          { "complete", quest = 98197, obj = 2 } },
+    }, "Spoils pins test")
+    OXP.Engine.Load(g.key)
+    game:Accept(98197, 2)
+    game.now = game.now + 1
+    local timber = OXP.QuestDB.ObjectiveSpawnsAll(98197, 1) or {}
+    local iron = OXP.QuestDB.ObjectiveSpawnsAll(98197, 2) or {}
+    t.ok(#timber >= 20 and #iron >= 20, "timber and iron pile spawns known: " .. #timber .. ", " .. #iron)
+    local mobs = pinsOf(OXP, "mob")
+    local cogs = 0
+    for _, p in ipairs(mobs) do
+        if tostring(p.icon):find("object", 1, true) and p.at[1] == 1437 then cogs = cogs + 1 end
+    end
+    t.ok(cogs > 0, "the piles get object (cog) icons on the Wetlands map: " .. cogs)
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
 return t.fails

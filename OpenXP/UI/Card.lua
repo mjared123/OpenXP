@@ -200,7 +200,7 @@ header.nav:SetHeight(22)
 header.nav:SetWidth(110)
 header.nav.icon = header.nav:CreateTexture(nil, "ARTWORK")
 header.nav.icon:SetTexture(TEX .. "steps_32")
-header.nav.icon:SetSize(12, 12)
+header.nav.icon:SetSize(16, 16) -- sized for the text in Card.SizeNav
 header.nav.icon:SetPoint("RIGHT", header.step, "LEFT", -5, 0)
 header.nav.label = header.step -- the counter is the button's text
 header.stepBtn = header.nav -- older code and tests know it by these names
@@ -216,8 +216,11 @@ function Card.PaintNav()
 end
 --- Size the button to the counter it covers (after the text or font changes).
 function Card.SizeNav()
+    local icon = math.floor(16 * Style.IconScale() + 0.5)
+    header.nav.icon:SetSize(icon, icon)
+    header.nav:SetHeight(math.max(22, icon + 6))
     local w = header.step:GetStringWidth() or 60
-    header.nav:SetWidth(math.floor(w + 12 + 5 + (PAD - 1) + 6 + 0.5))
+    header.nav:SetWidth(math.floor(w + icon + 5 + (PAD - 1) + 6 + 0.5))
 end
 header.nav:SetScript("OnClick", function() Card.ToggleStepList() end)
 header.nav:SetScript("OnEnter", function(self)
@@ -928,7 +931,9 @@ local function LayoutBlock(b, step, pos, first)
             line:SetPoint("RIGHT", b, "RIGHT", -PAD, 0)
             SetFont(line.text, 1)
             SetFont(line.count, 0)
-            line.text:SetWidth(textWidth - 20)
+            local markSize = math.floor(13 * Style.IconScale() + 0.5)
+            line.mark:SetSize(markSize, markSize)
+            line.text:SetWidth(textWidth - markSize - 7)
             local have, need = Text.Strip(data.text):match("(%d+)%s*/%s*(%d+)%s*$")
             have, need = tonumber(have), tonumber(need)
             if data.plain then
@@ -1322,6 +1327,7 @@ local function LayoutHeader(guide, current, total, detourStep, detourIndex)
     local need = math.ceil((Style.FontSize(-1) + Style.FontSize(-2)) * 1.2 + 16)
     header:SetHeight(math.max(HEADER_H, need))
     Card.SizeNav()
+    Style.SizeIcons()
     Card.PaintNav()
     Card.SetProgress(math.max(1, (Width() - 2) * frac))
 end

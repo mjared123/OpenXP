@@ -724,4 +724,29 @@ if io.open(ROOT .. "/OpenXP_Nav/Graphs/stonetalon_mountains.lua") then
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
+print("-- a leg nothing is baked for joins a baked walk to the spot (Wetlands: crocs to the dig site)")
+if io.open(ROOT .. "/OpenXP_Nav/Graphs/wetlands.lua") and io.open(ROOT .. "/OpenXP_Nav/Paths-Alliance.lua") then
+    local game, OXP = newGame({ level = 22 })
+    local NAV = { packed = {}, paths = {}, spots = {}, targets = {}, graveyards = {} }
+    assert(loadfile(ROOT .. "/OpenXP_Nav/Unpack.lua"))("OpenXP_Nav", NAV)
+    assert(loadfile(ROOT .. "/OpenXP_Nav/Graphs/wetlands.lua"))("OpenXP_Nav", NAV)
+    assert(loadfile(ROOT .. "/OpenXP_Nav/Paths-Alliance.lua"))("OpenXP_Nav", NAV)
+    OXP.WalkPaths.Use(NAV)
+    local key = "1437:15.77,46.39>1437:38.91,52.34"
+    t.ok(NAV.paths[key] == nil, "nothing baked from the crocolisks to Whelgar's Excavation Site")
+    local pts = OXP.WalkPaths.Between(1437, 15.77, 46.39, 1437, 38.91, 52.34)
+    t.ok(pts and #pts > 3 and pts[#pts][1] == 38.91, "a way there, ending on the spot")
+    local east, south = 0, 0
+    for _, p in ipairs(pts or {}) do
+        if p[1] > 42 then east = east + 1 end
+        if p[2] > 55 then south = south + 1 end
+    end
+    t.ok(east == 0 and south == 0, "up the north ramp, not round by Thelgen Rock (" .. east .. " east, " .. south .. " south)")
+    -- the graph alone still goes the long way: the join is what fixes it
+    local graph = OXP.WalkGraph.Route(NAV, 1437, 15.77, 46.39, 38.91, 52.34)
+    t.ok(graph and #graph > #pts, "SoupNav's graph alone is the longer way (" .. (graph and #graph or 0) .. " corners)")
+    OXP.WalkPaths.Use(nil)
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
 return t.fails

@@ -216,28 +216,6 @@ local function FlatLeg(map, pts, key)
     return { map = map, key = key, flat = flat, graph = true }
 end
 
-local function GraphLeg(target, key, px, py, inst)
-    if not (nav and nav.packed and OXP.WalkGraph) then return nil end
-    local cached = graphLeg.key == key and graphLeg.leg
-    if cached then
-        local _, _, d = Nearest({ cached }, px, py, inst)
-        if d <= NEAR then return cached end
-    end
-    local now = GetTime and GetTime() or 0
-    if graphLeg.key == key and now - graphLeg.at < GRAPH_AGAIN then return cached or nil end
-    graphLeg.key, graphLeg.at, graphLeg.leg = key, now, nil
-    local zx, zy = Places.ToZone(px, py, target.map)
-    if not zx then return nil end
-    local pts = OXP.WalkGraph.Route(nav, target.map, zx, zy, target.x, target.y)
-    graphLeg.leg = pts and FlatLeg(target.map, pts, "graph>" .. key) or nil
-    return graphLeg.leg
-end
-
--- The walk to `target` passing nearest (px, py): SoupEngine's baked walks
--- first; when none is baked to the spot or you're more than NEAR yards off
--- them, one worked out on SoupNav's graph from where you stand. Returns the
--- leg, the index of the next corner ahead on it, the distance to the walk
--- and the nearest point on it (world); nil when there's no walk at all.
 -- Of the walks to a spot, the ones that fit now: from a graveyard after a
 -- death, else the guide's own (the others are the fallback).
 local function Preferred(legs)
@@ -252,6 +230,78 @@ local function Preferred(legs)
     return pick, legs
 end
 
+-- The walk length of map points on `map`, in yards.
+local function Length(map, pts)
+    local d, lx, ly = 0, nil, nil
+    for _, p in ipairs(pts) do
+        local x, y = Places.ToWorld(map, p[1], p[2])
+        if not x then return huge end
+        if lx then d = d + Places.Distance(lx, ly, x, y) end
+        lx, ly = x, y
+    end
+    return d
+end
+
+-- A way from (ax, ay) to the spot (bx, by) on `map` (map %) that nothing is
+-- baked for, as points from a to b. SoupNav's graph alone can miss a ramp
+-- or a gap a baked walk to the same spot takes (Whelgar's Excavation Site
+-- from the Wetlands road: the graph went round by Thelgen Rock), so this
+-- also tries joining a baked walk to the spot where it passes nearest a
+-- (straight onto it when it's within NEAR yards, else along the graph to
+-- that point) and takes the shorter of the two.
+local function Unbaked(map, ax, ay, bx, by)
+    local graph = OXP.WalkGraph and nav and nav.packed and OXP.WalkGraph.Route(nav, map, ax, ay, bx, by) or nil
+    local joined
+    local legs = Preferred(LegsTo(map, bx, by))
+    local wx, wy, inst = Places.ToWorld(map, ax, ay)
+    if legs and wx then
+        local best, seg, d, jx, jy = Nearest(legs, wx, wy, inst)
+        local zx, zy
+        if best then zx, zy = Places.ToZone(jx, jy, map, true) end
+        if zx then
+            local head
+            if d <= NEAR then
+                head = { { ax, ay }, { zx, zy } }
+            elseif OXP.WalkGraph and nav.packed then
+                head = OXP.WalkGraph.Route(nav, map, ax, ay, zx, zy)
+            end
+            if head then
+                joined = {}
+                for _, p in ipairs(head) do joined[#joined + 1] = { p[1], p[2] } end
+                local flat = best.flat
+                for k = seg + 1, #best.wx do joined[#joined + 1] = { flat[k * 4 - 3], flat[k * 4 - 2] } end
+            end
+        end
+    end
+    if joined and graph then
+        return Length(map, joined) < Length(map, graph) and joined or graph
+    end
+    return joined or graph
+end
+WP.Unbaked = Unbaked
+
+local function GraphLeg(target, key, px, py, inst)
+    if not (nav and nav.packed and OXP.WalkGraph) then return nil end
+    local cached = graphLeg.key == key and graphLeg.leg
+    if cached then
+        local _, _, d = Nearest({ cached }, px, py, inst)
+        if d <= NEAR then return cached end
+    end
+    local now = GetTime and GetTime() or 0
+    if graphLeg.key == key and now - graphLeg.at < GRAPH_AGAIN then return cached or nil end
+    graphLeg.key, graphLeg.at, graphLeg.leg = key, now, nil
+    local zx, zy = Places.ToZone(px, py, target.map)
+    if not zx then return nil end
+    local pts = Unbaked(target.map, zx, zy, target.x, target.y)
+    graphLeg.leg = pts and FlatLeg(target.map, pts, "graph>" .. key) or nil
+    return graphLeg.leg
+end
+
+-- The walk to `target` passing nearest (px, py): SoupEngine's baked walks
+-- first; when none is baked to the spot or you're more than NEAR yards off
+-- them, one worked out on SoupNav's graph from where you stand. Returns the
+-- leg, the index of the next corner ahead on it, the distance to the walk
+-- and the nearest point on it (world); nil when there's no walk at all.
 local function Ahead(target, px, py, inst)
     if not (target and target.map and target.x and target.y and px) then return nil end
     local key = SpotKey(target.map, target.x, target.y)
@@ -324,10 +374,10 @@ function WP.Between(amap, ax, ay, bmap, bx, by)
         return out
     end
     if amap ~= bmap then return nil end
-    -- not baked: SoupNav's graph (Nav/WalkGraph.lua)
+    -- not baked: SoupNav's graph (Nav/WalkGraph.lua), or onto a baked walk
+    -- to b (Unbaked)
     if between[key] == nil then
-        local pts = OXP.WalkGraph and nav.packed and OXP.WalkGraph.Route(nav, amap, ax, ay, bx, by)
-        between[key] = pts or false
+        between[key] = Unbaked(amap, ax, ay, bx, by) or false
     end
     local pts = between[key]
     if not pts then return nil end

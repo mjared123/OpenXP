@@ -236,7 +236,10 @@ local function PaintRow(row, item, index, count)
     local node = NODE[status]
     local color = C[node[3]]
     row.node:SetTexture(TEX .. node[1])
-    row.node:SetSize(status == "current" and 16 or 14, status == "current" and 16 or 14)
+    local k = Style.IconScale()
+    local nodeSize = math.floor((status == "current" and 16 or 14) * k + 0.5)
+    row.node:SetSize(nodeSize, nodeSize)
+    row.mark:SetSize(math.floor(9 * k + 0.5), math.floor(9 * k + 0.5))
     Tint(row.node, color, (status == "todo") and 0.7 or 1)
     if node[2] then
         row.mark:SetTexture(TEX .. node[2])

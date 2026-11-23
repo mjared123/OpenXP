@@ -223,6 +223,22 @@ function Style.FontSize(offset)
     return (OXP.settings and OXP.settings.fontSize or 12) + (offset or 0)
 end
 
+--- How much bigger the card's icons are drawn: they grow with Settings >
+--- Text size above the default 12 (never smaller than their own size), so
+--- icons and text stay in step on a high-resolution screen.
+function Style.IconScale()
+    return math.max(1, Style.FontSize() / 12)
+end
+
+local iconButtons = {}
+--- Size the icon buttons' icons for the text size (Style.IconScale); a
+--- button stays 30 high, so its icon stops at 24.
+function Style.SizeIcons()
+    local k = Style.IconScale()
+    local size = math.min(math.floor(16 * k + 0.5), 24)
+    for _, btn in ipairs(iconButtons) do btn.icon:SetSize(size, size) end
+end
+
 --- Set the chosen font at the card's size (+offset).
 --- Set the chosen font at the card's size (+offset). Card text: in the
 --- Minimal skin (or with no background) it gets an outline so it reads on
@@ -346,6 +362,7 @@ function Style.IconButton(parent, icon, tip, onClick, label)
     btn.icon = btn:CreateTexture(nil, "ARTWORK")
     btn.icon:SetTexture(TEX .. icon)
     btn.icon:SetSize(16, 16)
+    iconButtons[#iconButtons + 1] = btn
     local function Idle(b)
         if label then Style.Tint(b.bg, C.blue, 0.16) else b.bg:SetVertexColor(1, 1, 1, 0) end
     end

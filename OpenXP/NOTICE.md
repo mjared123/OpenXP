@@ -249,9 +249,14 @@ tools/build_flights.py from World of Warcraft Classic Era client data tables
 
 When Questie is installed, OpenXP also asks its quest database, while the
 game runs, about anything Data/QuestDB.lua doesn't hold (Engine/QuestDB.lua).
-Apart from the quest facts the dungeon guides were written from, no Questie
-data is copied into OpenXP; forever-db, above, credits QuestieDB among its
-sources. In November 2026 the Questie maintainers confirmed to OpenXP that
+Apart from the quest facts the dungeon guides were written from and
+`Data/QuestDB_Fill.lua`, no Questie data is copied into OpenXP; forever-db,
+above, credits QuestieDB among its sources. `Data/QuestDB_Fill.lua` (since
+2.0.1) holds, for quest items forever-db gives no source for (Forever's own
+new quests above all), the NPCs and objects that drop them and their names
+and spawn points, taken from QuestieDB's Forever data (QuestieDB 1.1.4,
+https://github.com/Questie/QuestieDB) by tools/fill_from_questiedb.py, so
+the map can show where to loot them. Facts only, no code, text or art. In November 2026 the Questie maintainers confirmed to OpenXP that
 copying their data under GPL-3.0 is fine (this replaces the older "treat as all
 rights reserved" line in PoleStar's notice above, which is kept unchanged as
 PoleStar wrote it). The map's "!" and "?" quest icons (Media/Map/quest_*.tga)
