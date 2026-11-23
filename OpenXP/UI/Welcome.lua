@@ -17,6 +17,7 @@ Welcome.CHANGELOG = {
             "Map icons for Forever's new quests: loot piles, objects and mobs for about 220 quest objectives that had no icons before (Spoils of War's timber and iron in Menethil Harbor, for one).",
             "The route line no longer takes a long detour where no walking path was made for a leg (Whelgar's Excavation Site in the Wetlands went round by Thelgen Rock): it joins the walking path to that spot instead.",
             "The card's icons (the step list button, the buttons along the bottom and the step marks) now grow with Settings > Text size, and the step list button is as big as the others.",
+            "/oxp feedback has a new Support OpenXP section with a link to the Patreon. OpenXP stays free, and every feature is for everyone.",
         },
     },
     {
