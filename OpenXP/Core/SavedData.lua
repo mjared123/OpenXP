@@ -75,7 +75,7 @@ local ACCOUNT_DEFAULTS = {
         nameplateStepNumbers = false, -- "#12" beside nameplate markers
         autoLoot = false,
         maxCamera = false,
-        showQuestTracker = false,  -- off: Blizzard's and Questie's quest trackers are hidden (UI/QuestTracker.lua)
+        showQuestTracker = true,   -- off: Blizzard's and Questie's quest trackers are hidden (UI/QuestTracker.lua)
         minimap = { hide = false, angle = 200 },
     },
     paths = { areas = {}, passes = {}, off = false }, -- learned and recorded arrow paths (Nav/PathHints.lua)
@@ -129,6 +129,13 @@ OXP.OnLoaded(function()
     -- Test builds up to 2.0.0-dev could start with the card hidden and
     -- locked (1.x's "lock frames" and "hide the guide window" were copied
     -- over). Once: shown and unlocked; your own choices after that stay.
+    -- 2.0.0 and 2.0.1 hid the quest trackers (Blizzard's and Questie's) by
+    -- default, and players took it for a Questie conflict (GitHub #83, #92
+    -- to #95). Once: shown again; hiding it is a choice in Settings > Extras.
+    if (OpenXPDB.trackerFixed or 0) < 1 then
+        OpenXPDB.trackerFixed = 1
+        OXP.settings.showQuestTracker = true
+    end
     if (OpenXPDB.uiFixed or 0) < 1 then
         OpenXPDB.uiFixed = 1
         OXP.settings.lockFrames = false

@@ -311,7 +311,8 @@ local PAGES = {
         Toggle(p, "autoLoot", L("Auto loot"), nil, function() OXP.Tooltips.ApplyExtras(false) end)
         Toggle(p, "maxCamera", L("Zoom the camera out further"), nil, function() OXP.Tooltips.ApplyExtras(false) end)
         Toggle(p, "showQuestTracker", L("Show quest tracker"),
-            L("Blizzard's quest tracker, and Questie's if you use it. Off: both hidden, the card shows the step."))
+            L("Blizzard's quest tracker, and Questie's if you use it. Off: both hidden, the card shows the step."),
+            function() OXP.settings.questieTrackerMine = nil end) -- turned off here: Questie's goes too
         Toggle(p, "minimapShown", L("Minimap button"), L("Left-click: the card. Right-click: the menu."),
             function() OXP.MinimapButton.Refresh() end)
     end },

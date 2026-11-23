@@ -5,8 +5,10 @@ local FakeWoW = dofile(ROOT .. "/tests/lib/fakewow.lua")
 local t = FakeWoW.Checker("tracker")
 
 -- Blizzard's frames exist before any addon loads, like in the game
-local function newGame(setup)
-    local game = FakeWoW.New(ROOT, { level = 5 })
+local function newGame(setup, keepDefault)
+    -- these tests are about hiding: start as a player who turned it off
+    local saved = not keepDefault and { OpenXPDB = { trackerFixed = 1, settings = { showQuestTracker = false } } } or nil
+    local game = FakeWoW.New(ROOT, { level = 5 }, saved)
     if setup then setup(game) end
     local OXP = game:LoadAddon()
     game:Login()
@@ -44,6 +46,32 @@ end
 local function noQuestie() _G.Questie, _G.QuestieLoader = nil, nil end
 
 ------------------------------------------------------------------------
+print("-- 2.0.2: shown by default, and turned back on once (GitHub #83, #92-#95)")
+do
+    noQuestie()
+    local game, OXP = newGame(function(game)
+        local w = game.Widget("Frame", "QuestWatchFrame")
+        w.shown = true
+    end, true)
+    t.eq(OXP.settings.showQuestTracker, true, "on by default")
+    t.eq(QuestWatchFrame:IsShown(), true, "Blizzard's tracker stays up")
+    t.eq(OpenXPDB.trackerFixed, 1, "the one-time fix is marked done")
+end
+do
+    noQuestie()
+    -- hidden by 2.0.1's default
+    local game = FakeWoW.New(ROOT, { level = 5 }, { OpenXPDB = { settings = { showQuestTracker = false } } })
+    local OXP = game:LoadAddon()
+    game:Login()
+    t.eq(OXP.settings.showQuestTracker, true, "2.0.1's hidden tracker is turned back on once")
+    OXP.settings.showQuestTracker = false
+    local game2 = FakeWoW.New(ROOT, { level = 5 }, game:SavedVariables())
+    local OXP2 = game2:LoadAddon()
+    game2:Login()
+    t.eq(OXP2.settings.showQuestTracker, false, "hidden again by the player: stays hidden")
+end
+
+------------------------------------------------------------------------
 print("-- Classic's QuestWatchFrame: hidden by default, kept hidden, restored")
 do
     noQuestie()
@@ -54,7 +82,7 @@ do
         QuestWatch_Update = function() updates = updates + 1 end
     end)
     local w = QuestWatchFrame
-    t.eq(OXP.settings.showQuestTracker, false, "off by default")
+    t.eq(OXP.settings.showQuestTracker, false, "turned off")
     t.eq(w:IsShown(), false, "hidden at login")
     t.eq(w.alpha, 0, "and faded")
     w:Show() -- QuestWatch_Update showing it again
@@ -181,6 +209,15 @@ do
     t.eq(profile.trackerEnabled, true, "the player turned it on")
     game:Fire("PLAYER_LOGOUT")
     t.eq(profile.trackerEnabled, true, "kept")
+    -- and after a reload too (GitHub #93, #95: it went off again every login)
+    local saved = game:SavedVariables()
+    local tracker2, profile2 = fakeQuestie(true, true)
+    local game2 = FakeWoW.New(ROOT, { level = 5 }, saved)
+    local OXP2 = game2:LoadAddon()
+    game2:Login()
+    runDelayed(game2)
+    t.eq(profile2.trackerEnabled, true, "Questie's tracker left on after a reload")
+    t.eq(OXP2.settings.questieTrackerMine, true, "OpenXP remembers it's the player's")
     noQuestie()
 end
 

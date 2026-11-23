@@ -1,6 +1,7 @@
--- Quest tracker: the card and the arrow already say what to do, so by
--- default Blizzard's quest watch frame and Questie's tracker are hidden.
--- Settings > Extras > "Show quest tracker" puts back whatever was there.
+-- Quest tracker: shown by default (2.0.2; 2.0.0 and 2.0.1 hid it, GitHub
+-- #83, #92-#95). Settings > Extras > "Show quest tracker" off hides
+-- Blizzard's quest watch frame and Questie's tracker, since the card and the
+-- arrow already say what to do; on puts back whatever was there.
 --
 -- Blizzard's frame is never reparented or replaced: it is faded out and
 -- hidden, and an OnShow hook hides it again when Blizzard's own code shows
@@ -127,13 +128,18 @@ local function QuestieUpdate(tracker)
 end
 
 -- The player changing Questie's tracker themselves (its options or
--- "/questie tracker") wins: OpenXP lets go of it.
+-- "/questie tracker") wins: OpenXP lets go of it, and keeps its hands off
+-- Questie's tracker from then on (OXP.settings.questieTrackerMine), also
+-- after a reload, until "Show quest tracker" is turned off again.
 local function HookQuestie(tracker)
     if questie.hooked or type(hooksecurefunc) ~= "function" then return end
     questie.hooked = true
     for _, name in ipairs({ "Enable", "Disable", "Toggle" }) do
         if type(tracker[name]) == "function" then
-            hooksecurefunc(tracker, name, function() questie.held = false end)
+            hooksecurefunc(tracker, name, function()
+                questie.held = false
+                if OXP.settings then OXP.settings.questieTrackerMine = true end
+            end)
         end
     end
 end
@@ -157,7 +163,9 @@ function QT.ApplyQuestie()
         return
     end
     HookQuestie(tracker)
-    if QT.HideWanted() then
+    if QT.HideWanted() and OXP.settings.questieTrackerMine then
+        return -- the player turned Questie's tracker on or off themselves
+    elseif QT.HideWanted() then
         if not questie.held then
             questie.held = true
             questie.was = profile.trackerEnabled
