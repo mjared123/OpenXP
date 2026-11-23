@@ -1,0 +1,62 @@
+name: Report a bug
+description: Something is broken, or a guide step is wrong
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! If you opened this from the game (`/oxp feedback`), your version, guide and step are already filled in.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What went wrong, and what did you expect instead? For a guide problem, say which quest or NPC.
+      placeholder: "The arrow pointed at the wrong spot for ..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we make it happen again?
+      placeholder: |
+        1. Pick the guide ...
+        2. Go to step ...
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: OpenXP version
+      placeholder: "1.3.8"
+    validations:
+      required: true
+  - type: input
+    id: guide
+    attributes:
+      label: Guide
+      placeholder: "OpenXP 21-60: Alliance 21-30"
+  - type: input
+    id: step
+    attributes:
+      label: Step
+      placeholder: "42 of 180"
+  - type: input
+    id: character
+    attributes:
+      label: Character and zone
+      placeholder: "Human Warrior, level 23 in Ashenvale"
+  - type: dropdown
+    id: game
+    attributes:
+      label: Game version
+      options:
+        - WoW Forever
+        - Classic Era
+        - Other
+  - type: textarea
+    id: details
+    attributes:
+      label: Full bug details (optional)
+      description: In game, click "Full bug details" in the feedback window (or type `/oxp bugform`), copy everything and paste it here. Lua errors from BugSack are welcome too.
+      render: text

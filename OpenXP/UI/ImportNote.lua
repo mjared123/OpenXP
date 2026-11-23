@@ -12,7 +12,7 @@ local C = Style.C
 local f
 
 local function Build()
-    f = Style.Window("OpenXPImportNote", 420, 190, L("OpenXP 2.0"))
+    f = Style.Window("OpenXPImportNote", 420, 220, L("Welcome to OpenXP 2.0"))
     f.body = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     f.body:SetPoint("TOPLEFT", 18, -50)
     f.body:SetPoint("RIGHT", f, "RIGHT", -18, 0)
@@ -51,6 +51,7 @@ function Note.Text(r)
     local lines = { ("OpenXP 2.0: we moved you to %s."):format(where) }
     if r.smart then
         lines[#lines + 1] = L("2.0 has a new leveling route, so OpenXP picked your place from your quest log and finished quests.")
+        lines[#lines + 1] = L("Want to finish on the old route? OpenXP 1.3.66 is still under Files on CurseForge.")
     else
         lines[#lines + 1] = L("Same guide and step as in 1.x.")
     end
