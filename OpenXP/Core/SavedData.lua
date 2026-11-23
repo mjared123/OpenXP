@@ -136,6 +136,13 @@ OXP.OnLoaded(function()
         OpenXPDB.trackerFixed = 1
         OXP.settings.showQuestTracker = true
     end
+    -- 2.0.0 and 2.0.1 had auto-flight on by default, and players got
+    -- flown off the route. 2.0.2 defaults it off; once, it goes off for
+    -- players who already had 2.0 too. Turning it on again is their choice.
+    if (OpenXPDB.autoFlightFixed or 0) < 1 then
+        OpenXPDB.autoFlightFixed = 1
+        OXP.settings.autoFlight = false
+    end
     if (OpenXPDB.uiFixed or 0) < 1 then
         OpenXPDB.uiFixed = 1
         OXP.settings.lockFrames = false

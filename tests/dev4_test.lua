@@ -130,6 +130,17 @@ do
     game5:OpenTaxi(NODES)
     t.eq(game5.tookTaxi, nil, "off in settings")
     t.eq(#game.errors + #game2.errors + #game3.errors, 0, "no Lua errors")
+
+    -- a 2.0.0/2.0.1 player with auto-flight on: off once, then their choice
+    local old = FakeWoW.New(ROOT, { level = 23 }, { OpenXPDB = { settings = { autoFlight = true } } })
+    local OXPo = old:LoadAddon()
+    old:Login()
+    t.eq(OXPo.settings.autoFlight, false, "2.0.1's auto-flight is turned off once")
+    OXPo.settings.autoFlight = true
+    local again = FakeWoW.New(ROOT, { level = 23 }, old:SavedVariables())
+    local OXPa = again:LoadAddon()
+    again:Login()
+    t.eq(OXPa.settings.autoFlight, true, "turned on again by the player: stays on")
 end
 
 ------------------------------------------------------------------------
