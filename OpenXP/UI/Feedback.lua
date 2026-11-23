@@ -11,11 +11,13 @@ local C = Style.C
 
 local GITHUB = "https://github.com/mjared123/OpenXP"
 local CURSEFORGE = "https://www.curseforge.com/projects/1792509"
+local PATREON = "https://www.patreon.com/cw/Mjared/membership"
 Feedback.links = {
     bug = GITHUB .. "/issues/new?template=bug_report.yml",
     suggestion = GITHUB .. "/issues/new?template=suggestion.yml",
     comment = CURSEFORGE,
     rate = CURSEFORGE,
+    support = PATREON,
 }
 
 function Feedback.UrlEncode(s)
@@ -82,11 +84,13 @@ local SECTIONS = {
     { key = "suggestion", title = "Suggest something", text = "An idea for a feature, a better route or a quest the guide should add." },
     { key = "comment", title = "Leave a comment", text = "Say hi, ask a question or tell other players how OpenXP worked for you, on CurseForge." },
     { key = "rate", title = "Rate OpenXP", text = "Enjoying OpenXP? A rating on CurseForge helps other players find it." },
+    { key = "support", title = "Support OpenXP",
+      text = "OpenXP is free for everyone and always will be. If you'd like to help me keep building it, you can support me on Patreon. Thank you!" },
 }
 
 local f
 local function Build()
-    f = Style.Window("OpenXPFeedback", 460, 470, L("Feedback"))
+    f = Style.Window("OpenXPFeedback", 460, 564, L("Feedback"))
     local hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     hint:SetPoint("TOPLEFT", 16, -50)
     hint:SetPoint("RIGHT", f, "RIGHT", -16, 0)
@@ -125,5 +129,5 @@ function Feedback.Show()
     f:Show()
 end
 
-OXP.AddCommand("feedback", "report a bug, suggest something or rate OpenXP", Feedback.Show)
+OXP.AddCommand("feedback", "report a bug, suggest something, rate or support OpenXP", Feedback.Show)
 OXP.AddCommand("bug", nil, Feedback.Show)
