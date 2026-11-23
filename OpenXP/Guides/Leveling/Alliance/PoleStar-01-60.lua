@@ -4542,7 +4542,7 @@ OXP.AddGuides({
       },
       {
         { "text", text = "Stormwind flight master" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "goto", x = 71.29, y = 72.23, zone = "1453" },
         { "fp", name = "Stormwind", text = "Get the Stormwind flight path" },
         { "target", name = "Dungar Longdrink" },
@@ -6992,7 +6992,7 @@ OXP.AddGuides({
       },
       {
         { "text", text = "Stormwind flight master" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "goto", x = 71.29, y = 72.23, zone = "1453" },
         { "fp", name = "Stormwind", text = "Get the Stormwind flight path" },
         { "target", name = "Dungar Longdrink" },
@@ -9603,7 +9603,7 @@ OXP.AddGuides({
       },
       { only = "NightElf",
         { "text", text = "Stormwind flight master" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "goto", only = "NightElf", x = 71.29, y = 72.23, zone = "1453" },
         { "fp", name = "Stormwind", only = "NightElf", text = "Get the Stormwind flight path" },
         { "target", name = "Dungar Longdrink", only = "NightElf" },
@@ -12329,7 +12329,7 @@ OXP.AddGuides({
       },
       {
         { "text", text = "Stormwind flight master" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "goto", x = 71.29, y = 72.23, zone = "1453" },
         { "fp", name = "Stormwind", text = "Get the Stormwind flight path" },
         { "target", name = "Dungar Longdrink" },
@@ -17166,7 +17166,7 @@ OXP.AddGuides({
       },
       { only = "NightElf Druid/Skyborne Druid", when = { { "onquest", quests = { 272 } } },
         { "text", text = "Fly to Sentinel Hill" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "fly", inst = 0, name = "Sentinel Hill", text = "Fly to Sentinel Hill", wx = 1036.7, wy = -10628.9 },
       },
       { only = "NightElf Druid/Skyborne Druid", when = { { "onquest", quests = { 272 } } },
@@ -18166,7 +18166,7 @@ OXP.AddGuides({
       },
       {
         { "text", text = "Fly to Menethil Harbor" },
-        { "reach", text = "Stormwind City flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind City flight master", x = 71, y = 72.5, zone = "1453" },
         { "fly", inst = 0, name = "Menethil Harbor", text = "Fly to Menethil Harbor", wx = -783.3, wy = -3792.3 },
       },
       {
@@ -20143,7 +20143,7 @@ OXP.AddGuides({
     steps = {
       {
         { "text", text = "Fly to Menethil Harbor" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "fly", inst = 0, name = "Menethil Harbor", text = "Fly to Menethil Harbor", wx = -783.3, wy = -3792.3 },
       },
       {
@@ -21301,7 +21301,7 @@ OXP.AddGuides({
       },
       {
         { "text", text = "Fly to Darkshire" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "fly", inst = 0, name = "Darkshire", text = "Fly to Darkshire", wx = -1261.7, wy = -10515.5 },
       },
       {
@@ -23639,7 +23639,7 @@ OXP.AddGuides({
       },
       {
         { "text", text = "Fly to Darkshire" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "fly", inst = 0, name = "Darkshire", text = "Fly to Darkshire", wx = -1261.7, wy = -10515.5 },
       },
       {
@@ -24875,7 +24875,7 @@ OXP.AddGuides({
       },
       {
         { "text", text = "Fly to Lakeshire" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "fly", inst = 0, name = "Lakeshire", text = "Fly to Lakeshire", wx = -2231.4, wy = -9429.1 },
       },
       {
@@ -25001,7 +25001,7 @@ OXP.AddGuides({
       },
       {
         { "text", text = "Fly to Darkshire" },
-        { "reach", text = "Stormwind flight master", x = 66.3, y = 62.7, zone = "1453" },
+        { "reach", text = "Stormwind flight master", x = 71, y = 72.5, zone = "1453" },
         { "fly", inst = 0, name = "Darkshire", text = "Fly to Darkshire", wx = -1261.7, wy = -10515.5 },
       },
       {

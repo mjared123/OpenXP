@@ -55,9 +55,11 @@ def guides(text):
 def remap(old, new):
     sm = difflib.SequenceMatcher(None, old, new, autojunk=False)
     m = {}
-    for a, b, size in sm.get_matching_blocks():
-        for k in range(size):
-            m[a + k + 1] = b + k + 1
+    for op, a1, a2, b1, b2 in sm.get_opcodes():
+        # equal steps, and steps edited in place (a spot fixed): one to one
+        if op == "equal" or (op == "replace" and a2 - a1 == b2 - b1):
+            for k in range(a2 - a1):
+                m[a1 + k + 1] = b1 + k + 1
     full, nxt = [0] * len(old), len(new) + 1
     for i in range(len(old), 0, -1):
         if i in m:
@@ -81,6 +83,8 @@ def main(rev, version):
             if key not in new or steps == new[key]:
                 continue
             full = remap(steps, new[key]) + [len(new[key]) + 1]  # finished stays finished
+            if full == list(range(1, len(full) + 1)):
+                continue  # only edited in place: places don't move
             lines.append('        [%s] = { %s },' % (lua_str(key), ", ".join(map(str, full))))
             n += 1
     lines += ["    },", "}", ""]

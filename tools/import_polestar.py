@@ -164,9 +164,21 @@ class Names:
 # Goals
 # ---------------------------------------------------------------------------
 
+# Spots PoleStar has on the old Classic map where Forever's map differs:
+# (map, x, y) -> (x, y). Stormwind's flight master is at 66.3, 62.7 on the
+# Classic Stormwind map; Forever's Stormwind map (with the harbor) puts
+# Dungar Longdrink at 71.0, 72.5 (OpenXP's Forever quest data, NPC 352).
+# GitHub #82: the arrow and line led players onto a bridge.
+SPOT_FIXES = {
+    (1453, 66.3, 62.7): (71.0, 72.5),
+}
+
+
 def spot(goal):
     if goal.get("map") is not None and goal.get("x") is not None:
-        return {"zone": str(goal["map"]), "x": round(goal["x"], 2), "y": round(goal["y"], 2)}
+        x, y = round(goal["x"], 2), round(goal["y"], 2)
+        x, y = SPOT_FIXES.get((int(goal["map"]), round(x, 1), round(y, 1)), (x, y))
+        return {"zone": str(goal["map"]), "x": x, "y": y}
 
 
 class Converter:
