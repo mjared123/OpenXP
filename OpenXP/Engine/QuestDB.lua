@@ -126,7 +126,7 @@ local function Ender(ref, zone)
 end
 
 local raceBit
-local function ForPlayer(q)
+local function ForRace(q)
     if q and q.requiredRaceIds then
         local id = UnitRace and select(3, UnitRace("player"))
         if not id then return true end
@@ -143,6 +143,35 @@ local function ForPlayer(q)
     end
     if raceBit == 0 or not bit then return true end
     return bit.band(races, raceBit) ~= 0
+end
+
+-- Class-only quests (OpenXP's data: requiredClassIds, Questie: a
+-- requiredClasses bit mask). Without this a quest that follows "one of"
+-- several class versions (Burning Blade Medallion after Vile Familiars)
+-- could point you at another class's version.
+local classBit
+local function ForClass(q)
+    local id = UnitClass and select(3, UnitClass("player"))
+    if q and q.requiredClassIds then
+        if not id then return true end
+        for _, c in ipairs(q.requiredClassIds) do
+            if c == id then return true end
+        end
+        return false
+    end
+    local classes = q and (q.requiredClasses or 0) or 0
+    if classes == 0 then return true end
+    if not classBit then classBit = id and 2 ^ (id - 1) or 0 end
+    if classBit == 0 or not bit then return true end
+    return bit.band(classes, classBit) ~= 0
+end
+
+local function ForPlayer(q) return ForRace(q) and ForClass(q) end
+
+-- Is quest id one this character can do (unknown quests count as yes)?
+local function MineToDo(id)
+    local info = DB.Info(id)
+    return not info or ForPlayer(info.q)
 end
 
 local prereqCache, infoCache = {}, {}
@@ -298,7 +327,13 @@ function DB.Blocked(id)
         for _, q in ipairs(pre.any) do
             if TurnedIn(q) then ok = true break end
         end
-        if not ok then return pre.any[1] end
+        if not ok then
+            -- the one meant for you, when the others are for other classes
+            for _, q in ipairs(pre.any) do
+                if MineToDo(q) then return q end
+            end
+            return pre.any[1]
+        end
     end
     for _, q in ipairs(pre.all or {}) do
         if not TurnedIn(q) then return q end

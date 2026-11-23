@@ -450,6 +450,24 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- a quest after one of several class versions: your class's version")
+do
+    -- Burning Blade Medallion (794) follows either Vile Familiars: 792
+    -- (every class but Warlock) or 1499 (Warlock)
+    local _, OXPh = newGame({ level = 10, faction = "Horde", race = "Orc", class = "HUNTER" })
+    t.eq(OXPh.QuestDB.Blocked(794), 792, "hunter: blocked by the everyone-else Vile Familiars")
+    local hc = OXPh.QuestDB.Chain(794)
+    t.eq(hc[#hc], 792, "and that's the chain")
+    local _, OXP = newGame({ level = 10, faction = "Horde", race = "Orc", class = "WARLOCK" })
+    local DB = OXP.QuestDB
+    t.eq(DB.Blocked(794), 1499, "warlock: blocked by the Warlock Vile Familiars")
+    local chain = DB.Chain(794)
+    t.eq(chain[#chain], 1499, "and the chain leads through that one")
+    -- Boughs in the Wind (93797) needs a Mage-only quest: a warlock can't, still blocked
+    t.eq(DB.Blocked(93797), 93791, "no version for your class: still blocked")
+end
+
+------------------------------------------------------------------------
 print("-- OpenXP's own quest data (forever-db)")
 do
     local _, OXP = newGame({ level = 1 })

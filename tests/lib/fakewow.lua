@@ -325,7 +325,10 @@ function Game:InstallGlobals()
     UnitName = function() return game.player.name end
     UnitFactionGroup = function() return game.player.faction, game.player.faction end
     UnitRace = function() return game.player.race, game.player.race end
-    UnitClass = function() return game.player.class, game.player.class end
+    UnitClass = function()
+        local ids = { WARRIOR = 1, PALADIN = 2, HUNTER = 3, ROGUE = 4, PRIEST = 5, SHAMAN = 7, MAGE = 8, WARLOCK = 9, DRUID = 11 }
+        return game.player.class, game.player.class, ids[game.player.class]
+    end
     UnitLevel = function() return game.player.level end
 
     -- Quest log
