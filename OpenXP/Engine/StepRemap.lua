@@ -33,11 +33,21 @@ function Remap.Apply(data, char)
     for key, save in pairs(type(char.guides) == "table" and char.guides or {}) do
         local map = data.guides[key]
         if map and type(save) == "table" then
+            local was = save.step
             if type(save.step) == "number" then
                 save.step = map[save.step] or map[#map] or save.step
             end
             save.skipped = Move(save.skipped, map)
             save.status = Move(save.status, map)
+            -- steps that moved in behind your place (a class step now at its
+            -- level): marked jumped, so /oxp catchup lists them
+            if type(was) == "number" and type(save.step) == "number" then
+                local old = {}
+                for i = 1, #map - 1 do old[map[i]] = true end
+                for j = 1, save.step - 1 do
+                    if not old[j] and save.status[j] == nil then save.status[j] = "jumped" end
+                end
+            end
             n = n + 1
         end
     end

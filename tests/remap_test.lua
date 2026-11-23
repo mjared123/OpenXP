@@ -11,7 +11,7 @@ do
     local OXP = game:LoadAddon()
     game:Login()
     local R = OXP.StepRemapper
-    local data = { version = 99, guides = { G = { 1, 2, 2, 3, 5, 6 } } } -- old 3 went elsewhere, 2 steps added
+    local data = { version = 99, guides = { G = { 1, 2, 2, 3, 5, 6 } } } -- old 3 went elsewhere, new 4 added
     local char = { guides = { G = { step = 4, skipped = { [2] = true, [3] = true }, status = { [4] = "chain", [5] = "jumped" } },
                               Other = { step = 7, skipped = {} } } }
     t.eq(R.Apply(data, char), 1, "one guide moved")
@@ -19,8 +19,14 @@ do
     t.eq(s.step, 3, "the saved step follows its step")
     t.ok(s.skipped[2] == true and s.skipped[3] == nil, "skips follow (a gone step folds into the next)")
     t.eq(s.status[3], "chain", "statuses follow")
+    local d2 = { version = 99, guides = { H = { 1, 3, 4, 5 } } } -- a step added at 2
+    local c2 = { guides = { H = { step = 3, skipped = {}, status = {} } } }
+    R.Apply(d2, c2)
+    t.eq(c2.guides.H.step, 4, "place moves past the new step")
+    t.eq(c2.guides.H.status[2], "jumped", "a new step behind you is marked jumped (shows in /oxp catchup)")
     t.eq(s.status[5], "jumped", "and later ones")
     t.eq(char.guides.Other.step, 7, "guides that didn't move are left alone")
+    t.eq(s.status[4], nil, "a new step ahead of you isn't marked")
     s.step = 6
     t.eq(R.Apply(data, char), 0, "only once")
     t.eq(s.step, 6, "not moved twice")
