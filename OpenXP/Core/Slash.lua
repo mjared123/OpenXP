@@ -32,7 +32,9 @@ end
 
 SLASH_OPENXP1 = "/oxp"
 SLASH_OPENXP2 = "/openxp"
-SlashCmdList = SlashCmdList or {}
+-- Only add a field: assigning the SlashCmdList global itself (even to the
+-- same table) taints it, and every slash command typed after that runs
+-- tainted, so protected ones like /ginvite get blocked (GitHub #99, #100).
 SlashCmdList.OPENXP = function(msg) OXP.RunCommand(msg) end
 
 OXP.AddCommand("perf", "time each part of OpenXP (/oxp perf, then /oxp perf again to see it)", function(rest)
