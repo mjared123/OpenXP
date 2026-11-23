@@ -257,6 +257,34 @@ end
 OXP.On("PLAYER_ENTERING_WORLD", settleLonger)
 OXP.On("QUEST_LOG_UPDATE", settleLonger)
 
+-- A restored step that is already done and only asks you to be somewhere
+-- (a dock, a checkpoint, a flight master) can't change live any more: its
+-- goals stay done. Walking away from where you stood once things settled
+-- (RESTORE_WALK yards, or another continent: the boat left) is the live
+-- change that lets it move on. In game, a restart on Auberdine's dock left
+-- "DONE: Boat to Menethil Harbor" on the card for the whole boat ride.
+local RESTORE_WALK = 15
+
+local function onlyPlacesDone(step)
+    if not step or #step.goals == 0 then return false end
+    for _, goal in ipairs(step.goals) do
+        local state = Goals.State(goal, step.marks)
+        if state == "todo" then return false end
+        if state == "done" and not Goals.IsPositional(goal[1]) then return false end
+    end
+    return true
+end
+
+local function walkedAway(r)
+    local px, py, inst = OXP.Places.Player()
+    if px == nil then return false end
+    if not r.spot then
+        r.spot = { px, py, inst }
+        return false
+    end
+    return inst ~= r.spot[3] or OXP.Places.Distance(px, py, r.spot[1], r.spot[2]) > RESTORE_WALK
+end
+
 -- True while the restored step is to stay where it is.
 local function restoreHolds()
     local r = run.restored
@@ -270,7 +298,7 @@ local function restoreHolds()
         r.sig = sig
         return true
     end
-    if sig ~= r.sig then
+    if sig ~= r.sig or (onlyPlacesDone(run.steps[run.pos]) and walkedAway(r)) then
         run.restored = nil
         return false
     end

@@ -535,4 +535,56 @@ do
     t.eq(#game3.errors, 0, "no Lua errors: " .. table.concat(game3.errors, " | "))
 end
 
+
+do
+    -- In game (2.0.0-dev7): WoW restarted on Auberdine's dock left the card on
+    -- "DONE: Boat to Menethil Harbor" for the whole boat ride: the restored
+    -- step was already done, so nothing could change live to let it go.
+    local steps = {
+        { { "accept", quest = 310 } },
+        { { "text", text = "Boat to Menethil Harbor" },
+          { "reach", text = "Boat to Menethil Harbor", x = 32.4, y = 43.8, zone = "1439" } },
+        { { "goto", x = 9.49, y = 59.69, zone = "1437" }, { "accept", quest = 311 } },
+    }
+    local game, OXP = newGame({ level = 22, race = "NightElf", map = 1439, x = 40, y = 60 })
+    game:Login()
+    local g = addGuide(OXP, steps, { name = "Dock relog" })
+    OXP.Engine.Load(g.key)
+    game:Accept(310, 0)
+    t.eq(OXP.Engine.GetPosition(), 2, "on the boat step")
+    local function copy(v)
+        if type(v) ~= "table" then return v end
+        local out = {}
+        for k, x in pairs(v) do out[k] = copy(x) end
+        return out
+    end
+    local saved = copy(game:SavedVariables())
+    local function relog(x, y)
+        local g2, O2 = newGame({ level = 22, race = "NightElf", map = 1439, x = x, y = y }, copy(saved))
+        O2.AddGuides({ file = "test", { name = "Dock relog", group = "Test", steps = steps } })
+        g2.completed = game.completed
+        g2.log = game.log
+        g2:Login()
+        return g2, O2
+    end
+    local game2, OXP2 = relog(32.4, 43.8) -- logged in on the dock
+    for _ = 1, 8 do game2:Advance(1) end
+    t.eq(OXP2.Engine.GetPosition(), 2, "restored on the dock: the boat step stays shown")
+    game2:MoveTo(1439, 32.45, 43.85) -- a few steps along the pier
+    for _ = 1, 3 do game2:Advance(1) end
+    t.eq(OXP2.Engine.GetPosition(), 2, "a few steps on the pier: still there")
+    game2:MoveTo(1439, 31.0, 44.5) -- the boat pulls out
+    for _ = 1, 2 do game2:Advance(1) end
+    t.eq(OXP2.Engine.GetPosition(), 3, "the boat leaves: on to Menethil Harbor")
+    t.eq(#game2.errors, 0, "no Lua errors: " .. table.concat(game2.errors, " | "))
+
+    -- logged in away from the dock: walking there still moves on as before
+    local game3, OXP3 = relog(40, 60)
+    for _ = 1, 8 do game3:Advance(1) end
+    t.eq(OXP3.Engine.GetPosition(), 2, "restored away from the dock: boat step")
+    game3:MoveTo(1439, 32.4, 43.8)
+    for _ = 1, 2 do game3:Advance(1) end
+    t.eq(OXP3.Engine.GetPosition(), 3, "at the dock: on to Menethil Harbor")
+end
+
 return t.fails

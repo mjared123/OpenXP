@@ -8,6 +8,7 @@ Writes
                                   in so they read on snow)
   OpenXP/Media/Card/ring_thin.tga a thin dial ring
   OpenXP/Media/Card/glow.tga      a soft round glow
+  OpenXP/Media/Card/arrive_glow.tga  the arrow's soft halo when you arrive
   OpenXP/Media/Card/history.tga   the card's step list button
   OpenXP/Media/Card/skip.tga      the "skipped" mark in the step list
   OpenXP/Media/Card/more.tga      the card's menu button (three dots)
@@ -101,14 +102,33 @@ def arrows():
     save(shaped(lambda d: rounded_poly(d, [(C, 14), (C + 62, 104), (C - 62, 104)], 10), edge=14),
          "arrow_orbit")
 
-    # thin ring and a soft glow
+    # thin ring
     ring = mi.layer()
     ImageDraw.Draw(ring).ellipse((24, 24, S - 24, S - 24), outline=(255, 255, 255, 255), width=14)
     save(ring, "ring_thin")
-    gm = mi.disc_mask(236).filter(ImageFilter.GaussianBlur(40))
-    glow = Image.new("RGBA", (S, S), (255, 255, 255, 255))
-    glow.putalpha(gm.point(lambda v: v * 200 // 255))
-    save(glow, "glow")
+
+
+def white_from(mask, peak):
+    """A white texture whose alpha is `mask` scaled so its brightest point is
+    `peak` (0-255)."""
+    top = max(mask.getextrema()[1], 1)
+    img = Image.new("RGBA", (S, S), (255, 255, 255, 255))
+    img.putalpha(mask.point(lambda v: min(255, v * peak // top)))
+    return img
+
+
+def glows():
+    # glow: a soft round glow. The blurred disc has to fade to nothing well
+    # inside the square: 2.0.0-dev3's (radius 236, blur 40) still had a
+    # third of its alpha at the edges, so in game it showed as a blurry square.
+    gm = mi.disc_mask(120).filter(ImageFilter.GaussianBlur(46))
+    save(white_from(gm, 200), "glow")
+    # arrive_glow: the arrow's "you're there" halo, a soft ring lying on the
+    # dial's ring (drawn at 1.7x the dial, so the ring is at 151 of 256) and
+    # fading out both ways, leaving the check mark clear
+    rm = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(rm).ellipse((C - 151, C - 151, C + 151, C + 151), outline=255, width=28)
+    save(white_from(rm.filter(ImageFilter.GaussianBlur(22)), 235), "arrive_glow")
 
 
 def small_icons():
@@ -208,6 +228,7 @@ def more_icon():
 
 def main():
     arrows()
+    glows()
     steps_icon()
     more_icon()
     small_icons()

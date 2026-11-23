@@ -12,6 +12,13 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.0-dev8", date = "2026-11",
+        changes = {
+            "The arrow's \"you're there\" glow is a soft round halo on its ring again, in every skin and arrow style: no more blurry green square behind the check mark.",
+            "Logging in or restarting the game on a dock, flight master or other checkpoint you'd already reached no longer leaves \"DONE\" on the card: once you move off (the boat pulls out, you walk on) it goes on to the next step.",
+        },
+    },
+    {
         version = "2.0.0-dev7", date = "2026-11",
         changes = {
             "The arrow and the route line on the map and minimap no longer send you back to a waypoint you've passed. Once you've done what a waypoint was for (picked up the quest from across the room, turned it in, killed or looted what it asked), they go straight on to the next thing still to do, also after a /reload. A waypoint you still need stays until it's done.",
