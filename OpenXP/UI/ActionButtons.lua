@@ -425,6 +425,30 @@ local function StepItems(step, out)
     end
 end
 
+-- A usable quest item in your bags for one of `quests` (the game says which
+-- quest an item is for): id, quest or nil. Like 1.x's item buttons, for
+-- quests whose step doesn't name the item (2.0.2, CurseForge).
+local function BagQuestItem(quests)
+    local info = C_Container and C_Container.GetContainerItemQuestInfo or _G.GetContainerItemQuestInfo
+    local slots = (C_Container and C_Container.GetContainerNumSlots) or _G.GetContainerNumSlots
+    local idAt = (C_Container and C_Container.GetContainerItemID) or _G.GetContainerItemID
+    local spell = (C_Item and C_Item.GetItemSpell) or _G.GetItemSpell
+    if not (info and slots and idAt and spell) then return nil end
+    for bag = 0, 4 do
+        for slot = 1, (slots(bag) or 0) do
+            local id = idAt(bag, slot)
+            if id then
+                local a, b = info(bag, slot)
+                local questID
+                if type(a) == "table" then questID = a.questID else questID = b end -- C_Container: a table
+                questID = Readable(questID)
+                if questID and quests[questID] and spell(id) then return id, questID end
+            end
+        end
+    end
+end
+Buttons.BagQuestItem = BagQuestItem
+
 --- The item to put on the item button: id (and the quest it's for) or nil.
 --- Only an item you carry, and only while what it's for is still open.
 function Buttons.WantedItem()
@@ -458,6 +482,12 @@ function Buttons.WantedItem()
                 if id and (not done or showWhenComplete) and (GetItemCount(id) or 0) > 0 then return id, questID end
             end
         end
+        local open = {}
+        for q in pairs(quests) do
+            if not (OXP.Quests.IsComplete and OXP.Quests.IsComplete(q)) then open[q] = true end
+        end
+        local id, q = BagQuestItem(open)
+        if id then return id, q end
     end
 end
 
@@ -750,8 +780,42 @@ OXP.On("PLAYER_TARGET_CHANGED", function()
     item.rangeWait = 0
     Buttons.UpdateRange()
 end)
-OXP.On("GET_ITEM_INFO_RECEIVED", function(_, id) if id and id == item.itemID then Buttons.PaintItem() end end)
+-- an item's name arrives: a "Use <item>" line found by name can match now
+-- (before 2.0.2 the button only showed once something else refreshed it)
+OXP.On("GET_ITEM_INFO_RECEIVED", function(_, id)
+    if id and id == item.itemID then Buttons.PaintItem() end
+    Soon()
+end)
+
+-- 1.x's key binds (its item and target buttons had other names): moved to
+-- these buttons once, when they have no key of their own yet.
+local OLD_BINDS = {
+    ["CLICK RXPItemFrameButton1:LeftButton"] = ITEM_BINDING,
+    ["CLICK OpenXPTargetMobs:LeftButton"] = "CLICK OpenXPTargetButton:LeftButton",
+}
+Buttons.OLD_BINDS = OLD_BINDS
+function Buttons.CarryOldBindings()
+    if not (GetBindingKey and SetBinding and SaveBindings) or InCombat() then return false end
+    local db = OXP.db
+    if not db or db.oldBindsMoved then return false end
+    db.oldBindsMoved = true
+    local moved = false
+    for old, new in pairs(OLD_BINDS) do
+        if not GetBindingKey(new) then
+            local keys = { GetBindingKey(old) }
+            for _, key in ipairs(keys) do
+                if type(key) == "string" and SetBinding(key, new) then moved = true end
+            end
+        end
+    end
+    if moved then
+        SaveBindings(GetCurrentBindingSet and GetCurrentBindingSet() or 1)
+        Buttons.PaintKey()
+    end
+    return moved
+end
 OXP.OnReady(function()
     Buttons.Place()
     Buttons.Refresh()
+    pcall(Buttons.CarryOldBindings)
 end)
