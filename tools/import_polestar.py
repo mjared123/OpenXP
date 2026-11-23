@@ -567,24 +567,45 @@ def merge_class_quests(conv, guides, faction, out, race_guides, shared):
             if not (want - have):
                 conv.class_covered.append((faction, race, cg["id"]))
                 continue
-            target = cg["minLevel"] + 1
-            where = next((gid for gid in route if out[gid]["maxLevel"] >= target), route[-1])
-            if where in placed:
-                continue
-            placed.add(where)
-            g = out[where]
-            n = len(g["steps"])
-            span = max(1, g["maxLevel"] - g["minLevel"])
-            at = n if target > g["maxLevel"] else max(1, min(n, round((target - g["minLevel"]) / span * n)))
             new = []
             title_step = {"goals": [{1: "text", "text": "Class quest: %s" % cg["title"]}], "only": CLASS_WORD[cls]}
             for st in lst(cg.get("steps")):
                 s = conv.convert_step(st, cg.get("names"), cg["id"], CLASS_WORD[cls])
                 if s:
                     new.append(s)
-            if new:
-                new[0]["goals"] = title_step["goals"] + new[0]["goals"]
-                g["steps"][at:at] = new
+            if not new:
+                continue
+            new[0]["goals"] = title_step["goals"] + new[0]["goals"]
+            # Each step goes where the route reaches its level (2.0.2, GitHub
+            # #90): a step's level is its own "Reach level" gate, never below
+            # the step before it, so the chain keeps its order. Before, the
+            # whole chain went in at its first level (Storm, Earth, and Fire's
+            # 36-38 totems in Hillsbrad 29-33).
+            level, parts = cg["minLevel"] + 1, []
+            for s in new:
+                gates = [g["level"] for g in s["goals"] if g.get(1) == "xp" and g.get("level")]
+                level = max([level] + gates)
+                if parts and parts[-1][0] == level:
+                    parts[-1][1].append(s)
+                else:
+                    parts.append((level, [s]))
+            # where each part goes: the first route guide that reaches its level
+            homes = []
+            for target, steps in parts:
+                where = next((gid for gid in route if out[gid]["maxLevel"] >= target), route[-1])
+                if homes and homes[-1][0] == where:
+                    homes[-1][2].extend(steps)
+                else:
+                    homes.append((where, target, list(steps)))
+            for where, target, steps in homes:
+                if (where, cg["id"], target) in placed:
+                    continue
+                placed.add((where, cg["id"], target))
+                g = out[where]
+                n = len(g["steps"])
+                span = max(1, g["maxLevel"] - g["minLevel"])
+                at = n if target > g["maxLevel"] else max(1, min(n, round((target - g["minLevel"]) / span * n)))
+                g["steps"][at:at] = steps
                 conv.class_merged.append((faction, cg["id"], g["name"]))
 
 

@@ -38,6 +38,8 @@ Engine\QuestDB.lua
 Engine\Goals.lua
 Engine\Registry.lua
 Engine\Import.lua
+Data\StepRemap.lua
+Engine\StepRemap.lua
 Engine\Runner.lua
 Engine\SmartStart.lua
 
