@@ -12,6 +12,19 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.2", date = "2026-11",
+        changes = {
+            "/ginvite and other protected slash commands work again with OpenXP on.",
+            "The quest tracker (Blizzard's and Questie's) is shown again by default, and Questie's tracker stays the way you set it. Hide them in Settings > Extras.",
+            "Your 1.x quest, gossip, flight timer, targets and minimap button settings now come over too. Auto-flight is off by default (turn it on in Settings > Automation).",
+            "Class quests now sit in the guide where you reach their level, instead of all at the start of the chain (no more level 36 quests in Hillsbrad at 29).",
+            "The arrow plans trips again (flights, boats, hearth) when no walking path leads to the next zone.",
+            "The quest item button finds quest items in your bags, updates as soon as the game knows the item, and keeps your 1.x key binding.",
+            "Stormwind's flight master is marked in the right place. Horde Stranglethorn: the Bloodsail fight is on the second Booty Bay stop. Alliance Wetlands: no early Fiora Longears pickup.",
+            "Settings: 'Target button' is now 'Targets list'. Quest chains pick the quest meant for your class. No more errors from units whose names the game hides.",
+        },
+    },
+    {
         version = "2.0.1", date = "2026-11",
         changes = {
             "Map icons for Forever's new quests: loot piles, objects and mobs for about 220 quest objectives that had no icons before (Spoils of War's timber and iron in Menethil Harbor, for one).",
