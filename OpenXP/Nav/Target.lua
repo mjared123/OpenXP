@@ -181,6 +181,23 @@ local current
 --- The point the arrow shows now (see the top of this file), or nil.
 function Target.Current() return current end
 
+local leg = {}
+
+--- With SoupEngine's walks (BAKED_ONLY): the first leg of a trip to `base`
+--- when it's in another zone and you're not on a baked walk to it, as an
+--- arrow target with zone x, y (so SoupNav's graph can walk you there); nil
+--- when the arrow can go as it is.
+function Target.TripLeg(base)
+    if not (base and base.map and OXP.Travel.IsOn()) then return nil end
+    if OXP.WalkPaths.OnWalk(base) then return nil end
+    local trav = OXP.Travel.ArrowTarget(base)
+    if not (trav and trav.map) then return nil end
+    leg.wx, leg.wy, leg.instance, leg.map = trav.wx, trav.wy, trav.instance, trav.map
+    leg.x, leg.y = OXP.Places.ToZone(trav.wx, trav.wy, trav.map)
+    leg.title, leg.travel, leg.real = trav.title, true, base
+    return leg
+end
+
 --- Work the arrow's point out again. Returns it (or nil).
 function Target.Update()
     if BAKED_ONLY then
@@ -191,6 +208,19 @@ function Target.Update()
         end
         -- a kill/loot step once you're there: "In the area", or straight at
         -- the named mob or chest it needs (Nav/Areas.lua)
+        -- the spot is in another zone and no baked walk leads there from
+        -- here (after a smart start, a hearth, a guide picked elsewhere):
+        -- the trip planner's first leg, the flight master, dock or tram,
+        -- walked to on SoupEngine's zone graph (2.0.2; before, the arrow
+        -- pointed straight across the world, CurseForge 2026-11-23)
+        local trav = Target.TripLeg(base)
+        if trav then
+            current = OXP.WalkPaths.ForArrow(trav) or trav
+            current.title = trav.title
+            current.real = base
+            current.focus = nil
+            return current
+        end
         local focus = not Target.override and base.step and OXP.Areas.Focus(base.step, base.title)
         if focus and focus.inside then
             current = focus

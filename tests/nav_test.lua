@@ -228,6 +228,25 @@ do
     -- the flight masters you see on the taxi map are remembered
     t.ok(OXP.Travel.Masters()["Darkshire, Duskwood"], "the flight master you talk to is recorded")
     t.ok(OXP.World.KnowsFlightPath("Menethil Harbor"), "known flight paths from the taxi map")
+
+    -- 2.0.2: the SoupEngine arrow takes the trip too when no baked walk
+    -- leads to a step in another zone (it pointed straight across before)
+    game:MoveTo(1431, 76, 44)
+    OXP.Travel.Reset()
+    game.now = game.now + 10
+    local g = addGuide(OXP, { { { "goto", zone = "Wetlands", x = 40, y = 40 }, { "accept", quest = 520 } } })
+    OXP.Engine.Load(g.key)
+    local aim = OXP.Target.Update()
+    t.ok(aim and aim.title and aim.title:find("Fly to Menethil Harbor", 1, true),
+        "the arrow heads for the flight master: " .. tostring(aim and aim.title))
+    t.ok(aim and aim.real and aim.real.map == 1437, "on the way to the Wetlands step")
+    OXP.settings.travel = false
+    OXP.Travel.Reset()
+    game.now = game.now + 10
+    aim = OXP.Target.Update()
+    t.ok(aim and not (aim.title or ""):find("Fly to", 1, true), "trips off in settings: straight at the step")
+    OXP.settings.travel = true
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
 ------------------------------------------------------------------------

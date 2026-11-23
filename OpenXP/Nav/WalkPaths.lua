@@ -393,6 +393,15 @@ end
 --- there's no walk or the spot itself is within LOOK yards along it.
 local LOOK = 18 -- yards along the walk ahead of you
 
+--- Are you on (within NEAR yards of) a baked SoupEngine walk to `target`?
+--- A walk worked out on SoupNav's zone graph doesn't count.
+function WP.OnWalk(target)
+    if not nav then return false end
+    local px, py, inst = Places.Player()
+    local best, _, d = Ahead(target, px, py, inst)
+    return best ~= nil and not best.graph and (d or huge) <= NEAR
+end
+
 function WP.Carrot(target, px, py, inst)
     local best, _, d, bx, by, seg = Ahead(target, px, py, inst)
     if not best then return nil end

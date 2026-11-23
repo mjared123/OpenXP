@@ -236,8 +236,8 @@ local PAGES = {
     -- SoupEngine test build (Nav/Target.lua BAKED_ONLY): the arrow and the
     -- route line only follow SoupEngine's baked walks, so the trip and route
     -- style settings are hidden.
-    { key = "arrow", title = OXP.Target.BAKED_ONLY and L("Arrow") or L("Arrow and travel"),
-        sub = OXP.Target.BAKED_ONLY and L("The arrow and how it looks") or L("The arrow and the trips it plans"), build = function(p)
+    { key = "arrow", title = L("Arrow and travel"),
+        sub = L("The arrow and the trips it plans"), build = function(p)
         Heading(p, L("Arrow"))
         Toggle(p, "arrowShown", L("Show the arrow"), L("Points at the step's next spot."))
         Dropdown(p, "arrowStyle", L("Arrow style"), L("The pointer's shape."), OXP.ArrowView.StyleChoices(), "chevron")
@@ -249,12 +249,12 @@ local PAGES = {
         Slider(p, "arrowScale", L("Arrow size"), nil, 0.6, 2, 0.05, Pct)
         Slider(p, "arrowAlpha", L("Arrow opacity"), nil, 0.2, 1, 0.05, Pct)
         Slider(p, "arrowText", L("Arrow text size"), nil, 9, 20, 1, function(v) return tostring(v) end)
-        if OXP.Target.BAKED_ONLY then return end
         Heading(p, L("Travel"))
+        Toggle(p, "travel", L("Plan trips to other zones"), L("Flights, boats, trams and your Hearthstone, when the step is in another zone and no SoupEngine walk leads there."),
+            function() OXP.Travel.Reset() end)
+        if OXP.Target.BAKED_ONLY then return end
         Dropdown(p, "routeStyle", L("Route"), L("Follow roads keeps you off cliffs and out of mob camps."),
             { { "roads", L("Follow roads") }, { "direct", L("Shortest way") } }, "roads", function() OXP.Terrain.Reset() end)
-        Toggle(p, "travel", L("Plan trips to other zones"), L("Flights, boats and your Hearthstone."),
-            function() OXP.Travel.Reset() end)
     end },
     { key = "maps", title = L("Maps"), sub = L("What the world map and minimap show"), build = function(p)
         Heading(p, L("World map and minimap"))

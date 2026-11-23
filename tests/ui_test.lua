@@ -188,11 +188,9 @@ do
     local aim = OXP.Target.Update()
     t.ok(aim ~= nil, "the arrow has somewhere to go")
     t.ok(aim and aim.real == first, "on the way to the chain's quest")
-    if OXP.Target.BAKED_ONLY then
-        t.ok(aim and not aim.travel, "SoupEngine walks only: no trip planned, straight at the quest")
-    else
-        t.ok(aim and (aim.travel or aim.map == 1437), "a trip is planned to Darnassus: " .. tostring(aim and aim.title))
-    end
+    -- 2.0.2: also with SoupEngine's walks, a quest in another zone with no
+    -- baked walk from here gets a trip
+    t.ok(aim and (aim.travel or aim.map == 1437), "a trip is planned to Darnassus: " .. tostring(aim and aim.title))
     -- the next quest of the chain has no spot in the data
     game:Accept(701, 0)
     game:TurnIn(701)
