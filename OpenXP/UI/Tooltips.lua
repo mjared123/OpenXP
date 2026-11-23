@@ -274,8 +274,10 @@ end
 
 function Tips.AddLines(tooltip, unit)
     if not Tips.Enabled() or not unit or not UnitExists(unit) or UnitIsPlayer(unit) then return end
-    local name = UnitName(unit)
-    local npcId = Tips.NpcIdOf(UnitGUID(unit))
+    -- secret in dungeons (GitHub #98): no quest lines then
+    local name = OXP.Util.UnitName(unit)
+    if not name then return end
+    local npcId = Tips.NpcIdOf(OXP.Util.UnitGUID(unit))
     local added = false
     if UnitCanAttack("player", unit) then
         local loot = Tips.MobItemLines(name, npcId)
@@ -463,7 +465,9 @@ end
 --- steps need this NPC).
 function Tips.PlateInfo(unit)
     if not (unit and UnitExists(unit)) or UnitIsPlayer(unit) then return nil end
-    local name, npcId = UnitName(unit), Tips.NpcIdOf(UnitGUID(unit))
+    local name = OXP.Util.UnitName(unit) -- secret in dungeons (GitHub #98)
+    if not name then return nil end
+    local npcId = Tips.NpcIdOf(OXP.Util.UnitGUID(unit))
     if UnitCanAttack("player", unit) then
         -- Enemies are marked only for quests in your log right now with
         -- that objective still open. Before 2.0.0-dev4 the guide's later

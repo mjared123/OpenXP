@@ -4,6 +4,24 @@ local _, OXP = ...
 local Util = {}
 OXP.Util = Util
 
+--- v, or nil when the game hands back a "secret" value. Forever hides some
+--- values from addons (unit names and GUIDs in dungeons, some numbers in
+--- combat), and comparing or indexing with one throws (GitHub #98).
+function Util.Readable(v)
+    if v ~= nil and issecretvalue and issecretvalue(v) then return nil end
+    return v
+end
+
+--- A unit's name, or nil when the game keeps it secret.
+function Util.UnitName(unit)
+    return Util.Readable((UnitName(unit)))
+end
+
+--- A unit's GUID, or nil when the game keeps it secret.
+function Util.UnitGUID(unit)
+    return Util.Readable(UnitGUID and UnitGUID(unit) or nil)
+end
+
 function Util.Trim(s)
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end

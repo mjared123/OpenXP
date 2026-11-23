@@ -303,6 +303,24 @@ do
     T.UpdatePlate("nameplate1")
     local m = T.PlateMarker(plate)
     t.ok(m and m.badge.texture and m.badge.texture:find("Map.kill"), "with the map's silver sword: " .. tostring(m and m.badge.texture))
+    -- GitHub #98: in dungeons the game hands back secret unit names and
+    -- GUIDs; comparing or indexing with one throws
+    local SECRET = setmetatable({}, { __eq = function() error("compared a secret") end,
+                                      __index = function() error("indexed a secret") end,
+                                      __concat = function() error("joined a secret") end })
+    local savedName, savedGUID = _G.UnitName, _G.UnitGUID
+    _G.issecretvalue = function(v) return rawequal(v, SECRET) end
+    _G.UnitName = function() return SECRET end
+    _G.UnitGUID = function() return SECRET end
+    local ok, err = pcall(T.PlateInfo, "nameplate1")
+    t.ok(ok, "secret name: no nameplate error (" .. tostring(err) .. ")")
+    t.eq(err, nil, "and no marker")
+    local tip = { AddLine = function() error("tooltip line for a secret unit") end, Show = function() end }
+    ok, err = pcall(T.AddLines, tip, "mouseover")
+    t.ok(ok, "secret name: no tooltip error (" .. tostring(err) .. ")")
+    ok, err = pcall(OXP.ActionButtons.SeeUnit, "target")
+    t.ok(ok, "secret name: no targets-list portrait error (" .. tostring(err) .. ")")
+    _G.UnitName, _G.UnitGUID, _G.issecretvalue = savedName, savedGUID, nil
     unitName = "Venture Co. Operator"
     t.eq(T.PlateInfo("nameplate1"), nil, "the later step's mob still isn't marked")
     game:FinishObjective(1071, 1)

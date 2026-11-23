@@ -288,7 +288,7 @@ end
 
 function Buttons.SeeUnit(unit)
     if not (unit and UnitExists and UnitExists(unit)) or (UnitIsPlayer and UnitIsPlayer(unit)) then return end
-    local name = UnitName(unit)
+    local name = OXP.Util.UnitName(unit) -- secret in dungeons (GitHub #98)
     if not name or not SetPortraitTexture then return end
     local listed = false
     for _, r in ipairs(rows) do if r.unitName == name then listed = true end end
