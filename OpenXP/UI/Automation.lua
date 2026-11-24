@@ -252,15 +252,48 @@ function Auto.TakeFlight()
     return true
 end
 
+-- The step's flight circled on the flight master's map (GitHub #87), with
+-- auto-flight off or on hold (Shift) too.
+local mark
+function Auto.MarkFlight()
+    if mark then mark:Hide() end
+    if not Engine.GetGuide() then return nil end
+    local i = Auto.FlightNode()
+    local button = i and _G["TaxiButton" .. i]
+    if not (button and CreateFrame) then return nil end
+    if not mark then
+        mark = CreateFrame("Frame", nil, button)
+        mark.tex = mark:CreateTexture(nil, "OVERLAY")
+        mark.tex:SetAllPoints()
+        mark.tex:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+        mark.tex:SetBlendMode("ADD")
+        mark.tex:SetVertexColor(0.35, 0.72, 1)
+    end
+    mark:SetParent(button)
+    mark:ClearAllPoints()
+    mark:SetPoint("CENTER", button, "CENTER", 0, 0)
+    mark:SetSize(button:GetWidth() * 2.6, button:GetHeight() * 2.6)
+    mark:SetFrameLevel(button:GetFrameLevel() + 2)
+    mark:Show()
+    Auto.marked = i
+    return i
+end
+OXP.On("TAXIMAP_CLOSED", function()
+    if mark then mark:Hide() end
+    Auto.marked = nil
+end)
+
 OXP.On("TAXIMAP_OPENED", function()
-    if not On("autoFlight") then return end
+    local fly = On("autoFlight")
     -- the map's nodes are there when it opens; if not yet, a moment later
     if (NumTaxiNodes and NumTaxiNodes() or 0) > 0 then
-        Auto.TakeFlight()
+        pcall(Auto.MarkFlight)
+        if fly then Auto.TakeFlight() end
     elseif C_Timer and C_Timer.After then
         C_Timer.After(0.2, function()
             if TaxiFrame and TaxiFrame.IsShown and not TaxiFrame:IsShown() then return end
-            Auto.TakeFlight()
+            pcall(Auto.MarkFlight)
+            if fly then Auto.TakeFlight() end
         end)
     end
 end)

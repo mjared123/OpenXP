@@ -8,7 +8,8 @@ local SCHEMA = 1
 local ACCOUNT_DEFAULTS = {
     schema = SCHEMA,
     settings = {
-        autoNextGuide = true,      -- load a guide's #next when it is finished
+        autoNextGuide = true,
+        groupQuests = true,        -- show group (elite) quests when you're in a group (GitHub #101)      -- load a guide's #next when it is finished
         smartStartOnLogin = true,  -- at login far past your section: say how to find the right one (you stay on your step)
         debug = false,
         -- guide card
@@ -33,6 +34,8 @@ local ACCOUNT_DEFAULTS = {
         arrowShowLabel = true,     -- what to do there, under that
         arrowColor = "skin",       -- "skin" (the skin's accent), "distance" (red far, green close), "white"
         arrowAlpha = 1,
+        distanceUnit = "yards",    -- "yards" or "meters" under the arrow (GitHub #85)
+        arrowStraight = false,     -- point straight at the spot, not along the walking path (GitHub #88)
         mapQuestIcons = "auto",    -- "auto": our ! ? and objective icons off while Questie draws its own; "on"; "off"
         mapIconScale = 1,
         -- maps

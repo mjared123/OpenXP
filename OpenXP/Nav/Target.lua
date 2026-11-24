@@ -228,7 +228,11 @@ function Target.Update()
             return current
         end
         local aim = focus or base
-        current = OXP.WalkPaths.ForArrow(aim) or aim
+        -- Settings > Arrow > "Point straight at the spot" (GitHub #88): no
+        -- walking path, the arrow points in a straight line (trips to other
+        -- zones above still go by flight master and boat)
+        local straight = OXP.settings and OXP.settings.arrowStraight
+        current = (not straight and OXP.WalkPaths.ForArrow(aim)) or aim
         current.real = base
         -- where "Here" is: the pinpointed mob or chest, else the spot
         current.focus = focus or nil

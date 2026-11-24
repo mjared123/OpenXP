@@ -105,7 +105,7 @@ local function Draw(dt)
         -- along a walk: what's left of it, not the straight line to its next bend
         local yards = t.left or realDist or dist
         state = { mode = "point", angle = facing and Turn(angle - facing, dt) or nil,
-                  distance = ("%d yd"):format(yards), yards = yards, label = label }
+                  distance = Arrow.Distance(yards), yards = yards, label = label }
     else
         -- another continent and no plan to get there
         state = { mode = "lost", distance = "...", label = label }
@@ -123,6 +123,14 @@ f:SetScript("OnUpdate", function(_, dt)
     elapsed = 0
     Arrow.Draw(spent)
 end)
+
+--- "123 yd", or "112 m" with Settings > Arrow > Distance in metres (GitHub #85).
+function Arrow.Distance(yards)
+    if OXP.settings and OXP.settings.distanceUnit == "meters" then
+        return ("%d m"):format(math.floor(yards * 0.9144 + 0.5))
+    end
+    return ("%d yd"):format(yards)
+end
 
 function Arrow.Refresh()
     local s = OXP.settings

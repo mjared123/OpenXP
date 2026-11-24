@@ -308,6 +308,27 @@ local function HasSkill(name)
     return false
 end
 
+-- Group (elite) quests: the quests of every "group" condition in the loaded
+-- guides, worked out once. With Settings > Guides > "Group quests" off
+-- (GitHub #101) they're never shown, not even once you have one.
+local groupQuests
+function Goals.IsGroupQuest(id)
+    if not groupQuests then
+        groupQuests = {}
+        for _, g in ipairs(OXP.Registry and OXP.Registry.All() or {}) do
+            for _, step in ipairs(g.steps or {}) do
+                for _, c in ipairs(step.when or {}) do
+                    if c[1] == "group" and c.quest then groupQuests[c.quest] = true end
+                end
+            end
+        end
+    end
+    return groupQuests[id] == true
+end
+function Goals.ResetGroupQuests() groupQuests = nil end
+
+local function GroupOff() return OXP.settings and OXP.settings.groupQuests == false end
+
 local CONDITIONS = {
     turnedin = function(c) return Quests.IsTurnedIn(c.quest) end,
     onquest = function(c)
@@ -321,7 +342,10 @@ local CONDITIONS = {
     skill = function(c) return HasSkill(c.name) end,
     zone = function(c) return World.InZone(c.name) end,
     -- a group (elite) quest: only when you're in a group, or already on it
-    group = function(c) return (IsInGroup and IsInGroup()) or Quests.IsOnQuest(c.quest) or Quests.IsTurnedIn(c.quest) end,
+    group = function(c)
+        if GroupOff() then return false end
+        return (IsInGroup and IsInGroup()) or Quests.IsOnQuest(c.quest) or Quests.IsTurnedIn(c.quest)
+    end,
     level = function(c) return (OXP.Player.level or 1) >= (c.n or 0) end,
     has = function(c) return World.ItemCount(c.item) >= (c.n or 1) end,
     -- a spell the character has learned (IsPlayerSpell too: weapon skills)
@@ -347,6 +371,14 @@ Goals.CONDITIONS = CONDITIONS
 function Goals.WhenHolds(when)
     if not when then return true end
     for _, c in ipairs(when) do
+        -- group quests off: a step only for while you're on one is skipped too
+        if c[1] == "onquest" and not c.neg and GroupOff() then
+            local all = true
+            for _, q in ipairs(c.quests or { c.quest }) do
+                if not Goals.IsGroupQuest(q) then all = false break end
+            end
+            if all then return false end
+        end
         local test = CONDITIONS[c[1]]
         local ok = test and test(c) or false
         if c.neg then ok = not ok end

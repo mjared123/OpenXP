@@ -646,6 +646,9 @@ end)
 for _, message in ipairs({ "QUESTS_CHANGED", "PLAYER_LEVEL", "ZONE_CHANGED", "BAGS_CHANGED", "FLIGHTPATHS_CHANGED" }) do
     OXP.Listen(message, refreshSoon)
 end
+-- (also GROUP_ROSTER_UPDATE: group quests show while you're in a group)
+OXP.On("GROUP_ROSTER_UPDATE", refreshSoon)
+OXP.Listen("SETTINGS_CHANGED", refreshSoon) -- "Group quests" switched
 
 -- Goals that depend on where you stand ("be here", "fly to") are looked at
 -- again twice a second while one is shown; nothing else costs anything.

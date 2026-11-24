@@ -267,6 +267,80 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- 2.0.4: the step's flight circled on the flight master's map (GitHub #87)")
+do
+    local game, OXP = newGame({ level = 23, map = 1440, x = 34.5, y = 48 })
+    for i = 1, 3 do
+        local b = game.Widget("Button", "TaxiButton" .. i)
+        b:SetSize(16, 16)
+    end
+    addGuide(OXP, FLY_GUIDE)
+    game:OpenTaxi(NODES)
+    t.eq(OXP.Automation.marked, 2, "Auberdine's node is marked (auto-flight off)")
+    game:Fire("TAXIMAP_CLOSED")
+    t.eq(OXP.Automation.marked, nil, "gone when the map closes")
+    addGuide(OXP, { { { "goto", zone = "1440", x = 34, y = 48 }, { "accept", quest = 1010 } } })
+    game:OpenTaxi(NODES)
+    t.eq(OXP.Automation.marked, nil, "no flight in the step: nothing marked")
+    t.eq(#game.errors, 0, "no errors: " .. tostring(game.errors[1]))
+end
+
+------------------------------------------------------------------------
+print("-- 2.0.4: distance in meters (GitHub #85)")
+do
+    local _, OXP = newGame({ level = 5 })
+    t.eq(OXP.Arrow.Distance(100), "100 yd", "yards by default")
+    OXP.settings.distanceUnit = "meters"
+    t.eq(OXP.Arrow.Distance(100), "91 m", "meters")
+end
+
+------------------------------------------------------------------------
+print("-- 2.0.4: group quests off: never shown, not even once you have one (GitHub #101)")
+do
+    local game, OXP = newGame({ level = 30 })
+    IsInGroup = function() return true end
+    addGuide(OXP, {
+        { { "accept", quest = 1010 } },
+        { when = { { "group", quest = 517 } }, { "accept", quest = 517 } },
+        { when = { { "onquest", quests = { 517 } } }, { "complete", quest = 517, obj = 1 } },
+        { { "accept", quest = 1020 } },
+    })
+    OXP.Goals.ResetGroupQuests()
+    local W = OXP.Goals.WhenHolds
+    local steps = OXP.Engine.GetSteps()
+    t.eq(W(steps[2].when), true, "in a group: the group quest shows")
+    game:Accept(517, 1)
+    t.eq(W(steps[3].when), true, "and its steps once you have it")
+    OXP.settings.groupQuests = false
+    t.eq(W(steps[2].when), false, "setting off: not shown")
+    t.eq(W(steps[3].when), false, "nor the steps for it, even with the quest")
+    OXP.settings.groupQuests = true
+    IsInGroup = nil
+end
+
+------------------------------------------------------------------------
+print("-- 2.0.4: 'Point straight at the spot' skips the walking path (GitHub #88)")
+do
+    local _, OXP = newGame({ level = 5 })
+    local base = { wx = 10, wy = 10, map = 1429, x = 50, y = 50 }
+    local walk = { wx = 1, wy = 1, map = 1429 }
+    local real = OXP.WalkPaths.ForArrow
+    OXP.WalkPaths.ForArrow = function() return walk end
+    OXP.Target.override = base
+    if OXP.Target.BAKED_ONLY then
+        local tr = OXP.Target.TripLeg
+        OXP.Target.TripLeg = function() return nil end
+        t.ok(OXP.Target.Update() == walk, "normally: along the walk")
+        OXP.settings.arrowStraight = true
+        t.ok(OXP.Target.Update() == base, "straight: at the spot itself")
+        OXP.settings.arrowStraight = false
+        OXP.Target.TripLeg = tr
+    end
+    OXP.Target.override = nil
+    OXP.WalkPaths.ForArrow = real
+end
+
+------------------------------------------------------------------------
 print("-- Reset to defaults asks first, then puts every setting back")
 do
     local game, OXP = newGame({ level = 21 })

@@ -232,6 +232,8 @@ local PAGES = {
         Toggle(p, "autoNextGuide", L("Load the next guide when one is finished"), L("You go straight on to the next zone."))
         Toggle(p, "smartStartOnLogin", L("Move me to the right section at log in"),
             L("When you log in far past the step you're on, the guide jumps to where you are."))
+        Toggle(p, "groupQuests", L("Group quests"),
+            L("Elite quests show up while you're in a group. Off: never shown, even once you have one."))
     end },
     -- SoupEngine test build (Nav/Target.lua BAKED_ONLY): the arrow and the
     -- route line only follow SoupEngine's baked walks, so the trip and route
@@ -245,6 +247,9 @@ local PAGES = {
             { { "skin", L("Skin colour") }, { "distance", L("By distance") }, { "white", L("White") } }, "skin")
         Toggle(p, "arrowShowRing", L("Circle"), L("The ring and dark disc around the pointer."))
         Toggle(p, "arrowShowDistance", L("Distance"), L("How far it is, under the arrow."))
+        Dropdown(p, "distanceUnit", L("Distance in"), nil, { { "yards", L("Yards") }, { "meters", L("Meters") } }, "yards")
+        Toggle(p, "arrowStraight", L("Point straight at the spot"),
+            L("Off: the arrow follows the walking path round hills and buildings. On: a straight line to the spot."))
         Toggle(p, "arrowShowLabel", L("Step text"), L("What to do there, under the distance."))
         Slider(p, "arrowScale", L("Arrow size"), nil, 0.6, 2, 0.05, Pct)
         Slider(p, "arrowAlpha", L("Arrow opacity"), nil, 0.2, 1, 0.05, Pct)
