@@ -12,6 +12,17 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.4", date = "2026-11",
+        changes = {
+            "Sell junk is back: at a vendor, OpenXP sells your grey items (never quest items or items the guide still needs). Settings > Automation > Sell junk.",
+            "Hiding the guide with the minimap button (or /oxp card) now hides the arrow and the targets list too.",
+            "New setting: Group quests (Settings > Guides). Off: elite group quests are never shown, even once you have one.",
+            "New: distance under the arrow in meters (Settings > Arrow and travel > Distance in).",
+            "New: Point straight at the spot (Settings > Arrow and travel): a straight line instead of following the walking path.",
+            "The step's flight is circled on the flight master's map.",
+        },
+    },
+    {
         version = "2.0.3", date = "2026-11",
         changes = {
             "Fixed high CPU use and stutter in busy places like cities (from 2.0.2): the quest item button no longer refreshes every time the game loads another player's gear.",
