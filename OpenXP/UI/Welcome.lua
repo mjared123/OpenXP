@@ -19,8 +19,10 @@ Welcome.CHANGELOG = {
             "New setting: Group quests (Settings > Guides). Off: elite group quests are never shown, even once you have one.",
             "New: distance under the arrow in meters (Settings > Arrow and travel > Distance in).",
             "New: Point straight at the spot (Settings > Arrow and travel): a straight line instead of following the walking path.",
-            "The step's flight is circled on the flight master's map.",
+            "The flight you need is circled on the flight master's map, including the first flight of Getting there.",
             "As a ghost, the arrow now leads you back to your corpse (Settings > Arrow and travel > Point at my corpse).",
+            "Fixed item lookups on WoW Forever's client: the quest item button finds quest items in all your bags again (including a fifth bag).",
+            "New: /oxp junk shows which grey items Sell junk would sell, and why it keeps the others.",
         },
     },
     {
