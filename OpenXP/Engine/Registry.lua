@@ -109,11 +109,45 @@ function Registry.IsAvailable(g, player)
     return Filters.Matches(g.only, player)
 end
 
+-- Another race's starting zone (GitHub #106: a Night Elf who wants the
+-- Human start). A guide only for one race of your own faction ("Human",
+-- "Alliance Skyborne") can be picked by the faction's other races too.
+local RACE_SIDE = {
+    human = "Alliance", dwarf = "Alliance", gnome = "Alliance", nightelf = "Alliance",
+    orc = "Horde", scourge = "Horde", undead = "Horde", tauren = "Horde", troll = "Horde",
+    skyborne = true, -- either side: the guide names it ("Horde Skyborne")
+}
+
+--- The race (as the guide writes it: "Human", "NightElf") when `g` is
+--- another race's guide of the player's faction, else nil.
+function Registry.OtherStart(g, player)
+    player = player or OXP.Player
+    local only = g and g.only
+    if type(only) ~= "string" or only:find("[/!%d]") or Registry.IsAvailable(g, player) then return nil end
+    local side, race
+    for w in only:gmatch("%S+") do
+        local k = w:lower()
+        if k == "alliance" or k == "horde" then
+            side = k == "alliance" and "Alliance" or "Horde"
+        elseif RACE_SIDE[k] then
+            race = w
+            if RACE_SIDE[k] ~= true then side = side or RACE_SIDE[k] end
+        else
+            return nil
+        end
+    end
+    if not race or side ~= player.faction then return nil end
+    if g.faction and g.faction ~= player.faction then return nil end
+    return race
+end
+
 --- Guides this player can use, optionally only one group, in load order.
-function Registry.ForPlayer(player, group)
+--- With `others`, other races' starting zones too (Registry.OtherStart).
+function Registry.ForPlayer(player, group, others)
     local out = {}
     for _, g in ipairs(guides) do
-        if (not group or g.group == group) and Registry.IsAvailable(g, player) then
+        if (not group or g.group == group)
+            and (Registry.IsAvailable(g, player) or (others and Registry.OtherStart(g, player))) then
             out[#out + 1] = g
         end
     end
@@ -121,15 +155,21 @@ function Registry.ForPlayer(player, group)
 end
 
 --- Find a guide by name for this player: the same group first, then any.
+--- Another race's guide only when there's no other (Teldrassil's next,
+--- Darkshore 12-14, is Night Elf only).
 function Registry.Find(name, group, player)
-    local fallback
+    local fallback, other
     for _, g in ipairs(guides) do
-        if g.name == name and Registry.IsAvailable(g, player) then
-            if g.group == group then return g end
-            fallback = fallback or g
+        if g.name == name then
+            if Registry.IsAvailable(g, player) then
+                if g.group == group then return g end
+                fallback = fallback or g
+            elseif not other and g.group == group and Registry.OtherStart(g, player) then
+                other = g
+            end
         end
     end
-    return fallback
+    return fallback or other
 end
 
 --- The guide that follows `g` (its #next), for this player.

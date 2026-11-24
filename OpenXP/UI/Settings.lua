@@ -305,6 +305,8 @@ local PAGES = {
             function() OXP.ActionButtons.Refresh() end)
         Toggle(p, "targetButton", L("Targets list"), L("The mobs and NPCs the step needs, with portraits: click one to target it, or bind a key (Key Bindings > AddOns > OpenXP). Off: hidden, and that key does nothing."),
             function() OXP.ActionButtons.Refresh() end)
+        Toggle(p, "raidMarkers", L("Raid markers"), L("Clicking a name in the targets list (or its key) also marks who it targets: a star for people, a skull for mobs. In a raid only when you lead or assist."),
+            function() OXP.ActionButtons.Refresh() end)
         Heading(p, L("Timers"))
         Toggle(p, "flightTimer", L("Flight timer"), L("How long until you land."))
         Toggle(p, "hearthReminder", L("Hearthstone reminder"), L("Says when the Hearthstone is ready on steps that use it."))

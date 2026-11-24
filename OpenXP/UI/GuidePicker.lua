@@ -205,9 +205,18 @@ local win
 local selected        -- the guide shown in the details pane
 local query = ""
 
+-- "NightElf" -> "Night Elf" (another race's starting zone, GitHub #106)
+local RACE_NAMES = { NightElf = "Night Elf", Scourge = "Undead", Undead = "Undead" }
+local function RaceName(race)
+    return L(RACE_NAMES[race] or race)
+end
+
 local function Zone(g)
     local name = Text.Strip(g.name or "")
-    return (name:gsub("^%d+%s*%-%s*%d+%s+", ""))
+    name = name:gsub("^%d+%s*%-%s*%d+%s+", "")
+    local race = OXP.Registry.OtherStart(g)
+    if race then name = fmt(L("%s (%s start)"), name, RaceName(race)) end
+    return name
 end
 
 local function Range(g)
@@ -238,6 +247,7 @@ end
 
 -- a section heading inside a tab: "OpenXP 1-20" -> "LEVELS 1-20"
 local function SectionOf(g)
+    if OXP.Registry.OtherStart(g) then return L("Other races' starting zones") end
     local sub = g.subgroup and tostring(g.subgroup)
     local range = sub and sub:match("^OpenXP%s+(%d+%s*%-%s*%d+)$")
     if range then return fmt(L("Levels %s"), range) end
@@ -257,6 +267,11 @@ function Picker.Tabs()
             out[#out + 1] = tab
         end
         for _, g in ipairs(group.guides) do tab.guides[#tab.guides + 1] = g end
+    end
+    -- other races' starting zones, at the end of their tab (GitHub #106)
+    for _, g in ipairs(OXP.Registry.All()) do
+        local tab = OXP.Registry.OtherStart(g) and index[TabLabel(g.group)]
+        if tab then tab.guides[#tab.guides + 1] = g end
     end
     return out
 end

@@ -28,7 +28,10 @@ local BAR_H = 38 + 1          -- button bar, border
 local COLLAPSED_H = 42
 local PAD = 12
 local MAX_BLOCKS = 4
-local MAX_LINES = 8
+-- every line of a step is shown ("More" scrolls a tall one). 8 cut off the
+-- end of about 220 steps, like Dangerous! in Horde Hillsbrad (GitHub #107).
+local MAX_LINES = 40
+local TRAVEL_LINES = 6         -- "Getting there" legs shown at most
 local FADE = 0.28             -- seconds for the new-step slide and fade
 
 local function Settings() return OXP.settings end
@@ -910,8 +913,8 @@ local function LayoutBlock(b, step, pos, first)
         if hearth then lines[#lines + 1] = { text = hearth, plain = true } end
         if travel and #travel > 0 then
             lines[#lines + 1] = { text = "|cFFB36BFF" .. L("Getting there:") .. "|r", plain = true }
-            for _, t in ipairs(travel) do
-                if #lines >= MAX_LINES then break end
+            for k, t in ipairs(travel) do
+                if #lines >= MAX_LINES or k > TRAVEL_LINES then break end
                 lines[#lines + 1] = { text = t, plain = true }
             end
         end

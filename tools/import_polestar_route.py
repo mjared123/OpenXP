@@ -122,7 +122,19 @@ def fix_fiora(out):
                 return
 
 
-ROUTE_FIXES = {"Horde": [fix_bloodsail], "Alliance": [fix_fiora]}
+def fix_malin(out):
+    """GitHub #105 (Matt, 2026-11-24): Archmage Malin in Stormwind didn't offer
+    Malin's Request (690) to a level 34 player, and the Mage Quarter step
+    waited for it. It is optional now, its Refuge Pointe turn-in too; the
+    next quest there, Worth Its Weight in Gold, doesn't need it."""
+    for g in out:
+        for st in g["steps"]:
+            for x in st["goals"]:
+                if x.get(1) in ("accept", "turnin") and x.get("quest") == 690:
+                    x["optional"] = True
+
+
+ROUTE_FIXES = {"Horde": [fix_bloodsail], "Alliance": [fix_fiora, fix_malin]}
 
 
 def render(faction, guides_out, commit):

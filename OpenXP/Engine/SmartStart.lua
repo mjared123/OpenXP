@@ -52,11 +52,15 @@ end
 --- For each step this player sees (by data index), its quest goals: { {kind, id}, ... }.
 function SS.QuestSteps(guide)
     local out = {}
+    -- another race's starting zone: not that race's own quests (GitHub #106)
+    local other = Registry.OtherStart and Registry.OtherStart(guide)
+    local DB = OXP.QuestDB
     for i, step in ipairs(guide.steps or {}) do
         if Filters.Matches(step.only) then
             local quests
             for _, g in ipairs(step) do
-                if QUEST_KINDS[g[1]] and g.quest and Filters.Matches(g.only) then
+                if QUEST_KINDS[g[1]] and g.quest and Filters.Matches(g.only)
+                    and not (other and DB and DB.ForYou and not DB.ForYou(g.quest)) then
                     quests = quests or {}
                     quests[#quests + 1] = { tag = g[1], id = g.quest, optional = g.optional }
                 end
@@ -183,8 +187,13 @@ function SS.ScoreGuide(guide, level, zone)
     end
     if total == 0 or done == total then return nil end
     if not inRange and started == 0 then return nil end
+    -- another race's starting zone: only once you've been questing there,
+    -- and your own race's guide wins a tie (Dun Morogh is the same for
+    -- Dwarves and Gnomes)
+    local other = Registry.OtherStart and Registry.OtherStart(guide)
+    if other and started == 0 and done == 0 then return nil end
 
-    local score = 0
+    local score = other and -1 or 0
     -- resume a section you're in the middle of: its quests are in your log
     if started > 0 then score = score + 100 + started * 5 end
     -- the section whose level range fits best
@@ -436,7 +445,9 @@ end
 function SS.Candidates()
     local faction = OXP.Player.faction
     if faction ~= "Alliance" and faction ~= "Horde" then return {} end
-    return Registry.ForPlayer(nil, "OpenXP Leveling (" .. faction .. ")")
+    -- other races' starting zones too: picked only when you've done
+    -- quests there (GitHub #106, see SS.ScoreGuide)
+    return Registry.ForPlayer(nil, "OpenXP Leveling (" .. faction .. ")", true)
 end
 
 function SS.Prerequisites()

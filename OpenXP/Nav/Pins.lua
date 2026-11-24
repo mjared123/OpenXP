@@ -992,6 +992,24 @@ function Pins.SyncQuestPOI()
 end
 
 OXP.OnReady(Pins.SyncQuestPOI)
+
+-- Closing the world map with the mouse on a pin (M, or mouselook) never
+-- sends the pin OnLeave: the tooltip stayed in the middle of the screen,
+-- with the pin under it (GitHub #111). The map closing ends the tooltip,
+-- and a world map pin left outside the map is hidden.
+function Pins.MapClosed()
+    if tipOwner and not tipOwner.isMini then OnLeave() end
+    local wm = _G.WorldMapFrame
+    for i = 1, #pool do
+        local p = pool[i]
+        local parent = p.GetParent and p:GetParent()
+        if p.Hide and (parent == nil or parent == UIParent or (wm and parent == wm)) then p:Hide() end
+    end
+end
+OXP.OnReady(function()
+    local wm = _G.WorldMapFrame
+    if wm and wm.HookScript then wm:HookScript("OnHide", Pins.MapClosed) end
+end)
 -- like Questie: with the markers off, the client opens the world map at
 -- log in; close it again (once)
 local loginMapChecked = false

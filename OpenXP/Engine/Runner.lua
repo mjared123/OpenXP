@@ -117,13 +117,23 @@ local function markEntries(steps)
     end
 end
 
+-- In another race's starting zone (GitHub #106) the quests only that race
+-- gets (Human's A Threat Within) are left out of its steps.
+local RACE_QUEST_GOALS = { accept = true, turnin = true, complete = true, finish = true }
+local function notForYou(goal, other)
+    if not (other and goal.quest and RACE_QUEST_GOALS[goal[1]]) then return false end
+    local DB = OXP.QuestDB
+    return DB and DB.ForYou and not DB.ForYou(goal.quest) or false
+end
+
 local function buildSteps(guide)
     local steps = {}
+    local other = Registry.OtherStart and Registry.OtherStart(guide)
     for index, data in ipairs(guide.steps) do
         if Filters.Matches(data.only) then
             local goals = {}
             for _, goal in ipairs(data) do
-                if Filters.Matches(goal.only) then goals[#goals + 1] = goal end
+                if Filters.Matches(goal.only) and not notForYou(goal, other) then goals[#goals + 1] = goal end
             end
             steps[#steps + 1] = {
                 index = index,                 -- position in the guide data
@@ -159,11 +169,28 @@ end
 -- Step state
 ------------------------------------------------------------------------
 
+-- An optional pickup ("take it if you meet him": a rare's drop, a quest
+-- that may not be offered) doesn't hold a step once the rest of it is done
+-- (GitHub #110: STV's Crystal in the Mountains left players waiting at a
+-- rare murloc's spot). A step that is only optional pickups still waits
+-- for you, so it doesn't move on before you're at the quest giver.
+local function optionalPickup(goal)
+    return goal[1] == "accept" and goal.optional == true
+end
+
 local function ownGoalsDone(step)
+    local waiting, other = false, false
     for _, goal in ipairs(step.goals) do
-        if Goals.State(goal, step.marks) == "todo" then return false end
+        local state = Goals.State(goal, step.marks)
+        if optionalPickup(goal) then
+            if state == "todo" then waiting = true end
+        elseif state == "todo" then
+            return false
+        elseif state == "done" then
+            other = true
+        end
     end
-    return true
+    return not waiting or other
 end
 
 local function stepDone(pos)

@@ -559,11 +559,45 @@ end
 
 local pending = false
 
+-- Raid markers (1.x had them, GitHub #113): clicking a row (or the key)
+-- also puts a marker on who it targets, so the NPC is easy to spot. The
+-- game won't let an addon mark by itself, so the row's macro does it with
+-- /tm, like 1.x: people get star, circle, diamond, triangle; mobs skull,
+-- cross, square. A mob's mark stays put ("!" on Forever); a person's can be
+-- clicked off again. Not in a raid unless you lead or assist. Settings >
+-- Buttons and timers > Raid markers.
+local FRIEND_MARKS, ENEMY_MARKS = { 1, 2, 3, 4 }, { 8, 7, 6 }
+
+function Buttons.CanMark()
+    if OXP.settings.raidMarkers == false then return false end
+    if IsInRaid and IsInRaid() then
+        local lead = (UnitIsGroupLeader and UnitIsGroupLeader("player")) or (UnitIsGroupAssistant and UnitIsGroupAssistant("player"))
+        return lead and true or false
+    end
+    return true
+end
+
+--- The marker for the `n`th person (enemy false) or mob (enemy true) of the list.
+function Buttons.MarkerFor(enemy, n)
+    local marks = enemy and ENEMY_MARKS or FRIEND_MARKS
+    return marks[((n or 1) - 1) % #marks + 1]
+end
+
+local function MarkLine(enemy, n)
+    local m = Buttons.MarkerFor(enemy, n)
+    return "/tm [nodead] " .. (enemy and "!" or "") .. m
+end
+
 -- the first row's macro tries every name, the most wanted last (the last
 -- /targetexact that finds someone wins)
-local function AllMacro(list)
+local function AllMacro(list, mark)
     local lines = { "/cleartarget" }
     for i = #list, 1, -1 do lines[#lines + 1] = "/targetexact " .. list[i].name end
+    if mark then
+        -- whoever it found: a mob's mark or a person's
+        local e, f = Buttons.MarkerFor(true, 1), Buttons.MarkerFor(false, 1)
+        lines[#lines + 1] = "/tm [harm,nodead] !" .. e .. "; [help,nodead] " .. f
+    end
     return table.concat(lines, "\n")
 end
 
@@ -642,12 +676,24 @@ function Buttons.Refresh()
     -- the targets list goes with the guide card when it's hidden
     local list = (s.targetButton ~= false and s.cardShown ~= false and Engine.GetGuide()) and Buttons.WantedTargets() or {}
     Buttons.count = #list
+    local mark = Buttons.CanMark()
+    local nth = { [true] = 0, [false] = 0 }
     for i = 1, MAX_ROWS do
         local e = list[i]
         local r = e and Row(i) or rows[i]
         if r then
             local name = e and e.name or nil
-            local macro = e and (i == 1 and AllMacro(list) or ("/cleartarget\n/targetexact " .. name)) or nil
+            local macro
+            if e then
+                local enemy = e.enemy and true or false
+                nth[enemy] = nth[enemy] + 1
+                if i == 1 then
+                    macro = AllMacro(list, mark)
+                else
+                    macro = "/cleartarget\n/targetexact " .. name
+                    if mark then macro = macro .. "\n" .. MarkLine(enemy, nth[enemy]) end
+                end
+            end
             if macro ~= r.macro then
                 r.macro = macro
                 if macro then
@@ -769,6 +815,9 @@ Buttons.Soon = Soon
 for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "SETTINGS_CHANGED", "BAGS_CHANGED", "QUESTS_CHANGED" }) do
     OXP.Listen(m, Soon)
 end
+-- joining or leading a raid changes whether the rows mark (Buttons.CanMark)
+OXP.On("GROUP_ROSTER_UPDATE", Soon)
+OXP.On("PARTY_LEADER_CHANGED", Soon)
 OXP.On("PLAYER_REGEN_ENABLED", function()
     if placePending then Buttons.Place() end
     if pending then Buttons.Refresh() end

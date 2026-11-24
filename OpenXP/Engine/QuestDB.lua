@@ -174,6 +174,9 @@ local function MineToDo(id)
     return not info or ForPlayer(info.q)
 end
 
+--- Can this character do quest `id` (race and class; unknown counts as yes)?
+DB.ForYou = MineToDo
+
 local prereqCache, infoCache = {}, {}
 
 --- What a quest needs first: { any = {...}, all = {...}, excl = {...} } or nil.

@@ -71,6 +71,7 @@ local ACCOUNT_DEFAULTS = {
         -- buttons and timers
         itemButton = true,
         targetButton = true,
+        raidMarkers = true,        -- the targets list's clicks also set a raid marker (GitHub #113)
         flightTimer = true,
         hearthReminder = true,
         -- extras
