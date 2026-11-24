@@ -341,6 +341,34 @@ do
 end
 
 ------------------------------------------------------------------------
+print("-- 2.0.4: as a ghost the arrow points at your corpse (GitHub #10)")
+do
+    local game, OXP = newGame({ level = 5, map = 1429, x = 40, y = 60 })
+    addGuide(OXP, { { { "goto", zone = "1429", x = 48, y = 42 }, { "accept", quest = 1010 } } })
+    local ghost = false
+    UnitIsGhost = function() return ghost end
+    C_DeathInfo = { GetCorpseMapPosition = function(map)
+        if map == 1429 then return { x = 0.45, y = 0.55 } end
+    end }
+    local t1 = OXP.Target.Update()
+    t.ok(t1 and not t1.corpse, "alive: the guide's spot")
+    ghost = true
+    local t2 = OXP.Target.Update()
+    t.ok(t2 and t2.corpse, "ghost: the corpse")
+    t.ok(t2 and math.abs(t2.x - 45) < 0.01 and math.abs(t2.y - 55) < 0.01 and t2.map == 1429, "at its spot")
+    t.ok(t2 and t2.wx ~= nil, "with world coordinates for the arrow")
+    OXP.settings.corpseArrow = false
+    local t3 = OXP.Target.Update()
+    t.ok(t3 and not t3.corpse, "setting off: the guide's spot")
+    OXP.settings.corpseArrow = true
+    ghost = false
+    local t4 = OXP.Target.Update()
+    t.ok(t4 and not t4.corpse, "alive again: back to the guide")
+    UnitIsGhost, C_DeathInfo = nil, nil
+    t.eq(#game.errors, 0, "no errors: " .. tostring(game.errors[1]))
+end
+
+------------------------------------------------------------------------
 print("-- Reset to defaults asks first, then puts every setting back")
 do
     local game, OXP = newGame({ level = 21 })

@@ -198,8 +198,46 @@ function Target.TripLeg(base)
     return leg
 end
 
+-- As a ghost, the arrow points at your corpse (GitHub #10; 2.0.4).
+local corpse = { title = "Your corpse", corpse = true }
+local function XY(pos)
+    if not pos then return nil end
+    if pos.GetXY then return pos:GetXY() end
+    return pos.x, pos.y
+end
+
+--- Your corpse as an arrow target while you're a ghost, else nil.
+function Target.Corpse()
+    if not (UnitIsGhost and UnitIsGhost("player")) then return nil end
+    if OXP.settings and OXP.settings.corpseArrow == false then return nil end
+    local get = C_DeathInfo and C_DeathInfo.GetCorpseMapPosition
+    if not get then return nil end
+    local _, _, map = OXP.Places.PlayerZone()
+    -- the zone you're in, then the maps above it (you may have run out of it)
+    for _ = 1, 4 do
+        if not map then return nil end
+        local x, y = XY(get(map))
+        if x and y and (x > 0 or y > 0) then
+            local wx, wy, inst = OXP.Places.ToWorld(map, x * 100, y * 100)
+            if not wx then return nil end
+            corpse.wx, corpse.wy, corpse.instance = wx, wy, inst
+            corpse.map, corpse.x, corpse.y = map, x * 100, y * 100
+            corpse.title = OXP.L and OXP.L("Your corpse") or "Your corpse"
+            corpse.real, corpse.focus = nil, nil
+            return corpse
+        end
+        local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(map)
+        map = info and info.parentMapID
+    end
+end
+
 --- Work the arrow's point out again. Returns it (or nil).
 function Target.Update()
+    local body = Target.Corpse()
+    if body then
+        current = body
+        return current
+    end
     if BAKED_ONLY then
         local base = Target.override or Target.Real()
         if not base or base.none then

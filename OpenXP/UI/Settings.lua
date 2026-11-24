@@ -248,6 +248,7 @@ local PAGES = {
         Toggle(p, "arrowShowRing", L("Circle"), L("The ring and dark disc around the pointer."))
         Toggle(p, "arrowShowDistance", L("Distance"), L("How far it is, under the arrow."))
         Dropdown(p, "distanceUnit", L("Distance in"), nil, { { "yards", L("Yards") }, { "meters", L("Meters") } }, "yards")
+        Toggle(p, "corpseArrow", L("Point at my corpse"), L("While you're a ghost, the arrow leads you back to your body."))
         Toggle(p, "arrowStraight", L("Point straight at the spot"),
             L("Off: the arrow follows the walking path round hills and buildings. On: a straight line to the spot."))
         Toggle(p, "arrowShowLabel", L("Step text"), L("What to do there, under the distance."))

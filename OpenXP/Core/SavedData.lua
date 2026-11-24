@@ -35,7 +35,8 @@ local ACCOUNT_DEFAULTS = {
         arrowColor = "skin",       -- "skin" (the skin's accent), "distance" (red far, green close), "white"
         arrowAlpha = 1,
         distanceUnit = "yards",    -- "yards" or "meters" under the arrow (GitHub #85)
-        arrowStraight = false,     -- point straight at the spot, not along the walking path (GitHub #88)
+        arrowStraight = false,
+        corpseArrow = true,        -- as a ghost, the arrow points at your corpse (GitHub #10)     -- point straight at the spot, not along the walking path (GitHub #88)
         mapQuestIcons = "auto",    -- "auto": our ! ? and objective icons off while Questie draws its own; "on"; "off"
         mapIconScale = 1,
         -- maps

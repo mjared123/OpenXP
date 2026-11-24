@@ -20,6 +20,7 @@ Welcome.CHANGELOG = {
             "New: distance under the arrow in meters (Settings > Arrow and travel > Distance in).",
             "New: Point straight at the spot (Settings > Arrow and travel): a straight line instead of following the walking path.",
             "The step's flight is circled on the flight master's map.",
+            "As a ghost, the arrow now leads you back to your corpse (Settings > Arrow and travel > Point at my corpse).",
         },
     },
     {
