@@ -294,6 +294,10 @@ function Areas.Pinpoints(step)
 end
 
 local pin = {}
+local FOCUS_NEAR = 120  -- yards from the step's spot: lead to its pinpoint
+local FOCUS_KEEP = 1500 -- yards: once leading there, keep it (a walk to a pinpoint can be long)
+local focusStep
+local focusPin, focusPinStep
 
 local UP = 6 -- yards: a pinpoint this far above or below the spot's floor is on another floor
 
@@ -330,7 +334,19 @@ function Areas.Focus(step, title)
         local spot = Areas.StepSpot(step)
         local sx, sy = Places.ToWorld(spot.map, spot.x, spot.y)
         local wpx, wpy = Places.Player()
-        local close = inside or (sx and Places.Distance(wpx, wpy, sx, sy) <= 120)
+        -- once it's leading you to a pinpoint, it keeps doing so a while
+        -- further out: the walk to a pinpoint can swing wide of the spot,
+        -- and dropping it there sent the arrow back to the spot and round
+        -- again (CurseForge 2026-11-24, arrow spinning)
+        local keep = focusStep == step
+        local close = inside or (sx and Places.Distance(wpx, wpy, sx, sy) <= (keep and FOCUS_KEEP or FOCUS_NEAR))
+        -- or near the pinpoint it was leading you to (a walk into a cave
+        -- can run well away from the step's spot)
+        if keep and not close and focusPin and focusPinStep == step then
+            local fx, fy = Places.ToWorld(map, focusPin[1], focusPin[2])
+            close = fx and Places.Distance(wpx, wpy, fx, fy) <= FOCUS_KEEP
+        end
+        focusStep = close and step or nil
         if close then
             local best, bestD, near, nearD
             for _, p in ipairs(pts) do
@@ -343,6 +359,20 @@ function Areas.Focus(step, title)
             end
             -- several spawns: the nearest one you aren't standing at
             local p = (#pts > 1 and nearD and nearD <= AWAY and best) or near
+            -- but once it's leading you to one, it stays on that one until
+            -- you get there: switching to whichever is nearest as you walk
+            -- sent the arrow back and forth between two (CurseForge
+            -- 2026-11-24, arrow spinning)
+            if focusPin and focusPinStep == step then
+                for _, q in ipairs(pts) do
+                    if q.id == focusPin.id and q[1] == focusPin[1] and q[2] == focusPin[2] then
+                        local wx, wy = Places.ToWorld(map, q[1], q[2])
+                        if wx and Places.Distance(wpx, wpy, wx, wy) > AWAY then p = q end
+                        break
+                    end
+                end
+            end
+            focusPin, focusPinStep = p, step
             if p then
                 local wx, wy, inst = Places.ToWorld(map, p[1], p[2])
                 pin.wx, pin.wy, pin.instance, pin.map, pin.x, pin.y = wx, wy, inst, map, p[1], p[2]

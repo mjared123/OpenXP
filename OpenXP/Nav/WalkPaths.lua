@@ -129,7 +129,10 @@ local function Corners(leg)
         if not x then return nil end
         wx[#wx + 1], wy[#wy + 1], inst = x, y, ins
     end
-    leg.wx, leg.wy, leg.instance = wx, wy, inst
+    -- how far along the walk each corner is (yards)
+    local along = { 0 }
+    for i = 2, #wx do along[i] = along[i - 1] + sqrt((wx[i] - wx[i - 1]) ^ 2 + (wy[i] - wy[i - 1]) ^ 2) end
+    leg.wx, leg.wy, leg.instance, leg.along = wx, wy, inst, along
     return leg
 end
 
@@ -205,7 +208,21 @@ end
 -- player to `target`, as a leg like the baked ones; kept while you stay on
 -- it, worked out again (at most once a second) when you leave it.
 local GRAPH_AGAIN = 1
-local graphLeg = { key = nil, leg = nil, at = -huge }
+-- one per spot: the arrow asks about the step's spot and about the
+-- pinpoint it leads to in the same moment, and a single shared slot made it
+-- work out a new (often different) way for each every time
+local graphLegs = {}
+local function GraphSlot(key)
+    local g = graphLegs[key]
+    if not g then
+        local n = 0
+        for _ in pairs(graphLegs) do n = n + 1 end
+        if n >= 8 then graphLegs = {} end
+        g = { key = key, leg = nil, at = -huge }
+        graphLegs[key] = g
+    end
+    return g
+end
 
 local function FlatLeg(map, pts, key)
     local flat = {}
@@ -282,14 +299,15 @@ WP.Unbaked = Unbaked
 
 local function GraphLeg(target, key, px, py, inst)
     if not (nav and nav.packed and OXP.WalkGraph) then return nil end
-    local cached = graphLeg.key == key and graphLeg.leg
+    local graphLeg = GraphSlot(key)
+    local cached = graphLeg.leg
     if cached then
         local _, _, d = Nearest({ cached }, px, py, inst)
         if d <= NEAR then return cached end
     end
     local now = GetTime and GetTime() or 0
-    if graphLeg.key == key and now - graphLeg.at < GRAPH_AGAIN then return cached or nil end
-    graphLeg.key, graphLeg.at, graphLeg.leg = key, now, nil
+    if now - graphLeg.at < GRAPH_AGAIN then return cached or nil end
+    graphLeg.at, graphLeg.leg = now, nil
     local zx, zy = Places.ToZone(px, py, target.map)
     if not zx then return nil end
     local pts = Unbaked(target.map, zx, zy, target.x, target.y)
@@ -302,6 +320,31 @@ end
 -- them, one worked out on SoupNav's graph from where you stand. Returns the
 -- leg, the index of the next corner ahead on it, the distance to the walk
 -- and the nearest point on it (world); nil when there's no walk at all.
+-- The nearest point on one walk among the stretches between `lo` and `hi`
+-- yards along it: segment, distance, point; nil when none is in that window.
+local function NearestWithin(c, px, py, lo, hi)
+    local bestSeg, bestD, bx, by
+    for i = 1, #c.wx - 1 do
+        local d, cx, cy = SegDist(px, py, c.wx[i], c.wy[i], c.wx[i + 1], c.wy[i + 1])
+        local at = c.along[i] + sqrt((cx - c.wx[i]) ^ 2 + (cy - c.wy[i]) ^ 2)
+        -- the later part wins a near tie, as in Nearest
+        if at >= lo and at <= hi and (not bestD or d <= bestD + TIE) then
+            bestSeg, bestD, bx, by = i, math.min(d, bestD or d), cx, cy
+        end
+    end
+    return bestSeg, bestD, bx, by
+end
+
+-- Where you were along the walk last time. You can't get further along it
+-- than you've moved: a walk that passes under itself (into a cave), doubles
+-- back on a ramp or runs past the spot and back must not make the arrow
+-- jump to a later (or back to an earlier) part of it just because that part
+-- is a few yards nearer as the crow flies. That jumping sent the arrow
+-- round in circles (CurseForge 2026-11-24).
+local SLACK = 25   -- yards: progress along the walk allowed on top of how far you moved
+local BACK = 2     -- yards: and back (only as far as you moved back)
+local progressBy = {}
+
 local function Ahead(target, px, py, inst)
     if not (target and target.map and target.x and target.y and px) then return nil end
     local key = SpotKey(target.map, target.x, target.y)
@@ -319,6 +362,33 @@ local function Ahead(target, px, py, inst)
         end
     end
     if not best then return nil end
+    -- keep to the stretch of the walk you were on, give or take how far you moved
+    -- (and on the same walk: two walks to the spot can pass close by each
+    -- other, and swapping between them turned the arrow round too)
+    local progress = progressBy[key]
+    if not progress then
+        local n = 0
+        for _ in pairs(progressBy) do n = n + 1 end
+        if n >= 8 then progressBy = {} end
+        progress = {}
+        progressBy[key] = progress
+    end
+    local was = progress.key == key and progress.leg
+    -- (only while it's still one of the walks that fit: after a death the
+    -- graveyard's walk comes first)
+    local fits = was and was.graph
+    for _, leg in ipairs(was and not fits and first or {}) do
+        if leg == was then fits = true break end
+    end
+    if fits and was.along and was.instance == inst then
+        local moved = Places.Distance(px, py, progress.x, progress.y) or 0
+        local seg, d, x2, y2 = NearestWithin(was, px, py, progress.at - BACK - moved, progress.at + SLACK + moved)
+        if seg and d <= NEAR then best, bestSeg, bestD, bx, by = was, seg, d, x2, y2 end
+    end
+    if best.along and bestD <= NEAR then
+        progress.key, progress.leg, progress.x, progress.y = key, best, px, py
+        progress.at = best.along[bestSeg] + sqrt((bx - best.wx[bestSeg]) ^ 2 + (by - best.wy[bestSeg]) ^ 2)
+    end
     local n = #best.wx
     local j = bestSeg + 1
     while j < n and Places.Distance(px, py, best.wx[j], best.wy[j]) <= REACH do j = j + 1 end
@@ -431,9 +501,10 @@ local proxy = {}
 local lastTarget, lastCheck, lastX, lastY, lastTX, lastTY, lastLeft = nil, -huge, nil, nil, nil, nil, nil
 
 function WP.Reset()
-    graphLeg.key, graphLeg.leg, graphLeg.at = nil, nil, -huge
+    graphLegs = {}
     between = {}
     lastTarget, lastCheck, lastX, lastY, lastTX, lastTY, lastLeft = nil, -huge, nil, nil, nil, nil, nil
+    progressBy = {}
 end
 
 --- A stepping stone for the arrow toward `target` ({wx, wy, instance, map,
