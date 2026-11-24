@@ -205,7 +205,8 @@ local function HearthNode()
 end
 
 local function HearthReady()
-    if not GetItemCount or GetItemCount(HEARTHSTONE) == 0 then return false end
+    local count = (C_Item and C_Item.GetItemCount) or GetItemCount
+    if not count or count(HEARTHSTONE) == 0 then return false end
     local getCd = (C_Container and C_Container.GetItemCooldown) or GetItemCooldown
     if not getCd then return false end
     local start, duration = getCd(HEARTHSTONE)

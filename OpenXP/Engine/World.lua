@@ -179,7 +179,8 @@ OXP.On("HEARTHSTONE_BOUND", function() OXP.Send("HEARTH_CHANGED") end)
 ------------------------------------------------------------------------
 
 function World.ItemCount(itemID)
-    return GetItemCount and GetItemCount(itemID) or 0
+    local count = (C_Item and C_Item.GetItemCount) or GetItemCount
+    return count and count(itemID) or 0
 end
 
 local function bagsChanged()
