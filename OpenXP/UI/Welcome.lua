@@ -12,6 +12,19 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.5", date = "2026-11",
+        changes = {
+            "The arrow no longer spins in circles near the spot: it keeps pointing the way along the walk.",
+            "Quest icons (Settings > Maps): Auto now shows Questie's icons only where Questie is actually showing them (map, minimap, each icon type) and OpenXP's everywhere else, so hiding Questie no longer leaves no icons. New choices: OpenXP, Questie, Off.",
+            "Long steps show every line again: the card cut off everything after the 8th line (a quest pickup could be hidden).",
+            "A \"take it if you find it\" pickup (like a quest from a rare's drop) no longer holds a step once the rest of the step is done.",
+            "Closing the world map with the mouse on an icon no longer leaves the icon and its tooltip in the middle of the screen.",
+            "Malin's Request in Stormwind is optional now.",
+            "New: pick another race's starting zone. Pick a guide > Leveling > Other races' starting zones.",
+            "Raid markers are back: clicking a name in the targets list also marks it (star for people, skull for mobs). Settings > Buttons and timers > Raid markers.",
+        },
+    },
+    {
         version = "2.0.4", date = "2026-11",
         changes = {
             "Sell junk is back: at a vendor, OpenXP sells your grey items (never quest items or items the guide still needs). Settings > Automation > Sell junk.",

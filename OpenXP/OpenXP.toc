@@ -3,7 +3,7 @@
 ## Notes: Free, community-made leveling guides for WoW Forever
 ## Author: OpenXP contributors
 ## X-License: GPL-3.0 (see LICENSE; 1-20 guides adapted from PoleStar, see NOTICE.md)
-## Version: 2.0.4
+## Version: 2.0.5
 ## Category: Quests
 ## IconTexture: Interface\AddOns\OpenXP\Media\openxp_logo-64
 ## OptionalDeps: Questie
