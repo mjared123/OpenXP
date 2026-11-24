@@ -273,10 +273,17 @@ function Auto.MarkFlight()
     if not (button and CreateFrame) then return nil end
     if not mark then
         mark = CreateFrame("Frame", nil, button)
+        -- a round ring with a soft glow (the arrow's own textures)
+        local media = "Interface\\AddOns\\" .. OXP.name .. "\\Media\\Card\\"
+        mark.glow = mark:CreateTexture(nil, "ARTWORK")
+        mark.glow:SetAllPoints()
+        mark.glow:SetTexture(media .. "arrive_glow")
+        mark.glow:SetBlendMode("ADD")
+        mark.glow:SetVertexColor(0.35, 0.72, 1, 0.8)
         mark.tex = mark:CreateTexture(nil, "OVERLAY")
-        mark.tex:SetAllPoints()
-        mark.tex:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
-        mark.tex:SetBlendMode("ADD")
+        mark.tex:SetPoint("CENTER")
+        mark.tex:SetSize(30, 30)
+        mark.tex:SetTexture(media .. "ring")
         mark.tex:SetVertexColor(0.35, 0.72, 1)
     end
     mark:SetParent(button)
@@ -284,7 +291,7 @@ function Auto.MarkFlight()
     mark:SetPoint("CENTER", button, "CENTER", 0, 0)
     -- the button can still be 0 wide right as the map opens: never smaller than 40
     local w, h = button:GetWidth() or 0, button:GetHeight() or 0
-    mark:SetSize(math.max(40, w * 2.6), math.max(40, h * 2.6))
+    mark:SetSize(math.max(44, w * 2.6), math.max(44, h * 2.6))
     mark:SetFrameStrata("DIALOG")
     mark:SetFrameLevel(button:GetFrameLevel() + 5)
     mark:Show()
