@@ -12,6 +12,12 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.3", date = "2026-11",
+        changes = {
+            "Fixed high CPU use and stutter in busy places like cities (from 2.0.2): the quest item button no longer refreshes every time the game loads another player's gear.",
+        },
+    },
+    {
         version = "2.0.2", date = "2026-11",
         changes = {
             "/ginvite and other protected slash commands work again with OpenXP on.",
