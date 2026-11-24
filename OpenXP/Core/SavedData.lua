@@ -37,7 +37,7 @@ local ACCOUNT_DEFAULTS = {
         distanceUnit = "yards",    -- "yards" or "meters" under the arrow (GitHub #85)
         arrowStraight = false,
         corpseArrow = true,        -- as a ghost, the arrow points at your corpse (GitHub #10)     -- point straight at the spot, not along the walking path (GitHub #88)
-        mapQuestIcons = "auto",    -- "auto": our ! ? and objective icons off while Questie draws its own; "on"; "off"
+        mapQuestIcons = "auto",    -- whose ! ? and objective icons: "auto" (Questie's where Questie shows them, else ours), "openxp", "questie", "off"
         mapIconScale = 1,
         -- maps
         mapRoute = true,           -- the route line on the world map and minimap
@@ -149,6 +149,8 @@ OXP.OnLoaded(function()
         OpenXPDB.autoFlightFixed = 1
         OXP.settings.autoFlight = false
     end
+    -- 2.0.5: Settings > Maps > Quest icons "Always" ("on") is now "OpenXP"
+    if OXP.settings.mapQuestIcons == "on" then OXP.settings.mapQuestIcons = "openxp" end
     if (OpenXPDB.uiFixed or 0) < 1 then
         OpenXPDB.uiFixed = 1
         OXP.settings.lockFrames = false

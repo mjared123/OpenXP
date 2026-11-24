@@ -271,8 +271,8 @@ local PAGES = {
         Toggle(p, "mapStepNumbers", L("Step numbers"), L("The step's number on its pin."))
         Toggle(p, "mapNextStep", L("Next step pin"), L("A pin for the step after the current one too."))
         Toggle(p, "mapMobs", L("Objective icons"), L("Where the current step's mobs and objects are, like Questie's. Sword: kill it. Sack: it drops what you need. Cog: use or loot it. Bubble: talk."))
-        Dropdown(p, "mapQuestIcons", L("Quest icons"), L("Yellow ! to pick up, grey ! for low level, yellow ? to turn in, grey ? not done yet. Auto: off while Questie shows its own."),
-            { { "auto", L("Auto") }, { "on", L("Always") }, { "off", L("Off") } }, "auto")
+        Dropdown(p, "mapQuestIcons", L("Quest icons"), L("Whose ! ? and objective icons. Auto: Questie's when Questie shows them, OpenXP's otherwise. Questie: only Questie's (none without Questie). The route line, step numbers and kill areas always show."),
+            { { "auto", L("Auto") }, { "openxp", L("OpenXP") }, { "questie", L("Questie") }, { "off", L("Off") } }, "auto")
         Toggle(p, "mapHideBlizzardPOI", L("Hide Blizzard's quest markers"), L("The game's own round ? and ... quest markers on the world map, while OpenXP's quest icons show (Questie does the same)."))
         Toggle(p, "mapObjectiveGlow", L("Objective glow"), L("A glow behind each objective's icons, a colour per objective."))
         Toggle(p, "mapObjectiveColors", L("Colour objective icons"), L("The icons themselves in their objective's colour."))

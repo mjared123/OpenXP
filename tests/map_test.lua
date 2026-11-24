@@ -191,7 +191,7 @@ do
     pins = pinsOf(OXP, "step")
     t.ok(#pins == 2 and pins[1].num == "" and pins[1].tag == "" and pins[2].num == "", "step numbers off: none on the pins")
     OXP.settings.mapStepNumbers = true
-    OXP.settings.mapQuestIcons = "on"
+    OXP.settings.mapQuestIcons = "openxp"
     pins = pinsOf(OXP, "step")
     t.ok(#pins == 2 and pins[1].tag == "" and pins[2].tag == "", "quest icons are plain ! and ?, like Questie's (no number)")
     OXP.settings.mapPins = false
@@ -205,7 +205,7 @@ end
 -- current step, the hand-in next
 local function murlocs(opts)
     local game, OXP = newGame(opts or { level = 23, map = 1437, x = 10, y = 40 })
-    OXP.settings.mapQuestIcons = "on"
+    OXP.settings.mapQuestIcons = "openxp"
     local g = addGuide(OXP, {
         { { "goto", zone = "Wetlands", x = 38.18, y = 50.89 }, { "accept", quest = 288 } },
         { { "goto", zone = "Wetlands", x = 15.26, y = 39.83 },
@@ -507,7 +507,7 @@ end
 print("-- objective pins for Forever's own quests: Spoils of War's timber and iron piles (QuestDB_Fill)")
 do
     local game, OXP = newGame({ level = 22, map = 1437, x = 12, y = 53 })
-    OXP.settings.mapQuestIcons = "on"
+    OXP.settings.mapQuestIcons = "openxp"
     local g = addGuide(OXP, {
         { { "goto", zone = "Wetlands", x = 12, y = 53.3 },
           { "complete", quest = 98197, obj = 1 },
@@ -527,6 +527,88 @@ do
     end
     t.ok(cogs > 0, "the piles get object (cog) icons on the Wetlands map: " .. cogs)
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+print("-- quest icons next to Questie: Auto follows Questie's own switches, map and minimap apart")
+do
+    local game, OXP = murlocs()
+    OXP.Engine.Next() -- the murlocs: objective icons, the hand-in's ? next
+    local function count(kind, where)
+        local n = 0
+        for _, p in ipairs(pinsOf(OXP, kind)) do
+            if (where == "map" and p.onWorld) or (where == "mini" and p.onMini) then n = n + 1 end
+        end
+        return n
+    end
+    local function questIcons(where)
+        local n = 0
+        for _, p in ipairs(pinsOf(OXP, "step")) do
+            if p.icon and tostring(p.icon):find("quest_", 1, true)
+                and ((where == "map" and p.onWorld) or (where == "mini" and p.onMini)) then n = n + 1 end
+        end
+        return n
+    end
+    OXP.settings.mapQuestIcons = "auto"
+    t.ok(count("mob", "map") > 0 and questIcons("map") > 0, "auto without Questie: ours")
+    local prof = { enabled = true, enableMapIcons = true, enableMiniMapIcons = true,
+                   enableObjectives = true, enableTurnins = true, enableAvailable = true }
+    _G.QuestieLoader = {}
+    _G.Questie = { db = { profile = prof } }
+    t.eq(count("mob", "map") + count("mob", "mini"), 0, "auto, Questie's icons on: none of our objective icons")
+    t.eq(questIcons("map") + questIcons("mini"), 0, "and no ! or ? of ours")
+    t.ok(#pinsOf(OXP, "step") > 0, "the step's numbered badge stays")
+    prof.enabled = false -- Hide Questie
+    t.ok(count("mob", "map") > 0 and count("mob", "mini") > 0, "Questie hidden: ours on map and minimap")
+    t.ok(questIcons("map") > 0, "and our ! or ?")
+    prof.enabled = true
+    prof.enableMiniMapIcons = false
+    t.eq(count("mob", "map"), 0, "Questie's minimap icons off: none of ours on the world map")
+    t.ok(count("mob", "mini") > 0, "but ours on the minimap")
+    t.ok(questIcons("mini") > 0 and questIcons("map") == 0, "the ! or ? too, minimap only")
+    local badges = 0
+    for _, p in ipairs(pinsOf(OXP, "step")) do
+        if p.onWorld and not tostring(p.icon or ""):find("quest_", 1, true) then badges = badges + 1 end
+    end
+    t.ok(badges > 0, "the world map keeps the numbered badge there")
+    prof.enableMiniMapIcons = true
+    prof.enableObjectives = false
+    t.ok(count("mob", "map") > 0, "Questie's objective icons off: ours")
+    t.eq(questIcons("map"), 0, "its ! and ? still Questie's")
+    prof.enableObjectives = true
+    -- settings Questie doesn't have (an update renamed them): loaded counts
+    _G.Questie = {}
+    t.eq(count("mob", "map"), 0, "unreadable Questie settings: Questie's, as before")
+    _G.Questie = { db = { profile = prof } }
+    -- the player toggling Questie redraws within seconds
+    t.eq(count("mob", "map"), 0, "Questie showing")
+    OXP.Pins.CheckQuestie()
+    prof.enabled = false
+    game:Advance(2)
+    local seen = 0
+    for _, p in ipairs(OXP.Pins.Used()) do if p.kind == "mob" and p.onWorld then seen = seen + 1 end end
+    t.ok(seen > 0, "Hide Questie: our icons back without a step change")
+    prof.enabled = true
+    -- the other choices
+    OXP.settings.mapQuestIcons = "openxp"
+    t.ok(count("mob", "map") > 0 and questIcons("map") > 0, "OpenXP: ours even with Questie's on")
+    OXP.settings.mapQuestIcons = "questie"
+    t.eq(count("mob", "map") + count("mob", "mini") + questIcons("map"), 0, "Questie: none of ours")
+    _G.QuestieLoader, _G.Questie = nil, nil
+    t.eq(count("mob", "map") + questIcons("map"), 0, "Questie without Questie: none at all")
+    t.ok(#pinsOf(OXP, "step") > 0, "the step badge still shows")
+    OXP.settings.mapQuestIcons = "off"
+    t.eq(count("mob", "map") + questIcons("map"), 0, "Off: none of ours")
+    prof.enableObjectives = true
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
+print("-- 2.0.4's Quest icons \"Always\" becomes \"OpenXP\"")
+do
+    local game2 = FakeWoW.New(ROOT, { level = 21 })
+    local OXP2 = game2:LoadAddon()
+    OpenXPDB = { schema = 1, settings = { mapQuestIcons = "on" } }
+    game2:Login()
+    t.eq(OXP2.settings.mapQuestIcons, "openxp", "on -> openxp")
 end
 
 return t.fails

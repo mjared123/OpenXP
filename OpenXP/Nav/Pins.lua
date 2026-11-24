@@ -115,6 +115,28 @@ local function QuestieLoaded()
         or (C_AddOns and C_AddOns.IsAddOnLoaded and C_AddOns.IsAddOnLoaded("Questie")) or false
 end
 
+-- Questie's own switches, read only (OpenXP never changes them): "Hide
+-- Questie" (profile.enabled, its minimap button and /questie), its map and
+-- minimap icons, and each kind of icon (QuestieOptionsDefaults.lua).
+local QUESTIE_KIND = { available = "enableAvailable", turnin = "enableTurnins", objective = "enableObjectives" }
+
+--- True while Questie draws its own `kind` icons ("available", "turnin" or
+--- "objective"; nil: any) on the minimap (`mini`) or the world map. When
+--- its settings can't be read (Questie still starting, or a Questie update
+--- renamed them), loaded counts as showing.
+function Pins.QuestieShows(kind, mini)
+    if not QuestieLoaded() then return false end
+    local Q = _G.Questie
+    local db = type(Q) == "table" and Q.db
+    local prof = type(db) == "table" and db.profile
+    if type(prof) ~= "table" then return true end
+    if prof.enabled == false then return false end
+    if prof[mini and "enableMiniMapIcons" or "enableMapIcons"] == false then return false end
+    local key = QUESTIE_KIND[kind]
+    if key and prof[key] == false then return false end
+    return true
+end
+
 ------------------------------------------------------------------------
 -- The pool: one frame per pin, each with a twin for the minimap
 ------------------------------------------------------------------------
@@ -314,7 +336,7 @@ local function Take(o)
     p.label:SetText(o.label or "")
     p.entry, p.quests = o.entry, o.quests
     p.kind, p.glowOn, p.count, p.at = o.kind, o.glow == true, o.count, nil
-    p.baseAlpha, p.noFade, p.onMini, p.edge = o.alpha or 1, o.noFade == true, false, false
+    p.baseAlpha, p.noFade, p.onMini, p.onWorld, p.edge = o.alpha or 1, o.noFade == true, false, false, false
     p.level = o.level
     -- Questie's draw order: a fixed frame level, kept when HBD re-parents
     if o.level and p.SetFrameLevel then
@@ -327,13 +349,17 @@ end
 
 -- On the world map (zone, continent and world maps like Questie's; zone
 -- only with Settings > Maps > Icons on continent maps off) and, with
--- `minimap`, the minimap ("edge": floats on its rim when out of range).
-local function Place(p, map, x, y, minimap, zoneOnly)
+-- `minimap`, the minimap ("edge": floats on its rim when out of range);
+-- `noWorld`: the minimap only.
+local function Place(p, map, x, y, minimap, zoneOnly, noWorld)
     local wx, wy, inst = Places.ToWorld(map, x, y)
     if not wx then return false end
     p.at, p.wx, p.wy, p.inst = { map, x, y }, wx, wy, inst
     local showOn = (zoneOnly or OXP.settings.mapContinentIcons == false) and 0 or 3
-    HBDPins:AddWorldMapIconWorld(Pins, p, inst, wx, wy, showOn)
+    if not noWorld then
+        p.onWorld = true
+        HBDPins:AddWorldMapIconWorld(Pins, p, inst, wx, wy, showOn)
+    end
     if minimap and OXP.settings.mapMinimapIcons ~= false then
         p.onMini, p.edge = true, minimap == "edge"
         HBDPins:AddMinimapIconWorld(Pins, p.mini, inst, wx, wy, minimap == "edge")
@@ -348,7 +374,7 @@ function Pins.Clear()
         local p = pool[i]
         if p.pulse then p.pulse:Stop() end
         if p.mini.pulse then p.mini.pulse:Stop() end
-        p.onMini = false
+        p.onMini, p.onWorld = false, false
     end
     used = 0
 end
@@ -474,13 +500,16 @@ local function StepKind(step)
     return Card and Card.StepKind and Card.StepKind(step) or "travel"
 end
 
---- True while OpenXP draws its own quest "!"/"?" and objective icons:
---- Settings > Maps > Quest icons ("auto": not while Questie draws its own).
-function Pins.QuestIconsOn()
+--- True while OpenXP draws its own quest "!"/"?" and objective icons,
+--- Settings > Maps > Quest icons: "auto" Questie's where Questie shows them
+--- (per kind, and world map or minimap: `kind` and `mini` as in
+--- Pins.QuestieShows), OpenXP's everywhere else; "openxp" always ours;
+--- "questie" and "off" never ours. ("on" is 2.0.4's "openxp".)
+function Pins.QuestIconsOn(kind, mini)
     local mode = OXP.settings.mapQuestIcons or "auto"
-    if mode == "off" then return false end
-    if mode == "on" then return true end
-    return not QuestieLoaded()
+    if mode == "off" or mode == "questie" then return false end
+    if mode == "openxp" or mode == "on" then return true end
+    return not Pins.QuestieShows(kind, mini)
 end
 
 --- The highest quest level that's grey (trivial) for a player of `level`.
@@ -582,12 +611,30 @@ local function LiveKind(step)
 end
 Pins.LiveKind = LiveKind
 
+-- One step's pin: its quest icon (`icon`) or, without one, a numbered badge
+-- ringed in the step's colour.
+local function StepPin(step, pos, now, glow, icon, entry, ids, complete)
+    if icon then
+        -- Questie's ! and ?: one size for every quest icon
+        return Take({ icon = icon, size = Pins.IconSize("quest"), miniSize = Pins.IconSize("quest", true),
+                      glow = glow, alpha = 1, entry = entry, quests = ids, kind = "step",
+                      level = complete and LEVEL.complete or LEVEL.available, noFade = glow })
+    end
+    local kind = LiveKind(step)
+    local c = COLORS[kind] or COLORS.travel
+    local size = (now and SIZE.badge or SIZE.badgeNext) * (OXP.settings.mapIconScale or 1)
+    return Take({ ring = c, num = OXP.settings.mapStepNumbers ~= false and pos or nil, size = size, glow = glow,
+                  alpha = now and 1 or 0.85, entry = { lines = StepTip(step, pos, kind), pos = pos },
+                  kind = "step", level = LEVEL.step, noFade = glow })
+end
+
 -- The step(s) you're on and, with Settings > Maps > Next step, the next one
 -- with a spot: not every step ahead (their numbers piled up on the map).
+-- A quest step shows our ! or ? where Settings > Maps > Quest icons wants
+-- ours, and its numbered badge where Questie's ! or ? stands instead; the
+-- world map and the minimap can differ (Questie's icons on only one).
 local function AddSteps()
     local current = Engine.GetPosition()
-    local quests = Pins.QuestIconsOn()
-    local numbers = OXP.settings.mapStepNumbers ~= false
     local wantNext = OXP.settings.mapNextStep ~= false
     local active = {}
     for _, pos in ipairs(Engine.GetActive()) do active[pos] = true end
@@ -600,23 +647,20 @@ local function AddSteps()
             if not now then nextDone = true end
             -- only the step you're on pulses, and faintly
             local glow = now and (i == 1 or pos == current)
-            local icon, entry, ids, complete
-            if quests then icon, entry, ids, complete = QuestIcon(step, pos) end
-            local p
-            if icon then
-                -- Questie's ! and ?: one size for every quest icon
-                p = Take({ icon = icon, size = Pins.IconSize("quest"), miniSize = Pins.IconSize("quest", true),
-                           glow = glow, alpha = 1, entry = entry, quests = ids, kind = "step",
-                           level = complete and LEVEL.complete or LEVEL.available, noFade = glow })
+            local icon, entry, ids, complete = QuestIcon(step, pos)
+            local qkind = (icon == ICON.complete or icon == ICON.incomplete) and "turnin" or "available"
+            local onMap = icon ~= nil and Pins.QuestIconsOn(qkind)
+            local onMini = icon ~= nil and Pins.QuestIconsOn(qkind, true)
+            local mini = now and "edge" or true
+            if onMap == onMini then
+                local p = StepPin(step, pos, now, glow, onMap and icon, entry, ids, complete)
+                if not Place(p, spot.map, spot.x, spot.y, mini) then used = used - 1 end
             else
-                local kind = LiveKind(step)
-                local c = COLORS[kind] or COLORS.travel
-                local size = (now and SIZE.badge or SIZE.badgeNext) * (OXP.settings.mapIconScale or 1)
-                p = Take({ ring = c, num = numbers and pos or nil, size = size, glow = glow,
-                           alpha = now and 1 or 0.85, entry = { lines = StepTip(step, pos, kind), pos = pos },
-                           kind = "step", level = LEVEL.step, noFade = glow })
+                local p = StepPin(step, pos, now, glow, onMap and icon, entry, ids, complete)
+                if not Place(p, spot.map, spot.x, spot.y, nil) then used = used - 1 end
+                p = StepPin(step, pos, now, glow, onMini and icon, entry, ids, complete)
+                if not Place(p, spot.map, spot.x, spot.y, mini, nil, true) then used = used - 1 end
             end
-            if not Place(p, spot.map, spot.x, spot.y, now and "edge" or true) then used = used - 1 end
         end
     end
 end
@@ -763,7 +807,9 @@ end
 Pins.ObjIcon = ObjIcon
 
 local function AddMobs()
-    if OXP.settings.mapMobs == false or not Pins.QuestIconsOn() then return end
+    if OXP.settings.mapMobs == false then return end
+    local onMap, onMini = Pins.QuestIconsOn("objective"), Pins.QuestIconsOn("objective", true)
+    if not (onMap or onMini) then return end
     local s = OXP.settings
     for _, c in ipairs(Pins.MobClusters()) do
         local obj = ObjIcon(c.src, c.okind)
@@ -775,7 +821,7 @@ local function AddMobs()
             alpha = 1, kind = "mob", count = 1, level = LEVEL.objective, quests = { c.g.quest },
             entry = { quest = c.g.quest, obj = c.g.obj, npc = c.src.name, src = c.src, okind = c.okind, pos = c.pos },
         })
-        if not Place(p, c.map, c.x, c.y, "edge") then used = used - 1 end
+        if not Place(p, c.map, c.x, c.y, onMini and "edge" or nil, nil, not onMap) then used = used - 1 end
     end
 end
 
@@ -825,7 +871,7 @@ function Pins.Group(f)
         local o = pool[i]
         if o ~= p and o.at and o.at[1] == p.at[1] and o.entry
             and max(math.abs(o.at[2] - p.at[2]), math.abs(o.at[3] - p.at[3])) < r
-            and (not f.isMini or (o.onMini and o.mini:GetAlpha() > 0)) then
+            and (f.isMini and (o.onMini and o.mini:GetAlpha() > 0) or (not f.isMini and o.onWorld)) then
             out[#out + 1] = o
         end
     end
@@ -1036,7 +1082,7 @@ function Pins.Used()
         out[#out + 1] = { tip = tip, num = p.num:GetText(), tag = p.tag:GetText(), label = p.label:GetText(),
                           size = p:GetWidth(), miniSize = p.mini:GetWidth(), icon = p.icon, kind = p.kind,
                           glow = p.glowOn, count = p.count, at = p.at, level = p.level, halo = p.haloColor,
-                          onMini = p.onMini, edge = p.edge, miniAlpha = p.mini:GetAlpha(), frame = p,
+                          onMini = p.onMini, onWorld = p.onWorld, edge = p.edge, miniAlpha = p.mini:GetAlpha(), frame = p,
                           entry = p.entry }
     end
     return out
@@ -1054,3 +1100,28 @@ for _, m in ipairs({ "GUIDE_LOADED", "STEP_CHANGED", "STEPS_UPDATED", "QUESTS_CH
     OXP.Listen(m, Soon)
 end
 OXP.Listen("SETTINGS_CHANGED", Settings)
+
+-- Questie's switches change without telling us (/questie, its minimap
+-- button, its options): every 2 seconds, redraw when they did. Only
+-- Settings > Maps > Quest icons "auto" cares, but redrawing is harmless.
+local questieSeen
+function Pins.QuestieState()
+    if not QuestieLoaded() then return "" end
+    local out = {}
+    for _, k in ipairs({ "available", "turnin", "objective" }) do
+        out[#out + 1] = (Pins.QuestieShows(k) and "1" or "0") .. (Pins.QuestieShows(k, true) and "1" or "0")
+    end
+    return table.concat(out)
+end
+function Pins.CheckQuestie()
+    local now = Pins.QuestieState()
+    if now ~= questieSeen then
+        local first = questieSeen == nil
+        questieSeen = now
+        if not first then Soon() end
+    end
+end
+OXP.OnReady(function()
+    Pins.CheckQuestie()
+    if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(2, Pins.CheckQuestie) end
+end)

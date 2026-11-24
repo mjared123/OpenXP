@@ -1091,8 +1091,8 @@ do
     _G.QuestieLoader = {}
     t.ok(not OXP.Pins.QuestIconsOn(), "auto: off while Questie is loaded")
     t.ok(not icons():find("quest_", 1, true), "no ! or ? of ours next to Questie's")
-    OXP.settings.mapQuestIcons = "on"
-    t.ok(OXP.Pins.QuestIconsOn(), "Always: on even with Questie")
+    OXP.settings.mapQuestIcons = "openxp"
+    t.ok(OXP.Pins.QuestIconsOn(), "OpenXP: on even with Questie")
     _G.QuestieLoader = nil
     OXP.settings.mapQuestIcons = "auto"
     t.eq(OXP.Pins.GreyLevel(30), 22, "grey quest level at 30")
