@@ -372,7 +372,7 @@ local function BagItemByName(name)
     local info = (C_Item and C_Item.GetItemInfo) or _G.GetItemInfo -- no global on newer clients
     if not (slots and idAt and info) then return nil end
     local want = name:lower()
-    for bag = 0, 4 do
+    for bag = 0, (NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4) do
         for slot = 1, (slots(bag) or 0) do
             local id = idAt(bag, slot)
             local n = id and info(id)
@@ -445,7 +445,7 @@ local function BagQuestItem(quests)
     local idAt = (C_Container and C_Container.GetContainerItemID) or _G.GetContainerItemID
     local spell = (C_Item and C_Item.GetItemSpell) or _G.GetItemSpell
     if not (info and slots and idAt and spell) then return nil end
-    for bag = 0, 4 do
+    for bag = 0, (NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4) do
         for slot = 1, (slots(bag) or 0) do
             local id = idAt(bag, slot)
             if id then

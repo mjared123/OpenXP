@@ -337,7 +337,7 @@ function Auto.JunkInBags()
     if not (slots and idAt and infoAt and ((C_Item and C_Item.GetItemInfo) or _G.GetItemInfo)) then return {} end
     local keep = GuideItems()
     local out = {}
-    for bag = 0, 4 do
+    for bag = 0, (NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4) do
         for slot = 1, (slots(bag) or 0) do
             local id = idAt(bag, slot)
             if id and not keep[id] then
@@ -395,7 +395,8 @@ function Auto.SellJunk()
         if not atVendor or not e or i > SELL_MAX then
             selling = false
             if sold > 0 then
-                local money = GetCoinTextureString and GetCoinTextureString(total) or (total .. "c")
+                local coins = (C_CurrencyInfo and C_CurrencyInfo.GetCoinTextureString) or GetCoinTextureString
+                local money = coins and coins(total) or (total .. "c")
                 print(("|cFF5AB8FFOpenXP:|r sold %d junk item%s for %s."):format(sold, sold == 1 and "" or "s", money))
             end
             return
@@ -435,7 +436,7 @@ function Auto.JunkReport()
     end
     local keep = GuideItems()
     local greys = 0
-    for bag = 0, 4 do
+    for bag = 0, (NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4) do
         for slot = 1, (slots(bag) or 0) do
             local id = idAt(bag, slot)
             if id then
