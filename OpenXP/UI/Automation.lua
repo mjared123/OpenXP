@@ -224,10 +224,19 @@ function Auto.WantedFlight()
     end
 end
 
+--- The first flight of the card's "Getting there" (the way to a step in
+--- another zone): { name = "Stormwind", travel = true }, or nil.
+function Auto.TravelFlight()
+    local T = OXP.Travel
+    local fly = T and T.lastFly
+    local now = GetTime and GetTime() or 0
+    if fly and now - (fly.at or 0) < 60 then return { name = fly.name, travel = true } end
+end
+
 --- The taxi map node for the wanted flight: index, name; nil when the
 --- step has no flight, the node isn't on this map or can't be flown to.
-function Auto.FlightNode()
-    local g = Auto.WantedFlight()
+function Auto.FlightNode(orTravel)
+    local g = Auto.WantedFlight() or (orTravel and Auto.TravelFlight())
     if not g then return nil end
     for i = 1, (NumTaxiNodes and NumTaxiNodes() or 0) do
         local name = TaxiNodeName(i)
@@ -258,7 +267,8 @@ local mark
 function Auto.MarkFlight()
     if mark then mark:Hide() end
     if not Engine.GetGuide() then return nil end
-    local i = Auto.FlightNode()
+    -- the step's own flight, else the first flight of "Getting there"
+    local i = Auto.FlightNode(true)
     local button = i and _G["TaxiButton" .. i]
     if not (button and CreateFrame) then return nil end
     if not mark then
@@ -272,8 +282,11 @@ function Auto.MarkFlight()
     mark:SetParent(button)
     mark:ClearAllPoints()
     mark:SetPoint("CENTER", button, "CENTER", 0, 0)
-    mark:SetSize(button:GetWidth() * 2.6, button:GetHeight() * 2.6)
-    mark:SetFrameLevel(button:GetFrameLevel() + 2)
+    -- the button can still be 0 wide right as the map opens: never smaller than 40
+    local w, h = button:GetWidth() or 0, button:GetHeight() or 0
+    mark:SetSize(math.max(40, w * 2.6), math.max(40, h * 2.6))
+    mark:SetFrameStrata("DIALOG")
+    mark:SetFrameLevel(button:GetFrameLevel() + 5)
     mark:Show()
     Auto.marked = i
     return i
@@ -285,16 +298,27 @@ end)
 
 OXP.On("TAXIMAP_OPENED", function()
     local fly = On("autoFlight")
+    local took = false
     -- the map's nodes are there when it opens; if not yet, a moment later
     if (NumTaxiNodes and NumTaxiNodes() or 0) > 0 then
-        pcall(Auto.MarkFlight)
-        if fly then Auto.TakeFlight() end
-    elseif C_Timer and C_Timer.After then
-        C_Timer.After(0.2, function()
+        took = fly and Auto.TakeFlight()
+        if took then return end
+    end
+    -- the circle waits a moment: the game lays out the map's buttons after
+    -- this event, and a mark made before that sits on a 0-size button
+    if C_Timer and C_Timer.After then
+        local tries = 0
+        local function Try()
             if TaxiFrame and TaxiFrame.IsShown and not TaxiFrame:IsShown() then return end
-            pcall(Auto.MarkFlight)
-            if fly then Auto.TakeFlight() end
-        end)
+            tries = tries + 1
+            if tries == 1 and fly and not took and Auto.TakeFlight() then return end
+            local ok, marked = pcall(Auto.MarkFlight)
+            -- the way there may still be being worked out: keep looking a few seconds
+            if not (ok and marked) and tries < 16 then C_Timer.After(0.5, Try) end
+        end
+        C_Timer.After(0.2, Try)
+    else
+        pcall(Auto.MarkFlight)
     end
 end)
 

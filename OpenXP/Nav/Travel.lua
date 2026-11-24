@@ -168,7 +168,7 @@ Travel.Build = Build
 
 function Travel.Reset()
     nodes, links = nil, nil
-    Travel.plan = nil
+    Travel.plan = nil -- lastFly stays: the flight master map resets this
 end
 
 local function Dist(a, b)
@@ -379,6 +379,15 @@ function Travel.PlanFor(target)
         return nil
     end
     Travel.plan = { legs = legs, target = target, at = now, from = from }
+    -- the plan's first flight, kept a while: the plan itself can be dropped
+    -- for a moment (at the flight master the map is open, Automation.lua)
+    Travel.lastFly = nil
+    for _, leg in ipairs(legs) do
+        if leg.kind == "fly" and leg.to and leg.to.name then
+            Travel.lastFly = { name = leg.to.name, at = now }
+            break
+        end
+    end
     return Travel.plan
 end
 Travel.PlanFor = OXP.Perf.Wrap("travel plan", Travel.PlanFor)

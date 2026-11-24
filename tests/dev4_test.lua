@@ -272,16 +272,30 @@ do
     local game, OXP = newGame({ level = 23, map = 1440, x = 34.5, y = 48 })
     for i = 1, 3 do
         local b = game.Widget("Button", "TaxiButton" .. i)
-        b:SetSize(16, 16)
+        b:SetSize(0, 0) -- not laid out yet when the map opens
+    end
+    local function runDelayed()
+        local q = game.delayed
+        game.delayed = {}
+        for _, fn in ipairs(q) do fn() end
+        game:Flush()
     end
     addGuide(OXP, FLY_GUIDE)
     game:OpenTaxi(NODES)
+    runDelayed()
     t.eq(OXP.Automation.marked, 2, "Auberdine's node is marked (auto-flight off)")
     game:Fire("TAXIMAP_CLOSED")
     t.eq(OXP.Automation.marked, nil, "gone when the map closes")
     addGuide(OXP, { { { "goto", zone = "1440", x = 34, y = 48 }, { "accept", quest = 1010 } } })
     game:OpenTaxi(NODES)
+    runDelayed()
     t.eq(OXP.Automation.marked, nil, "no flight in the step: nothing marked")
+    game:Fire("TAXIMAP_CLOSED")
+    OXP.Travel.lastFly = { name = "Auberdine", at = GetTime() }
+    game:OpenTaxi(NODES)
+    runDelayed()
+    t.eq(OXP.Automation.marked, 2, "no flight in the step, but Getting there flies: that one is marked")
+    OXP.Travel.lastFly = nil
     t.eq(#game.errors, 0, "no errors: " .. tostring(game.errors[1]))
 end
 
