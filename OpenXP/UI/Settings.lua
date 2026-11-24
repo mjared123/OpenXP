@@ -287,6 +287,8 @@ local PAGES = {
         Toggle(p, "autoReward", L("Take the reward when there's no choice"))
         Toggle(p, "autoBestReward", L("With a choice, take the one that sells for most"), L("Off: you pick the reward yourself."))
         Toggle(p, "skipGossip", L("Skip gossip"), L("Picks the guide's quest or the only option. Never sets your Hearthstone by itself."))
+        Heading(p, L("Vendors"))
+        Toggle(p, "autoSellJunk", L("Sell junk"), L("At a vendor, sells your grey items. Never quest items or items the guide still needs."))
         Heading(p, L("Travel"))
         Toggle(p, "autoFlight", L("Fly to the step's flight master"),
             L("On a \"fly to\" step, talking to a flight master takes that flight. Hold Shift while you talk to choose yourself."))

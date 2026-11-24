@@ -234,10 +234,26 @@ function Import.Character()
     return result
 end
 
+--- Once (2.0.4, when 2.0 got junk selling back): 1.x's "sell junk", if it
+--- was turned off there.
+function Import.SellJunkSetting()
+    local db = OXP.db
+    if db.importedSellJunk then return false end
+    db.importedSellJunk = OXP.version
+    local old = Import.OldProfile()
+    if old and old.autoSellJunk == false and OXP.settings.autoSellJunk == OXP.DEFAULT_SETTINGS.autoSellJunk then
+        OXP.settings.autoSellJunk = false
+        return true
+    end
+    return false
+end
+
 OXP.OnLoaded(function()
     local ok, err = pcall(Import.Settings)
     if not ok then OXP.report(err) end
     ok, err = pcall(Import.MissedSettings)
+    if not ok then OXP.report(err) end
+    ok, err = pcall(Import.SellJunkSetting)
     if not ok then OXP.report(err) end
 end)
 

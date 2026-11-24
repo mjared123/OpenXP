@@ -62,6 +62,7 @@ local ACCOUNT_DEFAULTS = {
         autoReward = true,         -- take the reward when there is no real choice
         autoBestReward = false,    -- with a choice, take the one that sells for most
         skipGossip = true,         -- pick the guide's quest, or the only option, in gossip
+        autoSellJunk = true,       -- at a vendor, sell grey items (never quest items or ones the guide needs)
         autoFlight = false,        -- take the step's flight when the flight master's map opens
         -- buttons and timers
         itemButton = true,

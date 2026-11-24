@@ -264,3 +264,99 @@ OXP.On("TAXIMAP_OPENED", function()
         end)
     end
 end)
+
+------------------------------------------------------------------------
+-- Sell junk (2.0.4; 1.x did this and 2.0 had lost it, CurseForge
+-- 2026-11-24): at a vendor, sell the grey items in your bags. Never a quest
+-- item, an item with no sell price, or one the guide still needs.
+------------------------------------------------------------------------
+
+local SELL_GAP = 0.2   -- seconds between items (the vendor drops sales sent faster)
+local SELL_MAX = 80    -- items per visit, at most
+
+-- Items the loaded guide still wants you to have, from the current step on.
+local function GuideItems()
+    local out = {}
+    local steps = Engine.GetSteps and Engine.GetSteps() or {}
+    local cur = Engine.GetPosition and Engine.GetPosition() or 1
+    for pos = math.max(1, cur), #steps do
+        for _, g in ipairs(steps[pos].goals or {}) do
+            if g.item then out[g.item] = true end
+        end
+    end
+    return out
+end
+
+--- The grey items in your bags you can sell: { {bag, slot, id, price}, ... }.
+function Auto.JunkInBags()
+    local C = C_Container
+    local slots = (C and C.GetContainerNumSlots) or _G.GetContainerNumSlots
+    local idAt = (C and C.GetContainerItemID) or _G.GetContainerItemID
+    local infoAt = (C and C.GetContainerItemInfo) or _G.GetContainerItemInfo
+    local questAt = (C and C.GetContainerItemQuestInfo) or _G.GetContainerItemQuestInfo
+    if not (slots and idAt and infoAt and GetItemInfo) then return {} end
+    local keep = GuideItems()
+    local out = {}
+    for bag = 0, 4 do
+        for slot = 1, (slots(bag) or 0) do
+            local id = idAt(bag, slot)
+            if id and not keep[id] then
+                local quality, count, noValue
+                local a, b, _, d, _, _, _, _, i = infoAt(bag, slot)
+                if type(a) == "table" then
+                    quality, count, noValue = a.quality, a.stackCount, a.hasNoValue
+                else
+                    count, quality, noValue = b, d, i
+                end
+                local q1, q2 = nil, nil
+                if questAt then q1, q2 = questAt(bag, slot) end
+                local isQuest = (type(q1) == "table" and (q1.isQuestItem or q1.questID)) or (type(q1) ~= "table" and (q1 or q2))
+                local price = select(11, GetItemInfo(id))
+                if quality == 0 and not noValue and not isQuest and type(price) == "number" and price > 0 then
+                    out[#out + 1] = { bag = bag, slot = slot, id = id, price = price * (count or 1) }
+                end
+            end
+        end
+    end
+    return out
+end
+
+local selling = false
+local atVendor = false
+OXP.On("MERCHANT_CLOSED", function() atVendor = false end)
+
+--- Sell the junk, one item every SELL_GAP seconds while the vendor is open.
+function Auto.SellJunk()
+    if selling then return end
+    local junk = Auto.JunkInBags()
+    if #junk == 0 then return end
+    local use = (C_Container and C_Container.UseContainerItem) or _G.UseContainerItem
+    if not use then return end
+    selling = true
+    local i, total, sold = 0, 0, 0
+    local function Next()
+        i = i + 1
+        local e = junk[i]
+        if not atVendor or not e or i > SELL_MAX then
+            selling = false
+            if sold > 0 then
+                local money = GetCoinTextureString and GetCoinTextureString(total) or (total .. "c")
+                print(("|cFF5AB8FFOpenXP:|r sold %d junk item%s for %s."):format(sold, sold == 1 and "" or "s", money))
+            end
+            return
+        end
+        -- still the same item in that slot (you may have moved things)
+        local idAt = (C_Container and C_Container.GetContainerItemID) or _G.GetContainerItemID
+        if idAt(e.bag, e.slot) == e.id then
+            use(e.bag, e.slot)
+            total, sold = total + e.price, sold + 1
+        end
+        if C_Timer and C_Timer.After then C_Timer.After(SELL_GAP, Next) else Next() end
+    end
+    Next()
+end
+
+OXP.On("MERCHANT_SHOW", function()
+    atVendor = true
+    if On("autoSellJunk") then Auto.SellJunk() end
+end)
