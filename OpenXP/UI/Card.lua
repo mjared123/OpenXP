@@ -326,7 +326,7 @@ function Card.GoalText(g, step)
         return WithPart(g.text or fmt(L("Turn in %s"), QuestDB.QuestName(g.quest)), g, step)
     elseif kind == "collect" then
         local have = OXP.World.ItemCount(g.item)
-        return fmt("%s: %d/%d", g.text or (GetItemInfo and GetItemInfo(g.item)) or ("item " .. g.item),
+        return fmt("%s: %d/%d", g.text or (((C_Item and C_Item.GetItemInfo) or GetItemInfo) or function() end)(g.item) or ("item " .. g.item),
             math.min(have, g.count or 1), g.count or 1)
     elseif kind == "xp" then
         return g.text or fmt(L("Reach level %d"), g.level)

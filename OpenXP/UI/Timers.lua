@@ -26,7 +26,8 @@ local function Now() return GetTime and GetTime() or 0 end
 
 --- Seconds until the Hearthstone is ready (0 when ready, nil without one).
 function Timers.HearthRemaining()
-    if GetItemCount and GetItemCount(HEARTHSTONE) == 0 then return nil end
+    local count = (C_Item and C_Item.GetItemCount) or _G.GetItemCount
+    if count and count(HEARTHSTONE) == 0 then return nil end
     local start, duration = GetItemCooldown(HEARTHSTONE)
     if not start or start == 0 or (duration or 0) <= 1.5 then return 0 end
     return math.max(0, start + duration - Now())

@@ -369,12 +369,13 @@ local function BagItemByName(name)
     if not name or name == "" then return nil end
     local slots = (C_Container and C_Container.GetContainerNumSlots) or _G.GetContainerNumSlots
     local idAt = (C_Container and C_Container.GetContainerItemID) or _G.GetContainerItemID
-    if not (slots and idAt and GetItemInfo) then return nil end
+    local info = (C_Item and C_Item.GetItemInfo) or _G.GetItemInfo -- no global on newer clients
+    if not (slots and idAt and info) then return nil end
     local want = name:lower()
     for bag = 0, 4 do
         for slot = 1, (slots(bag) or 0) do
             local id = idAt(bag, slot)
-            local n = id and GetItemInfo(id)
+            local n = id and info(id)
             if type(n) == "string" then
                 nameWait[id] = nil
                 if n:lower() == want then return id end

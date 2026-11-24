@@ -189,7 +189,8 @@ function Tips.NeededItems()
             local state = Engine.StepState(c.pos)
             if c.pos >= cur and state ~= "done" and not (qid and seen[qid]) and not (qid and Quests.IsTurnedIn(qid)) then
                 if qid then seen[qid] = true end
-                local have = GetItemCount and GetItemCount(itemId, true) or 0
+                local cnt = (C_Item and C_Item.GetItemCount) or GetItemCount
+                local have = cnt and cnt(itemId, true) or 0
                 list[#list + 1] = { itemId = itemId, name = ItemName(itemId), questId = qid,
                                     title = qid and QuestDB.QuestName(qid) or L("Later in the guide"),
                                     have = have, need = c.qty, done = have >= c.qty, later = c.pos }
@@ -285,7 +286,7 @@ function Tips.AddLines(tooltip, unit)
             tooltip:AddLine(" ")
             tooltip:AddLine(Icon(QUEST_ICON, 16) .. ORANGE .. L("Loot for your quests") .. "|r")
             for _, n in ipairs(loot) do
-                local left = Icon(GetItemIcon and GetItemIcon(n.itemId) or QUEST_ICON) .. GOLD .. (n.name or "?") .. "|r"
+                local left = Icon(((C_Item and C_Item.GetItemIconByID) or GetItemIcon or function() end)(n.itemId) or QUEST_ICON) .. GOLD .. (n.name or "?") .. "|r"
                 tooltip:AddDoubleLine(left, Progress(n.have, n.need, n.done))
                 local sub = "    " .. GREY .. n.title
                 if n.later then sub = sub .. " " .. fmt(L("(pick up at step %d)"), n.later) end
@@ -584,7 +585,7 @@ function Tips.UpdatePlate(unit)
     f.badge:SetSize(size, size)
     f.badge:SetVertexColor(1, 1, 1, 1)
     f.badge:SetTexture(OXP.Util.IconFile(MAP .. (PLATE_ICON[info.kind] or "kill"), size, f))
-    local icon = info.item and GetItemIcon and GetItemIcon(info.item)
+    local icon = info.item and ((C_Item and C_Item.GetItemIconByID) or GetItemIcon or function() end)(info.item)
     f.item:SetTexture(icon)
     f.item:SetShown(icon ~= nil)
     OXP.Fonts.Apply(f.text, OXP.Fonts.Path(), 13, "OUTLINE")
