@@ -250,6 +250,20 @@ do
     game:TurnIn(1010)
     game:Accept(1020, 1)
     t.eq(names(), "Sentinel Velene Starstrike", "Orendil done (turn-in and pickup): off the list")
+
+    -- hiding the guide card (minimap button) hides the arrow and this list too
+    game:Flush()
+    t.eq(B.box:IsShown(), true, "list shown with the card")
+    t.eq(OXP.Arrow.frame:IsShown(), true, "arrow shown with the card")
+    OXP.Card.Toggle()
+    game:Flush()
+    t.eq(OXP.settings.cardShown, false, "card hidden")
+    t.eq(B.box:IsShown(), false, "the targets list hides with it")
+    t.eq(OXP.Arrow.frame:IsShown(), false, "and the arrow")
+    OXP.Card.Toggle()
+    game:Flush()
+    t.eq(B.box:IsShown(), true, "card back: the list comes back")
+    t.eq(OXP.Arrow.frame:IsShown(), true, "and the arrow")
 end
 
 ------------------------------------------------------------------------

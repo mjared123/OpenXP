@@ -126,7 +126,8 @@ end)
 
 function Arrow.Refresh()
     local s = OXP.settings
-    local show = (s.arrowShown and OXP.Engine.GetGuide() ~= nil) or OXP.PathHints.go ~= nil
+    -- hiding the guide card (minimap button, /oxp card) hides the arrow too
+    local show = (s.arrowShown and s.cardShown ~= false and OXP.Engine.GetGuide() ~= nil) or OXP.PathHints.go ~= nil
     if show then
         f:Show()
         Arrow.Draw()

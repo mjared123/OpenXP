@@ -216,7 +216,7 @@ local PAGES = {
         Dropdown(p, "fontOutline", L("Text outline"), L("An outline helps on bright backgrounds like snow."),
             { { "", L("None") }, { "OUTLINE", L("Thin") }, { "THICKOUTLINE", L("Thick") } }, "", function() OXP.Fonts.Changed() end)
         Heading(p, L("Behaviour"))
-        Toggle(p, "cardShown", L("Show the guide card"), L("Also: /oxp card"))
+        Toggle(p, "cardShown", L("Show the guide card"), L("Hiding it also hides the arrow and the targets list. Also: /oxp card, or click the minimap button"))
         Toggle(p, "cardAnimations", L("Animate step changes"), L("The new step slides in and fades up when you move to it."))
         Toggle(p, "lockFrames", L("Lock the card and arrow"), L("Stops them being dragged or resized by accident."))
         ButtonRow(p, L("Position and size"), L("Put the card and arrow back where they started, at their first size."),

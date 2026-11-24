@@ -638,7 +638,8 @@ function Buttons.Refresh()
         item:Hide()
     end
 
-    local list = (s.targetButton ~= false and Engine.GetGuide()) and Buttons.WantedTargets() or {}
+    -- the targets list goes with the guide card when it's hidden
+    local list = (s.targetButton ~= false and s.cardShown ~= false and Engine.GetGuide()) and Buttons.WantedTargets() or {}
     Buttons.count = #list
     for i = 1, MAX_ROWS do
         local e = list[i]

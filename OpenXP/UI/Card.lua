@@ -1750,6 +1750,8 @@ end
 function Card.Toggle()
     Settings().cardShown = not Settings().cardShown
     Card.Refresh(true)
+    -- the arrow and the targets list follow the card (CurseForge 2026-11-23)
+    OXP.Send("SETTINGS_CHANGED")
 end
 
 OXP.OnReady(Card.Enable)
