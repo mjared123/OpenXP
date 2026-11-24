@@ -393,3 +393,48 @@ OXP.On("MERCHANT_SHOW", function()
     atVendor = true
     if On("autoSellJunk") then Auto.SellJunk() end
 end)
+
+--- /oxp junk: what "Sell junk" sees in your bags, and why an item is kept.
+function Auto.JunkReport()
+    local P = function(s) print("|cFF5AB8FFOpenXP:|r " .. s) end
+    P(("Sell junk is %s."):format(OXP.settings.autoSellJunk == false and "OFF (Settings > Automation)" or "on"))
+    local C = C_Container
+    local slots = (C and C.GetContainerNumSlots) or _G.GetContainerNumSlots
+    local idAt = (C and C.GetContainerItemID) or _G.GetContainerItemID
+    local infoAt = (C and C.GetContainerItemInfo) or _G.GetContainerItemInfo
+    local questAt = (C and C.GetContainerItemQuestInfo) or _G.GetContainerItemQuestInfo
+    if not (slots and idAt and infoAt and GetItemInfo) then
+        P("can't read your bags on this client.") return
+    end
+    local keep = GuideItems()
+    local greys = 0
+    for bag = 0, 4 do
+        for slot = 1, (slots(bag) or 0) do
+            local id = idAt(bag, slot)
+            if id then
+                local a, b, _, d, _, _, _, _, i = infoAt(bag, slot)
+                local quality, noValue
+                if type(a) == "table" then quality, noValue = a.quality, a.hasNoValue
+                else quality, noValue = d, i end
+                local name, _, q2, _, _, _, _, _, _, _, price = GetItemInfo(id)
+                if quality == 0 or q2 == 0 then
+                    greys = greys + 1
+                    local q1, qq = nil, nil
+                    if questAt then q1, qq = questAt(bag, slot) end
+                    local isQuest = (type(q1) == "table" and (q1.isQuestItem or q1.questID)) or (type(q1) ~= "table" and (q1 or qq))
+                    local why = {}
+                    if quality ~= 0 then why[#why + 1] = "bag says quality " .. tostring(quality) end
+                    if keep[id] then why[#why + 1] = "the guide needs it" end
+                    if noValue then why[#why + 1] = "no sell value" end
+                    if isQuest then why[#why + 1] = "quest item" end
+                    if type(price) ~= "number" then why[#why + 1] = "item info not loaded"
+                    elseif price <= 0 then why[#why + 1] = "price 0" end
+                    P(("%s (%d): %s"):format(name or "?", id, #why == 0 and "would sell" or ("kept, " .. table.concat(why, ", "))))
+                end
+            end
+        end
+    end
+    if greys == 0 then P("no grey items in your bags.") end
+end
+
+OXP.AddCommand("junk", "show what Sell junk would sell", function() Auto.JunkReport() end)

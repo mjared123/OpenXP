@@ -61,9 +61,13 @@ do
     local said = {}
     local oldPrint = print
     print = function(msg) said[#said + 1] = tostring(msg) end
+    OXP.Automation.JunkReport()
+    local report = table.concat(said, "\n")
+    said = {}
     game:Fire("MERCHANT_SHOW")
     runDelayed(game)
     print = oldPrint
+    t.ok(report:find("would sell", 1, true) and report:find("the guide needs it", 1, true), "/oxp junk explains: " .. report)
     t.eq(table.concat(sold, ","), "100,105", "only the two sellable greys")
     t.ok(table.concat(said, "\n"):find("sold 2 junk items", 1, true), "says what it sold: " .. tostring(said[1]))
     t.eq(#game.errors, 0, "no errors: " .. tostring(game.errors[1]))
