@@ -99,7 +99,7 @@ function Auto.RewardChoice()
     for i = 1, n do
         local link = GetQuestItemLink and GetQuestItemLink("choice", i)
         if not link then return false end -- item info not loaded yet: let the player choose
-        local price = select(11, GetItemInfo(link))
+        local price = select(11, ((C_Item and C_Item.GetItemInfo) or GetItemInfo)(link))
         if price == nil then return false end
         if not bestPrice or price > bestPrice then best, bestPrice = i, price end
     end
@@ -306,6 +306,13 @@ end)
 
 local SELL_GAP = 0.2   -- seconds between items (the vendor drops sales sent faster)
 local SELL_MAX = 80    -- items per visit, at most
+local SELL_WAIT = 0.3  -- seconds after the vendor opens before the first sale
+
+-- C_Item first: the global GetItemInfo may not exist on newer clients
+local function ItemInfo(id)
+    local f = (C_Item and C_Item.GetItemInfo) or _G.GetItemInfo
+    if f then return f(id) end
+end
 
 -- Items the loaded guide still wants you to have, from the current step on.
 local function GuideItems()
@@ -327,7 +334,7 @@ function Auto.JunkInBags()
     local idAt = (C and C.GetContainerItemID) or _G.GetContainerItemID
     local infoAt = (C and C.GetContainerItemInfo) or _G.GetContainerItemInfo
     local questAt = (C and C.GetContainerItemQuestInfo) or _G.GetContainerItemQuestInfo
-    if not (slots and idAt and infoAt and GetItemInfo) then return {} end
+    if not (slots and idAt and infoAt and ((C_Item and C_Item.GetItemInfo) or _G.GetItemInfo)) then return {} end
     local keep = GuideItems()
     local out = {}
     for bag = 0, 4 do
@@ -344,7 +351,7 @@ function Auto.JunkInBags()
                 local q1, q2 = nil, nil
                 if questAt then q1, q2 = questAt(bag, slot) end
                 local isQuest = (type(q1) == "table" and (q1.isQuestItem or q1.questID)) or (type(q1) ~= "table" and (q1 or q2))
-                local price = select(11, GetItemInfo(id))
+                local price = select(11, ItemInfo(id))
                 if quality == 0 and not noValue and not isQuest and type(price) == "number" and price > 0 then
                     out[#out + 1] = { bag = bag, slot = slot, id = id, price = price * (count or 1) }
                 end
@@ -367,7 +374,22 @@ function Auto.SellJunk()
     if not use then return end
     selling = true
     local i, total, sold = 0, 0, 0
+    local idAt = (C_Container and C_Container.GetContainerItemID) or _G.GetContainerItemID
+    local last, tries = nil, 0
     local function Next()
+        -- count the last sale only once the item has left the bag; try it once more if not
+        if last then
+            if idAt(last.bag, last.slot) == last.id then
+                if tries == 0 and atVendor then
+                    tries = 1
+                    use(last.bag, last.slot)
+                    if C_Timer and C_Timer.After then C_Timer.After(SELL_GAP, Next) return end
+                end
+            else
+                total, sold = total + last.price, sold + 1
+            end
+            last, tries = nil, 0
+        end
         i = i + 1
         local e = junk[i]
         if not atVendor or not e or i > SELL_MAX then
@@ -379,10 +401,9 @@ function Auto.SellJunk()
             return
         end
         -- still the same item in that slot (you may have moved things)
-        local idAt = (C_Container and C_Container.GetContainerItemID) or _G.GetContainerItemID
         if idAt(e.bag, e.slot) == e.id then
             use(e.bag, e.slot)
-            total, sold = total + e.price, sold + 1
+            last = e
         end
         if C_Timer and C_Timer.After then C_Timer.After(SELL_GAP, Next) else Next() end
     end
@@ -391,7 +412,13 @@ end
 
 OXP.On("MERCHANT_SHOW", function()
     atVendor = true
-    if On("autoSellJunk") then Auto.SellJunk() end
+    if not On("autoSellJunk") then return end
+    -- give the vendor window a moment to be ready, like 1.x did
+    if C_Timer and C_Timer.After then
+        C_Timer.After(SELL_WAIT, function() if atVendor then Auto.SellJunk() end end)
+    else
+        Auto.SellJunk()
+    end
 end)
 
 --- /oxp junk: what "Sell junk" sees in your bags, and why an item is kept.
@@ -403,7 +430,7 @@ function Auto.JunkReport()
     local idAt = (C and C.GetContainerItemID) or _G.GetContainerItemID
     local infoAt = (C and C.GetContainerItemInfo) or _G.GetContainerItemInfo
     local questAt = (C and C.GetContainerItemQuestInfo) or _G.GetContainerItemQuestInfo
-    if not (slots and idAt and infoAt and GetItemInfo) then
+    if not (slots and idAt and infoAt and ((C_Item and C_Item.GetItemInfo) or _G.GetItemInfo)) then
         P("can't read your bags on this client.") return
     end
     local keep = GuideItems()
@@ -416,7 +443,7 @@ function Auto.JunkReport()
                 local quality, noValue
                 if type(a) == "table" then quality, noValue = a.quality, a.hasNoValue
                 else quality, noValue = d, i end
-                local name, _, q2, _, _, _, _, _, _, _, price = GetItemInfo(id)
+                local name, _, q2, _, _, _, _, _, _, _, price = ItemInfo(id)
                 if quality == 0 or q2 == 0 then
                     greys = greys + 1
                     local q1, qq = nil, nil

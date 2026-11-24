@@ -83,7 +83,7 @@ do
     game:Fire("MERCHANT_SHOW")
     game:Fire("MERCHANT_CLOSED")
     runDelayed(game)
-    t.eq(#sold, 1, "one sold, then the vendor closed")
+    t.eq(#sold, 0, "vendor closed before the first sale: nothing")
 
     sold = {}
     bags({ { 100, 0, 1, 5 } })
@@ -97,6 +97,41 @@ do
     runDelayed(game)
     IsShiftKeyDown = function() return false end
     t.eq(#sold, 0, "Shift held: nothing")
+end
+
+print("-- no global GetItemInfo (newer clients): C_Item.GetItemInfo is used")
+do
+    local game = FakeWoW.New(ROOT, { level = 10 })
+    local OXP = game:LoadAddon()
+    game:Login()
+    sold = {}
+    bags({ { 100, 0, 1, 5 }, { 105, 0, 1, 2 } })
+    C_Item = { GetItemInfo = GetItemInfo }
+    GetItemInfo = nil
+    game:Fire("MERCHANT_SHOW")
+    runDelayed(game)
+    C_Item = nil
+    t.eq(table.concat(sold, ","), "100,105", "both sold through C_Item")
+    t.eq(#game.errors, 0, "no errors: " .. tostring(game.errors[1]))
+end
+
+print("-- an item the vendor didn't take is tried once more, and not counted")
+do
+    local game = FakeWoW.New(ROOT, { level = 10 })
+    local OXP = game:LoadAddon()
+    game:Login()
+    sold = {}
+    bags({ { 100, 0, 1, 5 } })
+    local tries = 0
+    C_Container.UseContainerItem = function() tries = tries + 1 end -- item stays put
+    local said = {}
+    local oldPrint = print
+    print = function(msg) said[#said + 1] = tostring(msg) end
+    game:Fire("MERCHANT_SHOW")
+    runDelayed(game)
+    print = oldPrint
+    t.eq(tries, 2, "tried twice")
+    t.ok(not table.concat(said, "\n"):find("sold", 1, true), "doesn't claim a sale")
 end
 
 print("-- 1.x had it off: off once in 2.0")
