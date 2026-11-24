@@ -360,6 +360,11 @@ end
 -- while the step has anything left to do.
 -- An item in your bags by its name (a "Use <item>" line with no item id):
 -- id or nil. Bags 0-4.
+-- Items in your bags whose name the game hadn't sent yet the last time a
+-- "Use <item>" line looked for one: only their GET_ITEM_INFO_RECEIVED is
+-- worth a refresh (see the handler below).
+local nameWait = {}
+
 local function BagItemByName(name)
     if not name or name == "" then return nil end
     local slots = (C_Container and C_Container.GetContainerNumSlots) or _G.GetContainerNumSlots
@@ -370,7 +375,12 @@ local function BagItemByName(name)
         for slot = 1, (slots(bag) or 0) do
             local id = idAt(bag, slot)
             local n = id and GetItemInfo(id)
-            if type(n) == "string" and n:lower() == want then return id end
+            if type(n) == "string" then
+                nameWait[id] = nil
+                if n:lower() == want then return id end
+            elseif id then
+                nameWait[id] = true
+            end
         end
     end
 end
@@ -782,9 +792,17 @@ OXP.On("PLAYER_TARGET_CHANGED", function()
 end)
 -- an item's name arrives: a "Use <item>" line found by name can match now
 -- (before 2.0.2 the button only showed once something else refreshed it)
+-- This event fires for every item the game loads: in a city, other
+-- players' gear, many times a second. 2.0.2 refreshed the buttons on each
+-- one (a bag scan and a repaint every frame: CPU spikes and stutter in busy
+-- places, CurseForge 2026-11-24), so only an item we're waiting for counts.
 OXP.On("GET_ITEM_INFO_RECEIVED", function(_, id)
-    if id and id == item.itemID then Buttons.PaintItem() end
-    Soon()
+    if not id then return end
+    if id == item.itemID then Buttons.PaintItem() end
+    if nameWait[id] then
+        nameWait[id] = nil
+        Soon()
+    end
 end)
 
 -- 1.x's key binds (its item and target buttons had other names): moved to

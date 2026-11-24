@@ -51,6 +51,24 @@ do
     GetItemInfo, C_Container = nil, nil
 end
 
+print("-- other items arriving (players' gear in a city) don't refresh the buttons")
+do
+    local game, OXP = newGame()
+    GetItemInfo = function(id) return id == 5000 and "Flare Gun" or nil end
+    bags({ { 5000 } })
+    game:AddItem(5000, 1)
+    game:Accept(700, 1)
+    addGuide(OXP, { { { "complete", quest = 700, obj = 1, text = "Use Flare Gun (on the tower)" } } })
+    game:Flush()
+    local scans, slots = 0, C_Container.GetContainerNumSlots
+    C_Container.GetContainerNumSlots = function(bag) scans = scans + 1 return slots(bag) end
+    for id = 20000, 20500 do game:Fire("GET_ITEM_INFO_RECEIVED", id, true) end
+    game:Flush()
+    t.eq(scans, 0, "500 unrelated items: no bag scans")
+    t.eq(OXP.ActionButtons.item.itemID, 5000, "and the button keeps its item")
+    GetItemInfo, C_Container = nil, nil
+end
+
 print("-- a usable quest item for the step's quest, even when the step doesn't name it")
 do
     local game, OXP = newGame()
