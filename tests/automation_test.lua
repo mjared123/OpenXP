@@ -117,6 +117,19 @@ do
     local savedName = OXP.QuestDB.QuestName
     OXP.QuestDB.QuestName = function(id) if id == 306 then return "The Second One" end return savedName(id) end
     t.eq(w.event("QUEST_GREETING"), "select The Second One", "a quest still in progress isn't picked: the next one is")
+    -- a finished quest outside the guide (a daily, say) doesn't hide it either
+    local savedTitle = GetActiveTitle
+    active = { "Some Daily", "In Search Of The Excavation Team!" }
+    GetActiveTitle = function(i) return active[i], i == 1 end
+    t.eq(w.event("QUEST_GREETING"), "select The Second One", "a finished quest outside the guide waits behind the guide's next quest")
+    GetActiveTitle = savedTitle
+    active = { "In Search Of The Excavation Team!" }
+    -- the guide's quest finished: it goes in first, unless auto turn-in is off
+    game:FinishObjective(305, 1)
+    t.eq(w.event("QUEST_GREETING"), "select active In Search Of The Excavation Team!", "a finished guide quest is turned in first")
+    OXP.settings.autoTurnIn = false
+    t.eq(w.event("QUEST_GREETING"), "select The Second One", "auto turn-in off: the finished one is left for you, the next is taken")
+    OXP.settings.autoTurnIn = true
     OXP.QuestDB.QuestName = savedName
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
@@ -172,6 +185,10 @@ do
     t.eq(w.event("GOSSIP_SHOW"), "", "but not a daily")
     w.gossip.active = { { questID = 8500, isComplete = false } }
     t.eq(w.event("GOSSIP_SHOW"), "", "nor one still in progress")
+    OXP.settings.autoTurnIn = false
+    w.gossip.active = { { questID = 8500, isComplete = true } }
+    t.eq(w.event("GOSSIP_SHOW"), "", "auto turn-in off: gossip leaves finished quests to you")
+    OXP.settings.autoTurnIn = true
     w.gossip.active = {}
     local active = { { "Something Else", false }, { "Not In The Guide", true } }
     GetNumAvailableQuests = function() return 0 end

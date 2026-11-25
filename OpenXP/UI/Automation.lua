@@ -151,9 +151,14 @@ OXP.On("GOSSIP_SHOW", function()
     local G = Gossip()
     local active, available = Lists()
     local turnins, accepts = GuideQuests("turnin"), GuideQuests("accept")
+    -- With several quests at one NPC: the guide's finished quests first,
+    -- then the guide's next quest to take, and only then any other finished
+    -- quest, so a quest that won't be turned in (a daily, one that costs
+    -- money) never hides the next one to take. Auto turn in off: finished
+    -- quests are left for you.
+    local turnIn = On("autoTurnIn")
     for _, q in ipairs(active) do
-        local repeats = q.repeatable or (q.frequency and q.frequency ~= 0)
-        if q.isComplete and (turnins[q.questID] or (not repeats and TurnInOK(q.questID))) then
+        if turnIn and q.isComplete and turnins[q.questID] then
             G.SelectActiveQuest(q.questID)
             Auto.last = "gossip turnin " .. q.questID
             return
@@ -163,6 +168,14 @@ OXP.On("GOSSIP_SHOW", function()
         if accepts[q.questID] then
             G.SelectAvailableQuest(q.questID)
             Auto.last = "gossip accept " .. q.questID
+            return
+        end
+    end
+    for _, q in ipairs(active) do
+        local repeats = q.repeatable or (q.frequency and q.frequency ~= 0)
+        if turnIn and q.isComplete and not repeats and TurnInOK(q.questID) then
+            G.SelectActiveQuest(q.questID)
+            Auto.last = "gossip turnin " .. q.questID
             return
         end
     end
@@ -190,14 +203,21 @@ OXP.On("QUEST_GREETING", function()
         for id in pairs(turnins) do if same(id, title) then return id end end
         for id in pairs(accepts) do if same(id, title) then return id end end
     end
-    for i = 1, (GetNumActiveQuests and GetNumActiveQuests() or 0) do
+    -- same order as the gossip window: the guide's finished quests, the
+    -- guide's next quest to take, then any other finished quest. Never one
+    -- still in progress: that opened its "not done yet" page every time and
+    -- the next quest was never offered (Matt, 2026-11-25).
+    local turnIn = On("autoTurnIn")
+    local any = turnIn and OXP.settings.autoTurnInAny ~= false
+    local nActive = GetNumActiveQuests and GetNumActiveQuests() or 0
+    local function ready(i)
         local title, isComplete = GetActiveTitle(i)
         local id = idOf(title)
-        -- only a quest that's ready: picking one still in progress opened
-        -- its "not done yet" page every time, and the quests to take next
-        -- were never offered (Matt, 2026-11-25)
-        local ready = isComplete == true or isComplete == 1 or (id ~= nil and OXP.Quests.IsComplete(id))
-        if ready and ((id and turnins[id]) or (On("autoTurnIn") and OXP.settings.autoTurnInAny ~= false)) then
+        return isComplete == true or isComplete == 1 or (id ~= nil and OXP.Quests.IsComplete(id)), id
+    end
+    for i = 1, nActive do
+        local ok, id = ready(i)
+        if turnIn and ok and id and turnins[id] then
             SelectActiveQuest(i)
             return
         end
@@ -206,6 +226,13 @@ OXP.On("QUEST_GREETING", function()
         local id = idOf(GetAvailableTitle(i))
         if id and accepts[id] then
             SelectAvailableQuest(i)
+            return
+        end
+    end
+    for i = 1, nActive do
+        local ok, id = ready(i)
+        if any and ok and not (id and turnins[id]) then
+            SelectActiveQuest(i)
             return
         end
     end
