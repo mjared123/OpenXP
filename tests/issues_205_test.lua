@@ -211,6 +211,16 @@ do
     mark = nil
     T.UpdatePlate("nameplate1")
     t.eq(lift(), low, "skull gone: back down")
+    -- WoW Forever hands the marker over as a secret value (comparing it errors)
+    local SECRET = setmetatable({}, { __eq = function() error("compared a secret") end,
+                                      __lt = function() error("compared a secret") end,
+                                      __le = function() error("compared a secret") end })
+    _G.issecretvalue = function(v) return rawequal(v, SECRET) end
+    mark = SECRET
+    local ok, err = pcall(T.UpdatePlate, "nameplate1")
+    t.ok(ok, "a secret marker: no error (" .. tostring(err) .. ")")
+    t.ok(lift() and lift() > low, "a secret marker counts as marked: the sword goes up")
+    _G.issecretvalue = nil
     for k, v in pairs(saved) do _G[k] = v end
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end

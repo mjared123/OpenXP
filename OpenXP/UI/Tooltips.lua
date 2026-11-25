@@ -539,6 +539,18 @@ end
 -- right where the marker goes: then the marker goes up a row above it.
 local RAID_MARK_LIFT = 26
 
+--- The unit wears a raid marker. WoW Forever hands addons the marker as a
+--- secret value (printable, but comparing it errors): a secret one counts
+--- as marked, since the game gives no marker as plain nil.
+function Tips.HasRaidMark(unit)
+    if not GetRaidTargetIndex then return false end
+    local ok, mark = pcall(GetRaidTargetIndex, unit)
+    if not ok then return false end
+    if issecretvalue and issecretvalue(mark) then return true end
+    if rawequal(mark, nil) then return false end
+    return type(mark) == "number" and mark > 0
+end
+
 local function PlateFrame(plate, marked)
     local host, above = PlateHost(plate)
     local f = plates[plate]
@@ -584,8 +596,7 @@ function Tips.UpdatePlate(unit)
         if plates[plate] then plates[plate]:Hide() end
         return
     end
-    local mark = GetRaidTargetIndex and GetRaidTargetIndex(unit)
-    local f = PlateFrame(plate, type(mark) == "number" and mark > 0)
+    local f = PlateFrame(plate, Tips.HasRaidMark(unit))
     local big = info.kind == "boss"
     local size = big and 22 or 18
     f.badge:SetSize(size, size)
