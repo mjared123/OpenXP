@@ -18,6 +18,9 @@ Welcome.CHANGELOG = {
             "No more asking you to do quest chains the guide never sends you on. If the quest giver doesn't offer the quest, the guide quietly moves on (/oxp catchup lists what was passed over).",
             "Flight timer: back under the guide card, and Shift-drag moves it (Settings > Buttons and timers puts it back). Flights with stops on the way now add up each leg, and all flight times are closer to WoW Forever's real ones.",
             "Find my place no longer jumps to a section above your level just because a few of its quests are in your log (a level 19 could end up in 22-25).",
+            "\"Train your new spells\" steps lead the arrow to your own class trainer and name them (a priest's arrow stayed on Deputy Willem).",
+            "A \"Fly to\" step for a flight path you don't have yet says so, so you go there another way and pick it up.",
+            "Human 1-11 Elwynn: Rest and Relaxation is picked up on the way to Goldshire instead of before going back behind the Abbey.",
         },
     },
     {

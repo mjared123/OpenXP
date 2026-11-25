@@ -50,6 +50,7 @@ Data\Flights.lua
 Data\QuestDB.lua
 Data\QuestDB_Fill.lua
 Data\PathHints.lua
+Data\Trainers.lua
 
 # Nav: the arrow and everything it draws on
 Nav\Terrain.lua

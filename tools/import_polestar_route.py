@@ -147,7 +147,37 @@ def fix_snapjaw(out):
                                  "No skins yet? |cOXP_ENEMY_Snapjaw Crocolisk|rs line the river around 39.9, 28.4, east of |cOXP_PICK_Grom'gol|r")
 
 
-ROUTE_FIXES = {"Horde": [fix_bloodsail, fix_snapjaw], "Alliance": [fix_fiora, fix_malin]}
+def fix_rest_relaxation(out):
+    """GitHub #128 (Matt OK'd the reorder, 2026-11-25): Human 1-11 Elwynn
+    sent you to Falkhaan Isenstrider by the stables south of the Abbey for
+    Rest and Relaxation (2158), then back past the Abbey to turn in Follow
+    That Kobold! and (without The Big Picture) north to grind at the mine.
+    Falkhaan is on the road south to Goldshire: he's now the first stop of
+    the Goldshire step, so you pick it up on the way."""
+    g = next((g for g in out if g["name"] == "1-11 Elwynn Forest"), None)
+    if not g:
+        return
+    steps = g["steps"]
+    for i, st in enumerate(steps):
+        goals = st["goals"]
+        k = next((k for k, x in enumerate(goals) if x.get(1) == "accept" and x.get("quest") == 2158), None)
+        if k is None:
+            continue
+        start = k - 1 if k > 0 and goals[k - 1].get(1) == "goto" else k
+        end = k + 2 if k + 1 < len(goals) and goals[k + 1].get(1) == "target" else k + 1
+        moved = goals[start:end]
+        del goals[start:end]
+        gold = next(j for j, s2 in enumerate(steps) if j > i and first_text(s2) == "Goldshire"
+                    and any(x.get(1) == "turnin" and x.get("quest") == 54 for x in s2["goals"]))
+        # first thing on the Goldshire step (no new step: saved places don't move)
+        goals2 = steps[gold]["goals"]
+        k2 = next(k for k, x in enumerate(goals2) if x.get(1) != "text")
+        moved[1] = dict(moved[1], text="Accept Rest and Relaxation (|cOXP_FRIENDLY_Falkhaan Isenstrider|r, by the stables on your way south)")
+        goals2[k2:k2] = moved
+        return
+
+
+ROUTE_FIXES = {"Horde": [fix_bloodsail, fix_snapjaw], "Alliance": [fix_fiora, fix_malin, fix_rest_relaxation]}
 
 
 def render(faction, guides_out, commit):

@@ -58,6 +58,37 @@ Target.StepTitle = StepTitle
 -- the next goto or reach ("goto, accept, target" is where you accept); a
 -- reach is also its own goal. A goto with no such goal is a waypoint on the
 -- way (a door, a tunnel). Worked out once per step.
+--- Your class's trainer nearest map % (x, y) on uiMap `map`: {npcID, name,
+--- uiMap, x, y}, or nil when none of your class is on that map.
+function Target.TrainerFor(map, x, y)
+    local list = OXP.trainers and OXP.trainers[OXP.Player.class or ""]
+    if not (list and map) then return nil end
+    local best, bestD
+    for _, t in ipairs(list) do
+        if t[3] == map then
+            local d = (t[4] - (x or 50)) ^ 2 + (t[5] - (y or 50)) ^ 2
+            if not bestD or d < bestD then best, bestD = t, d end
+        end
+    end
+    return best
+end
+
+-- A "train" goal has no spot of its own (the guide says "train your new
+-- spells" for every class, after another goal's goto): it gets your class's
+-- trainer nearest that spot, so the arrow leads there once the rest of the
+-- step is done (GitHub #127: a priest's arrow stayed on Deputy Willem).
+local function TrainerWaypoint(g, near)
+    local map = near and near.map
+    if not map then
+        local _, _, m = Places.PlayerZone()
+        map = m
+    end
+    local t = Target.TrainerFor(map, near and near.x, near and near.y)
+    if not t then return nil end
+    local s = Places.Spot({ "goto", zone = tostring(t[3]), x = t[4], y = t[5] })
+    return s and { goal = g, spot = s, owned = { g }, trainer = t } or nil
+end
+
 local function Waypoints(step)
     local list = step.waypoints
     if list then return list end
@@ -65,7 +96,16 @@ local function Waypoints(step)
     local cur
     for _, g in ipairs(step.goals) do
         local k = g[1]
-        if k == "goto" or k == "reach" then
+        if k == "train" and (not cur or #cur.owned > 0) then
+            -- (a goto with nothing else to do there is the guide's own way to the trainer)
+            local w = TrainerWaypoint(g, cur and cur.spot)
+            if w then
+                list[#list + 1] = w
+                cur = nil
+            elseif cur then
+                cur.owned[#cur.owned + 1] = g
+            end
+        elseif k == "goto" or k == "reach" then
             local s = Places.Spot(g)
             cur = s and { goal = g, spot = s, owned = {} } or nil
             if cur then

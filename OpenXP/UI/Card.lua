@@ -344,7 +344,16 @@ function Card.GoalText(g, step)
     elseif kind == "reach" then
         return g.text or L("Go to the marked spot")
     elseif kind == "train" then
-        return g.text or L("Train your new spells")
+        local text = g.text or L("Train your new spells")
+        -- whose: your class's trainer the arrow leads to (GitHub #127)
+        if step and OXP.Target and OXP.Target.Waypoints then
+            for _, w in ipairs(OXP.Target.Waypoints(step)) do
+                if w.goal == g and w.trainer then
+                    return text .. " (|cOXP_FRIENDLY_" .. w.trainer[2] .. "|r)"
+                end
+            end
+        end
+        return text
     elseif kind == "fly" then
         return g.text or fmt(L("Fly to %s"), g.name)
     end
@@ -390,6 +399,18 @@ function Card.StepContent(step)
         end
     end
     return title or fmt(L("Step %d"), step.index or 0), lines
+end
+
+--- For a "fly to" goal whose flight path you don't have yet: a line saying
+--- so (the arrow then leads you there on foot), else nil. Only once OpenXP
+--- knows your flight paths (any flight master's map opened).
+function Card.UnknownFlight(g, step)
+    if g[1] ~= "fly" or not g.name then return nil end
+    local known = OXP.char and OXP.char.flightPaths
+    if not (known and next(known)) then return nil end
+    if OXP.World.KnowsFlightPath(g.name) then return nil end
+    if OXP.Goals.State(g, step and step.marks or {}) ~= "todo" then return nil end
+    return "|cFFF2C35C" .. fmt(L("You don't have the %s flight path yet: go there another way (the arrow leads you), and get it when you arrive."), g.name) .. "|r"
 end
 
 --- A step for a group (elite) quest: shown only in a group or once you
@@ -913,6 +934,11 @@ local function LayoutBlock(b, step, pos, first)
                 lines[#lines + 1] = { text = "|cFF9EA3B3" .. L("You get this quest at this step") .. "|r", plain = true }
                 break
             end
+        end
+        -- a flight to a place whose flight path you don't have (GitHub #125)
+        for _, g in ipairs(step.goals) do
+            local note = Card.UnknownFlight(g, step)
+            if note then lines[#lines + 1] = { text = note, plain = true } end
         end
         if step.here and Card.here then
             title = "|cFFF2C35C" .. L("WHILE YOU'RE HERE") .. ":|r " .. title
