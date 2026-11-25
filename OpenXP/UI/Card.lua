@@ -392,6 +392,15 @@ function Card.StepContent(step)
     return title or fmt(L("Step %d"), step.index or 0), lines
 end
 
+--- A step for a group (elite) quest: shown only in a group or once you
+--- have the quest (the guide's "group" condition).
+function Card.IsGroupStep(step)
+    for _, c in ipairs(step and step.when or {}) do
+        if c[1] == "group" then return true end
+    end
+    return false
+end
+
 --- "now" for the step to do, "side" for one that stays open while you do the
 --- next (travel, "kill these on the way"), "done".
 function Card.StepRole(step, pos)
@@ -886,6 +895,10 @@ local function LayoutBlock(b, step, pos, first)
         title, lines = Card.StepContent(step)
     end
     local role = Card.StepRole(step, pos)
+    if role ~= "done" and Card.IsGroupStep(step) then
+        -- a group (elite) quest: say so up front, alone you can skip it (GitHub #120)
+        title = "|cFFFF9F40" .. L("GROUP QUEST") .. ":|r " .. title
+    end
     if role == "side" then
         title = "|cFF9EA3B3" .. L("ALONG THE WAY") .. ":|r " .. title
     elseif role == "done" then

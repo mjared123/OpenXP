@@ -490,7 +490,16 @@ end
 
 function Picker.Start(fromTop)
     if not selected then return end
-    if fromTop then OXP.Engine.Load(selected, 1) else OXP.Engine.Load(selected) end
+    local save = OXP.char.guides and OXP.char.guides[selected.key]
+    local fresh = not save or ((save.step or 1) <= 1 and not next(save.skipped or {}))
+    if fromTop then
+        OXP.Engine.Load(selected, 1)
+    elseif fresh and OXP.SmartStart and OXP.SmartStart.PlaceIn then
+        -- never started (or still on step 1): begin past what you've done
+        OXP.SmartStart.PlaceIn(selected)
+    else
+        OXP.Engine.Load(selected)
+    end
     if OXP.Card then OXP.Card.Refresh(true) end
     win:Hide()
 end

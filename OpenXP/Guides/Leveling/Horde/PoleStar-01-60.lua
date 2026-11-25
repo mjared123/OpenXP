@@ -20400,7 +20400,7 @@ OXP.AddGuides({
         { "text", text = "Booty Bay" },
         { "text", text = "Gringer, the flight master, waits on Booty Bay's upper deck. The quest givers stand on the boardwalks around the harbour and in the inn." },
         { "goto", x = 28.29, y = 77.59, zone = "1434" },
-        { "turnin", quest = 577, text = "Turn in Some Assembly Required (|cOXP_FRIENDLY_Drizzlik|r: the Snapjaw skins gathered earlier; inside)" },
+        { "turnin", quest = 577, text = "Turn in Some Assembly Required (|cOXP_FRIENDLY_Drizzlik|r: the Snapjaw skins gathered earlier; inside). No skins yet? |cOXP_ENEMY_Snapjaw Crocolisk|rs line the river around 39.9, 28.4, east of |cOXP_PICK_Grom'gol|r" },
         { "target", name = "Drizzlik" },
         { "goto", x = 28.29, y = 77.59, zone = "1434" },
         { "accept", quest = 628, text = "Accept Excelsior (|cOXP_FRIENDLY_Drizzlik|r: the |cOXP_ENEMY_Elder Saltwater Crocolisk|r suns on the coast between Zul'Kunda and |cOXP_PICK_Grom'gol|r, later on this loop)" },

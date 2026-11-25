@@ -134,7 +134,20 @@ def fix_malin(out):
                     x["optional"] = True
 
 
-ROUTE_FIXES = {"Horde": [fix_bloodsail], "Alliance": [fix_fiora, fix_malin]}
+def fix_snapjaw(out):
+    """GitHub #119 (2026-11-25): Horde 39-43 Stranglethorn turns in Some
+    Assembly Required (577) with skins gathered in 34-36 Stranglethorn. A
+    player who moved on before finishing them arrived at Drizzlik without
+    them (and Excelsior needs that turn-in): say where the crocolisks are."""
+    for g in out:
+        for st in g["steps"]:
+            for x in st["goals"]:
+                if x.get(1) == "turnin" and x.get("quest") == 577 and "gathered earlier" in x.get("text", ""):
+                    x["text"] = ("Turn in Some Assembly Required (|cOXP_FRIENDLY_Drizzlik|r: the Snapjaw skins gathered earlier; inside). "
+                                 "No skins yet? |cOXP_ENEMY_Snapjaw Crocolisk|rs line the river around 39.9, 28.4, east of |cOXP_PICK_Grom'gol|r")
+
+
+ROUTE_FIXES = {"Horde": [fix_bloodsail, fix_snapjaw], "Alliance": [fix_fiora, fix_malin]}
 
 
 def render(faction, guides_out, commit):

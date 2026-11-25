@@ -149,5 +149,41 @@ do
     t.eq(OXP2.settings.autoSellJunk, true, "on by default")
 end
 
+print("-- #117: bags full: the next click deletes the cheapest grey item (opt-in), and the key")
+do
+    local game = FakeWoW.New(ROOT, { level = 10 })
+    local OXP = game:LoadAddon()
+    game:Login()
+    sold = {}
+    local list = {
+        { 100, 0, 3, 5 },          -- grey, 3 x 5c = 15c
+        { 101, 1, 1, 1 },          -- white: never
+        { 105, 0, 1, 2 },          -- grey, 2c: the cheapest
+    }
+    bags(list)
+    local picked, deleted
+    C_Container.PickupContainerItem = function(bag, slot) picked = list[slot] and list[slot][1] end
+    C_Container.GetContainerItemLink = function(bag, slot) return "[Item " .. list[slot][1] .. "]" end
+    DeleteCursorItem = function() deleted = picked end
+    GetCursorInfo = function() return nil end
+    t.eq(OXP.settings.autoDiscardJunk, false, "off by default")
+    game:Fire("UI_ERROR_MESSAGE", 3, ERR_INV_FULL or "Inventory is full.")
+    OXP.Automation.WorldClick()
+    t.eq(deleted, nil, "off: nothing deleted")
+    OXP.settings.autoDiscardJunk = true
+    OXP.Automation.WorldClick()
+    t.eq(deleted, nil, "on, but no full-bags message: nothing")
+    game:Fire("UI_ERROR_MESSAGE", 3, ERR_INV_FULL or "Inventory is full.")
+    OXP.Automation.WorldClick()
+    t.eq(deleted, 105, "bags full, then a click: the cheapest grey item goes")
+    deleted = nil
+    OXP.Automation.WorldClick()
+    t.eq(deleted, nil, "only once per full-bags message")
+    OXP.Automation.DeleteCheapestJunk(false)
+    t.eq(deleted, 105, "the key deletes the cheapest grey item too")
+    t.eq(#game.errors, 0, "no errors: " .. tostring(game.errors[1]))
+    DeleteCursorItem, GetCursorInfo = nil, nil
+end
+
 C_Container, GetItemInfo = nil, nil
 return t.fails

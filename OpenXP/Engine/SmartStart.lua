@@ -496,6 +496,20 @@ function SS.Run(quiet)
     return true
 end
 
+--- Start a guide you picked yourself at your place in it: past the steps
+--- whose quests you've already done (and chains you missed), like smart
+--- start does for the guide it picks. Gray quests aren't skipped: you may
+--- be going back on purpose (GitHub #116). Returns true when it placed you
+--- past the first step.
+function SS.PlaceIn(guide)
+    if not guide then return false end
+    local start, skip = SS.PlanSteps(guide, SS.Prerequisites(), {}, nil, nil)
+    local skipped, status = {}, {}
+    for i in pairs(skip or {}) do skipped[i], status[i] = true, "chain" end
+    OXP.Engine.Place(guide, start or 1, skipped, status)
+    return (start or 1) > 1
+end
+
 -- Where a quest is picked up: the first guide that accepts it.
 local pickup
 local function PickupGuide(id)

@@ -484,6 +484,64 @@ OXP.On("MERCHANT_SHOW", function()
     end
 end)
 
+------------------------------------------------------------------------
+-- Junk when your bags are full (GitHub #117, 1.x had it): delete the
+-- cheapest grey item. The game only lets an add-on delete an item on a key
+-- press or a click, so it's done by the "Delete cheapest junk" key, or
+-- (Settings > Automation > "Make room for loot") on your next click in the
+-- world after "Inventory is full".
+------------------------------------------------------------------------
+
+--- The grey item worth least (whole stack), as from Auto.JunkInBags.
+function Auto.CheapestJunk()
+    local best
+    for _, e in ipairs(Auto.JunkInBags()) do
+        if not best or e.price < best.price then best = e end
+    end
+    return best
+end
+
+--- Delete the cheapest junk item. Call only from a key press or a click.
+function Auto.DeleteCheapestJunk(full)
+    if GetCursorInfo and GetCursorInfo() then return false end
+    if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then return false end
+    local e = Auto.CheapestJunk()
+    if not e then
+        if not full then print("|cFF5AB8FFOpenXP:|r no junk to delete.") end
+        return false
+    end
+    local pickup = (C_Container and C_Container.PickupContainerItem) or _G.PickupContainerItem
+    if not (pickup and DeleteCursorItem) then return false end
+    local link = (C_Container and C_Container.GetContainerItemLink or _G.GetContainerItemLink)
+    link = link and link(e.bag, e.slot) or ("item " .. e.id)
+    pickup(e.bag, e.slot)
+    DeleteCursorItem()
+    print(("|cFF5AB8FFOpenXP:|r %s %s."):format(full and "bags full, deleted" or "deleted", link))
+    Auto.last = "delete " .. e.id
+    return true
+end
+
+local roomWanted = false
+OXP.On("UI_ERROR_MESSAGE", function(_, _, msg)
+    if msg == (ERR_INV_FULL or "Inventory is full.") and On("autoDiscardJunk") then roomWanted = true end
+end)
+
+--- Your next click in the world after "Inventory is full".
+function Auto.WorldClick()
+    if not roomWanted then return end
+    roomWanted = false
+    if On("autoDiscardJunk") then Auto.DeleteCheapestJunk(true) end
+end
+if WorldFrame and WorldFrame.HookScript then
+    WorldFrame:HookScript("OnMouseDown", function() Auto.WorldClick() end)
+end
+-- the key (Key Bindings > OpenXP > Delete cheapest junk item)
+if CreateFrame then
+    local key = CreateFrame("Button", "OpenXPDeleteJunkButton", UIParent)
+    key:Hide()
+    key:SetScript("OnClick", function() Auto.DeleteCheapestJunk(false) end)
+end
+
 --- /oxp junk: what "Sell junk" sees in your bags, and why an item is kept.
 function Auto.JunkReport()
     local P = function(s) print("|cFF5AB8FFOpenXP:|r " .. s) end

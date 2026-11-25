@@ -208,6 +208,11 @@ end
 -- player to `target`, as a leg like the baked ones; kept while you stay on
 -- it, worked out again (at most once a second) when you leave it.
 local GRAPH_AGAIN = 1
+-- and when there's no way at all (you're in a city that's its own map and
+-- the spot is out in the zone), not again for a while: a search that finds
+-- nothing reads the whole zone graph (up to ~80 ms) and ran every second,
+-- a stutter (GitHub #122, Undercity)
+local GRAPH_NONE = 10
 -- one per spot: the arrow asks about the step's spot and about the
 -- pinpoint it leads to in the same moment, and a single shared slot made it
 -- work out a new (often different) way for each every time
@@ -309,9 +314,13 @@ local function GraphLeg(target, key, px, py, inst)
     if now - graphLeg.at < GRAPH_AGAIN then return cached or nil end
     graphLeg.at, graphLeg.leg = now, nil
     local zx, zy = Places.ToZone(px, py, target.map)
-    if not zx then return nil end
+    if not zx then
+        graphLeg.at = now + GRAPH_NONE - GRAPH_AGAIN
+        return nil
+    end
     local pts = Unbaked(target.map, zx, zy, target.x, target.y)
     graphLeg.leg = pts and FlatLeg(target.map, pts, "graph>" .. key) or nil
+    if not graphLeg.leg then graphLeg.at = now + GRAPH_NONE - GRAPH_AGAIN end
     return graphLeg.leg
 end
 
@@ -345,7 +354,7 @@ local SLACK = 25   -- yards: progress along the walk allowed on top of how far y
 local BACK = 2     -- yards: and back (only as far as you moved back)
 local progressBy = {}
 
-local function Ahead(target, px, py, inst)
+local function Ahead(target, px, py, inst, bakedOnly)
     if not (target and target.map and target.x and target.y and px) then return nil end
     local key = SpotKey(target.map, target.x, target.y)
     local first, all = Preferred(LegsTo(target.map, target.x, target.y))
@@ -354,7 +363,7 @@ local function Ahead(target, px, py, inst)
         local b2, s2, d2, x2, y2 = Nearest(all, px, py, inst)
         if b2 and d2 < bestD then best, bestSeg, bestD, bx, by = b2, s2, d2, x2, y2 end
     end
-    if not best or bestD > NEAR then
+    if (not best or bestD > NEAR) and not bakedOnly then
         local gl = GraphLeg(target, key, px, py, inst)
         if gl then
             local b2, s2, d2, x2, y2 = Nearest({ gl }, px, py, inst)
@@ -468,7 +477,8 @@ local LOOK = 18 -- yards along the walk ahead of you
 function WP.OnWalk(target)
     if not nav then return false end
     local px, py, inst = Places.Player()
-    local best, _, d = Ahead(target, px, py, inst)
+    -- (a walk worked out on the graph doesn't count here, so don't work one out)
+    local best, _, d = Ahead(target, px, py, inst, true)
     return best ~= nil and not best.graph and (d or huge) <= NEAR
 end
 

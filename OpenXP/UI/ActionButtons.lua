@@ -18,6 +18,7 @@ local C = Style.C
 BINDING_HEADER_OPENXP = "OpenXP"
 _G["BINDING_NAME_CLICK OpenXPItemButton:LeftButton"] = "Use the quest item"
 _G["BINDING_NAME_CLICK OpenXPTargetButton:LeftButton"] = "Target the step's NPC or mob"
+_G["BINDING_NAME_CLICK OpenXPDeleteJunkButton:LeftButton"] = "Delete cheapest junk item"
 
 -- Bag and item calls: Classic Era 1.15 has both C_Container / C_Item and the
 -- old globals, other clients one or the other. Looked up on each call.

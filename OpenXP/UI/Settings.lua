@@ -295,6 +295,8 @@ local PAGES = {
         Toggle(p, "skipGossip", L("Skip gossip"), L("Picks the guide's quest or the only option. Never sets your Hearthstone by itself."))
         Heading(p, L("Vendors"))
         Toggle(p, "autoSellJunk", L("Sell junk"), L("At a vendor, sells your grey items. Never quest items or items the guide still needs."))
+        Toggle(p, "autoDiscardJunk", L("Make room for loot"),
+            L("When your bags are full, your next click deletes your cheapest grey item. There's also a key for it (Key Bindings > OpenXP)."))
         Heading(p, L("Travel"))
         Toggle(p, "autoFlight", L("Fly to the step's flight master"),
             L("On a \"fly to\" step, talking to a flight master takes that flight. Hold Shift while you talk to choose yourself."))

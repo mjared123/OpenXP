@@ -12,6 +12,16 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.6", date = "2026-11",
+        changes = {
+            "No more stutter in Undercity (and other cities with their own map) when the step is out in the zone: the arrow no longer searches for a way there every second.",
+            "Picking a guide you haven't started puts you past the quests you've already done, like Find my place does.",
+            "Group quest steps say GROUP QUEST in their title, so you can see at a glance that you can skip them alone.",
+            "New: Make room for loot (Settings > Automation, off by default). When your bags are full, your next click deletes your cheapest grey item. There's also a key for it in Key Bindings > OpenXP.",
+            "Horde Stranglethorn: the Some Assembly Required turn-in says where the Snapjaw Crocolisks are if you don't have the skins yet.",
+        },
+    },
+    {
         version = "2.0.5", date = "2026-11",
         changes = {
             "The arrow no longer spins in circles near the spot: it keeps pointing the way along the walk.",
