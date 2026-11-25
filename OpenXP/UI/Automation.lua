@@ -239,6 +239,84 @@ OXP.On("QUEST_GREETING", function()
 end)
 
 ------------------------------------------------------------------------
+-- A quest the giver doesn't offer: when our data says an earlier quest in
+-- its chain is missing, the guide passes over its steps quietly instead of
+-- asking you to do a chain you've never heard of (CurseForge 2026-11-25,
+-- Matt's pick). Only the giver's own window counts as proof: our data is
+-- wrong for some quests. Works with the automation settings off too.
+------------------------------------------------------------------------
+
+--- The quests the current steps want you to pick up and don't have yet.
+local function WantedHere()
+    local out = {}
+    local steps = Engine.GetSteps()
+    for _, pos in ipairs(Engine.GetActive() or {}) do
+        for _, g in ipairs(steps[pos] and steps[pos].goals or {}) do
+            if g[1] == "accept" and g.quest and not OXP.Quests.IsOnQuest(g.quest)
+                and not OXP.Quests.IsTurnedIn(g.quest) then
+                out[#out + 1] = g.quest
+            end
+        end
+    end
+    return out
+end
+
+-- Does NPC `npcId` give quest `id` (by our data)?
+local function GivesQuest(npcId, id)
+    local q = npcId and OXP.QuestDB.Get("Quest", id)
+    for _, n in ipairs(q and type(q.startedBy) == "table" and q.startedBy[1] or {}) do
+        if n == npcId then return true end
+    end
+    return false
+end
+
+--- Talking to `npcId`, which offers the quests in `offered` (id -> true)
+--- and the titles in `titles` (lower case -> true): note the guide's quests
+--- it gives but didn't offer while an earlier quest is missing. Returns how
+--- many were noted.
+function Auto.NoteNotOffered(npcId, offered, titles)
+    if not npcId then return 0 end
+    local DB = OXP.QuestDB
+    local noted = 0
+    for _, id in ipairs(WantedHere()) do
+        local name = DB.QuestName(id)
+        local shown = offered[id] or (name and titles[name:lower()])
+        if not shown and GivesQuest(npcId, id) and DB.Blocked(id) then
+            OXP.char.notOffered = OXP.char.notOffered or {}
+            OXP.char.notOffered[id] = true
+            noted = noted + 1
+        end
+    end
+    if noted > 0 then
+        OXP.Send("QUESTS_CHANGED")
+    end
+    return noted
+end
+
+local function TalkingTo()
+    local guid = OXP.Util.UnitGUID("npc")
+    return guid and OXP.Tooltips and OXP.Tooltips.NpcIdOf(guid)
+end
+
+OXP.On("GOSSIP_SHOW", function()
+    local offered, titles = {}, {}
+    local _, available = Lists()
+    for _, q in ipairs(available) do
+        if q.questID then offered[q.questID] = true end
+        if q.title then titles[q.title:lower()] = true end
+    end
+    pcall(Auto.NoteNotOffered, TalkingTo(), offered, titles)
+end)
+OXP.On("QUEST_GREETING", function()
+    local titles = {}
+    for i = 1, (GetNumAvailableQuests and GetNumAvailableQuests() or 0) do
+        local t = GetAvailableTitle(i)
+        if t then titles[t:lower()] = true end
+    end
+    pcall(Auto.NoteNotOffered, TalkingTo(), {}, titles)
+end)
+
+------------------------------------------------------------------------
 -- Auto-flight: the flight master's map opens while the step says "fly to"
 -- somewhere: take that flight (Settings > Automation > Fly to the step's
 -- flight master; hold Shift while talking to choose yourself).

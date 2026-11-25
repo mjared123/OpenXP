@@ -389,9 +389,40 @@ end
 ---   { kind = "locked", quest, by }        a quest you did locks this one out
 function DB.StepProblem(step)
     if not (step and step.goals) then return nil end
+    -- quests this very step picks up: its turn-in or kill lines for them
+    -- aren't "missing" while the accept line is still to do (2.0.6 warned
+    -- "You don't have X yet" on every accept-then-turn-in step)
+    local acceptsHere, turnsInHere = {}, {}
+    for _, g in ipairs(step.goals) do
+        if g[1] == "accept" and g.quest then acceptsHere[g.quest] = true end
+        if g[1] == "turnin" and g.quest then turnsInHere[g.quest] = true end
+    end
+    -- a pickup this step's own turn-ins open up (turn in A, then take B
+    -- from the same giver): nothing to warn about while A is still to do
+    local function openedHere(id)
+        local pre = DB.Prereqs(id)
+        if not pre then return false end
+        local function ok(q) q = math.abs(q) return TurnedIn(q) or turnsInHere[q] end
+        local here = false
+        for _, q in ipairs(pre.any or {}) do
+            if turnsInHere[math.abs(q)] then here = true end
+        end
+        if pre.any and not here then
+            local anyOk = false
+            for _, q in ipairs(pre.any) do if TurnedIn(q) then anyOk = true end end
+            if not anyOk then return false end
+        end
+        for _, q in ipairs(pre.all or {}) do
+            if not ok(q) then return false end
+            if turnsInHere[math.abs(q)] then here = true end
+        end
+        return here
+    end
     for _, g in ipairs(step.goals) do
         local kind, id = g[1], g.quest
-        if QUEST_KINDS[kind] and id and OXP.Goals.State(g, step.marks) == "todo" then
+        if QUEST_KINDS[kind] and id and not (kind ~= "accept" and acceptsHere[id])
+            and not (kind == "accept" and openedHere(id))
+            and OXP.Goals.State(g, step.marks) == "todo" then
             -- (not when this very step does the objectives first: then the
             -- turn-in is just the step's last line, nothing to warn about)
             if kind == "turnin" and OnQuest(id) and not Quests.IsComplete(id) and not DB.StepDoesObjectives(step, id) then
@@ -405,7 +436,9 @@ function DB.StepProblem(step)
             end
             if needAccept ~= nil then
                 local blocker = DB.Blocked(id)
-                if blocker then
+                if blocker and kind == "accept" and (g.optional or DB.OutOfReach(id)) then
+                    blocker = nil -- no prompt: optional, or see DB.OutOfReach
+                elseif blocker then
                     local pre = DB.Prereqs(id)
                     for _, q in ipairs(pre and pre.excl or {}) do
                         if math.abs(q) == blocker then
@@ -417,11 +450,96 @@ function DB.StepProblem(step)
                         return { kind = "chain", quest = id, chain = chain, needAccept = needAccept }
                     end
                 elseif needAccept then
-                    return { kind = "missing", quest = id }
+                    -- a quest the route never picks up is taken and handed
+                    -- in at once (bounties, Argent Dawn turn-ins): no warning
+                    local route = DB.RouteAccepts()
+                    if not route or route[id] then
+                        return { kind = "missing", quest = id }
+                    end
                 end
             end
         end
     end
+end
+
+------------------------------------------------------------------------
+-- Quests the route can't get you
+------------------------------------------------------------------------
+
+-- Every quest the loaded guide's group (the whole leveling route) picks up.
+local routeAccepts, routeGroup
+local function RouteAccepts()
+    local guide = OXP.Engine and OXP.Engine.GetGuide and OXP.Engine.GetGuide()
+    if not guide then return nil end
+    if routeGroup ~= guide.group then
+        routeGroup, routeAccepts = guide.group, {}
+        for _, g in ipairs(OXP.Registry.All()) do
+            if g.group == guide.group then
+                for _, data in ipairs(g.steps or {}) do
+                    for _, goal in ipairs(data) do
+                        if goal[1] == "accept" and goal.quest then routeAccepts[goal.quest] = true end
+                    end
+                end
+            end
+        end
+    end
+    return routeAccepts
+end
+DB.RouteAccepts = RouteAccepts
+
+--- True when, by our data, you can't get quest `id` and the route won't
+--- get you there: a quest you did locked it out, or it needs earlier quests
+--- the route never picks up. The card doesn't ask you to do a chain you've
+--- never heard of then (CurseForge, 2026-11-25); the step is passed over
+--- quietly once the giver doesn't offer the quest (Goals.OutOfReach).
+function DB.OutOfReach(id)
+    if not id or OnQuest(id) or TurnedIn(id) then return false end
+    local blocker = DB.Blocked(id)
+    if not blocker then return false end
+    local pre = DB.Prereqs(id)
+    for _, q in ipairs(pre and pre.excl or {}) do
+        if math.abs(q) == blocker then return true end
+    end
+    local route = RouteAccepts()
+    if not route then return false end
+    -- can the route get you each earlier quest it needs? One that's turned
+    -- in or in your log counts; one the route picks up counts when its own
+    -- earlier quests can be had too. "Needs one of" wants one such quest,
+    -- "needs all" every one.
+    local memo = {}
+    local function canGet(q, depth)
+        q = math.abs(q)
+        if TurnedIn(q) or OnQuest(q) then return true end
+        if memo[q] ~= nil then return memo[q] end
+        if depth > 25 or not route[q] then memo[q] = false return false end
+        memo[q] = true -- a loop in the data: don't hold it against the quest
+        local ok = true
+        local p = DB.Prereqs(q)
+        if p then
+            if p.any then
+                ok = false
+                for _, a in ipairs(p.any) do
+                    if canGet(a, depth + 1) then ok = true break end
+                end
+            end
+            for _, a in ipairs(p.all or {}) do
+                if ok and not canGet(a, depth + 1) then ok = false end
+            end
+        end
+        memo[q] = ok
+        return ok
+    end
+    if pre.any then
+        local ok = false
+        for _, a in ipairs(pre.any) do
+            if canGet(a, 1) then ok = true break end
+        end
+        if not ok then return true end
+    end
+    for _, a in ipairs(pre.all or {}) do
+        if not canGet(a, 1) then return true end
+    end
+    return false
 end
 
 --- The quest id and name when a step needs a quest you don't have, else nil.

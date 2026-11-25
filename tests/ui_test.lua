@@ -144,6 +144,9 @@ do
     local game, OXP = newGame({ level = 21 })
     OXP.QuestDB.data = { prereqs = { [702] = { all = { 701 } } }, chains = { [702] = { 701 } },
                          info = { [701] = { n = "Part One", l = 20, s = { "Bob", 1453, 40, 40 }, f = { "Bob", 1453, 40, 40 }, o = {} } } }
+    -- the route picks Part One up in another section (a chain it never
+    -- does isn't asked about since 2.0.7)
+    addGuide(OXP, { { { "accept", quest = 701 } } })
     local g = addGuide(OXP, {
         { { "accept", quest = 702, text = "Accept Part Two" } },
         { { "turnin", quest = 702 } },
@@ -171,6 +174,7 @@ do
     OXP.QuestDB.data = { prereqs = { [702] = { all = { 701, 703 } } }, chains = { [702] = { 701, 703 } },
                          info = { [701] = { n = "Part One", l = 20, s = { "Bob", 1457, 40, 40 }, f = { "Bob", 1457, 40, 40 }, o = {} },
                                   [703] = { n = "Part Three", l = 20, o = {} } } }
+    addGuide(OXP, { { { "accept", quest = 701 }, { "accept", quest = 703 } } })
     local g = addGuide(OXP, {
         { { "accept", quest = 702, text = "Accept Part Two" } },
         { { "turnin", quest = 702 } },
@@ -588,6 +592,7 @@ do
     local game, OXP = newGame({ level = 21 })
     OXP.QuestDB.data = { prereqs = { [7000002] = { all = { 7000001 } } }, chains = { [7000002] = { 7000001 } },
                          info = { [7000001] = { n = "Part One", l = 20, s = { "Bob", 1453, 40, 40 }, f = { "Alice", 1453, 40, 40 }, o = {} } } }
+    addGuide(OXP, { { { "accept", quest = 7000001 } } })
     local g = addGuide(OXP, {
         { { "target", name = "Guide Person" }, { "accept", quest = 7000002, text = "Accept Part Two" } },
         { { "turnin", quest = 7000002 } },

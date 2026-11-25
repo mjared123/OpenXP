@@ -3,7 +3,7 @@
 game's own client data tables (TaxiNodes, TaxiPath, TaxiPathNode) as
 published by wago.tools.
 
-    python3 tools/build_flights.py [--product wow_classic_era] [--speed 32]
+    python3 tools/build_flights.py [--product wow_classic_era] [--speed 29.6]
 
 WoW Forever's client isn't on wago.tools, so this uses the Classic Era build;
 flight masters that only exist on Forever are learned in game from the
@@ -39,7 +39,7 @@ def lua_str(s):
 
 
 def main(argv):
-    product, speed = "wow_classic_era", 32.0
+    product, speed = "wow_classic_era", 29.6
     i = 0
     while i < len(argv):
         if argv[i] == "--product":

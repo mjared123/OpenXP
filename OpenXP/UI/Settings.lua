@@ -311,6 +311,11 @@ local PAGES = {
             function() OXP.ActionButtons.Refresh() end)
         Heading(p, L("Timers"))
         Toggle(p, "flightTimer", L("Flight timer"), L("How long until you land."))
+        Toggle(p, "flightTimerDocked", L("Flight timer under the card"),
+            L("Off: Shift-drag the timer where you want it."), function(v)
+                if v then OXP.settings.flightTimerPos = nil end
+                OXP.Timers.Preview()
+            end)
         Toggle(p, "hearthReminder", L("Hearthstone reminder"), L("Says when the Hearthstone is ready on steps that use it."))
     end },
     { key = "extras", title = L("Extras"), sub = L("Small helpers around the game"), build = function(p)

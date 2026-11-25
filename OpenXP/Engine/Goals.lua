@@ -55,10 +55,22 @@ local function haveQuest(q)
     return Quests.IsOnQuest(q) or Quests.IsTurnedIn(q)
 end
 
+-- A quest its giver didn't offer you, while our data says an earlier quest
+-- you haven't done is missing (UI/Automation.lua notes it when you talk to
+-- the giver): its lines don't hold the guide up. Only what the game shows
+-- counts, never our data alone: the data is wrong for some quests (it has
+-- Durotar's Cutting Teeth needing The New Horde).
+local function outOfReach(q)
+    local list = OXP.char and OXP.char.notOffered
+    return list ~= nil and list[q] == true
+end
+Goals.OutOfReach = outOfReach
+
 Goals.Define("accept", {
     fields = { "quest" },
     state = function(g)
-        return done(haveQuest(g.quest))
+        if haveQuest(g.quest) then return "done" end
+        return outOfReach(g.quest) and "skip" or "todo"
     end,
 })
 
@@ -67,7 +79,7 @@ Goals.Define("complete", {
     state = function(g)
         if Quests.IsTurnedIn(g.quest) then return "done" end
         if not Quests.IsOnQuest(g.quest) then
-            return g.optional and "skip" or "todo"
+            return (g.optional or outOfReach(g.quest)) and "skip" or "todo"
         end
         return done(Quests.IsObjectiveDone(g.quest, g.obj))
     end,
@@ -77,7 +89,7 @@ Goals.Define("turnin", {
     fields = { "quest" },
     state = function(g)
         if Quests.IsTurnedIn(g.quest) then return "done" end
-        if g.optional and not Quests.IsOnQuest(g.quest) then return "skip" end
+        if not Quests.IsOnQuest(g.quest) and (g.optional or outOfReach(g.quest)) then return "skip" end
         return "todo"
     end,
 })
@@ -128,7 +140,7 @@ Goals.Define("finish", {
     fields = { "quest" },
     state = function(g)
         if Quests.IsTurnedIn(g.quest) then return "done" end
-        if not Quests.IsOnQuest(g.quest) then return g.optional and "skip" or "todo" end
+        if not Quests.IsOnQuest(g.quest) then return (g.optional or outOfReach(g.quest)) and "skip" or "todo" end
         return done(Quests.IsComplete(g.quest))
     end,
 })

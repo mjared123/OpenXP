@@ -333,6 +333,20 @@ local function restoreHolds()
 end
 
 --- Re-check the shown steps and move past finished ones.
+-- A step passed over because its quest is out of reach (Goals.OutOfReach):
+-- marked like a missed chain, so the step list shows it and /oxp catchup
+-- lists it.
+local function noteOutOfReach(step)
+    if run.save.skipped[step.index] then return end
+    for _, goal in ipairs(step.goals) do
+        if goal.quest and not goal.optional and (goal[1] == "accept" or goal[1] == "turnin")
+            and Goals.State(goal, step.marks) == "skip" and Goals.OutOfReach(goal.quest) then
+            run.save.status[step.index] = "chain"
+            return
+        end
+    end
+end
+
 function Engine.Refresh()
     if not run then return end
     local before = run.pos
@@ -340,6 +354,7 @@ function Engine.Refresh()
         if run.held == run.pos then break end
         if run.restored and restoreHolds() then break end
         if not stepDone(run.pos) then break end
+        noteOutOfReach(run.steps[run.pos])
         run.pos = run.pos + 1
     end
     if run.pos ~= before then

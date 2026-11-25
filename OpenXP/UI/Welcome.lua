@@ -12,6 +12,15 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.7", date = "2026-11",
+        changes = {
+            "No more \"You don't have this quest yet\" on steps that tell you to pick the quest up, or on bounties you hand in straight away.",
+            "No more asking you to do quest chains the guide never sends you on. If the quest giver doesn't offer the quest, the guide quietly moves on (/oxp catchup lists what was passed over).",
+            "Flight timer: back under the guide card, and Shift-drag moves it (Settings > Buttons and timers puts it back). Flights with stops on the way now add up each leg, and all flight times are closer to WoW Forever's real ones.",
+            "Find my place no longer jumps to a section above your level just because a few of its quests are in your log (a level 19 could end up in 22-25).",
+        },
+    },
+    {
         version = "2.0.6", date = "2026-11",
         changes = {
             "No more stutter in Undercity (and other cities with their own map) when the step is out in the zone: the arrow no longer searches for a way there every second.",

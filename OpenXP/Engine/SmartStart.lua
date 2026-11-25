@@ -198,6 +198,12 @@ function SS.ScoreGuide(guide, level, zone)
     if started > 0 then score = score + 100 + started * 5 end
     -- the section whose level range fits best
     score = score + 20 - math.abs(level - lo) * 2
+    -- a section that starts above your level only wins with a lot more of
+    -- its quests in your log: quests carried over from 1.x or picked up
+    -- early sent a level 19 to 21-23 and on to 22-25 (CurseForge 2026-11-25)
+    -- (a fresh character with nothing in the log is only steered by level
+    -- and zone, as before)
+    if lo > level and started > 0 then score = score - (lo - level) * 40 end
     -- a small nudge toward the zone you're standing in
     local name = guide.name:lower()
     if zone and zone ~= "" and name:find(zone:lower(), 1, true) then score = score + 10 end

@@ -74,6 +74,7 @@ local ACCOUNT_DEFAULTS = {
         targetButton = true,
         raidMarkers = true,        -- the targets list's clicks also set a raid marker (GitHub #113)
         flightTimer = true,
+        flightTimerDocked = true,  -- the flight timer sits under the card; Shift-drag moves it
         hearthReminder = true,
         -- extras
         tooltips = true,
@@ -91,6 +92,7 @@ local ACCOUNT_DEFAULTS = {
 local CHAR_DEFAULTS = {
     schema = SCHEMA,
     currentGuide = nil,   -- registry key of the guide in use
+    notOffered = {},      -- [quest id] = true: its giver didn't offer it (an earlier quest is missing)
     guides = {},          -- [guide key] = { step = n, skipped = { [n] = true }, status = { [n] = "chain" } }
     flightPaths = {},     -- [Util.PlaceKey(name)] = true, learned flight masters
     trainers = {},        -- [npc name or id] = level when last visited
