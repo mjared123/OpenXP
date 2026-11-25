@@ -540,12 +540,17 @@ end
 -- to its left (Matt, 2026-11-25): above the name it collided with raid
 -- markers, and nameplate add-ons move those up and down (KuiNameplates
 -- raises them over your DoTs), so no spot above the name stays clear.
-local SIDE_GAP = 16 -- clear of KuiNameplates' target arrows
+local SIDE_GAP = 16
+-- KuiNameplates draws your target's arrows (and DoT timers) right of the
+-- bar: it keeps 47 there itself (ns.ArrowRoom), so we start past that
+local KUI_GAP = 48
 
 local function PlateFrame(plate)
     local host, above, bar = PlateHost(plate)
+    local kui = plate.KuiForeverPlate ~= nil or plate.kui ~= nil
+    -- a name-only plate (friendly, in KuiNameplates) hides its bar: then beside the name
+    if bar and bar.IsShown and not bar:IsShown() then bar = nil end
     local f = plates[plate]
-    if f and f.host == host then return f end
     if not f then
         f = CreateFrame("Frame", nil, host)
         f.badge = f:CreateTexture(nil, "ARTWORK")
@@ -565,7 +570,7 @@ local function PlateFrame(plate)
     f.host = host
     f:SetSize(60, 24)
     f:ClearAllPoints()
-    f:SetPoint("LEFT", bar or above, "RIGHT", SIDE_GAP, 0)
+    f:SetPoint("LEFT", bar or above, "RIGHT", (bar and kui) and KUI_GAP or SIDE_GAP, 0)
     f:SetFrameStrata("HIGH")
     return f
 end

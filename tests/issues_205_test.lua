@@ -187,6 +187,7 @@ do
     local plate = CreateFrame("Frame")
     plate.UnitFrame = CreateFrame("Frame", nil, plate)
     plate.UnitFrame.healthBar = CreateFrame("Frame", nil, plate.UnitFrame)
+    plate.UnitFrame.healthBar:Show()
     _G.UnitExists = function() return true end
     _G.UnitName = function() return "Venture Co. Logger" end
     _G.UnitGUID = function() return "Creature-0-0-0-0-4567-0" end
@@ -200,6 +201,19 @@ do
     local p = m and m.points and m.points[#m.points]
     t.ok(p and p[1] == "LEFT" and p[2] == plate.UnitFrame.healthBar and p[3] == "RIGHT",
         "the sword sits to the right of the health bar, not above the name")
+    -- KuiNameplates: past its target arrows; a name-only plate: beside the name
+    local kp = CreateFrame("Frame", nil, plate)
+    kp.name = CreateFrame("Frame", nil, kp)
+    kp.health = CreateFrame("Frame", nil, kp)
+    kp.health:Show()
+    plate.KuiForeverPlate = kp
+    T.UpdatePlate("nameplate1")
+    p = m.points[#m.points]
+    t.ok(p and p[2] == kp.health and p[4] >= 47, "Kui: right of its bar, clear of the arrows (" .. tostring(p and p[4]) .. ")")
+    kp.health:Hide()
+    T.UpdatePlate("nameplate1")
+    p = m.points[#m.points]
+    t.ok(p and p[2] == kp.name, "Kui name-only plate: beside the name")
     for k, v in pairs(saved) do _G[k] = v end
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
