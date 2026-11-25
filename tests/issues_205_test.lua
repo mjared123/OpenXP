@@ -216,7 +216,17 @@ do
     plate.KuiForeverPlate = kp
     T.UpdatePlate("nameplate1")
     p = m.points[#m.points]
-    t.ok(p and p[2] == kp.health and p[4] >= 47, "Kui: right of its bar, clear of the arrows (" .. tostring(p and p[4]) .. ")")
+    t.ok(p and p[2] == kp.health and p[4] <= 20, "Kui, not your target: close to its bar (" .. tostring(p and p[4]) .. ")")
+    kp.arrows = { right = CreateFrame("Frame", nil, kp) }
+    T.UpdatePlate("nameplate1")
+    -- Kui shows the arrow (your new target) after our update: we follow it
+    kp.arrows.right:SetShown(true)
+    p = m.points[#m.points]
+    t.ok(p and p[2] == kp.arrows.right, "Kui, your target: past its right arrow")
+    kp.arrows.right:SetShown(false)
+    p = m.points[#m.points]
+    t.ok(p and p[2] == kp.health, "target changes away: back close to the bar")
+    kp.arrows = nil
     kp.health:Hide()
     T.UpdatePlate("nameplate1")
     p = m.points[#m.points]

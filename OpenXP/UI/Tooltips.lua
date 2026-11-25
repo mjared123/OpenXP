@@ -541,12 +541,16 @@ end
 -- markers, and nameplate add-ons move those up and down (KuiNameplates
 -- raises them over your DoTs), so no spot above the name stays clear.
 local SIDE_GAP = 16
--- KuiNameplates draws your target's arrows (and DoT timers) right of the
--- bar: it keeps 47 there itself (ns.ArrowRoom), so we start past that
-local KUI_GAP = 48
+-- KuiNameplates draws arrows beside your target's bar: there the marker
+-- goes past the right arrow; on other plates it stays close to the bar
+local KUI_GAP = 20   -- clear of Kui's DoT skull (4 to 16 right of the bar)
+local ARROW_GAP = 3
+local hookedArrows = setmetatable({}, { __mode = "k" })
 local LEVEL_GAP = 8
 
-local function PlateFrame(plate)
+local PlateFrame
+
+local function PlateFrameNow(plate)
     local host, above, bar = PlateHost(plate)
     local kui = type(plate.KuiForeverPlate) == "table" or type(plate.kui) == "table"
     -- a name-only plate (friendly, in KuiNameplates) hides its bar: then beside the name
@@ -577,10 +581,26 @@ local function PlateFrame(plate)
     f.host = host
     f:SetSize(60, 24)
     f:ClearAllPoints()
-    f:SetPoint("LEFT", bar or above, "RIGHT", (bar and kui) and KUI_GAP or (bar and bar == level) and LEVEL_GAP or SIDE_GAP, 0)
+    local arrows = kui and type(plate.KuiForeverPlate) == "table" and plate.KuiForeverPlate.arrows
+    local arrow = type(arrows) == "table" and type(arrows.right) == "table" and arrows.right or nil
+    -- Kui shows and hides the arrow as your target changes (SetShown, in
+    -- either order with our events): the marker moves with it
+    if arrow and not hookedArrows[arrow] and hooksecurefunc and arrow.SetShown then
+        hookedArrows[arrow] = true
+        hooksecurefunc(arrow, "SetShown", function()
+            local mine = plates[plate]
+            if mine and mine:IsShown() then pcall(PlateFrame, plate) end
+        end)
+    end
+    if arrow and arrow.IsShown and arrow:IsShown() and bar then
+        f:SetPoint("LEFT", arrow, "RIGHT", ARROW_GAP, 0)
+    else
+        f:SetPoint("LEFT", bar or above, "RIGHT", (bar and kui) and KUI_GAP or (bar and bar == level) and LEVEL_GAP or SIDE_GAP, 0)
+    end
     f:SetFrameStrata("HIGH")
     return f
 end
+PlateFrame = PlateFrameNow
 
 --- The marker on a nameplate (tests): its frame, or nil.
 function Tips.PlateMarker(plate) return plates[plate] end
