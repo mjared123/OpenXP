@@ -22,6 +22,7 @@ Welcome.CHANGELOG = {
             "Malin's Request in Stormwind is optional now.",
             "New: pick another race's starting zone. Pick a guide > Leveling > Other races' starting zones.",
             "Raid markers are back: clicking a name in the targets list also marks it (star for people, skull for mobs). Settings > Buttons and timers > Raid markers.",
+            "The sword and loot icons on nameplates now sit to the right of the health bar, so raid markers never cover them.",
         },
     },
     {

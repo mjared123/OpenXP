@@ -525,36 +525,27 @@ end
 -- fades with it.
 local function PlateHost(plate)
     local function T(v) return type(v) == "table" and v or nil end
+    local function Bar(f) return f and (T(f.HealthBar) or T(f.healthBar) or T(f.health) or T(f.Health)) end
     local kf = T(plate.KuiForeverPlate)
-    if kf then return kf, T(kf.name) or kf end
+    if kf then return kf, T(kf.name) or kf, Bar(kf) end
     local kui = T(plate.kui)
-    if kui then return kui, T(kui.NameText) or T(kui.HealthBar) or kui end
+    if kui then return kui, T(kui.NameText) or T(kui.HealthBar) or kui, Bar(kui) end
     local plater = T(plate.unitFrame)
-    if plater then return plater, T(plater.healthBar) or plater end
+    if plater then return plater, T(plater.healthBar) or plater, Bar(plater) end
     local uf = T(plate.UnitFrame)
-    return plate, uf and (T(uf.name) or uf) or plate
+    return plate, uf and (T(uf.name) or uf) or plate, Bar(uf)
 end
 
--- A raid marker on the unit (the targets list sets them, GitHub #113) sits
--- right where the marker goes: then the marker goes up a row above it.
-local RAID_MARK_LIFT = 26
+-- The marker sits to the right of the health bar, like Questie's icon sits
+-- to its left (Matt, 2026-11-25): above the name it collided with raid
+-- markers, and nameplate add-ons move those up and down (KuiNameplates
+-- raises them over your DoTs), so no spot above the name stays clear.
+local SIDE_GAP = 16 -- clear of KuiNameplates' target arrows
 
---- The unit wears a raid marker. WoW Forever hands addons the marker as a
---- secret value (printable, but comparing it errors): a secret one counts
---- as marked, since the game gives no marker as plain nil.
-function Tips.HasRaidMark(unit)
-    if not GetRaidTargetIndex then return false end
-    local ok, mark = pcall(GetRaidTargetIndex, unit)
-    if not ok then return false end
-    if issecretvalue and issecretvalue(mark) then return true end
-    if rawequal(mark, nil) then return false end
-    return type(mark) == "number" and mark > 0
-end
-
-local function PlateFrame(plate, marked)
-    local host, above = PlateHost(plate)
+local function PlateFrame(plate)
+    local host, above, bar = PlateHost(plate)
     local f = plates[plate]
-    if f and f.host == host and f.lifted == (marked and true or nil) then return f end
+    if f and f.host == host then return f end
     if not f then
         f = CreateFrame("Frame", nil, host)
         f.badge = f:CreateTexture(nil, "ARTWORK")
@@ -574,8 +565,7 @@ local function PlateFrame(plate, marked)
     f.host = host
     f:SetSize(60, 24)
     f:ClearAllPoints()
-    f:SetPoint("BOTTOM", above, "TOP", 0, marked and (6 + RAID_MARK_LIFT) or 6)
-    f.lifted = marked and true or nil
+    f:SetPoint("LEFT", bar or above, "RIGHT", SIDE_GAP, 0)
     f:SetFrameStrata("HIGH")
     return f
 end
@@ -596,7 +586,7 @@ function Tips.UpdatePlate(unit)
         if plates[plate] then plates[plate]:Hide() end
         return
     end
-    local f = PlateFrame(plate, Tips.HasRaidMark(unit))
+    local f = PlateFrame(plate)
     local big = info.kind == "boss"
     local size = big and 22 or 18
     f.badge:SetSize(size, size)
@@ -643,8 +633,6 @@ OXP.On("NAME_PLATE_UNIT_REMOVED", function(_, unit)
     local plate = C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit)
     if plate and plates[plate] then plates[plate]:Hide() end
 end)
--- a raid marker set or cleared: the marker moves up or back down
-OXP.On("RAID_TARGET_UPDATE", function() RefreshPlates() end)
 for _, m in ipairs({ "QUESTS_CHANGED", "BAGS_CHANGED", "STEP_CHANGED", "GUIDE_LOADED" }) do
     OXP.Listen(m, function()
         if m == "GUIDE_LOADED" then collectIndex = nil end

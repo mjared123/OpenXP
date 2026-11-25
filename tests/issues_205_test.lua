@@ -174,7 +174,7 @@ do
 end
 
 ------------------------------------------------------------------------
-print("-- #113: a raid marker on a mob lifts OpenXP's sword above it")
+print("-- #113: the nameplate marker sits beside the plate, clear of raid markers")
 do
     local game, OXP = newGame({ level = 23, map = 1442, x = 61.48, y = 55.34 })
     addGuide(OXP, {
@@ -183,44 +183,23 @@ do
           { "mob", name = "Venture Co. Logger" } },
     })
     local saved = { UnitExists = _G.UnitExists, UnitName = _G.UnitName, UnitGUID = _G.UnitGUID,
-                    UnitCanAttack = _G.UnitCanAttack, UnitIsPlayer = _G.UnitIsPlayer, C_NamePlate = _G.C_NamePlate,
-                    GetRaidTargetIndex = _G.GetRaidTargetIndex }
+                    UnitCanAttack = _G.UnitCanAttack, UnitIsPlayer = _G.UnitIsPlayer, C_NamePlate = _G.C_NamePlate }
     local plate = CreateFrame("Frame")
     plate.UnitFrame = CreateFrame("Frame", nil, plate)
+    plate.UnitFrame.healthBar = CreateFrame("Frame", nil, plate.UnitFrame)
     _G.UnitExists = function() return true end
     _G.UnitName = function() return "Venture Co. Logger" end
     _G.UnitGUID = function() return "Creature-0-0-0-0-4567-0" end
     _G.UnitCanAttack = function() return true end
     _G.UnitIsPlayer = function() return false end
     _G.C_NamePlate = { GetNamePlateForUnit = function() return plate end, GetNamePlates = function() return { plate } end }
-    local mark
-    _G.GetRaidTargetIndex = function() return mark end
     game:Accept(1071, 1)
     local T = OXP.Tooltips
-    local function lift()
-        local m = T.PlateMarker(plate)
-        local p = m and m.points and m.points[#m.points]
-        return p and p[5]
-    end
     T.UpdatePlate("nameplate1")
-    local low = lift()
-    t.ok(low ~= nil, "the sword is placed")
-    mark = 8
-    T.UpdatePlate("nameplate1")
-    t.ok(lift() and low and lift() > low, "skull on it: the sword goes up above the skull")
-    mark = nil
-    T.UpdatePlate("nameplate1")
-    t.eq(lift(), low, "skull gone: back down")
-    -- WoW Forever hands the marker over as a secret value (comparing it errors)
-    local SECRET = setmetatable({}, { __eq = function() error("compared a secret") end,
-                                      __lt = function() error("compared a secret") end,
-                                      __le = function() error("compared a secret") end })
-    _G.issecretvalue = function(v) return rawequal(v, SECRET) end
-    mark = SECRET
-    local ok, err = pcall(T.UpdatePlate, "nameplate1")
-    t.ok(ok, "a secret marker: no error (" .. tostring(err) .. ")")
-    t.ok(lift() and lift() > low, "a secret marker counts as marked: the sword goes up")
-    _G.issecretvalue = nil
+    local m = T.PlateMarker(plate)
+    local p = m and m.points and m.points[#m.points]
+    t.ok(p and p[1] == "LEFT" and p[2] == plate.UnitFrame.healthBar and p[3] == "RIGHT",
+        "the sword sits to the right of the health bar, not above the name")
     for k, v in pairs(saved) do _G[k] = v end
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
