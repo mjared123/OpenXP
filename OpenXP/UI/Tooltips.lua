@@ -544,12 +544,19 @@ local SIDE_GAP = 16
 -- KuiNameplates draws your target's arrows (and DoT timers) right of the
 -- bar: it keeps 47 there itself (ns.ArrowRoom), so we start past that
 local KUI_GAP = 48
+local LEVEL_GAP = 8
 
 local function PlateFrame(plate)
     local host, above, bar = PlateHost(plate)
-    local kui = plate.KuiForeverPlate ~= nil or plate.kui ~= nil
+    local kui = type(plate.KuiForeverPlate) == "table" or type(plate.kui) == "table"
     -- a name-only plate (friendly, in KuiNameplates) hides its bar: then beside the name
     if bar and bar.IsShown and not bar:IsShown() then bar = nil end
+    -- the game's own plate (no add-on) on Forever has a level box right of
+    -- the bar: past that one
+    local uf = plate.UnitFrame
+    local level = not kui and type(uf) == "table" and uf.PlayerLevelDiffFrame
+    if type(level) ~= "table" then level = nil end
+    if level and level.IsShown and level:IsShown() then bar = level end
     local f = plates[plate]
     if not f then
         f = CreateFrame("Frame", nil, host)
@@ -570,7 +577,7 @@ local function PlateFrame(plate)
     f.host = host
     f:SetSize(60, 24)
     f:ClearAllPoints()
-    f:SetPoint("LEFT", bar or above, "RIGHT", (bar and kui) and KUI_GAP or SIDE_GAP, 0)
+    f:SetPoint("LEFT", bar or above, "RIGHT", (bar and kui) and KUI_GAP or (bar and bar == level) and LEVEL_GAP or SIDE_GAP, 0)
     f:SetFrameStrata("HIGH")
     return f
 end

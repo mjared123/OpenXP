@@ -201,6 +201,13 @@ do
     local p = m and m.points and m.points[#m.points]
     t.ok(p and p[1] == "LEFT" and p[2] == plate.UnitFrame.healthBar and p[3] == "RIGHT",
         "the sword sits to the right of the health bar, not above the name")
+    -- the game's plate with Forever's level box right of the bar: past the box
+    plate.UnitFrame.PlayerLevelDiffFrame = CreateFrame("Frame", nil, plate.UnitFrame)
+    plate.UnitFrame.PlayerLevelDiffFrame:Show()
+    T.UpdatePlate("nameplate1")
+    p = m.points[#m.points]
+    t.ok(p and p[2] == plate.UnitFrame.PlayerLevelDiffFrame, "game plate: right of the level box")
+    plate.UnitFrame.PlayerLevelDiffFrame = nil
     -- KuiNameplates: past its target arrows; a name-only plate: beside the name
     local kp = CreateFrame("Frame", nil, plate)
     kp.name = CreateFrame("Frame", nil, kp)
