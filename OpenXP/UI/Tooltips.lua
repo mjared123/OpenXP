@@ -554,7 +554,7 @@ local function PlateFrame(plate)
     -- the game's own plate (no add-on) on Forever has a level box right of
     -- the bar: past that one
     local uf = plate.UnitFrame
-    local level = not kui and type(uf) == "table" and uf.PlayerLevelDiffFrame
+    local level = host == plate and type(uf) == "table" and uf.PlayerLevelDiffFrame
     if type(level) ~= "table" then level = nil end
     if level and level.IsShown and level:IsShown() then bar = level end
     local f = plates[plate]
