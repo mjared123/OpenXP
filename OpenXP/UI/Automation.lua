@@ -193,7 +193,11 @@ OXP.On("QUEST_GREETING", function()
     for i = 1, (GetNumActiveQuests and GetNumActiveQuests() or 0) do
         local title, isComplete = GetActiveTitle(i)
         local id = idOf(title)
-        if (id and turnins[id]) or (isComplete and On("autoTurnIn") and OXP.settings.autoTurnInAny ~= false) then
+        -- only a quest that's ready: picking one still in progress opened
+        -- its "not done yet" page every time, and the quests to take next
+        -- were never offered (Matt, 2026-11-25)
+        local ready = isComplete == true or isComplete == 1 or (id ~= nil and OXP.Quests.IsComplete(id))
+        if ready and ((id and turnins[id]) or (On("autoTurnIn") and OXP.settings.autoTurnInAny ~= false)) then
             SelectActiveQuest(i)
             return
         end

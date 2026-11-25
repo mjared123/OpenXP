@@ -105,6 +105,19 @@ do
     OXP.AddGuides({ file = "test", g305 })
     OXP.Engine.Load(g305.key)
     t.eq(w.event("QUEST_GREETING"), "select In Search Of The Excavation Team!", "the quest-list window: finds the guide's quest despite case")
+    -- an NPC with several quests: one taken (not done yet) that the guide
+    -- turns in here later, and the next one to take. The one in progress
+    -- must not be picked (it opened its "not done" page every time).
+    game:Accept(305, 1)
+    avail, active = { "The Second One" }, { "In Search Of The Excavation Team!" }
+    local g306 = { name = "22-23 Greeting test 2", group = "Test",
+                   steps = { { { "accept", quest = 306, text = "Accept The Second One" }, { "turnin", quest = 305 } } } }
+    OXP.AddGuides({ file = "test", g306 })
+    OXP.Engine.Load(g306.key)
+    local savedName = OXP.QuestDB.QuestName
+    OXP.QuestDB.QuestName = function(id) if id == 306 then return "The Second One" end return savedName(id) end
+    t.eq(w.event("QUEST_GREETING"), "select The Second One", "a quest still in progress isn't picked: the next one is")
+    OXP.QuestDB.QuestName = savedName
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
