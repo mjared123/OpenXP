@@ -173,4 +173,46 @@ do
     t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
 end
 
+------------------------------------------------------------------------
+print("-- #113: a raid marker on a mob lifts OpenXP's sword above it")
+do
+    local game, OXP = newGame({ level = 23, map = 1442, x = 61.48, y = 55.34 })
+    addGuide(OXP, {
+        { { "goto", zone = "1442", x = 61.48, y = 55.34 },
+          { "complete", obj = 1, quest = 1071, text = "Kill Venture Co. Logger: 10" },
+          { "mob", name = "Venture Co. Logger" } },
+    })
+    local saved = { UnitExists = _G.UnitExists, UnitName = _G.UnitName, UnitGUID = _G.UnitGUID,
+                    UnitCanAttack = _G.UnitCanAttack, UnitIsPlayer = _G.UnitIsPlayer, C_NamePlate = _G.C_NamePlate,
+                    GetRaidTargetIndex = _G.GetRaidTargetIndex }
+    local plate = CreateFrame("Frame")
+    plate.UnitFrame = CreateFrame("Frame", nil, plate)
+    _G.UnitExists = function() return true end
+    _G.UnitName = function() return "Venture Co. Logger" end
+    _G.UnitGUID = function() return "Creature-0-0-0-0-4567-0" end
+    _G.UnitCanAttack = function() return true end
+    _G.UnitIsPlayer = function() return false end
+    _G.C_NamePlate = { GetNamePlateForUnit = function() return plate end, GetNamePlates = function() return { plate } end }
+    local mark
+    _G.GetRaidTargetIndex = function() return mark end
+    game:Accept(1071, 1)
+    local T = OXP.Tooltips
+    local function lift()
+        local m = T.PlateMarker(plate)
+        local p = m and m.points and m.points[#m.points]
+        return p and p[5]
+    end
+    T.UpdatePlate("nameplate1")
+    local low = lift()
+    t.ok(low ~= nil, "the sword is placed")
+    mark = 8
+    T.UpdatePlate("nameplate1")
+    t.ok(lift() and low and lift() > low, "skull on it: the sword goes up above the skull")
+    mark = nil
+    T.UpdatePlate("nameplate1")
+    t.eq(lift(), low, "skull gone: back down")
+    for k, v in pairs(saved) do _G[k] = v end
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
 return t.fails

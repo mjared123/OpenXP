@@ -535,10 +535,14 @@ local function PlateHost(plate)
     return plate, uf and (T(uf.name) or uf) or plate
 end
 
-local function PlateFrame(plate)
+-- A raid marker on the unit (the targets list sets them, GitHub #113) sits
+-- right where the marker goes: then the marker goes up a row above it.
+local RAID_MARK_LIFT = 26
+
+local function PlateFrame(plate, marked)
     local host, above = PlateHost(plate)
     local f = plates[plate]
-    if f and f.host == host then return f end
+    if f and f.host == host and f.lifted == (marked and true or nil) then return f end
     if not f then
         f = CreateFrame("Frame", nil, host)
         f.badge = f:CreateTexture(nil, "ARTWORK")
@@ -558,7 +562,8 @@ local function PlateFrame(plate)
     f.host = host
     f:SetSize(60, 24)
     f:ClearAllPoints()
-    f:SetPoint("BOTTOM", above, "TOP", 0, 6)
+    f:SetPoint("BOTTOM", above, "TOP", 0, marked and (6 + RAID_MARK_LIFT) or 6)
+    f.lifted = marked and true or nil
     f:SetFrameStrata("HIGH")
     return f
 end
@@ -579,7 +584,8 @@ function Tips.UpdatePlate(unit)
         if plates[plate] then plates[plate]:Hide() end
         return
     end
-    local f = PlateFrame(plate)
+    local mark = GetRaidTargetIndex and GetRaidTargetIndex(unit)
+    local f = PlateFrame(plate, type(mark) == "number" and mark > 0)
     local big = info.kind == "boss"
     local size = big and 22 or 18
     f.badge:SetSize(size, size)
@@ -626,6 +632,8 @@ OXP.On("NAME_PLATE_UNIT_REMOVED", function(_, unit)
     local plate = C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit)
     if plate and plates[plate] then plates[plate]:Hide() end
 end)
+-- a raid marker set or cleared: the marker moves up or back down
+OXP.On("RAID_TARGET_UPDATE", function() RefreshPlates() end)
 for _, m in ipairs({ "QUESTS_CHANGED", "BAGS_CHANGED", "STEP_CHANGED", "GUIDE_LOADED" }) do
     OXP.Listen(m, function()
         if m == "GUIDE_LOADED" then collectIndex = nil end
