@@ -18,6 +18,7 @@ Welcome.CHANGELOG = {
             "Starting in another race's zone no longer costs you class quests: Night Elf and Skyborne druids get Bear Form, hunters their first pet, shamans Call of Earth and Fire, and warlocks their Imp and Voidwalker, at the end of that starting zone.",
             "Human 1-11 Elwynn: the Stonefield Farm step waits for 4 Shiny Red Apples, and their tooltip says to keep them for the Applejack Still.",
             "Horde 50-51: Betrayed from Belgrom Rockmaul in Orgrimmar is optional, so the step moves on when he doesn't offer it.",
+            "Nameplate markers on friendly NPCs (name only, no health bar) sit right after the name again, instead of floating off to the side.",
         },
     },
     {

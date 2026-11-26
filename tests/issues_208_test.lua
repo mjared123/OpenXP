@@ -133,4 +133,43 @@ do
     t.ok(all, "Betrayed (3504) pickup and hand-in are optional")
 end
 
+------------------------------------------------------------------------
+print("-- a name-only plate's marker sits by the name, not off in the air")
+do
+    local game = FakeWoW.New(ROOT, { level = 23, map = 1442, x = 61.48, y = 55.34 })
+    local OXP = game:LoadAddon()
+    game:Login()
+    local g = { name = "1-11 Issues 208 plate", group = "Test", steps = {
+        { { "goto", zone = "1442", x = 61.48, y = 55.34 },
+          { "complete", obj = 1, quest = 1071, text = "Kill Venture Co. Logger: 10" },
+          { "mob", name = "Venture Co. Logger" } } } }
+    OXP.AddGuides({ file = "test", g })
+    OXP.Engine.Load(g.key)
+    local saved = { UnitExists = _G.UnitExists, UnitName = _G.UnitName, UnitGUID = _G.UnitGUID,
+                    UnitCanAttack = _G.UnitCanAttack, UnitIsPlayer = _G.UnitIsPlayer, C_NamePlate = _G.C_NamePlate }
+    local plate = CreateFrame("Frame")
+    local kp = CreateFrame("Frame", nil, plate)
+    kp.name = kp:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    kp.name:SetText("Venture Co. Logger")
+    kp.health = CreateFrame("Frame", nil, kp)
+    kp.health:Hide()
+    plate.KuiForeverPlate = kp
+    _G.UnitExists = function() return true end
+    _G.UnitName = function() return "Venture Co. Logger" end
+    _G.UnitGUID = function() return "Creature-0-0-0-0-4567-0" end
+    _G.UnitCanAttack = function() return true end
+    _G.UnitIsPlayer = function() return false end
+    _G.C_NamePlate = { GetNamePlateForUnit = function() return plate end, GetNamePlates = function() return { plate } end }
+    game:Accept(1071, 1)
+    local T = OXP.Tooltips
+    T.UpdatePlate("nameplate1")
+    local m = T.PlateMarker(plate)
+    local p = m and m.points and m.points[#m.points]
+    local w = kp.name:GetStringWidth()
+    t.ok(p and p[2] == kp.name and p[3] == "CENTER" and p[4] == w / 2 + 8,
+        "just past the end of the centred name (" .. tostring(p and p[3]) .. " " .. tostring(p and p[4]) .. ")")
+    for k, v in pairs(saved) do _G[k] = v end
+    t.eq(#game.errors, 0, "no Lua errors: " .. table.concat(game.errors, " | "))
+end
+
 return t.fails

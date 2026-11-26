@@ -596,6 +596,19 @@ local function PlateFrameNow(plate)
     end
     if arrow and arrow.IsShown and arrow:IsShown() and bar then
         f:SetPoint("LEFT", arrow, "RIGHT", ARROW_GAP, 0)
+    elseif not bar and above.GetStringWidth and above.GetJustifyH then
+        -- beside the name itself: a name text is often as wide as the
+        -- plate with the name centred in it, so its right edge sat far off
+        -- in the air, by nobody (Matt's "? #46" in a Darkshire doorway)
+        local w = above:GetStringWidth() or 0
+        local just = above:GetJustifyH()
+        if just == "LEFT" then
+            f:SetPoint("LEFT", above, "LEFT", w + SIDE_GAP / 2, 0)
+        elseif just == "RIGHT" then
+            f:SetPoint("LEFT", above, "RIGHT", SIDE_GAP / 2, 0)
+        else
+            f:SetPoint("LEFT", above, "CENTER", w / 2 + SIDE_GAP / 2, 0)
+        end
     else
         f:SetPoint("LEFT", bar or above, "RIGHT", (bar and kui) and KUI_GAP or (bar and bar == level) and LEVEL_GAP or SIDE_GAP, 0)
     end
