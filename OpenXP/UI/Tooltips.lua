@@ -103,7 +103,9 @@ function Tips.CollectIndex()
             if g[1] == "collect" then
                 local list = collectIndex[g.item] or {}
                 collectIndex[g.item] = list
-                list[#list + 1] = { quest = quest, qty = g.count or 1, pos = pos, mobs = mobs }
+                -- forquest: the quest the items are for when it isn't on this
+                -- step (Elwynn's apples for the Applejack Still, GitHub #129)
+                list[#list + 1] = { quest = g.forquest or quest, qty = g.count or 1, pos = pos, mobs = mobs }
             end
         end
     end

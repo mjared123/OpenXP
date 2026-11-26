@@ -12,6 +12,15 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.8", date = "2026-11",
+        changes = {
+            "Priests only see their own race's spell quest: a Human priest is no longer sent to Ironforge for the Gnomes' Confounding Flash (and the same for every race's class quests that only one race can take).",
+            "Starting in another race's zone no longer costs you class quests: Night Elf and Skyborne druids get Bear Form, hunters their first pet, shamans Call of Earth and Fire, and warlocks their Imp and Voidwalker, at the end of that starting zone.",
+            "Human 1-11 Elwynn: the Stonefield Farm step waits for 4 Shiny Red Apples, and their tooltip says to keep them for the Applejack Still.",
+            "Horde 50-51: Betrayed from Belgrom Rockmaul in Orgrimmar is optional, so the step moves on when he doesn't offer it.",
+        },
+    },
+    {
         version = "2.0.7", date = "2026-11",
         changes = {
             "No more \"You don't have this quest yet\" on steps that tell you to pick the quest up, or on bounties you hand in straight away.",
