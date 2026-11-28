@@ -584,7 +584,12 @@ function Buttons.MarkerFor(enemy, n)
     return marks[((n or 1) - 1) % #marks + 1]
 end
 
+-- GitHub #141: the star on a friendly NPC hid the game's own ! and ?, so
+-- people can be left unmarked (Settings > Raid markers on people).
+local function MarkPeople() return OXP.settings.raidMarkersPeople ~= false end
+
 local function MarkLine(enemy, n)
+    if not enemy and not MarkPeople() then return nil end
     local m = Buttons.MarkerFor(enemy, n)
     return "/tm [nodead] " .. (enemy and "!" or "") .. m
 end
@@ -597,7 +602,7 @@ local function AllMacro(list, mark)
     if mark then
         -- whoever it found: a mob's mark or a person's
         local e, f = Buttons.MarkerFor(true, 1), Buttons.MarkerFor(false, 1)
-        lines[#lines + 1] = "/tm [harm,nodead] !" .. e .. "; [help,nodead] " .. f
+        lines[#lines + 1] = "/tm [harm,nodead] !" .. e .. (MarkPeople() and ("; [help,nodead] " .. f) or "")
     end
     return table.concat(lines, "\n")
 end
@@ -692,7 +697,8 @@ function Buttons.Refresh()
                     macro = AllMacro(list, mark)
                 else
                     macro = "/cleartarget\n/targetexact " .. name
-                    if mark then macro = macro .. "\n" .. MarkLine(enemy, nth[enemy]) end
+                    local line = mark and MarkLine(enemy, nth[enemy])
+                    if line then macro = macro .. "\n" .. line end
                 end
             end
             if macro ~= r.macro then

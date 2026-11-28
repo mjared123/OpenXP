@@ -73,6 +73,7 @@ local ACCOUNT_DEFAULTS = {
         itemButton = true,
         targetButton = true,
         raidMarkers = true,        -- the targets list's clicks also set a raid marker (GitHub #113)
+        raidMarkersPeople = true,  -- ... on people as well as mobs (off: GitHub #141)
         flightTimer = true,
         flightTimerDocked = true,  -- the flight timer sits under the card; Shift-drag moves it
         hearthReminder = true,

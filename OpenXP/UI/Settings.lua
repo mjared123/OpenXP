@@ -218,7 +218,7 @@ local PAGES = {
         Heading(p, L("Behaviour"))
         Toggle(p, "cardShown", L("Show the guide card"), L("Hiding it also hides the arrow and the targets list. Also: /oxp card, or click the minimap button"))
         Toggle(p, "cardAnimations", L("Animate step changes"), L("The new step slides in and fades up when you move to it."))
-        Toggle(p, "lockFrames", L("Lock the card and arrow"), L("Stops them being dragged or resized by accident."))
+        Toggle(p, "lockFrames", L("Lock the card and arrow"), L("Stops them, the buttons and the timers being dragged or resized by accident. /oxp lock switches it too."))
         ButtonRow(p, L("Position and size"), L("Put the card and arrow back where they started, at their first size."),
             L("Reset"), function()
                 OXP.Card.ResetPosition()
@@ -308,6 +308,8 @@ local PAGES = {
         Toggle(p, "targetButton", L("Targets list"), L("The mobs and NPCs the step needs, with portraits: click one to target it, or bind a key (Key Bindings > AddOns > OpenXP). Off: hidden, and that key does nothing."),
             function() OXP.ActionButtons.Refresh() end)
         Toggle(p, "raidMarkers", L("Raid markers"), L("Clicking a name in the targets list (or its key) also marks who it targets: a star for people, a skull for mobs. In a raid only when you lead or assist."),
+            function() OXP.ActionButtons.Refresh() end)
+        Toggle(p, "raidMarkersPeople", L("Raid markers on people too"), L("Off: only mobs get a marker, so a star never covers a quest giver's ! or ?."),
             function() OXP.ActionButtons.Refresh() end)
         Heading(p, L("Timers"))
         Toggle(p, "flightTimer", L("Flight timer"), L("How long until you land."))

@@ -51,6 +51,7 @@ def build(conv, guides, faction):
         out = ip.build_faction(conv, guides, faction)
         for fix in ROUTE_FIXES.get(faction, []):
             fix(out)
+        fix_optional_followups(out)
         fix_race_locked(out, faction)
         fix_other_start_class(out, faction, conv, guides)
     finally:
@@ -205,6 +206,60 @@ def fix_betrayed(out):
         for st in g["steps"]:
             for x in st["goals"]:
                 if x.get(1) in ("accept", "turnin") and x.get("quest") == 3504:
+                    x["optional"] = True
+
+
+def fix_optional_followups(out):
+    """GitHub #137 (2026-11-26): Westfall's second Harvesting the Harvesters
+    (92910, from a drop) is an optional pickup, but its hand-in wasn't: a
+    player without the drop was told "you don't have this quest" and the
+    step never ended. A quest whose every pickup in the route is optional now
+    has optional objectives and hand-ins too (they still count when you have
+    the quest)."""
+    accepts = {}
+    for g in out:
+        for st in g["steps"]:
+            for x in st["goals"]:
+                if x.get(1) == "accept" and x.get("quest"):
+                    accepts.setdefault(x["quest"], []).append(bool(x.get("optional")))
+    n = 0
+    for g in out:
+        for st in g["steps"]:
+            for x in st["goals"]:
+                q = x.get("quest")
+                if x.get(1) in ("turnin", "complete", "finish") and q in accepts and all(accepts[q]) \
+                        and not x.get("optional"):
+                    x["optional"] = True
+                    n += 1
+    print("   optional follow-ups: %d goals" % n)
+
+
+def fix_thistle_bear(out):
+    """GitHub #149 (2026-11-27): Darkshore 15-19's Plagued Lands step (capture
+    a Rabid Thistle Bear) named no mob, so the bears weren't highlighted."""
+    g = next((g for g in out if g["name"] == "15-19 Darkshore"), None)
+    if not g:
+        return
+    for st in g["steps"]:
+        goals = st["goals"]
+        for k, x in enumerate(goals):
+            if x.get(1) == "finish" and x.get("quest") == 2118:
+                mob = {1: "mob", "name": "Rabid Thistle Bear"}
+                if x.get("only"):
+                    mob["only"] = x["only"]
+                goals.insert(k + 1, mob)
+                return
+
+
+def fix_james_hyal(out):
+    """GitHub #155 (2026-11-27): Connor Rivers in Stormwind had no James Hyal
+    (1301) for a level 32 Dwarf paladin, and the step waited for it. It's
+    only a breadcrumb to James Hyal himself in Theramore (1302), so the
+    pickup is optional (its hand-in follows, fix_optional_followups)."""
+    for g in out:
+        for st in g["steps"]:
+            for x in st["goals"]:
+                if x.get(1) == "accept" and x.get("quest") == 1301:
                     x["optional"] = True
 
 
@@ -395,7 +450,7 @@ def fix_other_start_class(out, faction, conv, guides):
                                                      "/".join(rs)))
 
 ROUTE_FIXES = {"Horde": [fix_bloodsail, fix_snapjaw, fix_betrayed],
-               "Alliance": [fix_fiora, fix_malin, fix_rest_relaxation, fix_apples]}
+               "Alliance": [fix_fiora, fix_malin, fix_rest_relaxation, fix_apples, fix_thistle_bear, fix_james_hyal]}
 
 
 def render(faction, guides_out, commit):

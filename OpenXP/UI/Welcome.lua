@@ -19,6 +19,12 @@ Welcome.CHANGELOG = {
             "Human 1-11 Elwynn: the Stonefield Farm step waits for 4 Shiny Red Apples, and their tooltip says to keep them for the Applejack Still.",
             "Horde 50-51: Betrayed from Belgrom Rockmaul in Orgrimmar is optional, so the step moves on when he doesn't offer it.",
             "Nameplate markers on friendly NPCs (name only, no health bar) sit right after the name again, instead of floating off to the side.",
+            "\"As you go\" steps you've walked past (Westfall's livers, vulture meat and bandanas) stay open beside the current step until you have the items, instead of showing as done.",
+            "Hand-ins of quests the guide only picks up if you get them (Westfall's second Harvesting the Harvesters, Connor Rivers' James Hyal, and others) no longer hold the step when you don't have them.",
+            "Event and escort quests (Winterhoof Cleansing, Freed from the Hive) count as done when the game says they're complete, even if their objective line never ticks.",
+            "Non-English game clients: setting your hearthstone counts on \"Set your Hearthstone\" steps (the inn names never matched).",
+            "Darkshore 15-19: the Rabid Thistle Bears to capture for Plagued Lands are highlighted.",
+            "/oxp lock locks or unlocks the card, arrow, buttons and timers. Settings > Buttons and timers > Raid markers on people too: off puts markers on mobs only.",
         },
     },
     {

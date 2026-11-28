@@ -1852,3 +1852,11 @@ OXP.AddCommand("reset", "put the guide card and arrow back in their default spot
     Card.ResetPosition()
     OXP.Arrow.ResetPosition()
 end)
+-- GitHub #159: a quick way to lock and unlock every OpenXP window (the
+-- same switch as Settings > "Lock the card and arrow").
+OXP.AddCommand("lock", "lock or unlock the card, arrow, buttons and timers so they can't be dragged", function()
+    local s = OXP.settings
+    s.lockFrames = not s.lockFrames
+    print("|cff5ab8ffOpenXP|r: " .. (s.lockFrames and L("windows locked (/oxp lock again to unlock)") or L("windows unlocked")))
+    Card.Refresh(true)
+end)

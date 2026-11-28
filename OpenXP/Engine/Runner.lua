@@ -589,6 +589,14 @@ function Engine.StepState(pos)
     if status == "chain" then return "chain" end
     if pos < run.pos then
         if ownGoalsDone(run.steps[pos]) then return "done" end
+        -- an "as you go" step you've passed is still open until its end
+        -- step (GitHub #135/#157: Westfall's livers, vulture meat and
+        -- bandanas showed as done beside the step after them)
+        local step, here = run.steps[pos], run.steps[run.pos]
+        if step.along and not run.save.skipped[index] and (step.untilIndex or 0) >= (here and here.index or math.huge)
+            and Goals.WhenHolds(step.when) then
+            return "todo"
+        end
         if run.save.skipped[index] then return "skipped" end
         if status == "jumped" and not stepDone(pos) then return "skipped" end
         return "done"
@@ -646,7 +654,12 @@ end)
 OXP.Listen("HEARTH_CHANGED", function()
     -- With a known town, the bind location decides; otherwise any new bind
     -- while the step is shown counts.
-    markShown("home", function(goal) return Goals.HearthTarget(goal) == nil end)
+    -- The guide names inns in English: on another language's client
+    -- (GitHub #158, Russian) the bind location never matches, so there any
+    -- new bind while the step is shown counts too.
+    local loc = GetLocale and GetLocale() or "enUS"
+    local english = loc == "enUS" or loc == "enGB"
+    markShown("home", function(goal) return not english or Goals.HearthTarget(goal) == nil end)
     refreshSoon()
 end)
 

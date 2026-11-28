@@ -50,9 +50,18 @@ local function scan()
     for index = 1, n do
         local title, _, _, isHeader, _, isComplete, _, questID = GetQuestLogTitle(index)
         if not isHeader and questID and questID > 0 then
+            -- event and escort quests (Winterhoof Cleansing, Freed from the
+            -- Hive: GitHub #136, #145, #112) can finish with no objective
+            -- ticked and no complete flag in the title row; the game's own
+            -- per-quest check knows
+            local complete = isComplete == 1 or isComplete == true
+            if not complete and C_QuestLog.IsComplete then
+                local ok, c = pcall(C_QuestLog.IsComplete, questID)
+                complete = ok and c and true or false
+            end
             log[questID] = {
                 title = title,
-                complete = isComplete == 1 or isComplete == true,
+                complete = complete,
                 failed = isComplete == -1,
                 objectives = objectivesFromAPI(questID) or objectivesFromLog(index),
             }
@@ -74,9 +83,11 @@ local function lookup(questID)
             for _, o in ipairs(objectives) do
                 if not o.done then complete = false end
             end
-        else
-            -- no objectives listed: a talk-to quest, or one whose details the
-            -- client hasn't loaded yet; the game knows which
+        end
+        if not complete then
+            -- no objectives listed (a talk-to quest, or one whose details the
+            -- client hasn't loaded yet), or an event the list doesn't tick:
+            -- the game knows
             complete = C_QuestLog.IsComplete and C_QuestLog.IsComplete(questID) and true or false
         end
         q = { title = C_QuestLog.GetTitleForQuestID and C_QuestLog.GetTitleForQuestID(questID),
