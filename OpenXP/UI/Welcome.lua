@@ -12,6 +12,17 @@ local BLUE = "|cFF5AB8FF"
 -- Newest first.
 Welcome.CHANGELOG = {
     {
+        version = "2.0.9", date = "2026-11",
+        changes = {
+            "Arrow: no more spinning or turning back at zone borders on trips to another zone. Once you reach a border or flight master on the way, the arrow moves on and no longer points back at it.",
+            "Flight paths: OpenXP no longer thinks you have flight paths you've never been to (a Human was told to fly to Thelsamar). Open any flight master's map once and wrong ones are cleared.",
+            "A flight path you pick up away from its guide step now counts, so trips use it.",
+            "Alliance 17-21: with the Ironforge flight path, Humans and Night Elves fly to Ironforge from Thelsamar instead of walking through Dun Morogh.",
+            "Alliance 11-17 Westfall: the Goretusk Snouts are an \"as you go\" step, so you head straight to Sentinel Hill. Molsen Farm no longer waits for all the Golem Isosprings: finish any you're missing by Furlbrow's farm later.",
+            "Alliance 43-45 Feralas: the level 47-48 Rage Scar yetis are optional. Grind to 44 on the level 44 bears and Feral Scar Yetis instead, and the Pristine Yeti Hide step only shows if one drops.",
+        },
+    },
+    {
         version = "2.0.8", date = "2026-11",
         changes = {
             "Priests only see their own race's spell quest: a Human priest is no longer sent to Ironforge for the Gnomes' Confounding Flash (and the same for every race's class quests that only one race can take).",

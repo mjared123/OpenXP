@@ -227,9 +227,20 @@ local leg = {}
 --- when it's in another zone and you're not on a baked walk to it, as an
 --- arrow target with zone x, y (so SoupNav's graph can walk you there); nil
 --- when the arrow can go as it is.
+-- Once you're on the walk to a spot, you stay on it until you're well off
+-- it: at the edge (NEAR yards) the arrow used to flip between the walk and
+-- the trip planner's leg every few steps, pointing two ways (GitHub #139,
+-- #151).
+local onWalkKey
 function Target.TripLeg(base)
     if not (base and base.map and OXP.Travel.IsOn()) then return nil end
-    if OXP.WalkPaths.OnWalk(base) then return nil end
+    local key = tostring(base.map) .. ":" .. tostring(base.x) .. ":" .. tostring(base.y)
+    local WP = OXP.WalkPaths
+    if WP.OnWalk(base, onWalkKey == key and (WP.NEAR or 40) * 3 or nil) then
+        onWalkKey = key
+        return nil
+    end
+    onWalkKey = nil
     local trav = OXP.Travel.ArrowTarget(base)
     if not (trav and trav.map) then return nil end
     leg.wx, leg.wy, leg.instance, leg.map = trav.wx, trav.wy, trav.instance, trav.map

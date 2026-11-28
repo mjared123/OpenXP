@@ -366,6 +366,8 @@ local CONDITIONS = {
     end,
     -- the Hearthstone is set to this inn
     bound = function(c) return (GetBindLocation and GetBindLocation()) == c.name end,
+    -- a flight path OpenXP has seen you learn (taxi map or "New flight path")
+    flightpath = function(c) return World.KnowsFlightPath(c.name) end,
     -- a quest the character can take now: not taken or done, level reached,
     -- and none of the quests that close it (closedBy) taken or done
     available = function(c)

@@ -90,6 +90,26 @@ OXP.On("TAXIMAP_OPENED", function()
     Travel.Reset()
 end)
 
+-- "New flight path discovered" away from a guide's flight path step (you
+-- ran ahead, or the step was skipped): the flight master next to you is the
+-- one learned, so later trips can use it (GitHub #148).
+OXP.Listen("FLIGHTPATH_DISCOVERED", function()
+    local wx, wy, inst = Places.Player()
+    if not wx then return end
+    Travel.Build()
+    local best, bd
+    for _, n in ipairs(Travel.fps or {}) do
+        if n.inst == inst then
+            local dx, dy = n.wx - wx, n.wy - wy
+            local d = dx * dx + dy * dy
+            if d <= 60 * 60 and (not bd or d < bd) then best, bd = n, d end
+        end
+    end
+    if best and best.name and not OXP.World.KnowsFlightPath(best.name) then
+        OXP.World.LearnFlightPath(best.name)
+    end
+end)
+
 ------------------------------------------------------------------------
 -- The network: flight masters, docks and zone borders
 ------------------------------------------------------------------------
@@ -394,6 +414,16 @@ end
 Travel.PlanFor = OXP.Perf.Wrap("travel plan", Travel.PlanFor)
 
 local proxy = {}
+-- Walk points already reached on the way to a spot: never led back to. The
+-- planner walks "via" a flight master or border spot; once you'd passed it
+-- the arrow switched to the walk, you stepped 30 yards off it, and the arrow
+-- turned round to it again, over and over (GitHub #139, #151).
+local reached, reachedFor = {}, nil
+
+local function Here(p, px, py)
+    local dx, dy = p.wx - (px or 0), p.wy - (py or 0)
+    return dx * dx + dy * dy <= 30 * 30
+end
 
 --- The first place to head for on the way to `real`: {wx, wy, instance, map, title}.
 function Travel.ArrowTarget(real)
@@ -401,15 +431,23 @@ function Travel.ArrowTarget(real)
     local plan = Travel.PlanFor(real)
     local leg = plan and plan.legs[1]
     if not leg then return nil end
+    local key = fmt("%s:%d:%d", tostring(real.map), floor(real.wx or 0), floor(real.wy or 0))
+    if key ~= reachedFor then reached, reachedFor = {}, key end
     local n
     if leg.kind == "walk" then
-        n = leg.pts[2] or leg.to
         local px, py = Places.Player()
+        -- far from a point you reached (a hearth, a death): it counts again
+        for id, p in pairs(reached) do
+            local dx, dy = p.wx - (px or 0), p.wy - (py or 0)
+            if dx * dx + dy * dy > 500 * 500 then reached[id] = nil end
+        end
         for i = 2, #leg.pts do
             local p = leg.pts[i]
-            local dx, dy = p.wx - (px or 0), p.wy - (py or 0)
-            if dx * dx + dy * dy > 30 * 30 then n = p break end
+            local id = fmt("%d:%d", floor(p.wx), floor(p.wy))
+            if Here(p, px, py) then reached[id] = p end
+            if not reached[id] and not Here(p, px, py) then n = p break end
         end
+        n = n or leg.to
     else
         n = leg.from or leg.to -- stand at the flight master or dock
     end

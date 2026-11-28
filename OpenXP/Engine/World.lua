@@ -65,13 +65,28 @@ function World.LearnFlightPath(name)
     OXP.Send("FLIGHTPATHS_CHANGED")
 end
 
+local function forget(name)
+    if not (name and OXP.char) then return end
+    OXP.char.flightPaths[PlaceKey(name)] = nil
+    local place = name:match("^([^,]+),")
+    if place then OXP.char.flightPaths[PlaceKey(place)] = nil end
+end
+
+-- The taxi map lists this continent's flight masters. CURRENT and REACHABLE
+-- ones are yours; DISTANT (and NONE) ones are listed too but not proven
+-- discovered (a Human was sent to fly to Thelsamar it had never visited,
+-- GitHub #154), so they don't count, and one counted before is dropped.
 OXP.On("TAXIMAP_OPENED", function()
     local n = NumTaxiNodes and NumTaxiNodes() or 0
     for i = 1, n do
         local kind = TaxiNodeGetType(i)
-        if kind == "CURRENT" or kind == "REACHABLE" or kind == "DISTANT" then
+        if kind == "CURRENT" or kind == "REACHABLE" then
             remember(TaxiNodeName(i))
         end
+    end
+    for i = 1, n do
+        local kind = TaxiNodeGetType(i)
+        if kind == "DISTANT" or kind == "NONE" then forget(TaxiNodeName(i)) end
     end
     OXP.Send("FLIGHTPATHS_CHANGED")
 end)

@@ -263,6 +263,160 @@ def fix_james_hyal(out):
                     x["optional"] = True
 
 
+def fix_yetis(out):
+    """GitHub #146 (2026-11-27): in 43-45 Feralas the Rage Scar yetis are
+    level 47-48 on Forever, and the guide sent you to grind them to 44 for
+    Improved Quality (7733, a level 48 quest) and then waited for a 1 in 30
+    Pristine Yeti Hide. The hides are optional now (they still count when
+    you kill yetis), the level 44 grind is on the level 44 Grizzled Ironfur
+    Bears and Feral Scar Yetis by the road, and the Pristine Yeti Hide step
+    only shows when one dropped."""
+    g = next((g for g in out if g["name"] == "43-45 Feralas"), None)
+    if not g:
+        return
+    for st in g["steps"]:
+        goals = st["goals"]
+        hides = next((x for x in goals if x.get(1) == "complete" and x.get("quest") == 7733), None)
+        if hides and any(x.get(1) == "xp" for x in goals):
+            hides["optional"] = True
+            hides["text"] = "Rage Scar Yeti Hide: 10 (optional: the yetis north in the Rage Scar hills are level 47-48)"
+            new, k = [], 0
+            while k < len(goals):
+                x = goals[k]
+                nxt = goals[k + 1] if k + 1 < len(goals) else None
+                # the goto that leads to the Rage Scar hills for the hides
+                if x.get(1) == "goto" and nxt is hides:
+                    k += 1
+                    continue
+                if x.get(1) == "text" and "grind the yetis here" in x.get("text", ""):
+                    x["text"] = ("Ride back west along the road. The |cOXP_ENEMY_Grizzled Ironfur Bear|rs here and the "
+                                 "|cOXP_ENEMY_Feral Scar Yeti|rs in the vale south of the road are level 44: grind them to 44 "
+                                 "(|cOXP_FRIENDLY_Zorbin Fandazzle|r's quests on the coast need level 45). The Rage Scar yetis "
+                                 "north in the hills drop |cOXP_FRIENDLY_Pratt McGrubben|r's hides, but they're level 47-48: "
+                                 "go there only if that's comfortable. Or, with a group, run the Zul'Farrak dungeon instead.")
+                if x.get(1) == "xp":
+                    x["text"] = "Reach level 44 (grind on |cOXP_ENEMY_Grizzled Ironfur Bear|r and |cOXP_ENEMY_Feral Scar Yeti|r)"
+                    new.append({1: "mob", "name": "Grizzled Ironfur Bear"})
+                    new.append({1: "mob", "name": "Feral Scar Yeti"})
+                    new.append(x)
+                    new.append({1: "goto", "x": 54.5, "y": 56.6, "zone": "1444"})
+                    k += 1
+                    # the old grind spot in the Rage Scar hills goes
+                    while k < len(goals) and goals[k].get(1) == "goto":
+                        k += 1
+                    continue
+                new.append(x)
+                k += 1
+            st["goals"] = new
+        if any(x.get(1) == "collect" and x.get("item") == 18969 for x in goals):
+            st["when"] = list(st.get("when") or []) + [{1: "has", "item": 18969}]
+            st["goals"] = [x for x in st["goals"] if x.get(1) != "goto"]
+            for x in st["goals"]:
+                if x.get(1) == "text" and x.get("text", "").startswith("No Pristine Yeti Hide yet?"):
+                    x["text"] = "A |cOXP_LOOT_Pristine Yeti Hide|r dropped: right-click it to start its quest."
+                elif x.get(1) == "text" and x.get("text") == "Rage Scar Hold":
+                    x["text"] = "Pristine Yeti Hide"
+        for x in st["goals"]:
+            if x.get(1) == "turnin" and x.get("quest") in (7733, 7735):
+                x["optional"] = True
+
+
+def fix_fly_ironforge(out):
+    """GitHub #140 (2026-11-27): in 17-21 a Human (or Night Elf) at the South
+    Gate tunnel post was walked through Dun Morogh to Ironforge even with the
+    Ironforge flight path. With it, the two walking steps drop and the trip
+    planner flies you from Thelsamar (Dwarves and Gnomes already had a fly
+    step)."""
+    g = next((g for g in out if g["name"] == "17-21 Loch Modan, Redridge Mountains & Westfall"), None)
+    if not g:
+        return
+    for st in g["steps"]:
+        if st.get("only") == "Human/NightElf/Skyborne" and any(
+                x.get(1) == "reach" and x.get("text") in ("Into Dun Morogh", "Into Ironforge") for x in st["goals"]):
+            st["when"] = list(st.get("when") or []) + [{1: "flightpath", "name": "Ironforge", "neg": True}]
+
+
+def fix_snouts(out):
+    """GitHub #134 (2026-11-27): Westfall 11-17's Goretusk Snouts step sent
+    you north-west of Saldean's Farm before Sentinel Hill. The snouts are an
+    "as you go" step now, like the livers beside them (open until the stew's
+    hand-in), and the "Finish the Goretusk Livers" step near Saldean's Farm
+    finishes the snouts too."""
+    g = next((g for g in out if g["name"] == "11-17 Westfall"), None)
+    if not g:
+        return
+    steps = g["steps"]
+    snout = next((st for st in steps if any(x.get(1) == "complete" and x.get("quest") == 38 and x.get("obj") == 3
+                                            for x in st["goals"]) and not st.get("along")), None)
+    livers = next((st for st in steps if any(x.get(1) == "text" and x.get("text") == "Finish the Goretusk Livers"
+                                             for x in st["goals"])), None)
+    pie = next((st for st in steps if st.get("along") and any(x.get(1) == "complete" and x.get("quest") == 22
+                                                              for x in st["goals"])), None)
+    if not (snout and livers and pie):
+        raise SystemExit("fix_snouts: Westfall steps not found")
+    snout["along"] = True
+    snout["until"] = pie["until"]
+    for x in snout["goals"]:
+        if x.get(1) == "text" and x.get("text") == "Goretusk Snouts":
+            x["text"] = "Goretusk Snouts as you go"
+        elif x.get(1) == "text" and x.get("text", "").startswith("Young Goretusks root"):
+            x["text"] = ("Young Goretusks root in the fields along the road south from Saldean's to Sentinel Hill and "
+                         "along the whole loop: take their snouts as you pass them.")
+    livers.pop("when", None)
+    goals = livers["goals"]
+    for x in goals:
+        if x.get(1) == "text" and x.get("text") == "Finish the Goretusk Livers":
+            x["text"] = "Finish the Goretusk Livers and Snouts"
+        elif x.get(1) == "text" and x.get("text", "").startswith("Still short of eight?"):
+            x["text"] = ("Still short of eight livers or three snouts? Young Goretusks root in the fields just west of "
+                         "Saldean's Farm.")
+    k = next(i for i, x in enumerate(goals) if x.get(1) == "complete" and x.get("quest") == 22)
+    goals.insert(k + 1, {1: "complete", "obj": 3, "quest": 38, "text": "Goretusk Snout: 3"})
+
+
+def fix_isosprings(out):
+    """GitHub #138 (2026-11-27): Westfall 11-17 held you at Molsen Farm until
+    all 14 Golem Isosprings and 5 Gyrostabilizers dropped. Molsen Farm now
+    asks for the 20 Harvest Watchers and the okra; whatever isosprings and
+    gyrostabilizers are still missing are finished at the Harvest Watchers by
+    Furlbrow's farm, next to the wardrobe the route visits anyway."""
+    g = next((g for g in out if g["name"] == "11-17 Westfall"), None)
+    if not g:
+        return
+    steps = g["steps"]
+    molsen = next((st for st in steps if any(x.get(1) == "complete" and x.get("quest") == 92909 and x.get("obj") == 1
+                                             for x in st["goals"])), None)
+    wardrobe = next((st for st in steps if any(x.get(1) == "complete" and x.get("quest") == 64 for x in st["goals"])), None)
+    if not (molsen and wardrobe):
+        raise SystemExit("fix_isosprings: Westfall steps not found")
+    goals, keep, moved = molsen["goals"], [], []
+    k = 0
+    while k < len(goals):
+        x = goals[k]
+        nxt = goals[k + 1] if k + 1 < len(goals) else {}
+        if x.get(1) == "goto" and nxt.get(1) == "complete" and nxt.get("quest") == 92909:
+            moved.append(nxt)
+            k += 2
+            while k < len(goals) and goals[k].get(1) == "mob":
+                k += 1
+            continue
+        keep.append(x)
+        k += 1
+    for x in keep:
+        if x.get(1) == "text" and x.get("text", "").startswith("Harvest Watchers and Golems work the fields"):
+            x["text"] += (" Move on once the 20 Harvest Watchers and the okra are done: the isosprings and "
+                          "gyrostabilizers that drop count, and any still missing are finished by Furlbrow's farm later.")
+    molsen["goals"] = keep
+    for x in moved:
+        x["text"] = x["text"] + " (finish here)"
+    wardrobe["goals"] += [{1: "goto", "x": 51.1, "y": 22.4, "zone": "1436"}] + moved + [
+        {1: "mob", "name": "Harvest Watcher"}, {1: "mob", "name": "Harvest Golem"}]
+    for x in wardrobe["goals"]:
+        if x.get(1) == "text" and x.get("text", "").startswith("|cOXP_PICK_Furlbrow's Wardrobe|r stands"):
+            x["text"] += ("\nStill short of Golem Isosprings or Gyrostabilizers? Harvest Watchers work the fields just "
+                          "south-east of the house.")
+
+
 RACE_IDS = {1: "Human", 2: "Orc", 3: "Dwarf", 4: "NightElf", 5: "Scourge", 6: "Tauren", 7: "Gnome",
             8: "Troll", 33: "Skyborne", 34: "Skyborne"}
 QUEST_GOALS = ("accept", "turnin", "complete", "finish")
@@ -450,7 +604,8 @@ def fix_other_start_class(out, faction, conv, guides):
                                                      "/".join(rs)))
 
 ROUTE_FIXES = {"Horde": [fix_bloodsail, fix_snapjaw, fix_betrayed],
-               "Alliance": [fix_fiora, fix_malin, fix_rest_relaxation, fix_apples, fix_thistle_bear, fix_james_hyal]}
+               "Alliance": [fix_fiora, fix_malin, fix_rest_relaxation, fix_apples, fix_thistle_bear, fix_james_hyal,
+                            fix_yetis, fix_fly_ironforge, fix_snouts, fix_isosprings]}
 
 
 def render(faction, guides_out, commit):
